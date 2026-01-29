@@ -5,36 +5,36 @@
   "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
     },
     "./user": {
-      "import": "./dist/user.js",
-      "types": "./dist/user.d.ts"
+      "import": "./src/user.ts",
+      "types": "./src/user.ts"
     },
     "./task": {
-      "import": "./dist/task.js",
-      "types": "./dist/task.d.ts"
+      "import": "./src/task.ts",
+      "types": "./src/task.ts"
     },
     "./time-block": {
-      "import": "./dist/time-block.js",
-      "types": "./dist/time-block.d.ts"
+      "import": "./src/time-block.ts",
+      "types": "./src/time-block.ts"
     },
     "./api-key": {
-      "import": "./dist/api-key.js",
-      "types": "./dist/api-key.d.ts"
+      "import": "./src/api-key.ts",
+      "types": "./src/api-key.ts"
     },
     "./api": {
-      "import": "./dist/api.js",
-      "types": "./dist/api.d.ts"
+      "import": "./src/api.ts",
+      "types": "./src/api.ts"
     },
     "./common": {
-      "import": "./dist/common.js",
-      "types": "./dist/common.d.ts"
+      "import": "./src/common.ts",
+      "types": "./src/common.ts"
     }
   },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "files": [
     "dist"
   ],

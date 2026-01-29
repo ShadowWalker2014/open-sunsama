@@ -5,32 +5,32 @@
   "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
     },
     "./date": {
-      "import": "./dist/date.js",
-      "types": "./dist/date.d.ts"
+      "import": "./src/date.ts",
+      "types": "./src/date.ts"
     },
     "./validation": {
-      "import": "./dist/validation.js",
-      "types": "./dist/validation.d.ts"
+      "import": "./src/validation.ts",
+      "types": "./src/validation.ts"
     },
     "./errors": {
-      "import": "./dist/errors.js",
-      "types": "./dist/errors.d.ts"
+      "import": "./src/errors.ts",
+      "types": "./src/errors.ts"
     },
     "./api-key": {
-      "import": "./dist/api-key.js",
-      "types": "./dist/api-key.d.ts"
+      "import": "./src/api-key.ts",
+      "types": "./src/api-key.ts"
     },
     "./constants": {
-      "import": "./dist/constants.js",
-      "types": "./dist/constants.d.ts"
+      "import": "./src/constants.ts",
+      "types": "./src/constants.ts"
     }
   },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "files": [
     "dist"
   ],

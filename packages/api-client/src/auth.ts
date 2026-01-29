@@ -95,20 +95,28 @@ export interface AuthApi {
  * @param client The Chronoflow client instance
  * @returns Auth API methods
  */
+// API response wrapper type
+interface ApiResponseWrapper<T> {
+  success: boolean;
+  data: T;
+}
+
 export function createAuthApi(client: ChronoflowClient): AuthApi {
   return {
     async register(
       input: CreateUserInput,
       options?: RequestOptions
     ): Promise<AuthResponse> {
-      return client.post<AuthResponse>("auth/register", input, options);
+      const response = await client.post<ApiResponseWrapper<AuthResponse>>("auth/register", input, options);
+      return response.data;
     },
 
     async login(
       input: LoginInput,
       options?: RequestOptions
     ): Promise<AuthResponse> {
-      return client.post<AuthResponse>("auth/login", input, options);
+      const response = await client.post<ApiResponseWrapper<AuthResponse>>("auth/login", input, options);
+      return response.data;
     },
 
     async logout(options?: RequestOptions): Promise<void> {
@@ -116,14 +124,16 @@ export function createAuthApi(client: ChronoflowClient): AuthApi {
     },
 
     async getMe(options?: RequestOptions): Promise<User> {
-      return client.get<User>("auth/me", options);
+      const response = await client.get<ApiResponseWrapper<User>>("auth/me", options);
+      return response.data;
     },
 
     async updateMe(
       input: UpdateUserInput,
       options?: RequestOptions
     ): Promise<User> {
-      return client.patch<User>("auth/me", input, options);
+      const response = await client.patch<ApiResponseWrapper<User>>("auth/me", input, options);
+      return response.data;
     },
 
     async changePassword(
@@ -157,7 +167,8 @@ export function createAuthApi(client: ChronoflowClient): AuthApi {
     },
 
     async refreshToken(options?: RequestOptions): Promise<AuthResponse> {
-      return client.post<AuthResponse>("auth/refresh", undefined, options);
+      const response = await client.post<ApiResponseWrapper<AuthResponse>>("auth/refresh", undefined, options);
+      return response.data;
     },
 
     async verifyEmail(token: string, options?: RequestOptions): Promise<void> {

@@ -1,0 +1,24 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+dist
+build
+.next
+.turbo
+
+# Coverage
+coverage
+
+# IDE
+.idea
+.vscode
+
+# Generated files
+*.lock
+pnpm-lock.yaml
+package-lock.json
+
+# Drizzle
+drizzle
