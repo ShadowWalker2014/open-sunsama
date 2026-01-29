@@ -10,9 +10,10 @@ import {
   type DragOverEvent,
   type DragEndEvent,
 } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 import { snapCenterToCursor } from "@dnd-kit/modifiers";
 import type { Task } from "@chronoflow/types";
-import { useMoveTask } from "@/hooks/useTasks";
+import { useMoveTask, useReorderTasks } from "@/hooks/useTasks";
 import { useKanbanDates } from "@/hooks/useKanbanDates";
 import { DayColumn } from "./day-column";
 import { TaskCard } from "./task-card";
@@ -31,6 +32,7 @@ export function KanbanBoard() {
   const [sortBy, onSortChange] = useSortPreference();
 
   const moveTask = useMoveTask();
+  const reorderTasks = useReorderTasks();
 
   // Use the kanban dates hook for date management and navigation
   const {
@@ -140,16 +142,31 @@ export function KanbanBoard() {
       // Check if dropped on another task (reordering within same column)
       if (isTaskId(over.id)) {
         const overTask = over.data.current?.task as Task | undefined;
-        if (overTask && task.scheduledDate === overTask.scheduledDate) {
-          // Reordering within the same column
-          // The actual reorder is handled by the sortable context
-          // We just need to persist the new order
-          // For now, rely on optimistic updates from sortable context
-          // The API call will be made by the useTasks hook when needed
+        if (overTask && task.scheduledDate === overTask.scheduledDate && task.id !== overTask.id) {
+          // Get the sortable items from the active or over element's sortable context
+          // dnd-kit stores items in the sortable data
+          const sortableData = active.data.current?.sortable || over.data.current?.sortable;
+          const columnTasks = sortableData?.items as string[] | undefined;
+          
+          if (columnTasks && task.scheduledDate) {
+            const oldIndex = columnTasks.indexOf(task.id);
+            const newIndex = columnTasks.indexOf(overTask.id);
+            
+            if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
+              // Reorder the task IDs
+              const newTaskIds = arrayMove(columnTasks, oldIndex, newIndex);
+              
+              // Persist the new order via API with optimistic update
+              reorderTasks.mutate({
+                date: task.scheduledDate,
+                taskIds: newTaskIds,
+              });
+            }
+          }
         }
       }
     },
-    [findTargetColumnDate, isTaskId, moveTask]
+    [findTargetColumnDate, isTaskId, moveTask, reorderTasks]
   );
 
   const handleDragCancel = React.useCallback(() => {

@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useSortable } from "@dnd-kit/sortable";
+import { useDndContext } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import type { Task } from "@chronoflow/types";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,8 @@ export function SortableTaskCard({ task, onSelect, isDragging: externalDragging 
   const [isHovered, setIsHovered] = React.useState(false);
   const completeTask = useCompleteTask();
   const isCompleted = !!task.completedAt;
+  
+  const { active, over } = useDndContext();
 
   const {
     attributes,
@@ -29,10 +32,25 @@ export function SortableTaskCard({ task, onSelect, isDragging: externalDragging 
     transform,
     transition,
     isDragging: isCurrentlyDragging,
+    index,
+    items,
   } = useSortable({
     id: task.id,
     data: { type: "task", task },
   });
+
+  // Calculate if this item is the drop target
+  const activeId = active?.id;
+  const overId = over?.id;
+  const isOver = overId === task.id && activeId !== task.id;
+  
+  // Get the active item's index to determine drop indicator position
+  const activeIndex = activeId ? items.indexOf(String(activeId)) : -1;
+  const currentIndex = index;
+  
+  // Show drop indicator based on relative positions
+  const showDropIndicatorAbove = isOver && activeIndex > currentIndex;
+  const showDropIndicatorBelow = isOver && activeIndex < currentIndex && activeIndex !== -1;
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -60,8 +78,16 @@ export function SortableTaskCard({ task, onSelect, isDragging: externalDragging 
         style={style}
         {...attributes}
         {...listeners}
-        className={cn(isCurrentlyDragging && "opacity-30 z-50")}
+        className={cn(
+          "relative",
+          isCurrentlyDragging && "opacity-30 z-50"
+        )}
       >
+        {/* Drop indicator line - above */}
+        {showDropIndicatorAbove && (
+          <div className="absolute -top-0.5 left-0 right-0 h-0.5 bg-primary rounded-full z-10" />
+        )}
+        
         <TaskCardContent
           task={task}
           isCompleted={isCompleted}
@@ -71,6 +97,11 @@ export function SortableTaskCard({ task, onSelect, isDragging: externalDragging 
           onClick={handleClick}
           onHoverChange={setIsHovered}
         />
+        
+        {/* Drop indicator line - below */}
+        {showDropIndicatorBelow && (
+          <div className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-primary rounded-full z-10" />
+        )}
       </div>
     </TaskContextMenu>
   );

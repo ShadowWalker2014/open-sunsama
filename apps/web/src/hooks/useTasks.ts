@@ -200,6 +200,7 @@ export function useMoveTask() {
 
 /**
  * Reorder tasks within a date
+ * Uses optimistic updates for smooth drag-and-drop experience
  */
 export function useReorderTasks() {
   const queryClient = useQueryClient();
@@ -216,15 +217,49 @@ export function useReorderTasks() {
       const input: ReorderTasksInput = { date, taskIds };
       await api.tasks.reorder(input);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+    onMutate: async ({ date, taskIds }) => {
+      // Cancel any outgoing refetches to avoid overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: taskKeys.list({ scheduledDate: date }) });
+
+      // Snapshot the previous value
+      const previousTasks = queryClient.getQueryData<Task[]>(taskKeys.list({ scheduledDate: date }));
+
+      // Optimistically update the cache with new positions
+      if (previousTasks) {
+        const reorderedTasks = taskIds
+          .map((id, index) => {
+            const task = previousTasks.find((t) => t.id === id);
+            return task ? { ...task, position: index } : null;
+          })
+          .filter((t): t is Task => t !== null);
+
+        // Include any tasks not in taskIds (e.g., completed tasks) at the end
+        const tasksNotInOrder = previousTasks.filter((t) => !taskIds.includes(t.id));
+        const finalTasks = [...reorderedTasks, ...tasksNotInOrder];
+
+        queryClient.setQueryData(taskKeys.list({ scheduledDate: date }), finalTasks);
+      }
+
+      // Return context with previous value for rollback
+      return { previousTasks, date };
     },
-    onError: (error) => {
+    onError: (error, _variables, context) => {
+      // Rollback to previous value on error
+      if (context?.previousTasks) {
+        queryClient.setQueryData(
+          taskKeys.list({ scheduledDate: context.date }),
+          context.previousTasks
+        );
+      }
       toast({
         variant: "destructive",
         title: "Failed to reorder tasks",
         description: error instanceof Error ? error.message : "Unknown error",
       });
+    },
+    onSettled: (_data, _error, { date }) => {
+      // Always refetch after error or success to ensure server state
+      queryClient.invalidateQueries({ queryKey: taskKeys.list({ scheduledDate: date }) });
     },
   });
 }
