@@ -1,13 +1,13 @@
 /**
- * Authentication routes for Chronoflow API
+ * Authentication routes for Open Sunsama API
  * Handles user registration, login, and profile management
  */
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import crypto from 'crypto';
-import { getDb, eq, users } from '@chronoflow/database';
-import { AuthenticationError, ConflictError, ValidationError } from '@chronoflow/utils';
-import type { User, AuthResponse } from '@chronoflow/types';
+import { getDb, eq, users } from '@open-sunsama/database';
+import { AuthenticationError, ConflictError, ValidationError } from '@open-sunsama/utils';
+import type { User, AuthResponse } from '@open-sunsama/types';
 import { hashPassword, comparePassword } from '../lib/password.js';
 import { signToken } from '../lib/jwt.js';
 import { auth, type AuthVariables } from '../middleware/auth.js';

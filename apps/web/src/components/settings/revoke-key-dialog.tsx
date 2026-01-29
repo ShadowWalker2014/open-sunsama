@@ -8,7 +8,7 @@ import {
   DialogTitle,
   Button,
 } from "@/components/ui";
-import type { ApiKey } from "@chronoflow/types";
+import type { ApiKey } from "@open-sunsama/types";
 
 interface RevokeKeyDialogProps {
   apiKey: ApiKey | null;

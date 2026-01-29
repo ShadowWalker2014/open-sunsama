@@ -1,11 +1,11 @@
 /**
- * API key-related type definitions for Chronoflow
- * @module @chronoflow/types/api-key
+ * API key-related type definitions for Open Sunsama
+ * @module @open-sunsama/types/api-key
  */
 
 /**
- * Represents an API key in the Chronoflow system.
- * API keys allow programmatic access to the Chronoflow API.
+ * Represents an API key in the Open Sunsama system.
+ * API keys allow programmatic access to the Open Sunsama API.
  */
 export interface ApiKey {
   /** Unique identifier for the API key (UUID format) */

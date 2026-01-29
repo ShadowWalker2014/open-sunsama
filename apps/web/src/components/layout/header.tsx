@@ -27,7 +27,7 @@ interface HeaderProps {
   className?: string;
 }
 
-const THEME_STORAGE_KEY = "chronoflow_theme";
+const THEME_STORAGE_KEY = "open_sunsama_theme";
 
 type Theme = "light" | "dark" | "system";
 
@@ -107,7 +107,7 @@ export function Header({ className }: HeaderProps) {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
               <Calendar className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="hidden font-bold sm:inline-block">Chronoflow</span>
+            <span className="hidden font-bold sm:inline-block">Open Sunsama</span>
           </a>
         </div>
 

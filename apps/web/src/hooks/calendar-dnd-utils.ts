@@ -5,7 +5,7 @@ import {
   differenceInMinutes,
   format,
 } from "date-fns";
-import type { TimeBlock } from "@chronoflow/types";
+import type { TimeBlock } from "@open-sunsama/types";
 import type { DropPreview } from "./calendar-dnd-types";
 
 /**

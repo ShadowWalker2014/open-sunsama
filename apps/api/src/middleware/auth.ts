@@ -1,11 +1,11 @@
 /**
- * Authentication middleware for Chronoflow API
+ * Authentication middleware for Open Sunsama API
  * Supports both JWT and API key authentication
  */
 
 import type { Context, MiddlewareHandler } from 'hono';
-import { getDb, eq, and, apiKeys } from '@chronoflow/database';
-import { AuthenticationError, verifyApiKey } from '@chronoflow/utils';
+import { getDb, eq, and, apiKeys } from '@open-sunsama/database';
+import { AuthenticationError, verifyApiKey } from '@open-sunsama/utils';
 import { verifyToken } from '../lib/jwt.js';
 
 /**

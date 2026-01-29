@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { TimeBlockFilterInput } from "@chronoflow/types";
+import type { TimeBlockFilterInput } from "@open-sunsama/types";
 import { getApi } from "@/lib/api";
 
 /**

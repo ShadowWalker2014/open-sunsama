@@ -26,9 +26,19 @@ export class ApiError extends Error {
     try {
       const body = await response.json();
       if (body.error) {
-        message = body.error.message || message;
-        code = body.error.code;
-        details = body.error.details;
+        // Handle Zod validation errors (has issues array)
+        if (body.error.issues && Array.isArray(body.error.issues)) {
+          // Extract all validation messages
+          const messages = body.error.issues.map((issue: { message: string }) => issue.message);
+          message = messages.join('. ');
+          code = 'VALIDATION_ERROR';
+          details = { issues: body.error.issues };
+        } else {
+          // Handle standard error format
+          message = body.error.message || message;
+          code = body.error.code;
+          details = body.error.details;
+        }
       }
     } catch {
       // Ignore JSON parse errors

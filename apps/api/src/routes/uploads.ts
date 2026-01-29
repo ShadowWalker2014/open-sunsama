@@ -1,11 +1,11 @@
 /**
- * Upload routes for Chronoflow API
+ * Upload routes for Open Sunsama API
  * Handles file uploads and serves files from S3 via proxy
  */
 
 import { Hono } from 'hono';
-import { getDb, eq, users, attachments } from '@chronoflow/database';
-import { ValidationError, NotFoundError } from '@chronoflow/utils';
+import { getDb, eq, users, attachments } from '@open-sunsama/database';
+import { ValidationError, NotFoundError } from '@open-sunsama/utils';
 import { auth, type AuthVariables } from '../middleware/auth.js';
 import {
   uploadToS3,

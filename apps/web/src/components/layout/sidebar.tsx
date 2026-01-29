@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Plus, Inbox, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { useDraggable } from "@dnd-kit/core";
-import type { Task } from "@chronoflow/types";
+import type { Task } from "@open-sunsama/types";
 import { useTasks } from "@/hooks/useTasks";
 import { cn, formatDuration } from "@/lib/utils";
 import {
@@ -12,7 +12,7 @@ import {
 import { AddTaskModal } from "@/components/kanban/add-task-modal";
 import { TaskModal } from "@/components/kanban/task-modal";
 
-const SIDEBAR_COLLAPSED_KEY = "chronoflow-sidebar-collapsed";
+const SIDEBAR_COLLAPSED_KEY = "open-sunsama-sidebar-collapsed";
 
 interface SidebarProps {
   className?: string;

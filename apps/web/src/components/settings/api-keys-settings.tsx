@@ -9,7 +9,7 @@ import {
   Button,
 } from "@/components/ui";
 import { useApiKeys, useCreateApiKey, useRevokeApiKey } from "@/hooks/useApiKeys";
-import type { ApiKey, CreateApiKeyInput, CreateApiKeyResponse } from "@chronoflow/types";
+import type { ApiKey, CreateApiKeyInput, CreateApiKeyResponse } from "@open-sunsama/types";
 import { ApiKeyCard } from "./api-key-card";
 import { CreateApiKeyDialog } from "./create-api-key-dialog";
 import { RevokeKeyDialog } from "./revoke-key-dialog";
@@ -81,7 +81,7 @@ export function ApiKeysSettings() {
             <div className="space-y-1">
               <p className="text-sm font-medium">API Key Security</p>
               <p className="text-xs text-muted-foreground">
-                API keys grant access to your Chronoflow data. Keep them secure and
+                API keys grant access to your Open Sunsama data. Keep them secure and
                 never share them publicly. Keys are only shown once at creation -
                 store them safely. Revoked keys cannot be restored.
               </p>

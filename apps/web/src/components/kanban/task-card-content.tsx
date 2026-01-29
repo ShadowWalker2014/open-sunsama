@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Check } from "lucide-react";
-import type { Task } from "@chronoflow/types";
+import type { Task } from "@open-sunsama/types";
 import { cn, formatDuration } from "@/lib/utils";
 
 interface TaskCardContentProps {
@@ -27,7 +27,7 @@ interface TaskCardContentProps {
 export function TaskCardContent({
   task,
   isCompleted,
-  isHovered,
+  isHovered: _isHovered,
   isDragging,
   onToggleComplete,
   onClick,

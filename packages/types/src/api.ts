@@ -1,6 +1,6 @@
 /**
- * API-related type definitions for Chronoflow
- * @module @chronoflow/types/api
+ * API-related type definitions for Open Sunsama
+ * @module @open-sunsama/types/api
  */
 
 /**

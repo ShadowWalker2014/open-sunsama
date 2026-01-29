@@ -1,4 +1,4 @@
-import type { Task, TimeBlock } from "@chronoflow/types";
+import type { Task, TimeBlock } from "@open-sunsama/types";
 
 /**
  * Types for drag and drop operations

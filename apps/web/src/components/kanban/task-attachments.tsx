@@ -8,7 +8,7 @@ import {
   AlertCircle,
   X,
 } from "lucide-react";
-import type { Attachment } from "@chronoflow/types";
+import type { Attachment } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { FileIcon, getFileTypeColor } from "@/components/ui/file-icon";

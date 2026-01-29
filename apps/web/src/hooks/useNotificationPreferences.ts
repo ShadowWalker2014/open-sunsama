@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   NotificationPreferences,
   UpdateNotificationPreferencesInput,
-} from "@chronoflow/types";
+} from "@open-sunsama/types";
 import { getApi } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 

@@ -5,7 +5,7 @@ import {
   subDays,
   startOfDay,
 } from "date-fns";
-import type { Task, TimeBlock } from "@chronoflow/types";
+import type { Task, TimeBlock } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import {
   useTasks,

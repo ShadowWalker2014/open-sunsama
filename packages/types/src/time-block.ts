@@ -1,12 +1,12 @@
 /**
- * Time block-related type definitions for Chronoflow
- * @module @chronoflow/types/time-block
+ * Time block-related type definitions for Open Sunsama
+ * @module @open-sunsama/types/time-block
  */
 
 import type { Task } from './task.js';
 
 /**
- * Represents a time block in the Chronoflow system.
+ * Represents a time block in the Open Sunsama system.
  * Time blocks are scheduled periods of time allocated for specific tasks.
  */
 export interface TimeBlock {

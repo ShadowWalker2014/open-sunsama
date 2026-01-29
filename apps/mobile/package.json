@@ -1,0 +1,20 @@
+{
+  "name": "@open-sunsama/mobile",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Expo app - placeholder'",
+    "build": "echo 'Expo app - placeholder'",
+    "lint": "echo 'Expo app - placeholder'",
+    "typecheck": "echo 'Expo app - placeholder'",
+    "clean": "rm -rf node_modules .turbo"
+  },
+  "dependencies": {
+    "@open-sunsama/api-client": "workspace:*",
+    "@open-sunsama/types": "workspace:*",
+    "@open-sunsama/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

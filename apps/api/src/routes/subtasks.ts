@@ -1,11 +1,11 @@
 /**
- * Subtask routes for Chronoflow API
+ * Subtask routes for Open Sunsama API
  * Handles CRUD operations for subtasks within tasks
  */
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { getDb, eq, and, asc, subtasks, tasks, sql } from '@chronoflow/database';
-import { NotFoundError } from '@chronoflow/utils';
+import { getDb, eq, and, asc, subtasks, tasks, sql } from '@open-sunsama/database';
+import { NotFoundError } from '@open-sunsama/utils';
 import { auth, requireScopes, type AuthVariables } from '../middleware/auth.js';
 import {
   createSubtaskSchema,

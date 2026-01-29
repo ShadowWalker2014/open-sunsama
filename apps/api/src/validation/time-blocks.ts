@@ -3,7 +3,7 @@
  */
 
 import { z } from 'zod';
-import { uuidSchema, dateSchema, timeSchema } from '@chronoflow/utils';
+import { uuidSchema, dateSchema, timeSchema } from '@open-sunsama/utils';
 
 /**
  * Helper function to validate time ordering

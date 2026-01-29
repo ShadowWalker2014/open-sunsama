@@ -3,7 +3,7 @@ import { format, isToday, isTomorrow, isPast, isYesterday } from "date-fns";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { ArrowUpDown } from "lucide-react";
-import type { Task } from "@chronoflow/types";
+import type { Task } from "@open-sunsama/types";
 import { useTasks } from "@/hooks/useTasks";
 import { cn, formatDuration } from "@/lib/utils";
 import { ScrollArea, Skeleton } from "@/components/ui";

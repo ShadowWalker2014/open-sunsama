@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Attachment } from "@chronoflow/types";
+import type { Attachment } from "@open-sunsama/types";
 import { toast } from "@/hooks/use-toast";
 import { validateFile } from "./useUploadAttachment";
 
@@ -38,7 +38,7 @@ export function useTaskAttachments(taskId: string) {
   const { data: attachments = [], isLoading, error } = useQuery({
     queryKey: attachmentKeys.list(taskId),
     queryFn: async (): Promise<Attachment[]> => {
-      const token = localStorage.getItem("chronoflow_token");
+      const token = localStorage.getItem("open_sunsama_token");
       if (!token) {
         throw new Error("Not authenticated");
       }
@@ -72,7 +72,7 @@ export function useTaskAttachments(taskId: string) {
         throw new Error(validation.error);
       }
 
-      const token = localStorage.getItem("chronoflow_token");
+      const token = localStorage.getItem("open_sunsama_token");
       if (!token) {
         throw new Error("Not authenticated");
       }
@@ -124,7 +124,7 @@ export function useTaskAttachments(taskId: string) {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (attachmentId: string): Promise<string> => {
-      const token = localStorage.getItem("chronoflow_token");
+      const token = localStorage.getItem("open_sunsama_token");
       if (!token) {
         throw new Error("Not authenticated");
       }

@@ -1,13 +1,13 @@
 /**
  * Notifications API methods
- * @module @chronoflow/api-client/notifications
+ * @module @open-sunsama/api-client/notifications
  */
 
 import type {
   NotificationPreferences,
   UpdateNotificationPreferencesInput,
-} from "@chronoflow/types";
-import type { ChronoflowClient, RequestOptions } from "./client.js";
+} from "@open-sunsama/types";
+import type { OpenSunsamaClient, RequestOptions } from "./client.js";
 
 /**
  * API response wrapper type
@@ -40,10 +40,10 @@ export interface NotificationsApi {
 
 /**
  * Create notifications API methods bound to a client
- * @param client The Chronoflow client instance
+ * @param client The Open Sunsama client instance
  * @returns Notifications API methods
  */
-export function createNotificationsApi(client: ChronoflowClient): NotificationsApi {
+export function createNotificationsApi(client: OpenSunsamaClient): NotificationsApi {
   return {
     async getPreferences(options?: RequestOptions): Promise<NotificationPreferences> {
       const response = await client.get<ApiResponseWrapper<NotificationPreferences>>(

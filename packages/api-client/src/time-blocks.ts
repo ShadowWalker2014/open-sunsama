@@ -1,6 +1,6 @@
 /**
  * Time Blocks API methods
- * @module @chronoflow/api-client/time-blocks
+ * @module @open-sunsama/api-client/time-blocks
  */
 
 import type {
@@ -12,8 +12,8 @@ import type {
   QuickScheduleInput,
   TimeBlockSummary,
   TimeBlockConflict,
-} from "@chronoflow/types";
-import type { ChronoflowClient, RequestOptions } from "./client.js";
+} from "@open-sunsama/types";
+import type { OpenSunsamaClient, RequestOptions } from "./client.js";
 
 /**
  * Format a Date or string to HH:mm format for API
@@ -135,7 +135,7 @@ function filtersToSearchParams(
 /**
  * Create time blocks API methods bound to a client
  */
-export function createTimeBlocksApi(client: ChronoflowClient): TimeBlocksApi {
+export function createTimeBlocksApi(client: OpenSunsamaClient): TimeBlocksApi {
   return {
     async list(filters?: TimeBlockFilterInput, options?: RequestOptions): Promise<TimeBlock[]> {
       const searchParams = filtersToSearchParams(filters);

@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["ES2022"],
+    "jsx": "react-native",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@open-sunsama/database": ["../../packages/database/src/index.ts"],
+      "@open-sunsama/database/*": ["../../packages/database/src/*"],
+      "@open-sunsama/types": ["../../packages/types/src/index.ts"],
+      "@open-sunsama/types/*": ["../../packages/types/src/*"],
+      "@open-sunsama/utils": ["../../packages/utils/src/index.ts"],
+      "@open-sunsama/utils/*": ["../../packages/utils/src/*"],
+      "@open-sunsama/api-client": ["../../packages/api-client/src/index.ts"],
+      "@open-sunsama/api-client/*": ["../../packages/api-client/src/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}

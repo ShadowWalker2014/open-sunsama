@@ -31,7 +31,7 @@ const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
   beforeLoad: () => {
-    const token = localStorage.getItem("chronoflow_token");
+    const token = localStorage.getItem("open_sunsama_token");
     if (token) {
       throw redirect({ to: "/app" });
     } else {
@@ -74,7 +74,7 @@ const appRoute = createRoute({
   path: "/app",
   component: AppLayout,
   beforeLoad: () => {
-    const token = localStorage.getItem("chronoflow_token");
+    const token = localStorage.getItem("open_sunsama_token");
     if (!token) {
       throw redirect({ to: "/login" });
     }

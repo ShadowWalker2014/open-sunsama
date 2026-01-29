@@ -1,5 +1,5 @@
 {
-  "name": "@chronoflow/api-client",
+  "name": "@open-sunsama/api-client",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -27,7 +27,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@chronoflow/types": "workspace:*",
+    "@open-sunsama/types": "workspace:*",
     "ky": "^1.7.2"
   },
   "devDependencies": {

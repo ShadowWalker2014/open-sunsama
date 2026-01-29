@@ -1,5 +1,5 @@
 /**
- * Custom error classes for Chronoflow
+ * Custom error classes for Open Sunsama
  */
 
 /**

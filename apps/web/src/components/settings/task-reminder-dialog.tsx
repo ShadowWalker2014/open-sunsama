@@ -18,7 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { REMINDER_TIMING_OPTIONS } from "@chronoflow/types";
+import { REMINDER_TIMING_OPTIONS } from "@open-sunsama/types";
 
 interface TaskReminderDialogProps {
   open: boolean;

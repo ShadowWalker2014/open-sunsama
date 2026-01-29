@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Subtask, CreateSubtaskInput, UpdateSubtaskInput } from "@chronoflow/types";
+import type { Subtask, CreateSubtaskInput, UpdateSubtaskInput } from "@open-sunsama/types";
 import { getApi } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 import { subtaskKeys } from "./useSubtasks";

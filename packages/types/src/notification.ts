@@ -1,6 +1,6 @@
 /**
- * Notification-related type definitions for Chronoflow
- * @module @chronoflow/types/notification
+ * Notification-related type definitions for Open Sunsama
+ * @module @open-sunsama/types/notification
  */
 
 /**

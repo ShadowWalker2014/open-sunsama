@@ -1,14 +1,14 @@
 /**
  * Subtasks API methods
- * @module @chronoflow/api-client/subtasks
+ * @module @open-sunsama/api-client/subtasks
  */
 
 import type {
   Subtask,
   CreateSubtaskInput,
   UpdateSubtaskInput,
-} from "@chronoflow/types";
-import type { ChronoflowClient, RequestOptions } from "./client.js";
+} from "@open-sunsama/types";
+import type { OpenSunsamaClient, RequestOptions } from "./client.js";
 
 /**
  * Subtasks API interface
@@ -79,10 +79,10 @@ interface ApiResponseWrapper<T> {
 
 /**
  * Create subtasks API methods bound to a client
- * @param client The Chronoflow client instance
+ * @param client The Open Sunsama client instance
  * @returns Subtasks API methods
  */
-export function createSubtasksApi(client: ChronoflowClient): SubtasksApi {
+export function createSubtasksApi(client: OpenSunsamaClient): SubtasksApi {
   return {
     async list(taskId: string, options?: RequestOptions): Promise<Subtask[]> {
       const response = await client.get<ApiResponseWrapper<Subtask[]>>(

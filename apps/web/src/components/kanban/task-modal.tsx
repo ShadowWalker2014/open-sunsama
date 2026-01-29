@@ -16,7 +16,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { Plus, Clock, Trash2, Check, Calendar, Paperclip } from "lucide-react";
-import type { Task, Subtask } from "@chronoflow/types";
+import type { Task, Subtask } from "@open-sunsama/types";
 import { useUpdateTask, useDeleteTask, useCompleteTask } from "@/hooks/useTasks";
 import { useSubtasks, useCreateSubtask, useUpdateSubtask, useDeleteSubtask, useReorderSubtasks } from "@/hooks/useSubtasks";
 import { useTimeBlocks, useUpdateTimeBlock } from "@/hooks/useTimeBlocks";

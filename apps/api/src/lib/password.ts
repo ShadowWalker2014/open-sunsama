@@ -1,5 +1,5 @@
 /**
- * Password hashing utilities for Chronoflow API
+ * Password hashing utilities for Open Sunsama API
  * Uses bcrypt for secure password hashing
  */
 

@@ -1,6 +1,6 @@
 /**
- * @chronoflow/utils
- * Shared utilities for the Chronoflow application
+ * @open-sunsama/utils
+ * Shared utilities for the Open Sunsama application
  */
 
 // Constants

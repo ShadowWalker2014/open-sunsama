@@ -5,7 +5,7 @@ import type {
   UpdateTaskInput,
   TaskFilterInput,
   ReorderTasksInput,
-} from "@chronoflow/types";
+} from "@open-sunsama/types";
 import { getApi } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 

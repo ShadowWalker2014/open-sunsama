@@ -2,7 +2,7 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { TaskPriority } from "@chronoflow/types";
+import type { TaskPriority } from "@open-sunsama/types";
 
 /**
  * Linear-style priority indicators

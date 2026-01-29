@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { Clock } from "lucide-react";
-import type { TimeBlock } from "@chronoflow/types";
+import type { TimeBlock } from "@open-sunsama/types";
 import { formatDuration } from "@/lib/utils";
 import { Label, Badge } from "@/components/ui";
 

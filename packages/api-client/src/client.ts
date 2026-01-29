@@ -1,6 +1,6 @@
 /**
  * API Client implementation using ky
- * @module @chronoflow/api-client/client
+ * @module @open-sunsama/api-client/client
  */
 
 import ky, { type KyInstance, type Options as KyOptions } from "ky";
@@ -10,7 +10,7 @@ import { ApiError } from "./errors.js";
  * API Client configuration options
  */
 export interface ApiClientConfig {
-  /** Base URL for the API (e.g., "https://api.chronoflow.app/v1") */
+  /** Base URL for the API (e.g., "https://api.opensunsama.app/v1") */
   baseUrl: string;
 
   /** JWT token for authentication */
@@ -155,7 +155,7 @@ export function createApiClient(config: ApiClientConfig): KyInstance {
 /**
  * API Client wrapper with typed methods
  */
-export class ChronoflowClient {
+export class OpenSunsamaClient {
   private client: KyInstance;
   private token: string | undefined;
   private apiKey: string | undefined;
@@ -311,12 +311,16 @@ export class ChronoflowClient {
 }
 
 /**
- * Create a new Chronoflow API client instance
+ * Create a new Open Sunsama API client instance
  */
-export function createChronoflowClient(
+export function createOpenSunsamaClient(
   config: ApiClientConfig
-): ChronoflowClient {
-  return new ChronoflowClient(config);
+): OpenSunsamaClient {
+  return new OpenSunsamaClient(config);
 }
+
+// Legacy aliases for backwards compatibility
+export const ChronoflowClient = OpenSunsamaClient;
+export const createChronoflowClient = createOpenSunsamaClient;
 
 export type { KyInstance };

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ChevronDown, Clock } from "lucide-react";
-import type { TaskPriority } from "@chronoflow/types";
+import type { TaskPriority } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { useCreateTask } from "@/hooks/useTasks";
 import {
@@ -18,7 +18,6 @@ import {
 } from "@/components/ui";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
-import { SubtaskList, type Subtask } from "./subtask-list";
 
 const PRIORITIES: TaskPriority[] = ["P0", "P1", "P2", "P3"];
 
@@ -55,7 +54,6 @@ export function AddTaskModal({
   const [description, setDescription] = React.useState("");
   const [estimatedMins, setEstimatedMins] = React.useState<string>("");
   const [priority, setPriority] = React.useState<TaskPriority>("P2");
-  const [subtasks, setSubtasks] = React.useState<Subtask[]>([]);
 
   const createTask = useCreateTask();
   const titleInputRef = React.useRef<HTMLInputElement>(null);
@@ -74,7 +72,6 @@ export function AddTaskModal({
       setDescription("");
       setEstimatedMins("");
       setPriority("P2");
-      setSubtasks([]);
     }
   }, [open]);
 
@@ -89,8 +86,6 @@ export function AddTaskModal({
       estimatedMins: estimatedMins ? parseInt(estimatedMins, 10) : undefined,
       priority,
     });
-
-    // TODO: Create subtasks via API when implemented
 
     onOpenChange(false);
   };
@@ -117,12 +112,6 @@ export function AddTaskModal({
 
           {/* Main Content */}
           <div className="px-4 py-4 space-y-4 max-h-[50vh] overflow-y-auto">
-            {/* Subtasks */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-muted-foreground">Subtasks</Label>
-              <SubtaskList subtasks={subtasks} onSubtasksChange={setSubtasks} />
-            </div>
-
             {/* Notes */}
             <div className="space-y-2">
               <Label className="text-sm font-medium text-muted-foreground">Notes</Label>

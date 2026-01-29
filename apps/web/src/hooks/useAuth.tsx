@@ -1,10 +1,10 @@
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { User, LoginInput, CreateUserInput, AuthResponse, UpdateUserInput } from "@chronoflow/types";
+import type { User, LoginInput, CreateUserInput, AuthResponse, UpdateUserInput } from "@open-sunsama/types";
 import { getApi, setAuthToken, clearApiClient } from "@/lib/api";
 
-const AUTH_TOKEN_KEY = "chronoflow_token";
-const AUTH_USER_KEY = "chronoflow_user";
+const AUTH_TOKEN_KEY = "open_sunsama_token";
+const AUTH_USER_KEY = "open_sunsama_user";
 
 interface AuthState {
   user: User | null;

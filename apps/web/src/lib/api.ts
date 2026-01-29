@@ -1,15 +1,15 @@
-import { createApi, createChronoflowClient, type ChronoflowClient } from "@chronoflow/api-client";
+import { createApi, createOpenSunsamaClient, type OpenSunsamaClient } from "@open-sunsama/api-client";
 
 const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
 // Get token from localStorage
 function getToken(): string | undefined {
   if (typeof window === "undefined") return undefined;
-  return localStorage.getItem("chronoflow_token") || undefined;
+  return localStorage.getItem("open_sunsama_token") || undefined;
 }
 
 // Create the low-level client
-let client = createChronoflowClient({
+let client = createOpenSunsamaClient({
   baseUrl,
   token: getToken() as string | undefined,
 });
@@ -24,7 +24,7 @@ export function setAuthToken(token: string | null): void {
   const newToken = token || undefined;
   
   // Update the client and api instances
-  client = createChronoflowClient({
+  client = createOpenSunsamaClient({
     baseUrl,
     token: newToken as string | undefined,
   });
@@ -46,17 +46,17 @@ export function getApi() {
  */
 export function getApiClient() {
   const token = getToken();
-  return createChronoflowClient({ baseUrl, token: token as string | undefined });
+  return createOpenSunsamaClient({ baseUrl, token: token as string | undefined });
 }
 
 /**
  * Clear the API client (useful for logout)
  */
 export function clearApiClient(): void {
-  client = createChronoflowClient({ baseUrl });
+  client = createOpenSunsamaClient({ baseUrl });
   api = createApi({ baseUrl });
 }
 
 // Export the api for direct access
 export { api, client };
-export type { ChronoflowClient };
+export type { OpenSunsamaClient };

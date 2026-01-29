@@ -3,7 +3,7 @@
  */
 
 import { z } from 'zod';
-import { API_KEY_SCOPES } from '@chronoflow/database';
+import { API_KEY_SCOPES } from '@open-sunsama/database';
 
 /**
  * Schema for creating an API key

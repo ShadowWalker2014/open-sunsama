@@ -3,7 +3,7 @@
  */
 
 import { z } from 'zod';
-import { uuidSchema } from '@chronoflow/utils';
+import { uuidSchema } from '@open-sunsama/utils';
 
 /**
  * Schema for creating a subtask

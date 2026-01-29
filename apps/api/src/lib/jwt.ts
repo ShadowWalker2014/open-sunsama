@@ -1,12 +1,12 @@
 /**
- * JWT utilities for Chronoflow API
+ * JWT utilities for Open Sunsama API
  * Handles token signing and verification
  */
 
 import jwt from 'jsonwebtoken';
 import type { Secret, SignOptions } from 'jsonwebtoken';
 
-const JWT_SECRET: Secret = process.env.JWT_SECRET || 'chronoflow-dev-secret-change-in-production';
+const JWT_SECRET: Secret = process.env.JWT_SECRET || 'open-sunsama-dev-secret-change-in-production';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 export interface JwtPayload {

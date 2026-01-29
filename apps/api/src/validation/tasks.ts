@@ -3,7 +3,7 @@
  */
 
 import { z } from 'zod';
-import { uuidSchema, dateSchema } from '@chronoflow/utils';
+import { uuidSchema, dateSchema } from '@open-sunsama/utils';
 
 /**
  * Priority levels for tasks

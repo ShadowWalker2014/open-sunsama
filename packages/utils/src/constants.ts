@@ -1,5 +1,5 @@
 /**
- * App constants for Chronoflow
+ * App constants for Open Sunsama
  */
 
 /** Prefix for all API keys */

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ListTodo, ChevronUp, ChevronDown } from "lucide-react";
-import type { Task } from "@chronoflow/types";
+import type { Task } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import {
   Badge,

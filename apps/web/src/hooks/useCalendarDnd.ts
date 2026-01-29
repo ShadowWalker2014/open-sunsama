@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import type { Task, TimeBlock } from "@chronoflow/types";
+import type { Task, TimeBlock } from "@open-sunsama/types";
 import type { DragState, DropPreview, CalendarDndOptions } from "./calendar-dnd-types";
 import {
   calculateTimeFromY,

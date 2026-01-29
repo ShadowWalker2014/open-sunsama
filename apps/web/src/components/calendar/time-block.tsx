@@ -1,7 +1,7 @@
 import * as React from "react";
 import { format, differenceInMinutes } from "date-fns";
 import { GripVertical } from "lucide-react";
-import type { TimeBlock as TimeBlockType } from "@chronoflow/types";
+import type { TimeBlock as TimeBlockType } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import {
   calculateYFromTime,

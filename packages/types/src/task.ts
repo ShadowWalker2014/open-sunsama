@@ -1,6 +1,6 @@
 /**
- * Task-related type definitions for Chronoflow
- * @module @chronoflow/types/task
+ * Task-related type definitions for Open Sunsama
+ * @module @open-sunsama/types/task
  */
 
 /**
@@ -10,7 +10,7 @@
 export type TaskPriority = 'P0' | 'P1' | 'P2' | 'P3';
 
 /**
- * Represents a task in the Chronoflow system.
+ * Represents a task in the Open Sunsama system.
  * Tasks are the core productivity unit that users create, schedule, and complete.
  */
 export interface Task {

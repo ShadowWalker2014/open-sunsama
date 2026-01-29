@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { TimeBlock } from "@chronoflow/types";
+import type { TimeBlock } from "@open-sunsama/types";
 import { toast } from "@/hooks/use-toast";
 import { timeBlockKeys } from "./useTimeBlocks";
 import { useUpdateTimeBlock } from "./useTimeBlockMutations";

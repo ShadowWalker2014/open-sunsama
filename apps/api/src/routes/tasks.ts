@@ -1,12 +1,12 @@
 /**
- * Task routes for Chronoflow API
+ * Task routes for Open Sunsama API
  * Handles CRUD operations for tasks
  */
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { getDb, eq, and, isNull, isNotNull, desc, asc, tasks, sql } from '@chronoflow/database';
-import { NotFoundError, uuidSchema } from '@chronoflow/utils';
+import { getDb, eq, and, isNull, isNotNull, desc, asc, tasks, sql } from '@open-sunsama/database';
+import { NotFoundError, uuidSchema } from '@open-sunsama/utils';
 import { auth, requireScopes, type AuthVariables } from '../middleware/auth.js';
 import { createTaskSchema, updateTaskSchema, taskFilterSchema, reorderTasksSchema } from '../validation/tasks.js';
 

@@ -1,5 +1,5 @@
 // Kanban Components Index
-// Core kanban board view for Chronoflow
+// Core kanban board view for Open Sunsama
 
 export { KanbanBoard } from "./kanban-board";
 export { KanbanBoardToolbar } from "./kanban-board-toolbar";

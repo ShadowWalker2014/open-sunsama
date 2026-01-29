@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import type { Task } from "@chronoflow/types";
+import type { Task } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { useCompleteTask } from "@/hooks/useTasks";
 import { TaskContextMenu } from "./task-context-menu";
@@ -29,11 +29,8 @@ export function SortableTaskCard({ task, onSelect, isDragging: externalDragging 
     transform,
     transition,
     isDragging: isCurrentlyDragging,
-    isSorting,
     isOver,
     active,
-    over,
-    overIndex,
     index,
   } = useSortable({
     id: task.id,

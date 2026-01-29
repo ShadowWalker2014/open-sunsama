@@ -13,7 +13,7 @@ import {
 } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
-import type { CreateApiKeyResponse } from "@chronoflow/types";
+import type { CreateApiKeyResponse } from "@open-sunsama/types";
 
 interface ApiKeyCreatedViewProps {
   open: boolean;

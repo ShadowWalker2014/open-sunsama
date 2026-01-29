@@ -12,7 +12,7 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { snapCenterToCursor } from "@dnd-kit/modifiers";
-import type { Task } from "@chronoflow/types";
+import type { Task } from "@open-sunsama/types";
 import { useMoveTask, useReorderTasks } from "@/hooks/useTasks";
 import { useKanbanDates } from "@/hooks/useKanbanDates";
 import { DayColumn } from "./day-column";

@@ -1,6 +1,6 @@
 /**
  * Authentication API methods
- * @module @chronoflow/api-client/auth
+ * @module @open-sunsama/api-client/auth
  */
 
 import type {
@@ -10,8 +10,8 @@ import type {
   AuthResponse,
   UpdateUserInput,
   ChangePasswordInput,
-} from "@chronoflow/types";
-import type { ChronoflowClient, RequestOptions } from "./client.js";
+} from "@open-sunsama/types";
+import type { OpenSunsamaClient, RequestOptions } from "./client.js";
 
 /**
  * Authentication API interface
@@ -92,7 +92,7 @@ export interface AuthApi {
 
 /**
  * Create authentication API methods bound to a client
- * @param client The Chronoflow client instance
+ * @param client The Open Sunsama client instance
  * @returns Auth API methods
  */
 // API response wrapper type
@@ -101,7 +101,7 @@ interface ApiResponseWrapper<T> {
   data: T;
 }
 
-export function createAuthApi(client: ChronoflowClient): AuthApi {
+export function createAuthApi(client: OpenSunsamaClient): AuthApi {
   return {
     async register(
       input: CreateUserInput,

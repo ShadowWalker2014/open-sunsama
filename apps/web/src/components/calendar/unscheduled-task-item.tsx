@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Clock, GripVertical } from "lucide-react";
-import type { Task } from "@chronoflow/types";
+import type { Task } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/utils";
 import { Badge } from "@/components/ui";

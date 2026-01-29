@@ -14,16 +14,16 @@
       },
     },
     "apps/api": {
-      "name": "@chronoflow/api",
+      "name": "@open-sunsama/api",
       "version": "0.0.0",
       "dependencies": {
         "@aws-sdk/client-s3": "^3.978.0",
         "@aws-sdk/s3-request-presigner": "^3.978.0",
-        "@chronoflow/database": "workspace:*",
-        "@chronoflow/types": "workspace:*",
-        "@chronoflow/utils": "workspace:*",
         "@hono/node-server": "^1.13.7",
         "@hono/zod-validator": "^0.4.2",
+        "@open-sunsama/database": "workspace:*",
+        "@open-sunsama/types": "workspace:*",
+        "@open-sunsama/utils": "workspace:*",
         "bcrypt": "^5.1.1",
         "dotenv": "^17.2.3",
         "hono": "^4.6.14",
@@ -40,40 +40,40 @@
       },
     },
     "apps/desktop": {
-      "name": "@chronoflow/desktop",
+      "name": "@open-sunsama/desktop",
       "version": "0.0.0",
       "dependencies": {
-        "@chronoflow/api-client": "workspace:*",
-        "@chronoflow/types": "workspace:*",
-        "@chronoflow/utils": "workspace:*",
+        "@open-sunsama/api-client": "workspace:*",
+        "@open-sunsama/types": "workspace:*",
+        "@open-sunsama/utils": "workspace:*",
       },
       "devDependencies": {
         "typescript": "^5.7.2",
       },
     },
     "apps/mobile": {
-      "name": "@chronoflow/mobile",
+      "name": "@open-sunsama/mobile",
       "version": "0.0.0",
       "dependencies": {
-        "@chronoflow/api-client": "workspace:*",
-        "@chronoflow/types": "workspace:*",
-        "@chronoflow/utils": "workspace:*",
+        "@open-sunsama/api-client": "workspace:*",
+        "@open-sunsama/types": "workspace:*",
+        "@open-sunsama/utils": "workspace:*",
       },
       "devDependencies": {
         "typescript": "^5.7.2",
       },
     },
     "apps/web": {
-      "name": "@chronoflow/web",
+      "name": "@open-sunsama/web",
       "version": "0.0.0",
       "dependencies": {
-        "@chronoflow/api-client": "workspace:*",
-        "@chronoflow/types": "workspace:*",
-        "@chronoflow/utils": "workspace:*",
         "@dnd-kit/core": "^6.1.0",
         "@dnd-kit/modifiers": "^9.0.0",
         "@dnd-kit/sortable": "^8.0.0",
         "@dnd-kit/utilities": "^3.2.2",
+        "@open-sunsama/api-client": "workspace:*",
+        "@open-sunsama/types": "workspace:*",
+        "@open-sunsama/utils": "workspace:*",
         "@radix-ui/react-avatar": "^1.1.2",
         "@radix-ui/react-context-menu": "^2.2.16",
         "@radix-ui/react-dialog": "^1.1.4",
@@ -119,10 +119,10 @@
       },
     },
     "packages/api-client": {
-      "name": "@chronoflow/api-client",
+      "name": "@open-sunsama/api-client",
       "version": "0.0.0",
       "dependencies": {
-        "@chronoflow/types": "workspace:*",
+        "@open-sunsama/types": "workspace:*",
         "ky": "^1.7.2",
       },
       "devDependencies": {
@@ -144,7 +144,7 @@
       ],
     },
     "packages/database": {
-      "name": "@chronoflow/database",
+      "name": "@open-sunsama/database",
       "version": "0.0.0",
       "dependencies": {
         "@neondatabase/serverless": "^0.9.5",
@@ -163,7 +163,7 @@
       },
     },
     "packages/types": {
-      "name": "@chronoflow/types",
+      "name": "@open-sunsama/types",
       "version": "0.0.0",
       "devDependencies": {
         "typescript": "^5.7.2",
@@ -173,7 +173,7 @@
       },
     },
     "packages/utils": {
-      "name": "@chronoflow/utils",
+      "name": "@open-sunsama/utils",
       "version": "0.0.0",
       "dependencies": {
         "date-fns": "^3.6.0",
@@ -356,22 +356,6 @@
 
     "@changesets/write": ["@changesets/write@0.4.0", "", { "dependencies": { "@changesets/types": "^6.1.0", "fs-extra": "^7.0.1", "human-id": "^4.1.1", "prettier": "^2.7.1" } }, "sha512-CdTLvIOPiCNuH71pyDu3rA+Q0n65cmAbXnwWH84rKGiFumFzkmHNT8KHTMEchcxN+Kl8I54xGUhJ7l3E7X396Q=="],
 
-    "@chronoflow/api": ["@chronoflow/api@workspace:apps/api"],
-
-    "@chronoflow/api-client": ["@chronoflow/api-client@workspace:packages/api-client"],
-
-    "@chronoflow/database": ["@chronoflow/database@workspace:packages/database"],
-
-    "@chronoflow/desktop": ["@chronoflow/desktop@workspace:apps/desktop"],
-
-    "@chronoflow/mobile": ["@chronoflow/mobile@workspace:apps/mobile"],
-
-    "@chronoflow/types": ["@chronoflow/types@workspace:packages/types"],
-
-    "@chronoflow/utils": ["@chronoflow/utils@workspace:packages/utils"],
-
-    "@chronoflow/web": ["@chronoflow/web@workspace:apps/web"],
-
     "@dnd-kit/accessibility": ["@dnd-kit/accessibility@3.1.1", "", { "dependencies": { "tslib": "^2.0.0" }, "peerDependencies": { "react": ">=16.8.0" } }, "sha512-2P+YgaXF+gRsIihwwY1gCsQSYnu9Zyj2py8kY5fFvUM1qm2WA2u639R6YNVfU4GWr+ZM5mqEsfHZZLoRONbemw=="],
 
     "@dnd-kit/core": ["@dnd-kit/core@6.3.1", "", { "dependencies": { "@dnd-kit/accessibility": "^3.1.1", "@dnd-kit/utilities": "^3.2.2", "tslib": "^2.0.0" }, "peerDependencies": { "react": ">=16.8.0", "react-dom": ">=16.8.0" } }, "sha512-xkGBRQQab4RLwgXxoqETICr6S5JlogafbhNsidmrkVv2YRs5MLwpjoF2qpiGjQt8S9AoxtIV603s0GIUpY5eYQ=="],
@@ -503,6 +487,22 @@
     "@nodelib/fs.stat": ["@nodelib/fs.stat@2.0.5", "", {}, "sha512-RkhPPp2zrqDAQA/2jNhnztcPAlv64XdhIp7a7454A5ovI7Bukxgt7MX7udwAu3zg1DcpPU0rz3VV1SeaqvY4+A=="],
 
     "@nodelib/fs.walk": ["@nodelib/fs.walk@1.2.8", "", { "dependencies": { "@nodelib/fs.scandir": "2.1.5", "fastq": "^1.6.0" } }, "sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg=="],
+
+    "@open-sunsama/api": ["@open-sunsama/api@workspace:apps/api"],
+
+    "@open-sunsama/api-client": ["@open-sunsama/api-client@workspace:packages/api-client"],
+
+    "@open-sunsama/database": ["@open-sunsama/database@workspace:packages/database"],
+
+    "@open-sunsama/desktop": ["@open-sunsama/desktop@workspace:apps/desktop"],
+
+    "@open-sunsama/mobile": ["@open-sunsama/mobile@workspace:apps/mobile"],
+
+    "@open-sunsama/types": ["@open-sunsama/types@workspace:packages/types"],
+
+    "@open-sunsama/utils": ["@open-sunsama/utils@workspace:packages/utils"],
+
+    "@open-sunsama/web": ["@open-sunsama/web@workspace:apps/web"],
 
     "@radix-ui/number": ["@radix-ui/number@1.1.1", "", {}, "sha512-MkKCwxlXTgz6CFoJx3pCwn07GKp36+aZyu/u2Ln2VrA5DcdyCZkASEDBTd8x5whTQQL5CiYf4prXKLcgQdv29g=="],
 
@@ -1660,10 +1660,6 @@
 
     "@changesets/write/prettier": ["prettier@2.8.8", "", { "bin": { "prettier": "bin-prettier.js" } }, "sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q=="],
 
-    "@chronoflow/web/date-fns": ["date-fns@4.1.0", "", {}, "sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg=="],
-
-    "@chronoflow/web/react": ["react@18.3.1", "", { "dependencies": { "loose-envify": "^1.1.0" } }, "sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ=="],
-
     "@esbuild-kit/core-utils/esbuild": ["esbuild@0.18.20", "", { "optionalDependencies": { "@esbuild/android-arm": "0.18.20", "@esbuild/android-arm64": "0.18.20", "@esbuild/android-x64": "0.18.20", "@esbuild/darwin-arm64": "0.18.20", "@esbuild/darwin-x64": "0.18.20", "@esbuild/freebsd-arm64": "0.18.20", "@esbuild/freebsd-x64": "0.18.20", "@esbuild/linux-arm": "0.18.20", "@esbuild/linux-arm64": "0.18.20", "@esbuild/linux-ia32": "0.18.20", "@esbuild/linux-loong64": "0.18.20", "@esbuild/linux-mips64el": "0.18.20", "@esbuild/linux-ppc64": "0.18.20", "@esbuild/linux-riscv64": "0.18.20", "@esbuild/linux-s390x": "0.18.20", "@esbuild/linux-x64": "0.18.20", "@esbuild/netbsd-x64": "0.18.20", "@esbuild/openbsd-x64": "0.18.20", "@esbuild/sunos-x64": "0.18.20", "@esbuild/win32-arm64": "0.18.20", "@esbuild/win32-ia32": "0.18.20", "@esbuild/win32-x64": "0.18.20" }, "bin": { "esbuild": "bin/esbuild" } }, "sha512-ceqxoedUrcayh7Y7ZX6NdbbDzGROiyVBgC4PriJThBKSVPWnnFHZAkfI1lJT8QFkOwH4qOS2SJkS4wvpGl8BpA=="],
 
     "@eslint-community/eslint-utils/eslint-visitor-keys": ["eslint-visitor-keys@3.4.3", "", {}, "sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag=="],
@@ -1677,6 +1673,10 @@
     "@manypkg/get-packages/@changesets/types": ["@changesets/types@4.1.0", "", {}, "sha512-LDQvVDv5Kb50ny2s25Fhm3d9QSZimsoUGBsUioj6MC3qbMUCuC8GPIvk/M6IvXx3lYhAs0lwWUQLb+VIEUCECw=="],
 
     "@manypkg/get-packages/fs-extra": ["fs-extra@8.1.0", "", { "dependencies": { "graceful-fs": "^4.2.0", "jsonfile": "^4.0.0", "universalify": "^0.1.0" } }, "sha512-yhlQgA6mnOJUKOsRUFsgJdQCvkKhcz8tlZG5HBQfReYZy46OwLcY+Zia0mtdHsOo9y/hP+CxMN0TU9QxoOtG4g=="],
+
+    "@open-sunsama/web/date-fns": ["date-fns@4.1.0", "", {}, "sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg=="],
+
+    "@open-sunsama/web/react": ["react@18.3.1", "", { "dependencies": { "loose-envify": "^1.1.0" } }, "sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ=="],
 
     "@radix-ui/react-arrow/@radix-ui/react-primitive": ["@radix-ui/react-primitive@2.1.3", "", { "dependencies": { "@radix-ui/react-slot": "1.2.3" }, "peerDependencies": { "@types/react": "*", "@types/react-dom": "*", "react": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc", "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc" }, "optionalPeers": ["@types/react", "@types/react-dom"] }, "sha512-m9gTwRkhy2lvCPe6QJp4d3G1TYEUHn/FzJUtq9MjH46an1wJU+GdoGC5VLof8RX8Ft/DlpshApkhswDLZzHIcQ=="],
 

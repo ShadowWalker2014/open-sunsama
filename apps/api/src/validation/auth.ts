@@ -3,7 +3,7 @@
  */
 
 import { z } from 'zod';
-import { emailSchema, passwordSchema } from '@chronoflow/utils';
+import { emailSchema, passwordSchema } from '@open-sunsama/utils';
 
 /**
  * Schema for user registration

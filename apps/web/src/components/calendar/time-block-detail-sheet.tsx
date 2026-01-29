@@ -1,7 +1,7 @@
 import * as React from "react";
 import { format } from "date-fns";
 import { Trash2 } from "lucide-react";
-import type { TimeBlock } from "@chronoflow/types";
+import type { TimeBlock } from "@open-sunsama/types";
 import { useUpdateTimeBlock, useDeleteTimeBlock } from "@/hooks";
 import {
   Button,

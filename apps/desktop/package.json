@@ -1,0 +1,20 @@
+{
+  "name": "@open-sunsama/desktop",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Electron app - placeholder'",
+    "build": "echo 'Electron app - placeholder'",
+    "lint": "echo 'Electron app - placeholder'",
+    "typecheck": "echo 'Electron app - placeholder'",
+    "clean": "rm -rf node_modules .turbo"
+  },
+  "dependencies": {
+    "@open-sunsama/api-client": "workspace:*",
+    "@open-sunsama/types": "workspace:*",
+    "@open-sunsama/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

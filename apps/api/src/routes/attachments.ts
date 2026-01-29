@@ -1,11 +1,11 @@
 /**
- * Attachments routes for Chronoflow API
+ * Attachments routes for Open Sunsama API
  * Handles listing, fetching, and deleting file attachments
  */
 
 import { Hono } from 'hono';
-import { getDb, attachments, eq, and } from '@chronoflow/database';
-import { NotFoundError } from '@chronoflow/utils';
+import { getDb, attachments, eq, and } from '@open-sunsama/database';
+import { NotFoundError } from '@open-sunsama/utils';
 import { auth, type AuthVariables } from '../middleware/auth.js';
 import { deleteFromS3 } from '../lib/s3.js';
 

@@ -1,5 +1,5 @@
 {
-  "name": "@chronoflow/web",
+  "name": "@open-sunsama/web",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -15,9 +15,9 @@
     "clean": "rm -rf dist node_modules .turbo"
   },
   "dependencies": {
-    "@chronoflow/api-client": "workspace:*",
-    "@chronoflow/types": "workspace:*",
-    "@chronoflow/utils": "workspace:*",
+    "@open-sunsama/api-client": "workspace:*",
+    "@open-sunsama/types": "workspace:*",
+    "@open-sunsama/utils": "workspace:*",
     "@dnd-kit/core": "^6.1.0",
     "@dnd-kit/modifiers": "^9.0.0",
     "@dnd-kit/sortable": "^8.0.0",

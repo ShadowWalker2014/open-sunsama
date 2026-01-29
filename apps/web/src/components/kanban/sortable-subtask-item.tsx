@@ -1,31 +1,17 @@
-import * as React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { X, GripVertical, Check } from "lucide-react";
+import type { Subtask } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
 
-export interface Subtask {
-  id: string;
-  title: string;
-  completed: boolean;
-  actualMins?: number | null;
-  plannedMins?: number | null;
-}
+// Re-export for convenience
+export type { Subtask };
 
 interface SortableSubtaskItemProps {
   subtask: Subtask;
   onToggle: () => void;
   onDelete: () => void;
-  showTimeColumns?: boolean;
-}
-
-// Helper to format time display (e.g., "0:10" for 10 minutes)
-function formatTimeColumn(mins: number | null | undefined): string {
-  if (!mins) return "--:--";
-  const hours = Math.floor(mins / 60);
-  const minutes = mins % 60;
-  return `${hours}:${minutes.toString().padStart(2, "0")}`;
 }
 
 /**
@@ -37,7 +23,6 @@ export function SortableSubtaskItem({
   subtask,
   onToggle,
   onDelete,
-  showTimeColumns = false,
 }: SortableSubtaskItemProps) {
   const {
     attributes,
@@ -105,18 +90,6 @@ export function SortableSubtaskItem({
       >
         <X className="h-3 w-3" />
       </Button>
-
-      {/* Time columns for Sunsama-style layout */}
-      {showTimeColumns && (
-        <div className="flex gap-4 text-center shrink-0">
-          <div className="w-14 text-sm font-mono text-muted-foreground">
-            {formatTimeColumn(subtask.actualMins)}
-          </div>
-          <div className="w-14 text-sm font-mono text-muted-foreground">
-            {formatTimeColumn(subtask.plannedMins)}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

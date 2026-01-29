@@ -1,6 +1,6 @@
 /**
- * React Query hooks factory for Chronoflow API
- * @module @chronoflow/api-client/react
+ * React Query hooks factory for Open Sunsama API
+ * @module @open-sunsama/api-client/react
  */
 
 import {
@@ -36,8 +36,8 @@ import type {
   UpdateApiKeyInput,
   ApiKeyFilterInput,
   ApiKeyWithStats,
-} from "@chronoflow/types";
-import type { ChronoflowClient } from "./client.js";
+} from "@open-sunsama/types";
+import type { OpenSunsamaClient } from "./client.js";
 import type { AuthApi } from "./auth.js";
 import type { TasksApi } from "./tasks.js";
 import type { TimeBlocksApi } from "./time-blocks.js";
@@ -94,9 +94,9 @@ export const queryKeys = {
 } as const;
 
 /**
- * React hooks for Chronoflow API
+ * React hooks for Open Sunsama API
  */
-export interface ChronoflowHooks {
+export interface OpenSunsamaHooks {
   // Auth hooks
   useMe: (
     options?: Omit<UseQueryOptions<User, ApiError>, "queryKey" | "queryFn">
@@ -265,11 +265,11 @@ export interface ChronoflowHooks {
 }
 
 /**
- * Create React Query hooks for Chronoflow API
- * @param client The Chronoflow client instance
+ * Create React Query hooks for Open Sunsama API
+ * @param client The Open Sunsama client instance
  * @returns Object containing all hooks
  */
-export function createReactHooks(client: ChronoflowClient): ChronoflowHooks {
+export function createReactHooks(client: OpenSunsamaClient): OpenSunsamaHooks {
   const authApi: AuthApi = createAuthApi(client);
   const tasksApi: TasksApi = createTasksApi(client);
   const timeBlocksApi: TimeBlocksApi = createTimeBlocksApi(client);

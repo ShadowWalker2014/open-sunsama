@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { CreateApiKeyInput, CreateApiKeyResponse } from "@chronoflow/types";
+import type { CreateApiKeyInput, CreateApiKeyResponse } from "@open-sunsama/types";
 import { ApiKeyCreatedView } from "./api-key-created-view";
 import { ApiKeyForm } from "./api-key-form";
 

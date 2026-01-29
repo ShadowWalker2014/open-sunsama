@@ -1,11 +1,11 @@
 /**
- * Chronoflow Shared Types Package
+ * Open Sunsama Shared Types Package
  * 
  * This package contains all shared TypeScript type definitions used across
- * the Chronoflow application, including API types, domain models, and utility types.
+ * the Open Sunsama application, including API types, domain models, and utility types.
  * 
  * @packageDocumentation
- * @module @chronoflow/types
+ * @module @open-sunsama/types
  */
 
 // Common/utility types

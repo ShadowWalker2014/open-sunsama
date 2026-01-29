@@ -1,6 +1,6 @@
 import * as React from "react";
 import { format, isSameDay, setHours, addMinutes } from "date-fns";
-import type { TimeBlock as TimeBlockType } from "@chronoflow/types";
+import type { TimeBlock as TimeBlockType } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui";
 import { TimeBlock, TimeBlockPreview } from "./time-block";

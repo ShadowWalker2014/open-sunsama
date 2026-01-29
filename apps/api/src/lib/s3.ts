@@ -1,5 +1,5 @@
 /**
- * S3 storage utilities for Chronoflow API
+ * S3 storage utilities for Open Sunsama API
  * Implements lazy initialization pattern for Railway compatibility
  */
 

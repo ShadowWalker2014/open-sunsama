@@ -1,13 +1,13 @@
 /**
- * @chronoflow/api-client
- * Typed API client for Chronoflow
+ * @open-sunsama/api-client
+ * Typed API client for Open Sunsama
  *
  * @example
  * ```typescript
- * import { createChronoflowClient } from '@chronoflow/api-client';
+ * import { createOpenSunsamaClient } from '@open-sunsama/api-client';
  *
- * const client = createChronoflowClient({
- *   baseUrl: 'https://api.chronoflow.app/v1',
+ * const client = createOpenSunsamaClient({
+ *   baseUrl: 'https://api.opensunsama.app/v1',
  *   token: 'your-jwt-token',
  * });
  *
@@ -15,18 +15,20 @@
  * const tasks = await client.get<Task[]>('tasks');
  *
  * // Or use the typed API modules
- * import { createTasksApi } from '@chronoflow/api-client';
+ * import { createTasksApi } from '@open-sunsama/api-client';
  * const tasksApi = createTasksApi(client);
  * const tasks = await tasksApi.list({ completed: false });
  * ```
  *
  * @packageDocumentation
- * @module @chronoflow/api-client
+ * @module @open-sunsama/api-client
  */
 
 // Client
 import {
   createApiClient,
+  createOpenSunsamaClient,
+  OpenSunsamaClient,
   createChronoflowClient,
   ChronoflowClient,
   type ApiClientConfig,
@@ -36,6 +38,9 @@ import {
 
 export {
   createApiClient,
+  createOpenSunsamaClient,
+  OpenSunsamaClient,
+  // Legacy aliases for backwards compatibility
   createChronoflowClient,
   ChronoflowClient,
   type ApiClientConfig,
@@ -78,7 +83,7 @@ export type {
   PaginatedResponse,
 } from "./types.js";
 
-// Re-export commonly used types from @chronoflow/types for convenience
+// Re-export commonly used types from @open-sunsama/types for convenience
 export type {
   // User types
   User,
@@ -120,8 +125,8 @@ export type {
   // Notification types
   NotificationPreferences,
   UpdateNotificationPreferencesInput,
-} from "@chronoflow/types";
-export { REMINDER_TIMING_OPTIONS } from "@chronoflow/types";
+} from "@open-sunsama/types";
+export { REMINDER_TIMING_OPTIONS } from "@open-sunsama/types";
 
 /**
  * Create a fully configured API client with all API modules
@@ -129,7 +134,7 @@ export { REMINDER_TIMING_OPTIONS } from "@chronoflow/types";
  * @example
  * ```typescript
  * const api = createApi({
- *   baseUrl: 'https://api.chronoflow.app/v1',
+ *   baseUrl: 'https://api.opensunsama.app/v1',
  *   token: 'your-jwt-token',
  * });
  *
@@ -140,7 +145,7 @@ export { REMINDER_TIMING_OPTIONS } from "@chronoflow/types";
  * ```
  */
 export function createApi(config: ApiClientConfig) {
-  const client = createChronoflowClient(config);
+  const client = createOpenSunsamaClient(config);
 
   return {
     /** The underlying HTTP client */
@@ -169,4 +174,6 @@ export function createApi(config: ApiClientConfig) {
 }
 
 /** Type of the API object returned by createApi */
-export type ChronoflowApi = ReturnType<typeof createApi>;
+export type OpenSunsamaApi = ReturnType<typeof createApi>;
+// Legacy alias
+export type ChronoflowApi = OpenSunsamaApi;

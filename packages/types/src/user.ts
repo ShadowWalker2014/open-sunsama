@@ -1,10 +1,10 @@
 /**
- * User-related type definitions for Chronoflow
- * @module @chronoflow/types/user
+ * User-related type definitions for Open Sunsama
+ * @module @open-sunsama/types/user
  */
 
 /**
- * Represents a user in the Chronoflow system.
+ * Represents a user in the Open Sunsama system.
  * Users are the primary entities that own tasks, time blocks, and API keys.
  */
 export interface User {

@@ -1,7 +1,7 @@
 /**
- * Chronoflow API - Main Entry Point
+ * Open Sunsama API - Main Entry Point
  * 
- * A Hono-based REST API for the Chronoflow time blocking application.
+ * A Hono-based REST API for the Open Sunsama time blocking application.
  * Supports both JWT and API key authentication.
  */
 
@@ -47,7 +47,7 @@ app.get('/health', (c) => {
 // API info endpoint
 app.get('/', (c) => {
   return c.json({
-    name: 'Chronoflow API',
+    name: 'Open Sunsama API',
     version: process.env.npm_package_version || '0.0.0',
     docs: '/docs',
     health: '/health',
@@ -84,7 +84,7 @@ const port = parseInt(process.env.PORT || '3001', 10);
 console.log(`
   ╔═══════════════════════════════════════════════════════════╗
   ║                                                           ║
-  ║   ⏰  Chronoflow API                                       ║
+  ║   ⏰  Open Sunsama API                                     ║
   ║                                                           ║
   ║   Server running at http://localhost:${port}                 ║
   ║                                                           ║

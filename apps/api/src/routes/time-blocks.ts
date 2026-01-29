@@ -1,12 +1,12 @@
 /**
- * Time block routes for Chronoflow API
+ * Time block routes for Open Sunsama API
  * Handles CRUD operations for time blocks
  */
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { getDb, eq, and, asc, timeBlocks, tasks, sql } from '@chronoflow/database';
-import { NotFoundError, uuidSchema } from '@chronoflow/utils';
+import { getDb, eq, and, asc, timeBlocks, tasks, sql } from '@open-sunsama/database';
+import { NotFoundError, uuidSchema } from '@open-sunsama/utils';
 import { auth, requireScopes, type AuthVariables } from '../middleware/auth.js';
 import {
   createTimeBlockSchema, updateTimeBlockSchema, timeBlockFilterSchema, calculateDuration,

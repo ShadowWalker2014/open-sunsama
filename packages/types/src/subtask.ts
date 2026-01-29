@@ -1,10 +1,10 @@
 /**
- * Subtask-related type definitions for Chronoflow
- * @module @chronoflow/types/subtask
+ * Subtask-related type definitions for Open Sunsama
+ * @module @open-sunsama/types/subtask
  */
 
 /**
- * Represents a subtask belonging to a task in the Chronoflow system.
+ * Represents a subtask belonging to a task in the Open Sunsama system.
  * Subtasks are smaller work items that make up a larger task.
  */
 export interface Subtask {

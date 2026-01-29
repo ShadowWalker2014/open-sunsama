@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import type { ApiKey } from "@chronoflow/types";
+import type { ApiKey } from "@open-sunsama/types";
 
 interface ApiKeyCardProps {
   apiKey: ApiKey;

@@ -13,7 +13,7 @@ import {
   Label,
 } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import type { CreateApiKeyInput, ApiKeyScope } from "@chronoflow/types";
+import type { CreateApiKeyInput, ApiKeyScope } from "@open-sunsama/types";
 
 interface FormData {
   name: string;
@@ -97,7 +97,7 @@ export function ApiKeyForm({
         <DialogHeader>
           <DialogTitle>Create API Key</DialogTitle>
           <DialogDescription>
-            Create a new API key to access Chronoflow from external applications
+            Create a new API key to access Open Sunsama from external applications
           </DialogDescription>
         </DialogHeader>
 

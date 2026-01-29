@@ -8,7 +8,7 @@ import {
   Label,
 } from "@/components/ui";
 
-const THEME_STORAGE_KEY = "chronoflow_theme";
+const THEME_STORAGE_KEY = "open_sunsama_theme";
 
 type Theme = "light" | "dark" | "system";
 
@@ -65,7 +65,7 @@ export function AppearanceSettings() {
       <CardHeader>
         <CardTitle>Appearance</CardTitle>
         <CardDescription>
-          Customize how Chronoflow looks on your device
+          Customize how Open Sunsama looks on your device
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

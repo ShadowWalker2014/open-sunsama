@@ -1,7 +1,7 @@
 import * as React from "react";
 import { format } from "date-fns";
 import { ChevronLeft, ChevronRight, CalendarDays, ArrowUpDown, Check } from "lucide-react";
-import type { TaskSortBy } from "@chronoflow/types";
+import type { TaskSortBy } from "@open-sunsama/types";
 import {
   Button,
   DropdownMenu,
@@ -39,7 +39,7 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 ];
 
 // localStorage key for persisting sort preference
-const SORT_STORAGE_KEY = "chronoflow-kanban-sort";
+const SORT_STORAGE_KEY = "open-sunsama-kanban-sort";
 
 interface KanbanBoardToolbarProps {
   firstVisibleDate: Date | null;

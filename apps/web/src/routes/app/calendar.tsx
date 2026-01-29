@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { Task, TimeBlock } from "@chronoflow/types";
+import type { Task, TimeBlock } from "@open-sunsama/types";
 import { CalendarView } from "@/components/calendar";
 import { TaskDetailPanel } from "@/components/kanban/task-detail-panel";
 import { TimeBlockDetailSheet } from "@/components/calendar/time-block-detail-sheet";

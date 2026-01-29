@@ -1,7 +1,7 @@
 import * as React from "react";
 import { format } from "date-fns";
 import { Pencil, Trash2, Sun, Archive } from "lucide-react";
-import type { Task, TaskPriority } from "@chronoflow/types";
+import type { Task, TaskPriority } from "@open-sunsama/types";
 import {
   ContextMenu,
   ContextMenuContent,

@@ -1,4 +1,4 @@
-import type { Task } from "@chronoflow/types";
+import type { Task } from "@open-sunsama/types";
 import type {
   DragStartEvent,
   DragEndEvent,

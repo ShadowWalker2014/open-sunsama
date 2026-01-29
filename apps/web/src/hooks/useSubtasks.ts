@@ -1,28 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
+import type { Subtask } from "@open-sunsama/types";
+import { getApi } from "@/lib/api";
 
-/**
- * Subtask type (to be moved to @chronoflow/types when API is ready)
- */
-export interface Subtask {
-  id: string;
-  taskId: string;
-  title: string;
-  completed: boolean;
-  position: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface CreateSubtaskInput {
-  title: string;
-  completed?: boolean;
-}
-
-export interface UpdateSubtaskInput {
-  title?: string;
-  completed?: boolean;
-  position?: number;
-}
+// Re-export types for convenience
+export type { Subtask };
+export type { CreateSubtaskInput, UpdateSubtaskInput } from "@open-sunsama/types";
 
 /**
  * Query key factory for subtasks
@@ -37,15 +19,13 @@ export const subtaskKeys = {
 
 /**
  * Fetch subtasks for a task
- * NOTE: This hook is prepared for when the subtasks API is implemented.
- * Currently returns empty array as the API doesn't exist yet.
  */
 export function useSubtasks(taskId: string) {
   return useQuery({
     queryKey: subtaskKeys.list(taskId),
     queryFn: async (): Promise<Subtask[]> => {
-      // TODO: Implement when API is ready
-      return [];
+      const api = getApi();
+      return await api.subtasks.list(taskId);
     },
     enabled: !!taskId,
   });

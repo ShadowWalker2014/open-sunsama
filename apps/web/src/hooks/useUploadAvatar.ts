@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { User } from "@chronoflow/types";
+import type { User } from "@open-sunsama/types";
 import { toast } from "@/hooks/use-toast";
 
-const AUTH_USER_KEY = "chronoflow_user";
+const AUTH_USER_KEY = "open_sunsama_user";
 
 interface UploadAvatarResponse {
   success: boolean;
@@ -58,7 +58,7 @@ export function useUploadAvatar() {
       }
 
       // Get token from localStorage
-      const token = localStorage.getItem("chronoflow_token");
+      const token = localStorage.getItem("open_sunsama_token");
       if (!token) {
         throw new Error("Not authenticated");
       }

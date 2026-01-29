@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Check, Trash2, Undo2 } from "lucide-react";
-import type { Task } from "@chronoflow/types";
+import type { Task } from "@open-sunsama/types";
 import {
   useUpdateTask,
   useDeleteTask,

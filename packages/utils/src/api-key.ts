@@ -1,5 +1,5 @@
 /**
- * API key utilities for Chronoflow
+ * API key utilities for Open Sunsama
  */
 
 import { createHash, randomBytes } from 'crypto';

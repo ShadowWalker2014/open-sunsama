@@ -1,5 +1,5 @@
 {
-  "name": "@chronoflow/api",
+  "name": "@open-sunsama/api",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -15,9 +15,11 @@
     "clean": "rm -rf dist node_modules .turbo"
   },
   "dependencies": {
-    "@chronoflow/database": "workspace:*",
-    "@chronoflow/types": "workspace:*",
-    "@chronoflow/utils": "workspace:*",
+    "@aws-sdk/client-s3": "^3.978.0",
+    "@aws-sdk/s3-request-presigner": "^3.978.0",
+    "@open-sunsama/database": "workspace:*",
+    "@open-sunsama/types": "workspace:*",
+    "@open-sunsama/utils": "workspace:*",
     "@hono/node-server": "^1.13.7",
     "@hono/zod-validator": "^0.4.2",
     "bcrypt": "^5.1.1",

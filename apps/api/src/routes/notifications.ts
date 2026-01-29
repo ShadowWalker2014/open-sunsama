@@ -1,13 +1,13 @@
 /**
- * Notification preferences routes for Chronoflow API
+ * Notification preferences routes for Open Sunsama API
  * Handles getting and updating notification settings
  */
 
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { getDb, eq, notificationPreferences } from '@chronoflow/database';
-import type { NotificationPreferences, UpdateNotificationPreferencesInput } from '@chronoflow/types';
+import { getDb, eq, notificationPreferences } from '@open-sunsama/database';
+import type { NotificationPreferences, UpdateNotificationPreferencesInput } from '@open-sunsama/types';
 import { auth, type AuthVariables } from '../middleware/auth.js';
 
 const notificationsRouter = new Hono<{ Variables: AuthVariables }>();

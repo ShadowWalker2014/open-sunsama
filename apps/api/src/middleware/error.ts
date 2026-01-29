@@ -1,9 +1,9 @@
 /**
- * Global error handling middleware for Chronoflow API
+ * Global error handling middleware for Open Sunsama API
  */
 
 import type { Context, ErrorHandler } from 'hono';
-import { isAppError, ValidationError } from '@chronoflow/utils';
+import { isAppError, ValidationError } from '@open-sunsama/utils';
 import { ZodError } from 'zod';
 
 /**

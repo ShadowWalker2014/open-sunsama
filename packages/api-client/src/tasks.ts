@@ -1,6 +1,6 @@
 /**
  * Tasks API methods
- * @module @chronoflow/api-client/tasks
+ * @module @open-sunsama/api-client/tasks
  */
 
 import type {
@@ -10,8 +10,8 @@ import type {
   ReorderTasksInput,
   TaskFilterInput,
   TaskStats,
-} from "@chronoflow/types";
-import type { ChronoflowClient, RequestOptions } from "./client.js";
+} from "@open-sunsama/types";
+import type { OpenSunsamaClient, RequestOptions } from "./client.js";
 
 /**
  * Tasks API interface
@@ -142,10 +142,10 @@ interface ApiResponseWrapper<T> {
 
 /**
  * Create tasks API methods bound to a client
- * @param client The Chronoflow client instance
+ * @param client The Open Sunsama client instance
  * @returns Tasks API methods
  */
-export function createTasksApi(client: ChronoflowClient): TasksApi {
+export function createTasksApi(client: OpenSunsamaClient): TasksApi {
   return {
     async list(
       filters?: TaskFilterInput,

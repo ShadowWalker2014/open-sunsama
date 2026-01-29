@@ -20,12 +20,12 @@ export function AuthLayout({ children, className }: AuthLayoutProps) {
           <div className="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
             <Calendar className="h-4 w-4" />
           </div>
-          Chronoflow
+          Open Sunsama
         </div>
         <div className="relative z-20 mt-auto">
           <blockquote className="space-y-2">
             <p className="text-lg">
-              &ldquo;Time blocking has transformed how I work. Chronoflow makes
+              &ldquo;Time blocking has transformed how I work. Open Sunsama makes
               it effortless to visualize my day and stay focused on what
               matters.&rdquo;
             </p>

@@ -1,14 +1,14 @@
 /**
- * API key routes for Chronoflow API
+ * API key routes for Open Sunsama API
  * Handles CRUD operations for API keys
  */
 
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { getDb, eq, and, apiKeys } from '@chronoflow/database';
-import { NotFoundError, uuidSchema, generateApiKey } from '@chronoflow/utils';
-import type { CreateApiKeyResponse } from '@chronoflow/types';
+import { getDb, eq, and, apiKeys } from '@open-sunsama/database';
+import { NotFoundError, uuidSchema, generateApiKey } from '@open-sunsama/utils';
+import type { CreateApiKeyResponse } from '@open-sunsama/types';
 import { auth, type AuthVariables } from '../middleware/auth.js';
 import { createApiKeySchema, updateApiKeySchema } from '../validation/api-keys.js';
 

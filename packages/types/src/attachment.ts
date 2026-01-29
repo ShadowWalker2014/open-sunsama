@@ -1,10 +1,10 @@
 /**
- * Attachment-related type definitions for Chronoflow
- * @module @chronoflow/types/attachment
+ * Attachment-related type definitions for Open Sunsama
+ * @module @open-sunsama/types/attachment
  */
 
 /**
- * Represents a file attachment in the Chronoflow system.
+ * Represents a file attachment in the Open Sunsama system.
  * Attachments can be associated with tasks or standalone.
  */
 export interface Attachment {

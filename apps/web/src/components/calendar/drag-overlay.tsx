@@ -1,7 +1,7 @@
 import * as React from "react";
 import { format } from "date-fns";
 import { Clock, Calendar } from "lucide-react";
-import type { Task, TimeBlock } from "@chronoflow/types";
+import type { Task, TimeBlock } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/utils";
 import type { DragState, DropPreview } from "@/hooks/useCalendarDnd";
