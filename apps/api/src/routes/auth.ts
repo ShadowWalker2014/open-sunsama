@@ -6,10 +6,13 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
+import crypto from 'crypto';
 import { getDb, eq, users } from '@chronoflow/database';
 import {
   AuthenticationError,
   ConflictError,
+  NotFoundError,
+  ValidationError,
   emailSchema,
   passwordSchema,
 } from '@chronoflow/utils';
@@ -36,6 +39,20 @@ const updateProfileSchema = z.object({
   name: z.string().min(1).max(255).optional().nullable(),
   avatarUrl: z.string().url().max(500).optional().nullable(),
   timezone: z.string().max(50).optional(),
+});
+
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: passwordSchema,
+});
+
+const requestPasswordResetSchema = z.object({
+  email: emailSchema,
+});
+
+const resetPasswordSchema = z.object({
+  token: z.string().min(1, 'Reset token is required'),
+  newPassword: passwordSchema,
 });
 
 /**
@@ -210,6 +227,156 @@ authRouter.patch('/me', auth, zValidator('json', updateProfileSchema), async (c)
   return c.json({
     success: true,
     data: formatUser(updatedUser),
+  });
+});
+
+/**
+ * POST /auth/change-password
+ * Change the current user's password
+ */
+authRouter.post('/change-password', auth, zValidator('json', changePasswordSchema), async (c) => {
+  const userId = c.get('userId');
+  const { currentPassword, newPassword } = c.req.valid('json');
+  const db = getDb();
+
+  // Get user with password hash
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (!user) {
+    throw new AuthenticationError('User not found');
+  }
+
+  // Verify current password
+  const isValid = await comparePassword(currentPassword, user.passwordHash);
+  if (!isValid) {
+    throw new ValidationError('Current password is incorrect', {
+      currentPassword: ['Current password is incorrect'],
+    });
+  }
+
+  // Hash new password and update
+  const newPasswordHash = await hashPassword(newPassword);
+
+  await db
+    .update(users)
+    .set({
+      passwordHash: newPasswordHash,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, userId));
+
+  return c.json({
+    success: true,
+    message: 'Password changed successfully',
+  });
+});
+
+/**
+ * POST /auth/request-password-reset
+ * Request a password reset email
+ * Always returns success to prevent email enumeration
+ */
+authRouter.post('/request-password-reset', zValidator('json', requestPasswordResetSchema), async (c) => {
+  const { email } = c.req.valid('json');
+  const db = getDb();
+
+  // Find user by email
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, email))
+    .limit(1);
+
+  if (user) {
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenHash = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+    
+    // Token expires in 1 hour
+    const expires = new Date(Date.now() + 60 * 60 * 1000);
+
+    // Save token to database
+    await db
+      .update(users)
+      .set({
+        passwordResetToken: resetTokenHash,
+        passwordResetExpires: expires,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, user.id));
+
+    // In production, send email here
+    // For now, we'll just log the token (for development/testing)
+    console.log(`[Password Reset] Token for ${email}: ${resetToken}`);
+    
+    // TODO: Implement email sending
+    // await sendPasswordResetEmail(user.email, resetToken);
+  }
+
+  // Always return success to prevent email enumeration
+  return c.json({
+    success: true,
+    message: 'If an account exists with that email, a password reset link has been sent.',
+  });
+});
+
+/**
+ * POST /auth/reset-password
+ * Reset password using a valid reset token
+ */
+authRouter.post('/reset-password', zValidator('json', resetPasswordSchema), async (c) => {
+  const { token, newPassword } = c.req.valid('json');
+  const db = getDb();
+
+  // Hash the provided token
+  const tokenHash = crypto
+    .createHash('sha256')
+    .update(token)
+    .digest('hex');
+
+  // Find user with valid reset token
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.passwordResetToken, tokenHash))
+    .limit(1);
+
+  if (!user) {
+    throw new ValidationError('Invalid or expired reset token', {
+      token: ['Invalid or expired reset token'],
+    });
+  }
+
+  // Check if token has expired
+  if (!user.passwordResetExpires || user.passwordResetExpires < new Date()) {
+    throw new ValidationError('Reset token has expired', {
+      token: ['Reset token has expired. Please request a new one.'],
+    });
+  }
+
+  // Hash new password and update
+  const newPasswordHash = await hashPassword(newPassword);
+
+  await db
+    .update(users)
+    .set({
+      passwordHash: newPasswordHash,
+      passwordResetToken: null,
+      passwordResetExpires: null,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, user.id));
+
+  return c.json({
+    success: true,
+    message: 'Password has been reset successfully. You can now log in with your new password.',
   });
 });
 

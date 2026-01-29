@@ -22,7 +22,19 @@ import {
   AvatarImage,
 } from "@/components/ui";
 import { toast } from "@/hooks/use-toast";
-import { ApiKeysSettings, PasswordSettings } from "@/components/settings";
+import {
+  ApiKeysSettings,
+  PasswordSettings,
+  TaskReminderDialog,
+  EmailNotificationsDialog,
+} from "@/components/settings";
+import {
+  useNotificationPreferences,
+  useUpdateNotificationPreferences,
+  requestNotificationPermission,
+  getNotificationPermissionStatus,
+} from "@/hooks/useNotificationPreferences";
+import { Switch, Skeleton } from "@/components/ui";
 
 /**
  * Settings page with multiple sections

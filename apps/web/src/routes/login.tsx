@@ -1,6 +1,6 @@
-// @ts-nocheck - Route typing handled by TanStack Router
+// @ts-nocheck
 import * as React from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useNavigate, Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,7 +13,7 @@ interface LoginForm {
   password: string;
 }
 
-function LoginPage() {
+export default function LoginPage() {
   const navigate = useNavigate();
   const { login, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = React.useState(false);
@@ -82,12 +82,12 @@ function LoginPage() {
         <div className="grid gap-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password">Password</Label>
-            <a
-              href="#"
+            <Link
+              to="/forgot-password"
               className="text-sm text-muted-foreground underline-offset-4 hover:underline"
             >
               Forgot password?
-            </a>
+            </Link>
           </div>
           <Input
             id="password"
@@ -131,17 +131,15 @@ function LoginPage() {
 
       <AuthFooter>
         Don&apos;t have an account?{" "}
-        <a
-          href="/register"
+        <Link
+          to="/register"
           className="underline underline-offset-4 hover:text-primary"
         >
           Sign up
-        </a>
+        </Link>
       </AuthFooter>
     </AuthLayout>
   );
 }
 
-export const Route = createFileRoute("/login")({
-  component: LoginPage,
-});
+// Component exported as default above

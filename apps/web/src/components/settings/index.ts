@@ -3,3 +3,6 @@ export { ApiKeysSettings } from "./api-keys-settings";
 export { ApiKeyCard } from "./api-key-card";
 export { CreateApiKeyDialog } from "./create-api-key-dialog";
 export { RevokeKeyDialog } from "./revoke-key-dialog";
+export { PasswordSettings } from "./password-settings";
+export { TaskReminderDialog } from "./task-reminder-dialog";
+export { EmailNotificationsDialog } from "./email-notifications-dialog";

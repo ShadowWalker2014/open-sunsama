@@ -1,5 +1,5 @@
 import * as React from "react";
-import { format, isSameDay, setHours } from "date-fns";
+import { format, isSameDay, setHours, setMinutes, addMinutes } from "date-fns";
 import type { TimeBlock as TimeBlockType } from "@chronoflow/types";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui";
@@ -8,7 +8,10 @@ import {
   HOUR_HEIGHT,
   TIMELINE_START_HOUR,
   TIMELINE_END_HOUR,
+  SNAP_INTERVAL,
   calculateYFromTime,
+  calculateTimeFromY,
+  snapToInterval,
   type DropPreview,
   type DragState,
 } from "@/hooks/useCalendarDnd";
@@ -26,6 +29,7 @@ interface TimelineProps {
   onTimelineMouseMove?: (e: React.MouseEvent) => void;
   onTimelineMouseUp?: () => void;
   onTimelineMouseLeave?: () => void;
+  onTimeSlotClick?: (startTime: Date, endTime: Date) => void;
   className?: string;
 }
 
@@ -55,6 +59,7 @@ export function Timeline({
   onTimelineMouseMove,
   onTimelineMouseUp,
   onTimelineMouseLeave,
+  onTimeSlotClick,
   className,
 }: TimelineProps) {
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
@@ -89,10 +94,43 @@ export function Timeline({
     );
   }, [timeBlocks, date]);
 
+  // Handle click on empty time slot
+  const handleTimeSlotClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Don't trigger if clicking on a time block
+    if ((e.target as HTMLElement).closest('[data-time-block]')) {
+      return;
+    }
+
+    // Don't trigger during drag operations
+    if (dragState) {
+      return;
+    }
+
+    if (!onTimeSlotClick) return;
+
+    // Get the timeline content container for accurate positioning
+    const container = e.currentTarget;
+    const rect = container.getBoundingClientRect();
+    
+    // Get scroll position from the ScrollArea viewport
+    const viewport = container.querySelector('[data-radix-scroll-area-viewport]');
+    const scrollTop = viewport?.scrollTop ?? 0;
+    
+    // Calculate Y relative to the timeline content (accounting for scroll)
+    const relativeY = e.clientY - rect.top + scrollTop;
+    
+    // Calculate time from Y position
+    const clickedTime = calculateTimeFromY(relativeY, date);
+    const snappedStartTime = snapToInterval(clickedTime, SNAP_INTERVAL);
+    const snappedEndTime = addMinutes(snappedStartTime, 60); // Default 1 hour duration
+
+    onTimeSlotClick(snappedStartTime, snappedEndTime);
+  };
+
   return (
     <div className={cn("flex flex-1 overflow-hidden", className)}>
-      {/* Time Labels Column */}
-      <div className="w-16 flex-shrink-0 border-r bg-muted/30">
+      {/* Time Labels Column - Narrower on mobile */}
+      <div className="w-12 sm:w-16 flex-shrink-0 border-r bg-muted/30">
         <ScrollArea className="h-full" ref={scrollAreaRef}>
           <div className="relative">
             {hours.map((hour) => (
@@ -101,8 +139,8 @@ export function Timeline({
                 className="relative border-b border-border/50"
                 style={{ height: HOUR_HEIGHT }}
               >
-                <span className="absolute -top-2 right-2 text-xs text-muted-foreground font-medium">
-                  {format(setHours(date, hour), "h a")}
+                <span className="absolute -top-2 right-1 sm:right-2 text-[10px] sm:text-xs text-muted-foreground font-medium">
+                  {format(setHours(date, hour), "ha").toLowerCase()}
                 </span>
               </div>
             ))}
@@ -110,16 +148,18 @@ export function Timeline({
         </ScrollArea>
       </div>
 
-      {/* Timeline Content */}
+      {/* Timeline Content - Touch-friendly */}
       <div
         ref={timelineRef}
         className={cn(
-          "relative flex-1 overflow-hidden",
+          "relative flex-1 overflow-hidden cursor-pointer",
+          "touch-pan-y", // Enable smooth touch scrolling
           isToday && "bg-accent/5"
         )}
         onMouseMove={onTimelineMouseMove}
         onMouseUp={onTimelineMouseUp}
         onMouseLeave={onTimelineMouseLeave}
+        onClick={handleTimeSlotClick}
       >
         <ScrollArea className="h-full">
           <div className="relative" style={{ minHeight: hours.length * HOUR_HEIGHT }}>

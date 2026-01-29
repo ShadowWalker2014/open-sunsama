@@ -88,6 +88,7 @@ export function TimeBlock({
 
   return (
     <div
+      data-time-block
       className={cn(
         "absolute left-1 right-1 z-10 rounded-md border-l-4 shadow-sm transition-all select-none",
         "hover:shadow-md hover:z-20",
@@ -108,10 +109,14 @@ export function TimeBlock({
       tabIndex={0}
       aria-label={`Time block: ${block.title} from ${format(startTime, "h:mm a")} to ${format(endTime, "h:mm a")}`}
     >
-      {/* Top resize handle */}
+      {/* Top resize handle - Larger touch target on mobile */}
       <div
         data-resize="top"
-        className="absolute top-0 left-0 right-0 h-2 cursor-ns-resize hover:bg-black/10 rounded-t-sm"
+        className={cn(
+          "absolute top-0 left-0 right-0 cursor-ns-resize hover:bg-black/10 rounded-t-sm",
+          "h-3 sm:h-2", // Larger on mobile for touch
+          "-mt-1 sm:mt-0" // Extend beyond block for easier touch
+        )}
         onMouseDown={handleTopResize}
       />
 
@@ -144,10 +149,14 @@ export function TimeBlock({
         )}
       </div>
 
-      {/* Bottom resize handle */}
+      {/* Bottom resize handle - Larger touch target on mobile */}
       <div
         data-resize="bottom"
-        className="absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize hover:bg-black/10 rounded-b-sm"
+        className={cn(
+          "absolute bottom-0 left-0 right-0 cursor-ns-resize hover:bg-black/10 rounded-b-sm",
+          "h-3 sm:h-2", // Larger on mobile for touch
+          "-mb-1 sm:mb-0" // Extend beyond block for easier touch
+        )}
         onMouseDown={handleBottomResize}
       />
     </div>
