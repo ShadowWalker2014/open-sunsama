@@ -1,0 +1,57 @@
+{
+  "name": "@chronoflow/utils",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./date": {
+      "import": "./dist/date.js",
+      "types": "./dist/date.d.ts"
+    },
+    "./validation": {
+      "import": "./dist/validation.js",
+      "types": "./dist/validation.d.ts"
+    },
+    "./errors": {
+      "import": "./dist/errors.js",
+      "types": "./dist/errors.d.ts"
+    },
+    "./api-key": {
+      "import": "./dist/api-key.js",
+      "types": "./dist/api-key.d.ts"
+    },
+    "./constants": {
+      "import": "./dist/constants.js",
+      "types": "./dist/constants.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "date-fns": "^3.6.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.0.0"
+  }
+}
