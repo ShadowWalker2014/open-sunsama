@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@chronoflow/database": ["../../packages/database/src/index.ts"],
+      "@chronoflow/database/*": ["../../packages/database/src/*"],
+      "@chronoflow/types": ["../../packages/types/src/index.ts"],
+      "@chronoflow/types/*": ["../../packages/types/src/*"],
+      "@chronoflow/utils": ["../../packages/utils/src/index.ts"],
+      "@chronoflow/utils/*": ["../../packages/utils/src/*"],
+      "@chronoflow/api-client": ["../../packages/api-client/src/index.ts"],
+      "@chronoflow/api-client/*": ["../../packages/api-client/src/*"]
+    },
+    "types": ["vite/client"]
+  },
+  "include": ["src/**/*", "vite.config.ts"],
+  "exclude": ["node_modules", "dist"]
+}
