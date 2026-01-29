@@ -56,3 +56,12 @@ export {
   type DragState,
   type DropPreview,
 } from "./useCalendarDnd";
+export {
+  useNotificationPreferences,
+  useUpdateNotificationPreferences,
+  requestNotificationPermission,
+  getNotificationPermissionStatus,
+  notificationPreferencesKeys,
+  type NotificationPreferences,
+  type UpdateNotificationPreferencesInput,
+} from "./useNotificationPreferences";

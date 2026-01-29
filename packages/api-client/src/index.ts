@@ -62,6 +62,10 @@ export { createTimeBlocksApi, type TimeBlocksApi };
 import { createApiKeysApi, type ApiKeysApi } from "./api-keys.js";
 export { createApiKeysApi, type ApiKeysApi };
 
+// Notifications API
+import { createNotificationsApi, type NotificationsApi } from "./notifications.js";
+export { createNotificationsApi, type NotificationsApi };
+
 // Types
 export type {
   FetchFn,
@@ -102,7 +106,11 @@ export type {
   UpdateApiKeyInput,
   ApiKeyFilterInput,
   ApiKeyWithStats,
+  // Notification types
+  NotificationPreferences,
+  UpdateNotificationPreferencesInput,
 } from "@chronoflow/types";
+export { REMINDER_TIMING_OPTIONS } from "@chronoflow/types";
 
 /**
  * Create a fully configured API client with all API modules
@@ -134,6 +142,8 @@ export function createApi(config: ApiClientConfig) {
     timeBlocks: createTimeBlocksApi(client),
     /** API keys API methods */
     apiKeys: createApiKeysApi(client),
+    /** Notifications API methods */
+    notifications: createNotificationsApi(client),
     /**
      * Update the authentication token
      */

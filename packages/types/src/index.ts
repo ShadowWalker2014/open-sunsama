@@ -100,3 +100,12 @@ export type {
   ApiResponse,
   ApiMeta,
 } from './api.js';
+
+// Notification types
+export type {
+  NotificationPreferences,
+  UpdateNotificationPreferencesInput,
+  NotificationPreferencesResponse,
+  ReminderTimingOption,
+} from './notification.js';
+export { REMINDER_TIMING_OPTIONS } from './notification.js';

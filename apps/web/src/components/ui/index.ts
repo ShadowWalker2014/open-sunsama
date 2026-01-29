@@ -70,3 +70,14 @@ export { Separator } from "./separator";
 export { Tabs, TabsList, TabsTrigger, TabsContent } from "./tabs";
 export { Label } from "./label";
 export { Badge, badgeVariants } from "./badge";
+export { Switch } from "./switch";
+export {
+  Select,
+  SelectGroup,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectLabel,
+  SelectItem,
+  SelectSeparator,
+} from "./select";

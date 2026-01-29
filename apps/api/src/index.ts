@@ -15,6 +15,7 @@ import { authRouter } from './routes/auth.js';
 import { tasksRouter } from './routes/tasks.js';
 import { timeBlocksRouter } from './routes/time-blocks.js';
 import { apiKeysRouter } from './routes/api-keys.js';
+import { notificationsRouter } from './routes/notifications.js';
 
 // Create Hono app
 const app = new Hono();
@@ -51,6 +52,7 @@ app.get('/', (c) => {
       tasks: '/tasks',
       timeBlocks: '/time-blocks',
       apiKeys: '/api-keys',
+      notifications: '/notifications',
     },
   });
 });
@@ -60,6 +62,7 @@ app.route('/auth', authRouter);
 app.route('/tasks', tasksRouter);
 app.route('/time-blocks', timeBlocksRouter);
 app.route('/api-keys', apiKeysRouter);
+app.route('/notifications', notificationsRouter);
 
 // Error handling
 app.onError(errorHandler);
@@ -82,6 +85,7 @@ console.log(`
   ║   - *    /tasks/*    Task management                      ║
   ║   - *    /time-blocks/*  Time block management            ║
   ║   - *    /api-keys/* API key management                   ║
+  ║   - *    /notifications/* Notification settings           ║
   ║                                                           ║
   ╚═══════════════════════════════════════════════════════════╝
 `);
