@@ -1,7 +1,13 @@
 {
-  "name": "chronoflow",
+  "name": "open-sunsama",
+  "description": "Open-source, AI agent friendly Sunsama alternative with direct API access",
   "version": "0.0.0",
   "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/open-sunsama.git"
+  },
   "packageManager": "bun@1.2.21",
   "workspaces": [
     "apps/*",
@@ -18,10 +24,10 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
     "clean": "turbo run clean && rm -rf node_modules",
-    "db:generate": "turbo run db:generate --filter=@chronoflow/database",
-    "db:migrate": "turbo run db:migrate --filter=@chronoflow/database",
-    "db:push": "turbo run db:push --filter=@chronoflow/database",
-    "db:studio": "turbo run db:studio --filter=@chronoflow/database"
+    "db:generate": "turbo run db:generate --filter=@open-sunsama/database",
+    "db:migrate": "turbo run db:migrate --filter=@open-sunsama/database",
+    "db:push": "turbo run db:push --filter=@open-sunsama/database",
+    "db:studio": "turbo run db:studio --filter=@open-sunsama/database"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.10",
