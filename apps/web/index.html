@@ -7,6 +7,14 @@
     <meta name="description" content="Chronoflow - Time-block your day with visual task management" />
     <meta name="theme-color" content="#0f172a" />
     <title>Chronoflow</title>
+    <script>
+      // Apply theme before page renders to prevent flash
+      (function() {
+        var theme = localStorage.getItem('chronoflow_theme') || 'dark';
+        var isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', isDark);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

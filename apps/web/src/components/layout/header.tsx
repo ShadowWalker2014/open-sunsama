@@ -27,22 +27,61 @@ interface HeaderProps {
   className?: string;
 }
 
+const THEME_STORAGE_KEY = "chronoflow_theme";
+
+type Theme = "light" | "dark" | "system";
+
+function getStoredTheme(): Theme {
+  if (typeof window === "undefined") return "dark";
+  const stored = localStorage.getItem(THEME_STORAGE_KEY);
+  if (stored === "light" || stored === "dark" || stored === "system") {
+    return stored;
+  }
+  return "dark";
+}
+
+function applyTheme(theme: Theme) {
+  const isDark =
+    theme === "dark" ||
+    (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  
+  if (isDark) {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+}
+
 export function Header({ className }: HeaderProps) {
   const { user, logout } = useAuth();
-  const [isDark, setIsDark] = React.useState(() => {
-    if (typeof window === "undefined") return true;
-    return document.documentElement.classList.contains("dark");
-  });
+  const [theme, setTheme] = React.useState<Theme>(getStoredTheme);
+
+  // Apply theme on mount and when it changes
+  React.useEffect(() => {
+    applyTheme(theme);
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
+
+  // Listen for system theme changes when in "system" mode
+  React.useEffect(() => {
+    if (theme !== "system") return;
+    
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = () => applyTheme("system");
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, [theme]);
+
+  const isDark = React.useMemo(() => {
+    if (theme === "system") {
+      return typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
+    return theme === "dark";
+  }, [theme]);
 
   const toggleTheme = React.useCallback(() => {
-    const newIsDark = !isDark;
-    setIsDark(newIsDark);
-    if (newIsDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [isDark]);
+    setTheme((prev) => (prev === "dark" || prev === "system" ? "light" : "dark"));
+  }, []);
 
   const userInitials = React.useMemo(() => {
     if (!user?.name) return user?.email?.charAt(0).toUpperCase() ?? "U";

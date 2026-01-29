@@ -1,8 +1,7 @@
-// @ts-nocheck - Route typing handled by TanStack Router
+// @ts-nocheck
 import * as React from "react";
-import { createFileRoute } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
-import { Loader2, User, Bell, Palette, Key } from "lucide-react";
+import { Loader2, User, Bell, Palette, Key, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import {
   Button,
@@ -23,12 +22,12 @@ import {
   AvatarImage,
 } from "@/components/ui";
 import { toast } from "@/hooks/use-toast";
-import { ApiKeysSettings } from "@/components/settings";
+import { ApiKeysSettings, PasswordSettings } from "@/components/settings";
 
 /**
  * Settings page with multiple sections
  */
-function SettingsPage() {
+export default function SettingsPage() {
   return (
     <div className="container max-w-4xl py-6">
       <div className="space-y-6">
@@ -40,10 +39,14 @@ function SettingsPage() {
         </div>
 
         <Tabs defaultValue="profile" className="space-y-4">
-          <TabsList>
+          <TabsList className="flex-wrap h-auto gap-1">
             <TabsTrigger value="profile" className="gap-2">
               <User className="h-4 w-4" />
               Profile
+            </TabsTrigger>
+            <TabsTrigger value="security" className="gap-2">
+              <Lock className="h-4 w-4" />
+              Security
             </TabsTrigger>
             <TabsTrigger value="appearance" className="gap-2">
               <Palette className="h-4 w-4" />
@@ -61,6 +64,10 @@ function SettingsPage() {
 
           <TabsContent value="profile">
             <ProfileSettings />
+          </TabsContent>
+
+          <TabsContent value="security">
+            <PasswordSettings />
           </TabsContent>
 
           <TabsContent value="appearance">
@@ -222,16 +229,52 @@ function ProfileSettings() {
   );
 }
 
+const THEME_STORAGE_KEY = "chronoflow_theme";
+
+type Theme = "light" | "dark" | "system";
+
+function getStoredTheme(): Theme {
+  if (typeof window === "undefined") return "dark";
+  const stored = localStorage.getItem(THEME_STORAGE_KEY);
+  if (stored === "light" || stored === "dark" || stored === "system") {
+    return stored;
+  }
+  return "dark";
+}
+
+function applyTheme(theme: Theme) {
+  const isDark =
+    theme === "dark" ||
+    (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  
+  if (isDark) {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+}
+
 function AppearanceSettings() {
-  const [theme, setTheme] = React.useState<"light" | "dark" | "system">("dark");
+  const [theme, setTheme] = React.useState<Theme>(getStoredTheme);
+
+  // Apply theme on mount and when it changes
+  React.useEffect(() => {
+    applyTheme(theme);
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
+
+  // Listen for system theme changes when in "system" mode
+  React.useEffect(() => {
+    if (theme !== "system") return;
+    
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = () => applyTheme("system");
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, [theme]);
 
   const handleThemeChange = (value: string) => {
-    setTheme(value as "light" | "dark" | "system");
-    if (value === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    setTheme(value as Theme);
   };
 
   return (
@@ -326,6 +369,4 @@ function NotificationSettings() {
   );
 }
 
-export const Route = createFileRoute("/app/settings")({
-  component: SettingsPage,
-});
+// Component exported as default above
