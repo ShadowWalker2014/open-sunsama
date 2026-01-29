@@ -36,6 +36,61 @@ function formatDateForApi(time: Date | string): string {
   return `${year}-${month}-${day}`;
 }
 
+/**
+ * Raw time block from API (with date and time as separate strings)
+ */
+interface RawTimeBlock {
+  id: string;
+  userId: string;
+  taskId: string | null;
+  title: string;
+  description?: string | null;
+  date: string; // YYYY-MM-DD
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  durationMins: number;
+  color: string | null;
+  position: number;
+  createdAt: string;
+  updatedAt: string;
+  task?: unknown;
+}
+
+/**
+ * Transform raw API response to TimeBlock with proper Date fields
+ * Combines date + startTime/endTime into full ISO datetime strings
+ */
+function transformTimeBlock(raw: RawTimeBlock): TimeBlock {
+  // Combine date (YYYY-MM-DD) with time (HH:mm) to create full datetime
+  // Use local time interpretation (not UTC)
+  const startDateTime = `${raw.date}T${raw.startTime}:00`;
+  const endDateTime = `${raw.date}T${raw.endTime}:00`;
+  
+  return {
+    id: raw.id,
+    userId: raw.userId,
+    taskId: raw.taskId,
+    title: raw.title,
+    startTime: new Date(startDateTime),
+    endTime: new Date(endDateTime),
+    color: raw.color,
+    notes: raw.description ?? null,
+    createdAt: new Date(raw.createdAt),
+    updatedAt: new Date(raw.updatedAt),
+  };
+}
+
+/**
+ * Transform raw API response to TimeBlockWithTask
+ */
+function transformTimeBlockWithTask(raw: RawTimeBlock & { task?: unknown }): TimeBlockWithTask {
+  const timeBlock = transformTimeBlock(raw);
+  return {
+    ...timeBlock,
+    task: (raw.task as TimeBlockWithTask['task']) ?? null,
+  };
+}
+
 // API response wrapper type
 interface ApiResponseWrapper<T> {
   success: boolean;
@@ -84,20 +139,20 @@ export function createTimeBlocksApi(client: ChronoflowClient): TimeBlocksApi {
   return {
     async list(filters?: TimeBlockFilterInput, options?: RequestOptions): Promise<TimeBlock[]> {
       const searchParams = filtersToSearchParams(filters);
-      const response = await client.get<ApiResponseWrapper<TimeBlock[]>>("time-blocks", {
+      const response = await client.get<ApiResponseWrapper<RawTimeBlock[]>>("time-blocks", {
         ...options,
         searchParams: { ...options?.searchParams, ...searchParams },
       });
-      return response.data;
+      return response.data.map(transformTimeBlock);
     },
 
     async listWithTasks(filters?: TimeBlockFilterInput, options?: RequestOptions): Promise<TimeBlockWithTask[]> {
       const searchParams = filtersToSearchParams(filters);
-      const response = await client.get<ApiResponseWrapper<TimeBlockWithTask[]>>("time-blocks", {
+      const response = await client.get<ApiResponseWrapper<RawTimeBlock[]>>("time-blocks", {
         ...options,
         searchParams: { ...options?.searchParams, ...searchParams, includeTasks: true },
       });
-      return response.data;
+      return response.data.map(transformTimeBlockWithTask);
     },
 
     async create(input: CreateTimeBlockInput, options?: RequestOptions): Promise<TimeBlock> {
@@ -108,21 +163,21 @@ export function createTimeBlocksApi(client: ChronoflowClient): TimeBlocksApi {
         startTime: formatTimeForApi(input.startTime),
         endTime: formatTimeForApi(input.endTime),
       };
-      const response = await client.post<ApiResponseWrapper<TimeBlock>>("time-blocks", payload, options);
-      return response.data;
+      const response = await client.post<ApiResponseWrapper<RawTimeBlock>>("time-blocks", payload, options);
+      return transformTimeBlock(response.data);
     },
 
     async get(id: string, options?: RequestOptions): Promise<TimeBlock> {
-      const response = await client.get<ApiResponseWrapper<TimeBlock>>(`time-blocks/${id}`, options);
-      return response.data;
+      const response = await client.get<ApiResponseWrapper<RawTimeBlock>>(`time-blocks/${id}`, options);
+      return transformTimeBlock(response.data);
     },
 
     async getWithTask(id: string, options?: RequestOptions): Promise<TimeBlockWithTask> {
-      const response = await client.get<ApiResponseWrapper<TimeBlockWithTask>>(`time-blocks/${id}`, {
+      const response = await client.get<ApiResponseWrapper<RawTimeBlock>>(`time-blocks/${id}`, {
         ...options,
         searchParams: { ...options?.searchParams, includeTask: true },
       });
-      return response.data;
+      return transformTimeBlockWithTask(response.data);
     },
 
     async update(id: string, input: UpdateTimeBlockInput, options?: RequestOptions): Promise<TimeBlock> {
@@ -140,8 +195,8 @@ export function createTimeBlocksApi(client: ChronoflowClient): TimeBlocksApi {
         payload.endTime = formatTimeForApi(input.endTime);
       }
       
-      const response = await client.patch<ApiResponseWrapper<TimeBlock>>(`time-blocks/${id}`, payload, options);
-      return response.data;
+      const response = await client.patch<ApiResponseWrapper<RawTimeBlock>>(`time-blocks/${id}`, payload, options);
+      return transformTimeBlock(response.data);
     },
 
     async delete(id: string, options?: RequestOptions): Promise<void> {
@@ -155,8 +210,8 @@ export function createTimeBlocksApi(client: ChronoflowClient): TimeBlocksApi {
         date: formatDateForApi(input.startTime),
         startTime: formatTimeForApi(input.startTime),
       };
-      const response = await client.post<ApiResponseWrapper<TimeBlock>>("time-blocks/quick-schedule", payload, options);
-      return response.data;
+      const response = await client.post<ApiResponseWrapper<RawTimeBlock>>("time-blocks/quick-schedule", payload, options);
+      return transformTimeBlock(response.data);
     },
 
     async getSummary(startDate: string, endDate: string, options?: RequestOptions): Promise<TimeBlockSummary> {
@@ -184,14 +239,14 @@ export function createTimeBlocksApi(client: ChronoflowClient): TimeBlocksApi {
 
     async batchCreate(inputs: CreateTimeBlockInput[], options?: RequestOptions): Promise<TimeBlock[]> {
       // Backend expects date in YYYY-MM-DD and times in HH:mm format
-      const timeBlocks = inputs.map((input) => ({
+      const timeBlocksPayload = inputs.map((input) => ({
         ...input,
         date: formatDateForApi(input.startTime),
         startTime: formatTimeForApi(input.startTime),
         endTime: formatTimeForApi(input.endTime),
       }));
-      const response = await client.post<ApiResponseWrapper<TimeBlock[]>>("time-blocks/batch", { timeBlocks }, options);
-      return response.data;
+      const response = await client.post<ApiResponseWrapper<RawTimeBlock[]>>("time-blocks/batch", { timeBlocks: timeBlocksPayload }, options);
+      return response.data.map(transformTimeBlock);
     },
 
     async batchUpdate(updates: Array<{ id: string; input: UpdateTimeBlockInput }>, options?: RequestOptions): Promise<TimeBlock[]> {
@@ -210,8 +265,8 @@ export function createTimeBlocksApi(client: ChronoflowClient): TimeBlocksApi {
         
         return { id, input: serializedInput };
       });
-      const response = await client.patch<ApiResponseWrapper<TimeBlock[]>>("time-blocks/batch", { updates: serializedUpdates }, options);
-      return response.data;
+      const response = await client.patch<ApiResponseWrapper<RawTimeBlock[]>>("time-blocks/batch", { updates: serializedUpdates }, options);
+      return response.data.map(transformTimeBlock);
     },
 
     async batchDelete(ids: string[], options?: RequestOptions): Promise<void> {
