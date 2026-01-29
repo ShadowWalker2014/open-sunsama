@@ -1,5 +1,4 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getApi } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 
 /**
@@ -166,7 +165,7 @@ export function useDeleteSubtask() {
 
   return useMutation({
     mutationFn: async ({
-      taskId,
+      taskId: _taskId,
       subtaskId,
     }: {
       taskId: string;
@@ -175,6 +174,7 @@ export function useDeleteSubtask() {
       // TODO: Implement when API is ready
       // const api = getApi();
       // await api.subtasks.delete(subtaskId);
+      void _taskId; // Will be used when API is implemented
       return subtaskId;
     },
     onSuccess: (deletedId, { taskId }) => {
@@ -208,8 +208,8 @@ export function useReorderSubtasks() {
 
   return useMutation({
     mutationFn: async ({
-      taskId,
-      subtaskIds,
+      taskId: _taskId,
+      subtaskIds: _subtaskIds,
     }: {
       taskId: string;
       subtaskIds: string[];
@@ -217,6 +217,8 @@ export function useReorderSubtasks() {
       // TODO: Implement when API is ready
       // const api = getApi();
       // await api.subtasks.reorder(taskId, subtaskIds);
+      void _taskId; // Will be used when API is implemented
+      void _subtaskIds; // Will be used when API is implemented
     },
     onMutate: async ({ taskId, subtaskIds }) => {
       // Cancel any outgoing refetches

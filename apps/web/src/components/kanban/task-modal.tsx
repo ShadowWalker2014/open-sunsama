@@ -13,27 +13,16 @@ import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
-  useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import {
-  X,
-  Calendar,
-  Clock,
-  Trash2,
-  Plus,
-  GripVertical,
-  Check,
-} from "lucide-react";
+import { Calendar, Clock, Trash2, Plus } from "lucide-react";
 import type { Task, TaskPriority } from "@chronoflow/types";
 import { cn } from "@/lib/utils";
-import { useUpdateTask, useDeleteTask, useCreateTask } from "@/hooks/useTasks";
+import { useUpdateTask, useDeleteTask } from "@/hooks/useTasks";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle,
   Button,
   Input,
   Label,
@@ -45,12 +34,7 @@ import {
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { HtmlContent } from "@/components/ui/html-content";
 import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
-
-interface Subtask {
-  id: string;
-  title: string;
-  completed: boolean;
-}
+import { SortableSubtaskItem, type Subtask } from "./sortable-subtask-item";
 
 interface TaskModalProps {
   task: Task | null;
@@ -59,88 +43,6 @@ interface TaskModalProps {
 }
 
 const PRIORITIES: TaskPriority[] = ["P0", "P1", "P2", "P3"];
-
-/**
- * Sortable subtask item with drag handle
- */
-function SortableSubtaskItem({
-  subtask,
-  onToggle,
-  onDelete,
-}: {
-  subtask: Subtask;
-  onToggle: () => void;
-  onDelete: () => void;
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: subtask.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={cn(
-        "group flex items-center gap-2 py-1.5 px-2 -mx-2 rounded-md hover:bg-muted/50 transition-colors",
-        isDragging && "opacity-50 bg-muted/30"
-      )}
-    >
-      {/* Drag handle */}
-      <div
-        {...attributes}
-        {...listeners}
-        className="touch-none cursor-grab active:cursor-grabbing"
-      >
-        <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity" />
-      </div>
-      
-      {/* Checkbox */}
-      <button
-        onClick={onToggle}
-        className={cn(
-          "flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors",
-          subtask.completed
-            ? "border-primary bg-primary text-primary-foreground"
-            : "border-muted-foreground/40 hover:border-primary"
-        )}
-      >
-        {subtask.completed && (
-          <Check className="h-2.5 w-2.5" strokeWidth={3} />
-        )}
-      </button>
-      
-      {/* Title */}
-      <span
-        className={cn(
-          "flex-1 text-sm",
-          subtask.completed && "line-through text-muted-foreground"
-        )}
-      >
-        {subtask.title}
-      </span>
-      
-      {/* Delete button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-        onClick={onDelete}
-      >
-        <X className="h-3 w-3" />
-      </Button>
-    </div>
-  );
-}
 
 export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   const [title, setTitle] = React.useState("");
@@ -153,7 +55,6 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
 
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
-  const createTask = useCreateTask();
 
   // Subtask drag sensors
   const sensors = useSensors(
@@ -282,30 +183,20 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
       <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden">
         {/* Header */}
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                onBlur={handleTitleBlur}
-                className="border-none p-0 text-lg font-semibold shadow-none focus-visible:ring-0 h-auto"
-                placeholder="Task title"
-              />
-              {task.scheduledDate && (
-                <div className="flex items-center gap-1.5 mt-2 text-sm text-muted-foreground">
-                  <Calendar className="h-3.5 w-3.5" />
-                  {format(new Date(task.scheduledDate), "EEEE, MMMM d")}
-                </div>
-              )}
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0"
-              onClick={() => onOpenChange(false)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
+          <div className="flex-1">
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={handleTitleBlur}
+              className="border-none p-0 text-lg font-semibold shadow-none focus-visible:ring-0 h-auto pr-8"
+              placeholder="Task title"
+            />
+            {task.scheduledDate && (
+              <div className="flex items-center gap-1.5 mt-2 text-sm text-muted-foreground">
+                <Calendar className="h-3.5 w-3.5" />
+                {format(new Date(task.scheduledDate), "EEEE, MMMM d")}
+              </div>
+            )}
           </div>
         </DialogHeader>
 

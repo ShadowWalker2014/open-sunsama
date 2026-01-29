@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Plus, X, Check, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 import type { TaskPriority } from "@chronoflow/types";
 import { cn } from "@/lib/utils";
 import { useCreateTask } from "@/hooks/useTasks";
@@ -19,14 +19,9 @@ import {
 } from "@/components/ui";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
+import { SubtaskList, type Subtask } from "./subtask-list";
 
 const PRIORITIES: TaskPriority[] = ["P0", "P1", "P2", "P3"];
-
-interface Subtask {
-  id: string;
-  title: string;
-  completed: boolean;
-}
 
 interface AddTaskModalProps {
   open: boolean;
@@ -34,13 +29,16 @@ interface AddTaskModalProps {
   scheduledDate?: string | null;
 }
 
-export function AddTaskModal({ open, onOpenChange, scheduledDate }: AddTaskModalProps) {
+export function AddTaskModal({
+  open,
+  onOpenChange,
+  scheduledDate,
+}: AddTaskModalProps) {
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [estimatedMins, setEstimatedMins] = React.useState<string>("");
   const [priority, setPriority] = React.useState<TaskPriority>("P2");
   const [subtasks, setSubtasks] = React.useState<Subtask[]>([]);
-  const [newSubtaskTitle, setNewSubtaskTitle] = React.useState("");
 
   const createTask = useCreateTask();
   const titleInputRef = React.useRef<HTMLInputElement>(null);
@@ -60,7 +58,6 @@ export function AddTaskModal({ open, onOpenChange, scheduledDate }: AddTaskModal
       setEstimatedMins("");
       setPriority("P2");
       setSubtasks([]);
-      setNewSubtaskTitle("");
     }
   }, [open]);
 
@@ -77,32 +74,8 @@ export function AddTaskModal({ open, onOpenChange, scheduledDate }: AddTaskModal
     });
 
     // TODO: Create subtasks via API when implemented
-    
+
     onOpenChange(false);
-  };
-
-  // Subtask handlers
-  const addSubtask = () => {
-    if (!newSubtaskTitle.trim()) return;
-    const newSubtask: Subtask = {
-      id: `temp-${Date.now()}`,
-      title: newSubtaskTitle.trim(),
-      completed: false,
-    };
-    setSubtasks([...subtasks, newSubtask]);
-    setNewSubtaskTitle("");
-  };
-
-  const toggleSubtask = (id: string) => {
-    setSubtasks(
-      subtasks.map((st) =>
-        st.id === id ? { ...st, completed: !st.completed } : st
-      )
-    );
-  };
-
-  const deleteSubtask = (id: string) => {
-    setSubtasks(subtasks.filter((st) => st.id !== id));
   };
 
   return (
@@ -141,67 +114,7 @@ export function AddTaskModal({ open, onOpenChange, scheduledDate }: AddTaskModal
             {/* Subtasks */}
             <div className="space-y-2">
               <Label>Subtasks</Label>
-              
-              {/* Subtask list */}
-              {subtasks.length > 0 && (
-                <div className="space-y-1 mb-2">
-                  {subtasks.map((subtask) => (
-                    <div
-                      key={subtask.id}
-                      className="group flex items-center gap-2 py-1.5 px-2 -mx-2 rounded-md hover:bg-muted/50"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => toggleSubtask(subtask.id)}
-                        className={cn(
-                          "flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors",
-                          subtask.completed
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-muted-foreground/40 hover:border-primary"
-                        )}
-                      >
-                        {subtask.completed && (
-                          <Check className="h-2.5 w-2.5" strokeWidth={3} />
-                        )}
-                      </button>
-                      <span
-                        className={cn(
-                          "flex-1 text-sm",
-                          subtask.completed && "line-through text-muted-foreground"
-                        )}
-                      >
-                        {subtask.title}
-                      </span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 opacity-0 group-hover:opacity-100"
-                        onClick={() => deleteSubtask(subtask.id)}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Add subtask input */}
-              <div className="flex items-center gap-2">
-                <Plus className="h-4 w-4 text-muted-foreground" />
-                <Input
-                  value={newSubtaskTitle}
-                  onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      addSubtask();
-                    }
-                  }}
-                  placeholder="Add a subtask..."
-                  className="border-none p-0 h-auto text-sm shadow-none focus-visible:ring-0"
-                />
-              </div>
+              <SubtaskList subtasks={subtasks} onSubtasksChange={setSubtasks} />
             </div>
 
             {/* Priority */}
@@ -223,10 +136,7 @@ export function AddTaskModal({ open, onOpenChange, scheduledDate }: AddTaskModal
                     <DropdownMenuItem
                       key={p}
                       onClick={() => setPriority(p)}
-                      className={cn(
-                        "gap-2",
-                        priority === p && "bg-accent"
-                      )}
+                      className={cn("gap-2", priority === p && "bg-accent")}
                     >
                       <PriorityIcon priority={p} />
                       <span>{PRIORITY_LABELS[p]}</span>
@@ -256,10 +166,17 @@ export function AddTaskModal({ open, onOpenChange, scheduledDate }: AddTaskModal
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={!title.trim() || createTask.isPending}>
+            <Button
+              type="submit"
+              disabled={!title.trim() || createTask.isPending}
+            >
               {createTask.isPending ? "Creating..." : "Create Task"}
             </Button>
           </DialogFooter>

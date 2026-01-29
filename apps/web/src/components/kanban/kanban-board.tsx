@@ -1,13 +1,5 @@
 import * as React from "react";
 import {
-  addDays,
-  subDays,
-  startOfDay,
-  isToday,
-  format,
-} from "date-fns";
-import { useVirtualizer } from "@tanstack/react-virtual";
-import {
   DndContext,
   DragOverlay,
   PointerSensor,
@@ -20,109 +12,37 @@ import {
 } from "@dnd-kit/core";
 import { snapCenterToCursor } from "@dnd-kit/modifiers";
 import type { Task } from "@chronoflow/types";
-import { useMoveTask, useReorderTasks } from "@/hooks/useTasks";
+import { useMoveTask } from "@/hooks/useTasks";
+import { useKanbanDates } from "@/hooks/useKanbanDates";
 import { DayColumn } from "./day-column";
 import { TaskCard } from "./task-card";
 import { TaskModal } from "./task-modal";
 import { KanbanBoardToolbar, useSortPreference } from "./kanban-board-toolbar";
 import { columnPriorityCollision } from "@/lib/dnd/collision-detection";
 
-// Number of days to show at a time
-const VISIBLE_DAYS = 7;
-// Number of days to load on each side (for smooth scrolling)
-const BUFFER_DAYS = 14;
-// Column width in pixels
-const COLUMN_WIDTH = 280;
-
 /**
  * Linear-style infinite horizontal kanban board with day columns.
  */
 export function KanbanBoard() {
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const [centerDate, setCenterDate] = React.useState(() => startOfDay(new Date()));
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [activeTask, setActiveTask] = React.useState<Task | null>(null);
   const [activeOverColumn, setActiveOverColumn] = React.useState<string | null>(null);
   const [sortBy, onSortChange] = useSortPreference();
 
   const moveTask = useMoveTask();
-  const reorderTasks = useReorderTasks();
 
-  // Generate array of dates for the viewport
-  const dates = React.useMemo(() => {
-    const result: { date: Date; dateString: string }[] = [];
-    const startDate = subDays(centerDate, BUFFER_DAYS);
-    const totalDays = VISIBLE_DAYS + BUFFER_DAYS * 2;
-
-    for (let i = 0; i < totalDays; i++) {
-      const date = addDays(startDate, i);
-      result.push({
-        date,
-        dateString: format(date, "yyyy-MM-dd"),
-      });
-    }
-    return result;
-  }, [centerDate]);
-
-  // Setup virtualizer for horizontal scrolling
-  const virtualizer = useVirtualizer({
-    count: dates.length,
-    getScrollElement: () => containerRef.current,
-    estimateSize: () => COLUMN_WIDTH,
-    horizontal: true,
-    overscan: 3,
-  });
-
-  // Scroll to today on mount - align to left edge
-  React.useEffect(() => {
-    const todayIndex = dates.findIndex((d) => isToday(d.date));
-    if (todayIndex >= 0) {
-      virtualizer.scrollToIndex(todayIndex, { align: "start" });
-    }
-  }, []);
-
-  // Handle navigation
-  const navigatePrevious = () => {
-    const scrollOffset = virtualizer.scrollOffset ?? 0;
-    const targetOffset = Math.max(0, scrollOffset - COLUMN_WIDTH * VISIBLE_DAYS);
-    containerRef.current?.scrollTo({
-      left: targetOffset,
-      behavior: "smooth",
-    });
-  };
-
-  const navigateNext = () => {
-    const scrollOffset = virtualizer.scrollOffset ?? 0;
-    const targetOffset = scrollOffset + COLUMN_WIDTH * VISIBLE_DAYS;
-    containerRef.current?.scrollTo({
-      left: targetOffset,
-      behavior: "smooth",
-    });
-  };
-
-  const navigateToToday = () => {
-    const todayIndex = dates.findIndex((d) => isToday(d.date));
-    if (todayIndex >= 0) {
-      virtualizer.scrollToIndex(todayIndex, { align: "start", behavior: "smooth" });
-    }
-  };
-
-  // Load more days when scrolling near edges
-  const handleScroll = React.useCallback(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const { scrollLeft, scrollWidth, clientWidth } = container;
-    const scrollRight = scrollWidth - scrollLeft - clientWidth;
-
-    if (scrollLeft < COLUMN_WIDTH * 3) {
-      setCenterDate((prev) => subDays(prev, 7));
-    }
-
-    if (scrollRight < COLUMN_WIDTH * 3) {
-      setCenterDate((prev) => addDays(prev, 7));
-    }
-  }, []);
+  // Use the kanban dates hook for date management and navigation
+  const {
+    dates,
+    virtualizer,
+    navigatePrevious,
+    navigateNext,
+    navigateToToday,
+    handleScroll,
+    firstVisibleDate,
+    lastVisibleDate,
+  } = useKanbanDates({ containerRef });
 
   // Drag and drop sensors
   const sensors = useSensors(
@@ -144,12 +64,12 @@ export function KanbanBoard() {
     (overId: string | number | undefined): string | null => {
       if (!overId) return null;
       const overIdStr = String(overId);
-      
+
       // Check if it's a column ID (day-YYYY-MM-DD)
       if (overIdStr.startsWith("day-")) {
         return overIdStr.replace("day-", "");
       }
-      
+
       // Otherwise it's a task ID - return null (handled by sortable context)
       return null;
     },
@@ -157,11 +77,14 @@ export function KanbanBoard() {
   );
 
   // Check if an ID is a task (not a column)
-  const isTaskId = React.useCallback((id: string | number | undefined): boolean => {
-    if (!id) return false;
-    const idStr = String(id);
-    return !idStr.startsWith("day-");
-  }, []);
+  const isTaskId = React.useCallback(
+    (id: string | number | undefined): boolean => {
+      if (!id) return false;
+      const idStr = String(id);
+      return !idStr.startsWith("day-");
+    },
+    []
+  );
 
   // DnD Event Handlers
   const handleDragStart = React.useCallback((event: DragStartEvent) => {
@@ -173,72 +96,66 @@ export function KanbanBoard() {
     }
   }, []);
 
-  const handleDragOver = React.useCallback((event: DragOverEvent) => {
-    const { over } = event;
-    if (!over) {
+  const handleDragOver = React.useCallback(
+    (event: DragOverEvent) => {
+      const { over } = event;
+      if (!over) {
+        setActiveOverColumn(null);
+        return;
+      }
+      const targetDate = findTargetColumnDate(over.id);
+      setActiveOverColumn(targetDate);
+    },
+    [findTargetColumnDate]
+  );
+
+  const handleDragEnd = React.useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+
+      setActiveTask(null);
       setActiveOverColumn(null);
-      return;
-    }
-    const targetDate = findTargetColumnDate(over.id);
-    setActiveOverColumn(targetDate);
-  }, [findTargetColumnDate]);
 
-  const handleDragEnd = React.useCallback((event: DragEndEvent) => {
-    const { active, over } = event;
-    
-    setActiveTask(null);
-    setActiveOverColumn(null);
+      if (!over) return;
 
-    if (!over) return;
+      const taskId = String(active.id);
+      const task = active.data.current?.task as Task | undefined;
 
-    const taskId = String(active.id);
-    const overId = String(over.id);
-    const task = active.data.current?.task as Task | undefined;
-    
-    if (!task) return;
+      if (!task) return;
 
-    // Check if dropped on a column
-    const targetDate = findTargetColumnDate(over.id);
-    
-    if (targetDate) {
-      // Moving to a different column
-      if (task.scheduledDate !== targetDate) {
-        moveTask.mutate({
-          id: taskId,
-          targetDate,
-        });
+      // Check if dropped on a column
+      const targetDate = findTargetColumnDate(over.id);
+
+      if (targetDate) {
+        // Moving to a different column
+        if (task.scheduledDate !== targetDate) {
+          moveTask.mutate({
+            id: taskId,
+            targetDate,
+          });
+        }
+        return;
       }
-      return;
-    }
 
-    // Check if dropped on another task (reordering within same column)
-    if (isTaskId(over.id)) {
-      const overTask = over.data.current?.task as Task | undefined;
-      if (overTask && task.scheduledDate === overTask.scheduledDate) {
-        // Reordering within the same column
-        // The actual reorder is handled by the sortable context
-        // We just need to persist the new order
-        // For now, rely on optimistic updates from sortable context
-        // The API call will be made by the useTasks hook when needed
+      // Check if dropped on another task (reordering within same column)
+      if (isTaskId(over.id)) {
+        const overTask = over.data.current?.task as Task | undefined;
+        if (overTask && task.scheduledDate === overTask.scheduledDate) {
+          // Reordering within the same column
+          // The actual reorder is handled by the sortable context
+          // We just need to persist the new order
+          // For now, rely on optimistic updates from sortable context
+          // The API call will be made by the useTasks hook when needed
+        }
       }
-    }
-  }, [findTargetColumnDate, isTaskId, moveTask]);
+    },
+    [findTargetColumnDate, isTaskId, moveTask]
+  );
 
   const handleDragCancel = React.useCallback(() => {
     setActiveTask(null);
     setActiveOverColumn(null);
   }, []);
-
-  // Calculate visible date range for header
-  const visibleItems = virtualizer.getVirtualItems();
-  const firstVisibleItem = visibleItems[0];
-  const lastVisibleItem = visibleItems[visibleItems.length - 1];
-  const firstVisibleDate = firstVisibleItem
-    ? dates[firstVisibleItem.index]?.date ?? null
-    : null;
-  const lastVisibleDate = lastVisibleItem
-    ? dates[lastVisibleItem.index]?.date ?? null
-    : null;
 
   return (
     <div className="flex h-full flex-col bg-background">
@@ -301,17 +218,10 @@ export function KanbanBoard() {
         </div>
 
         {/* Drag Overlay - follows cursor */}
-        <DragOverlay
-          modifiers={[snapCenterToCursor]}
-          dropAnimation={null}
-        >
+        <DragOverlay modifiers={[snapCenterToCursor]} dropAnimation={null}>
           {activeTask && (
             <div className="w-[260px] pointer-events-none">
-              <TaskCard
-                task={activeTask}
-                onSelect={() => {}}
-                isDragging
-              />
+              <TaskCard task={activeTask} onSelect={() => {}} isDragging />
             </div>
           )}
         </DragOverlay>
