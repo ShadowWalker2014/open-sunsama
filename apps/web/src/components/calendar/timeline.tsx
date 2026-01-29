@@ -22,6 +22,7 @@ interface TimelineProps {
   isLoading?: boolean;
   dragState: DragState | null;
   dropPreview: DropPreview | null;
+  justEndedDrag?: boolean;
   timelineRef: React.RefObject<HTMLDivElement>;
   onBlockClick?: (block: TimeBlockType) => void;
   onBlockDragStart?: (block: TimeBlockType, e: React.MouseEvent) => void;
@@ -52,6 +53,7 @@ export function Timeline({
   isLoading = false,
   dragState,
   dropPreview,
+  justEndedDrag = false,
   timelineRef,
   onBlockClick,
   onBlockDragStart,
@@ -103,6 +105,12 @@ export function Timeline({
 
     // Don't trigger during drag operations
     if (dragState) {
+      return;
+    }
+
+    // Don't trigger if we just ended a drag/resize operation
+    // (mouseup fires before click, so dragState is already cleared)
+    if (justEndedDrag) {
       return;
     }
 

@@ -37,6 +37,8 @@ export function useCalendarDnd(
 ) {
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [dropPreview, setDropPreview] = useState<DropPreview | null>(null);
+  // Track if we just ended a drag operation to prevent click events from firing
+  const [justEndedDrag, setJustEndedDrag] = useState(false);
   const timelineRef = useRef<HTMLDivElement>(null);
 
   /**
@@ -176,6 +178,13 @@ export function useCalendarDnd(
           break;
       }
 
+      // Set flag to prevent click event from firing after drag ends
+      // This is needed because mouseup fires before click, so by the time
+      // click handler runs, dragState is already null
+      setJustEndedDrag(true);
+      // Clear the flag after a short delay (after click event would have fired)
+      setTimeout(() => setJustEndedDrag(false), 0);
+
       setDragState(null);
       setDropPreview(null);
     },
@@ -195,6 +204,7 @@ export function useCalendarDnd(
     dragState,
     dropPreview,
     isDragging: dragState !== null,
+    justEndedDrag,
     timelineRef,
 
     // Actions

@@ -75,6 +75,7 @@ export function CalendarView({
     dragState,
     dropPreview,
     isDragging,
+    justEndedDrag,
     timelineRef,
     startTaskDrag,
     startBlockDrag,
@@ -225,6 +226,7 @@ export function CalendarView({
           isLoading={isLoading}
           dragState={dragState}
           dropPreview={dropPreview}
+          justEndedDrag={justEndedDrag}
           timelineRef={timelineRef as React.RefObject<HTMLDivElement>}
           onBlockDragStart={handleBlockDragStart}
           onBlockResizeStart={handleBlockResizeStart}
