@@ -17,3 +17,4 @@ export {
   ESTIMATED_TIME_OPTIONS,
 } from "./task-form-sections";
 export { TimeBlockItem, TimeBlocksList } from "./task-time-blocks";
+export { TaskAttachments } from "./task-attachments";

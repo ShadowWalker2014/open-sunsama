@@ -105,3 +105,5 @@ export {
   PRIORITY_LABELS,
   PRIORITY_SHORT_LABELS,
 } from "./priority-badge";
+export { FileIcon, getFileTypeColor } from "./file-icon";
+export { Lightbox } from "./lightbox";

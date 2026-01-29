@@ -15,7 +15,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Plus, Clock, Trash2, Check, Calendar } from "lucide-react";
+import { Plus, Clock, Trash2, Check, Calendar, Paperclip } from "lucide-react";
 import type { Task, Subtask } from "@chronoflow/types";
 import { useUpdateTask, useDeleteTask, useCompleteTask } from "@/hooks/useTasks";
 import { useSubtasks, useCreateSubtask, useUpdateSubtask, useDeleteSubtask, useReorderSubtasks } from "@/hooks/useSubtasks";
@@ -34,6 +34,7 @@ import {
 } from "@/components/ui";
 import { SortableSubtaskItem } from "./sortable-subtask-item";
 import { NotesField } from "./task-modal-form";
+import { TaskAttachments } from "./task-attachments";
 
 interface TaskModalProps {
   task: Task | null;
@@ -378,6 +379,15 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                 if (description !== (task.notes || "")) handleSave();
               }}
             />
+          </div>
+
+          {/* Attachments Section */}
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+              <Paperclip className="h-4 w-4" />
+              Attachments
+            </h4>
+            <TaskAttachments taskId={task.id} />
           </div>
 
           {/* Time & Duration Section */}
