@@ -1,14 +1,15 @@
-// @ts-nocheck - Route typing handled by TanStack Router
+// @ts-nocheck
 import * as React from "react";
-import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router";
+import { Outlet, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
 import { Header } from "@/components/layout/header";
+import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { Skeleton } from "@/components/ui";
 
 /**
  * Main app layout - requires authentication
  */
-function AppLayout() {
+export default function AppLayout() {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -53,20 +54,13 @@ function AppLayout() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 pb-16 lg:pb-0">
         <Outlet />
       </main>
+      {/* Mobile bottom navigation - hidden on lg screens */}
+      <MobileBottomNav />
     </div>
   );
 }
 
-export const Route = createFileRoute("/app")({
-  component: AppLayout,
-  beforeLoad: () => {
-    // Check for auth token before loading
-    const token = localStorage.getItem("chronoflow_token");
-    if (!token) {
-      throw redirect({ to: "/login" });
-    }
-  },
-});
+// Component exported as default above

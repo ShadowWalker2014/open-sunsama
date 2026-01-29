@@ -132,7 +132,7 @@ export function CalendarView({
     // Don't cancel drag on mouse leave - let it continue
   };
 
-  // Global mouse events for drag
+  // Global mouse and touch events for drag
   React.useEffect(() => {
     if (!isDragging) return;
 
@@ -142,17 +142,42 @@ export function CalendarView({
         updateDrag(e.clientY, timelineRef.current.getBoundingClientRect());
       }
     };
+    
+    // Touch event handlers for mobile
+    const handleGlobalTouchEnd = () => endDrag();
+    const handleGlobalTouchMove = (e: TouchEvent) => {
+      if (timelineRef.current && e.touches.length > 0) {
+        const touch = e.touches[0];
+        if (touch) {
+          updateDrag(touch.clientY, timelineRef.current.getBoundingClientRect());
+          // Prevent page scrolling while dragging
+          e.preventDefault();
+        }
+      }
+    };
+    const handleGlobalTouchCancel = () => cancelDrag();
+    
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") cancelDrag();
     };
 
+    // Mouse events
     document.addEventListener("mouseup", handleGlobalMouseUp);
     document.addEventListener("mousemove", handleGlobalMouseMove);
+    
+    // Touch events with passive: false to allow preventDefault
+    document.addEventListener("touchend", handleGlobalTouchEnd);
+    document.addEventListener("touchmove", handleGlobalTouchMove, { passive: false });
+    document.addEventListener("touchcancel", handleGlobalTouchCancel);
+    
     document.addEventListener("keydown", handleEscape);
 
     return () => {
       document.removeEventListener("mouseup", handleGlobalMouseUp);
       document.removeEventListener("mousemove", handleGlobalMouseMove);
+      document.removeEventListener("touchend", handleGlobalTouchEnd);
+      document.removeEventListener("touchmove", handleGlobalTouchMove);
+      document.removeEventListener("touchcancel", handleGlobalTouchCancel);
       document.removeEventListener("keydown", handleEscape);
     };
   }, [isDragging, endDrag, cancelDrag, updateDrag, timelineRef]);

@@ -111,8 +111,8 @@ export function Header({ className }: HeaderProps) {
           </a>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex items-center gap-1">
+        {/* Navigation - Hidden on mobile (using bottom nav instead) */}
+        <nav className="hidden lg:flex items-center gap-1">
           <NavLink href="/app" icon={<LayoutGrid className="h-4 w-4" />}>
             Tasks
           </NavLink>
@@ -125,30 +125,30 @@ export function Header({ className }: HeaderProps) {
         <div className="flex-1" />
 
         {/* Actions */}
-        <div className="flex items-center gap-2">
-          {/* Theme Toggle */}
+        <div className="flex items-center gap-1 sm:gap-2">
+          {/* Theme Toggle - Touch-friendly */}
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
-            className="h-9 w-9"
+            className="h-10 w-10 sm:h-9 sm:w-9"
           >
             {isDark ? (
-              <Sun className="h-4 w-4" />
+              <Sun className="h-5 w-5 sm:h-4 sm:w-4" />
             ) : (
-              <Moon className="h-4 w-4" />
+              <Moon className="h-5 w-5 sm:h-4 sm:w-4" />
             )}
             <span className="sr-only">Toggle theme</span>
           </Button>
 
-          {/* User Menu */}
+          {/* User Menu - Touch-friendly */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="relative h-9 w-9 rounded-full"
+                className="relative h-10 w-10 sm:h-9 sm:w-9 rounded-full"
               >
-                <Avatar className="h-8 w-8">
+                <Avatar className="h-9 w-9 sm:h-8 sm:w-8">
                   <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.name ?? "User"} />
                   <AvatarFallback>{userInitials}</AvatarFallback>
                 </Avatar>

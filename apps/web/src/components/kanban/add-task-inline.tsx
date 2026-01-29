@@ -62,11 +62,13 @@ export function AddTaskInline({ scheduledDate, className }: AddTaskInlineProps) 
         variant="ghost"
         className={cn(
           "w-full justify-start gap-2 text-muted-foreground hover:text-foreground",
+          "h-11 sm:h-9", // Touch-friendly height on mobile
+          "active:bg-accent", // Touch feedback
           className
         )}
         onClick={() => setIsAdding(true)}
       >
-        <Plus className="h-4 w-4" />
+        <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
         Add task
       </Button>
     );
@@ -81,7 +83,7 @@ export function AddTaskInline({ scheduledDate, className }: AddTaskInlineProps) 
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
         placeholder="What needs to be done?"
-        className="h-9 text-sm"
+        className="h-11 sm:h-9 text-base sm:text-sm" // Touch-friendly on mobile
         disabled={createTask.isPending}
       />
     </form>

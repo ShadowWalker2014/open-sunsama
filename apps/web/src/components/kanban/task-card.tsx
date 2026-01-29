@@ -108,31 +108,39 @@ export function TaskCard({ task, onSelect, isDragging: externalDragging }: TaskC
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
     >
-      {/* Drag Handle */}
+      {/* Drag Handle - Touch-friendly size (44px minimum) */}
       <button
         {...attributes}
         {...listeners}
         className={cn(
-          "mt-0.5 cursor-grab touch-none opacity-0 transition-opacity",
-          "group-hover:opacity-100 focus:opacity-100",
-          "active:cursor-grabbing"
+          "mt-0.5 cursor-grab touch-none transition-opacity",
+          // Always visible on touch devices, hover reveal on desktop
+          "opacity-40 sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100",
+          "active:cursor-grabbing active:opacity-100",
+          // Touch-friendly tap target
+          "-ml-1 p-2 -m-2"
         )}
         onClick={(e) => e.stopPropagation()}
+        aria-label="Drag to reorder task"
       >
-        <GripVertical className="h-4 w-4 text-muted-foreground" />
+        <GripVertical className="h-5 w-5 text-muted-foreground sm:h-4 sm:w-4" />
       </button>
 
-      {/* Completion Checkbox */}
+      {/* Completion Checkbox - Touch-friendly size (44px tap target) */}
       <button
         onClick={handleToggleComplete}
         className={cn(
-          "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors",
+          // Visual checkbox size
+          "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors",
+          // Touch-friendly tap area (padding creates 44px target)
+          "p-2 -m-2",
           isCompleted
             ? "border-primary bg-primary text-primary-foreground"
-            : "border-muted-foreground/50 hover:border-primary"
+            : "border-muted-foreground/50 hover:border-primary active:border-primary"
         )}
+        aria-label={isCompleted ? "Mark as incomplete" : "Mark as complete"}
       >
-        {isCompleted && <Check className="h-3 w-3" />}
+        {isCompleted && <Check className="h-3.5 w-3.5" />}
       </button>
 
       {/* Content */}

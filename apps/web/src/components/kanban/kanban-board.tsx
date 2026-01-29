@@ -12,6 +12,7 @@ import {
   DragOverlay,
   closestCenter,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragStartEvent,
@@ -124,11 +125,17 @@ export function KanbanBoard() {
     }
   }, []);
 
-  // Drag and drop sensors
+  // Drag and drop sensors with touch support
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200, // 200ms press delay for touch
+        tolerance: 8, // 8px movement tolerance during delay
       },
     })
   );
