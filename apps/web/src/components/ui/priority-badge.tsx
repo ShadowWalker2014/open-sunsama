@@ -1,0 +1,183 @@
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "@/lib/utils";
+import type { TaskPriority } from "@chronoflow/types";
+
+/**
+ * Linear-style priority indicators
+ * P0 (Urgent): Red/orange, filled
+ * P1 (High): Orange/yellow
+ * P2 (Medium): Blue/gray (default, subtle)
+ * P3 (Low): Gray, very subtle
+ */
+
+const priorityBadgeVariants = cva(
+  "inline-flex items-center justify-center rounded text-xs font-medium transition-colors duration-150",
+  {
+    variants: {
+      priority: {
+        P0: "bg-red-500/15 text-red-600 dark:text-red-400",
+        P1: "bg-orange-500/15 text-orange-600 dark:text-orange-400",
+        P2: "bg-slate-500/10 text-slate-500 dark:text-slate-400",
+        P3: "bg-slate-400/10 text-slate-400 dark:text-slate-500",
+      },
+      size: {
+        sm: "h-4 px-1 text-[10px]",
+        default: "h-5 px-1.5 text-xs",
+        lg: "h-6 px-2 text-sm",
+      },
+    },
+    defaultVariants: {
+      priority: "P2",
+      size: "default",
+    },
+  }
+);
+
+const priorityDotVariants = cva(
+  "rounded-full transition-colors duration-150",
+  {
+    variants: {
+      priority: {
+        P0: "bg-red-500",
+        P1: "bg-orange-500",
+        P2: "bg-slate-400",
+        P3: "bg-slate-300 dark:bg-slate-600",
+      },
+      size: {
+        sm: "h-1.5 w-1.5",
+        default: "h-2 w-2",
+        lg: "h-2.5 w-2.5",
+      },
+    },
+    defaultVariants: {
+      priority: "P2",
+      size: "default",
+    },
+  }
+);
+
+export interface PriorityBadgeProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof priorityBadgeVariants> {
+  priority: TaskPriority;
+  showLabel?: boolean;
+  showDot?: boolean;
+}
+
+const PRIORITY_LABELS: Record<TaskPriority, string> = {
+  P0: "Urgent",
+  P1: "High",
+  P2: "Medium",
+  P3: "Low",
+};
+
+const PRIORITY_SHORT_LABELS: Record<TaskPriority, string> = {
+  P0: "P0",
+  P1: "P1",
+  P2: "P2",
+  P3: "P3",
+};
+
+export function PriorityBadge({
+  className,
+  priority,
+  size,
+  showLabel = false,
+  showDot = true,
+  ...props
+}: PriorityBadgeProps) {
+  return (
+    <div
+      className={cn(priorityBadgeVariants({ priority, size }), className)}
+      title={PRIORITY_LABELS[priority]}
+      {...props}
+    >
+      {showDot && (
+        <span className={cn(priorityDotVariants({ priority, size }))} />
+      )}
+      {showLabel && (
+        <span className={cn(showDot && "ml-1")}>
+          {PRIORITY_SHORT_LABELS[priority]}
+        </span>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Simple priority dot indicator for minimal displays
+ */
+export function PriorityDot({
+  priority,
+  size = "default",
+  className,
+}: {
+  priority: TaskPriority;
+  size?: "sm" | "default" | "lg";
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(priorityDotVariants({ priority, size }), className)}
+      title={PRIORITY_LABELS[priority]}
+    />
+  );
+}
+
+/**
+ * Priority icon for use in menus and selectors
+ */
+export function PriorityIcon({
+  priority,
+  size = "default",
+  className,
+}: {
+  priority: TaskPriority;
+  size?: "sm" | "default" | "lg";
+  className?: string;
+}) {
+  const sizeClasses = {
+    sm: "h-3 w-3",
+    default: "h-4 w-4",
+    lg: "h-5 w-5",
+  };
+
+  const barHeights: Record<TaskPriority, string[]> = {
+    P0: ["h-full", "h-full", "h-full", "h-full"],
+    P1: ["h-1/4", "h-1/2", "h-3/4", "h-full"],
+    P2: ["h-1/4", "h-1/2", "h-3/4", "h-0"],
+    P3: ["h-1/4", "h-1/2", "h-0", "h-0"],
+  };
+
+  const colorClasses: Record<TaskPriority, string> = {
+    P0: "bg-red-500",
+    P1: "bg-orange-500",
+    P2: "bg-slate-400",
+    P3: "bg-slate-300 dark:bg-slate-500",
+  };
+
+  return (
+    <div
+      className={cn(
+        "flex items-end gap-0.5",
+        sizeClasses[size],
+        className
+      )}
+      title={PRIORITY_LABELS[priority]}
+    >
+      {barHeights[priority].map((height, i) => (
+        <div
+          key={i}
+          className={cn(
+            "w-0.5 rounded-sm transition-all duration-150",
+            height === "h-0" ? "bg-transparent" : colorClasses[priority],
+            height
+          )}
+        />
+      ))}
+    </div>
+  );
+}
+
+export { PRIORITY_LABELS, PRIORITY_SHORT_LABELS, priorityBadgeVariants };

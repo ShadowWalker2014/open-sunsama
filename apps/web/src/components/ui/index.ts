@@ -81,3 +81,27 @@ export {
   SelectItem,
   SelectSeparator,
 } from "./select";
+export {
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuCheckboxItem,
+  ContextMenuRadioItem,
+  ContextMenuLabel,
+  ContextMenuSeparator,
+  ContextMenuShortcut,
+  ContextMenuGroup,
+  ContextMenuPortal,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  ContextMenuRadioGroup,
+} from "./context-menu";
+export {
+  PriorityBadge,
+  PriorityDot,
+  PriorityIcon,
+  PRIORITY_LABELS,
+  PRIORITY_SHORT_LABELS,
+} from "./priority-badge";

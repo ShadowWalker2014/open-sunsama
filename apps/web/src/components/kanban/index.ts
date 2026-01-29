@@ -5,7 +5,8 @@ export { KanbanBoard } from "./kanban-board";
 export { KanbanBoardToolbar } from "./kanban-board-toolbar";
 export { createDndHandlers } from "./kanban-dnd-handlers";
 export { DayColumn } from "./day-column";
-export { TaskCard, TaskCardPlaceholder } from "./task-card";
+export { TaskCard, SortableTaskCard, TaskCardPlaceholder } from "./task-card";
+export { TaskContextMenu } from "./task-context-menu";
 export { AddTaskInline } from "./add-task-inline";
 export { TaskDetailPanel } from "./task-detail-panel";
 export {

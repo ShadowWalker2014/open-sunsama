@@ -66,3 +66,14 @@ export {
   type NotificationPreferences,
   type UpdateNotificationPreferencesInput,
 } from "./useNotificationPreferences";
+export {
+  useSubtasks,
+  useCreateSubtask,
+  useUpdateSubtask,
+  useDeleteSubtask,
+  useReorderSubtasks,
+  subtaskKeys,
+  type Subtask,
+  type CreateSubtaskInput,
+  type UpdateSubtaskInput,
+} from "./useSubtasks";
