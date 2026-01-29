@@ -1,0 +1,53 @@
+{
+  "name": "@chronoflow/types",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./user": {
+      "import": "./dist/user.js",
+      "types": "./dist/user.d.ts"
+    },
+    "./task": {
+      "import": "./dist/task.js",
+      "types": "./dist/task.d.ts"
+    },
+    "./time-block": {
+      "import": "./dist/time-block.js",
+      "types": "./dist/time-block.d.ts"
+    },
+    "./api-key": {
+      "import": "./dist/api-key.js",
+      "types": "./dist/api-key.d.ts"
+    },
+    "./api": {
+      "import": "./dist/api.js",
+      "types": "./dist/api.d.ts"
+    },
+    "./common": {
+      "import": "./dist/common.js",
+      "types": "./dist/common.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.0.0"
+  }
+}
