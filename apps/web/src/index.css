@@ -146,3 +146,63 @@
     }
   }
 }
+
+/* Tiptap Editor File Upload Styles */
+@layer components {
+  /* Image styling */
+  .tiptap-image-wrapper {
+    @apply my-3;
+  }
+
+  .tiptap-image {
+    @apply max-w-full h-auto rounded-lg;
+    max-height: 400px;
+    object-fit: contain;
+  }
+
+  /* Video styling */
+  .tiptap-video-wrapper {
+    @apply my-3;
+  }
+
+  .tiptap-video {
+    @apply max-w-full rounded-lg;
+    max-height: 400px;
+  }
+
+  /* File attachment styling */
+  .tiptap-file-attachment-wrapper {
+    @apply my-3;
+  }
+
+  .tiptap-file-attachment {
+    @apply inline-flex items-center gap-3 px-4 py-3 rounded-lg border;
+    @apply bg-muted/30 hover:bg-muted/50 transition-colors;
+    @apply max-w-sm;
+  }
+
+  /* Upload placeholder styling */
+  .tiptap-upload-placeholder-wrapper {
+    @apply my-3;
+  }
+
+  .tiptap-upload-placeholder {
+    @apply inline-flex items-center gap-3 px-4 py-3 rounded-lg border border-dashed;
+    @apply bg-muted/20 animate-pulse max-w-sm;
+  }
+
+  /* Node view wrappers - ensure proper spacing */
+  .ProseMirror .tiptap-image-wrapper,
+  .ProseMirror .tiptap-video-wrapper,
+  .ProseMirror .tiptap-file-attachment-wrapper,
+  .ProseMirror .tiptap-upload-placeholder-wrapper {
+    @apply block;
+  }
+
+  /* Selected node styling */
+  .ProseMirror-selectednode .tiptap-image,
+  .ProseMirror-selectednode .tiptap-video,
+  .ProseMirror-selectednode .tiptap-file-attachment {
+    @apply ring-2 ring-primary ring-offset-2;
+  }
+}

@@ -82,3 +82,20 @@ export {
   validateAvatarFile,
   type UploadAvatarResponse,
 } from "./useUploadAvatar";
+export {
+  useUploadAttachment,
+  useUploadMultipleAttachments,
+  validateFile,
+  isFileSupported,
+  formatFileSize,
+  getFileIcon,
+  getFileType,
+  type UploadResult,
+  type FileType,
+} from "./useUploadAttachment";
+export {
+  useTaskAttachments,
+  isImageFile,
+  isVideoFile,
+  attachmentKeys,
+} from "./useTaskAttachments";
