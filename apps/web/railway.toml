@@ -1,0 +1,8 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "apps/web/Dockerfile"
+watchPatterns = ["apps/web/**", "packages/**"]
+
+[deploy]
+healthcheckPath = "/"
+healthcheckTimeout = 300

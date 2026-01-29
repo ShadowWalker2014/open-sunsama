@@ -1,0 +1,41 @@
+# Build stage
+FROM oven/bun:1 as builder
+
+WORKDIR /app
+
+# Copy root package files
+COPY package.json bun.lockb ./
+COPY turbo.json ./
+
+# Copy all packages and apps (needed for workspace dependencies)
+COPY packages/ ./packages/
+COPY apps/api/ ./apps/api/
+
+# Install dependencies
+RUN bun install --frozen-lockfile
+
+# Build the packages and API
+RUN bun run build --filter=@open-sunsama/database --filter=@open-sunsama/types --filter=@open-sunsama/utils --filter=@open-sunsama/api
+
+# Production stage
+FROM node:20-slim
+
+WORKDIR /app
+
+# Copy built files from builder
+COPY --from=builder /app/apps/api/dist ./dist
+COPY --from=builder /app/apps/api/package.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages/database/dist ./node_modules/@open-sunsama/database/dist
+COPY --from=builder /app/packages/database/package.json ./node_modules/@open-sunsama/database/
+COPY --from=builder /app/packages/types/dist ./node_modules/@open-sunsama/types/dist
+COPY --from=builder /app/packages/types/package.json ./node_modules/@open-sunsama/types/
+COPY --from=builder /app/packages/utils/dist ./node_modules/@open-sunsama/utils/dist
+COPY --from=builder /app/packages/utils/package.json ./node_modules/@open-sunsama/utils/
+
+# Expose port
+ENV PORT=3001
+EXPOSE 3001
+
+# Start the server
+CMD ["node", "dist/index.js"]
