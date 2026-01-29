@@ -18,6 +18,7 @@ import { subtasksRouter } from './routes/subtasks.js';
 import { timeBlocksRouter } from './routes/time-blocks.js';
 import { apiKeysRouter } from './routes/api-keys.js';
 import { notificationsRouter } from './routes/notifications.js';
+import { uploadsRouter } from './routes/uploads.js';
 
 // Create Hono app
 const app = new Hono();
@@ -56,6 +57,7 @@ app.get('/', (c) => {
       timeBlocks: '/time-blocks',
       apiKeys: '/api-keys',
       notifications: '/notifications',
+      uploads: '/uploads',
     },
   });
 });
@@ -67,6 +69,7 @@ app.route('/tasks', subtasksRouter);  // Subtask routes under /tasks/:taskId/sub
 app.route('/time-blocks', timeBlocksRouter);
 app.route('/api-keys', apiKeysRouter);
 app.route('/notifications', notificationsRouter);
+app.route('/uploads', uploadsRouter);
 
 // Error handling
 app.onError(errorHandler);
@@ -90,6 +93,7 @@ console.log(`
   ║   - *    /time-blocks/*  Time block management            ║
   ║   - *    /api-keys/* API key management                   ║
   ║   - *    /notifications/* Notification settings           ║
+  ║   - *    /uploads/*  File uploads                         ║
   ║                                                           ║
   ╚═══════════════════════════════════════════════════════════╝
 `);
