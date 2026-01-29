@@ -22,6 +22,7 @@ import {
   AvatarImage,
 } from "@/components/ui";
 import { toast } from "@/hooks/use-toast";
+import { ApiKeysSettings } from "@/components/settings";
 
 /**
  * Settings page with multiple sections
@@ -70,7 +71,7 @@ function SettingsPage() {
           </TabsContent>
 
           <TabsContent value="api">
-            <ApiKeySettings />
+            <ApiKeysSettings />
           </TabsContent>
         </Tabs>
       </div>
@@ -318,31 +319,6 @@ function NotificationSettings() {
               Enable
             </Button>
           </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function ApiKeySettings() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>API Keys</CardTitle>
-        <CardDescription>
-          Manage your API keys for external integrations
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            You haven't created any API keys yet. API keys allow you to access
-            Chronoflow data from external applications.
-          </p>
-          <Button>
-            <Key className="mr-2 h-4 w-4" />
-            Create API Key
-          </Button>
         </div>
       </CardContent>
     </Card>
