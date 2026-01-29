@@ -9,22 +9,35 @@ export interface Subtask {
   id: string;
   title: string;
   completed: boolean;
+  actualMins?: number | null;
+  plannedMins?: number | null;
 }
 
 interface SortableSubtaskItemProps {
   subtask: Subtask;
   onToggle: () => void;
   onDelete: () => void;
+  showTimeColumns?: boolean;
+}
+
+// Helper to format time display (e.g., "0:10" for 10 minutes)
+function formatTimeColumn(mins: number | null | undefined): string {
+  if (!mins) return "--:--";
+  const hours = Math.floor(mins / 60);
+  const minutes = mins % 60;
+  return `${hours}:${minutes.toString().padStart(2, "0")}`;
 }
 
 /**
  * Sortable subtask item with drag handle for use in task modals.
  * Uses @dnd-kit/sortable for drag-and-drop reordering.
+ * Supports Sunsama-style time columns when showTimeColumns is true.
  */
 export function SortableSubtaskItem({
   subtask,
   onToggle,
   onDelete,
+  showTimeColumns = false,
 }: SortableSubtaskItemProps) {
   const {
     attributes,
@@ -45,7 +58,7 @@ export function SortableSubtaskItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group flex items-center gap-2 py-1.5 px-2 -mx-2 rounded-md hover:bg-muted/50 transition-colors",
+        "group flex items-center gap-2 py-1.5 rounded-md hover:bg-muted/50 transition-colors",
         isDragging && "opacity-50 bg-muted/30"
       )}
     >
@@ -58,11 +71,11 @@ export function SortableSubtaskItem({
         <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
 
-      {/* Checkbox */}
+      {/* Checkbox - circular style for Sunsama look */}
       <button
         onClick={onToggle}
         className={cn(
-          "flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors",
+          "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors",
           subtask.completed
             ? "border-primary bg-primary text-primary-foreground"
             : "border-muted-foreground/40 hover:border-primary"
@@ -83,15 +96,27 @@ export function SortableSubtaskItem({
         {subtask.title}
       </span>
 
-      {/* Delete button */}
+      {/* Delete button - shows on hover */}
       <Button
         variant="ghost"
         size="icon"
-        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
         onClick={onDelete}
       >
         <X className="h-3 w-3" />
       </Button>
+
+      {/* Time columns for Sunsama-style layout */}
+      {showTimeColumns && (
+        <div className="flex gap-4 text-center shrink-0">
+          <div className="w-14 text-sm font-mono text-muted-foreground">
+            {formatTimeColumn(subtask.actualMins)}
+          </div>
+          <div className="w-14 text-sm font-mono text-muted-foreground">
+            {formatTimeColumn(subtask.plannedMins)}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
