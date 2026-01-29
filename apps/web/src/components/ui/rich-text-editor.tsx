@@ -1,12 +1,10 @@
 "use client";
 
 import { useEditor, EditorContent } from "@tiptap/react";
-import { BubbleMenu } from "@tiptap/react/menus";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import Link from "@tiptap/extension-link";
-import { useCallback, useEffect } from "react";
-import { Bold, Italic, Link as LinkIcon } from "lucide-react";
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 interface RichTextEditorProps {
@@ -75,18 +73,6 @@ export function RichTextEditor({
     }
   }, [editor, value]);
 
-  const setLink = useCallback(() => {
-    if (!editor) return;
-    const previousUrl = editor.getAttributes("link").href;
-    const url = window.prompt("Enter URL", previousUrl);
-    if (url === null) return;
-    if (url === "") {
-      editor.chain().focus().extendMarkRange("link").unsetLink().run();
-      return;
-    }
-    editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
-  }, [editor]);
-
   if (!editor) {
     return (
       <div
@@ -106,44 +92,6 @@ export function RichTextEditor({
         className
       )}
     >
-      {editor && (
-        <BubbleMenu
-          editor={editor}
-          className="flex items-center gap-1 rounded-lg border bg-background p-1 shadow-lg"
-        >
-          <button
-            onClick={() => editor.chain().focus().toggleBold().run()}
-            className={cn(
-              "p-1.5 rounded hover:bg-accent",
-              editor.isActive("bold") && "bg-accent"
-            )}
-            title="Bold"
-          >
-            <Bold className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={cn(
-              "p-1.5 rounded hover:bg-accent",
-              editor.isActive("italic") && "bg-accent"
-            )}
-            title="Italic"
-          >
-            <Italic className="h-4 w-4" />
-          </button>
-          <button
-            onClick={setLink}
-            className={cn(
-              "p-1.5 rounded hover:bg-accent",
-              editor.isActive("link") && "bg-accent"
-            )}
-            title="Link"
-          >
-            <LinkIcon className="h-4 w-4" />
-          </button>
-        </BubbleMenu>
-      )}
-
       <EditorContent editor={editor} />
     </div>
   );
