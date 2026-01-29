@@ -57,6 +57,15 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+
+  /* Subtle focus styles - prevent cut-off rings and reduce visual noise */
+  *:focus {
+    outline: none;
+  }
+
+  *:focus-visible {
+    outline: none;
+  }
 }
 
 /* Custom scrollbar */

@@ -107,7 +107,7 @@ export function ColorSection({ color, onChange }: ColorSectionProps) {
             className={cn(
               "h-8 w-8 rounded-full border-2 transition-all",
               color === option.value
-                ? "ring-2 ring-offset-2 ring-primary border-primary"
+                ? "ring-2 ring-offset-1 ring-primary/60 border-primary"
                 : "border-transparent hover:border-muted-foreground/30"
             )}
             style={{ backgroundColor: option.value }}
