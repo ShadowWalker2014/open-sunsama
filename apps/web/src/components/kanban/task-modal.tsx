@@ -1,5 +1,5 @@
 import * as React from "react";
-import { format } from "date-fns";
+import { format, setHours, setMinutes, differenceInMinutes, addMinutes } from "date-fns";
 import {
   DndContext,
   closestCenter,
@@ -15,16 +15,24 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Plus, Clock, Trash2 } from "lucide-react";
-import type { Task } from "@chronoflow/types";
-import { useUpdateTask, useDeleteTask } from "@/hooks/useTasks";
+import { Plus, Clock, Trash2, Check, Calendar } from "lucide-react";
+import type { Task, Subtask } from "@chronoflow/types";
+import { useUpdateTask, useDeleteTask, useCompleteTask } from "@/hooks/useTasks";
+import { useSubtasks, useCreateSubtask, useUpdateSubtask, useDeleteSubtask, useReorderSubtasks } from "@/hooks/useSubtasks";
+import { useTimeBlocks, useUpdateTimeBlock } from "@/hooks/useTimeBlocks";
 
 import {
   Dialog,
   DialogContent,
   Input,
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui";
-import { SortableSubtaskItem, type Subtask } from "./sortable-subtask-item";
+import { SortableSubtaskItem } from "./sortable-subtask-item";
 import { NotesField } from "./task-modal-form";
 
 interface TaskModalProps {
@@ -41,31 +49,91 @@ function formatTimeDisplay(mins: number | null | undefined): string {
   return `${hours}:${minutes.toString().padStart(2, "0")}`;
 }
 
+// Helper to format duration for display
+function formatDurationDisplay(mins: number | null | undefined): string {
+  if (!mins) return "No estimate";
+  if (mins < 60) return `${mins} min`;
+  const hours = Math.floor(mins / 60);
+  const remaining = mins % 60;
+  if (remaining === 0) return hours === 1 ? "1 hour" : `${hours} hours`;
+  return `${hours}h ${remaining}m`;
+}
+
+// Duration preset options
+const DURATION_PRESETS = [
+  { label: "15 min", value: 15 },
+  { label: "30 min", value: 30 },
+  { label: "45 min", value: 45 },
+  { label: "1 hour", value: 60 },
+  { label: "1.5 hours", value: 90 },
+  { label: "2 hours", value: 120 },
+];
+
 export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [plannedMins, setPlannedMins] = React.useState<number | null>(null);
-  const [subtasks, setSubtasks] = React.useState<Subtask[]>([]);
   const [newSubtaskTitle, setNewSubtaskTitle] = React.useState("");
   const [isAddingSubtask, setIsAddingSubtask] = React.useState(false);
+  const [startTime, setStartTime] = React.useState<string>("");
+  const [isCustomDuration, setIsCustomDuration] = React.useState(false);
+  const [customDurationValue, setCustomDurationValue] = React.useState("");
 
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
+  const completeTask = useCompleteTask();
+  const updateTimeBlock = useUpdateTimeBlock();
+  
+  // Fetch time blocks for this task
+  const { data: timeBlocks = [] } = useTimeBlocks(
+    task ? { taskId: task.id } : undefined
+  );
+  
+  // Get the first (most relevant) time block for this task
+  const activeTimeBlock = React.useMemo(() => {
+    if (!timeBlocks.length) return null;
+    // Sort by start time and get the most recent/upcoming one
+    const sorted = [...timeBlocks].sort(
+      (a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+    );
+    return sorted[0] ?? null;
+  }, [timeBlocks]);
+  
+  // Subtask hooks
+  const { data: subtasks = [] } = useSubtasks(task?.id ?? "");
+  const createSubtask = useCreateSubtask();
+  const updateSubtask = useUpdateSubtask();
+  const deleteSubtaskMutation = useDeleteSubtask();
+  const reorderSubtasks = useReorderSubtasks();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
+  const isCompleted = !!task?.completedAt;
+
   React.useEffect(() => {
     if (task) {
       setTitle(task.title);
       setDescription(task.notes || "");
       setPlannedMins(task.estimatedMins || null);
-      setSubtasks([]);
       setIsAddingSubtask(false);
+      setNewSubtaskTitle("");
+      setIsCustomDuration(false);
+      setCustomDurationValue("");
     }
   }, [task]);
+
+  // Update start time when time block changes
+  React.useEffect(() => {
+    if (activeTimeBlock) {
+      const blockStart = new Date(activeTimeBlock.startTime);
+      setStartTime(format(blockStart, "HH:mm"));
+    } else {
+      setStartTime("");
+    }
+  }, [activeTimeBlock]);
 
   const handleSave = async () => {
     if (!task || !title.trim()) return;
@@ -79,6 +147,69 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     });
   };
 
+  // Handle start time change
+  const handleStartTimeChange = async (newStartTime: string) => {
+    setStartTime(newStartTime);
+    
+    if (!activeTimeBlock || !newStartTime) return;
+    
+    // Parse the new start time
+    const [hours, minutes] = newStartTime.split(":").map(Number);
+    if (hours === undefined || minutes === undefined || isNaN(hours) || isNaN(minutes)) return;
+    
+    // Calculate duration of existing time block
+    const oldStart = new Date(activeTimeBlock.startTime);
+    const oldEnd = new Date(activeTimeBlock.endTime);
+    const durationMins = differenceInMinutes(oldEnd, oldStart);
+    
+    // Create new start time, keeping the same date
+    const newStart = setMinutes(setHours(oldStart, hours), minutes);
+    const newEnd = addMinutes(newStart, durationMins);
+    
+    // Update the time block
+    await updateTimeBlock.mutateAsync({
+      id: activeTimeBlock.id,
+      data: {
+        startTime: newStart,
+        endTime: newEnd,
+      },
+    });
+  };
+
+  // Handle duration change
+  const handleDurationChange = async (newDurationMins: number | null) => {
+    setPlannedMins(newDurationMins);
+    
+    // Update task's estimated time
+    if (task) {
+      await updateTask.mutateAsync({
+        id: task.id,
+        data: { estimatedMins: newDurationMins },
+      });
+    }
+    
+    // If there's an active time block, update its end time
+    if (activeTimeBlock && newDurationMins) {
+      const blockStart = new Date(activeTimeBlock.startTime);
+      const newEnd = addMinutes(blockStart, newDurationMins);
+      
+      await updateTimeBlock.mutateAsync({
+        id: activeTimeBlock.id,
+        data: { endTime: newEnd },
+      });
+    }
+  };
+
+  // Handle custom duration submit
+  const handleCustomDurationSubmit = () => {
+    const mins = parseInt(customDurationValue, 10);
+    if (!isNaN(mins) && mins > 0) {
+      handleDurationChange(mins);
+    }
+    setIsCustomDuration(false);
+    setCustomDurationValue("");
+  };
+
   const handleDelete = async () => {
     if (!task) return;
     if (confirm("Are you sure you want to delete this task?")) {
@@ -87,34 +218,49 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     }
   };
 
-  const addSubtask = () => {
-    if (!newSubtaskTitle.trim()) return;
-    const newSubtask: Subtask = {
-      id: `temp-${Date.now()}`,
-      title: newSubtaskTitle.trim(),
-      completed: false,
-    };
-    setSubtasks([...subtasks, newSubtask]);
+  const handleToggleComplete = async () => {
+    if (!task) return;
+    await completeTask.mutateAsync({ id: task.id, completed: !isCompleted });
+  };
+
+  const addSubtask = async () => {
+    if (!newSubtaskTitle.trim() || !task) return;
+    await createSubtask.mutateAsync({
+      taskId: task.id,
+      data: { title: newSubtaskTitle.trim() },
+    });
     setNewSubtaskTitle("");
   };
 
-  const toggleSubtask = (id: string) => {
-    setSubtasks(subtasks.map((st) => (st.id === id ? { ...st, completed: !st.completed } : st)));
+  const toggleSubtask = async (subtask: Subtask) => {
+    if (!task) return;
+    await updateSubtask.mutateAsync({
+      taskId: task.id,
+      subtaskId: subtask.id,
+      data: { completed: !subtask.completed },
+    });
   };
 
-  const deleteSubtask = (id: string) => {
-    setSubtasks(subtasks.filter((st) => st.id !== id));
+  const handleDeleteSubtask = async (subtaskId: string) => {
+    if (!task) return;
+    await deleteSubtaskMutation.mutateAsync({
+      taskId: task.id,
+      subtaskId,
+    });
   };
 
-  const handleSubtaskDragEnd = (event: DragEndEvent) => {
+  const handleSubtaskDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
-    if (over && active.id !== over.id) {
-      setSubtasks((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
-    }
+    if (!over || !task || active.id === over.id) return;
+    
+    const oldIndex = subtasks.findIndex((item) => item.id === active.id);
+    const newIndex = subtasks.findIndex((item) => item.id === over.id);
+    const newOrder = arrayMove(subtasks, oldIndex, newIndex);
+    
+    await reorderSubtasks.mutateAsync({
+      taskId: task.id,
+      subtaskIds: newOrder.map((st) => st.id),
+    });
   };
 
   const subtaskIds = subtasks.map((st) => st.id);
@@ -133,11 +279,15 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
           <div className="flex items-start gap-3 pr-6">
             {/* Checkbox */}
             <button
-              className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-muted-foreground/40 hover:border-primary transition-colors"
-              onClick={() => {
-                // Toggle complete would go here
-              }}
-            />
+              className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                isCompleted
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-muted-foreground/40 hover:border-primary"
+              }`}
+              onClick={handleToggleComplete}
+            >
+              {isCompleted && <Check className="h-3 w-3" strokeWidth={3} />}
+            </button>
 
             {/* Title and date */}
             <div className="flex-1 min-w-0">
@@ -145,7 +295,9 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 onBlur={() => title !== task.title && handleSave()}
-                className="border-none p-0 text-base font-medium shadow-none focus-visible:ring-0 h-auto"
+                className={`border-none p-0 text-base font-medium shadow-none focus-visible:ring-0 h-auto ${
+                  isCompleted ? "line-through text-muted-foreground" : ""
+                }`}
                 placeholder="Task title"
               />
               {scheduledDate && (
@@ -170,8 +322,8 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                     <SortableSubtaskItem
                       key={subtask.id}
                       subtask={subtask}
-                      onToggle={() => toggleSubtask(subtask.id)}
-                      onDelete={() => deleteSubtask(subtask.id)}
+                      onToggle={() => toggleSubtask(subtask)}
+                      onDelete={() => handleDeleteSubtask(subtask.id)}
                     />
                   ))}
                 </div>
@@ -226,6 +378,107 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                 if (description !== (task.notes || "")) handleSave();
               }}
             />
+          </div>
+
+          {/* Time & Duration Section */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium text-muted-foreground">Time & Duration</h4>
+            
+            <div className="flex items-center gap-4">
+              {/* Start Time - Only show if task has a time block */}
+              {activeTimeBlock && (
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => handleStartTimeChange(e.target.value)}
+                    className="h-8 w-28 text-sm"
+                  />
+                </div>
+              )}
+              
+              {/* Duration */}
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                {isCustomDuration ? (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      value={customDurationValue}
+                      onChange={(e) => setCustomDurationValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleCustomDurationSubmit();
+                        }
+                        if (e.key === "Escape") {
+                          setIsCustomDuration(false);
+                          setCustomDurationValue("");
+                        }
+                      }}
+                      onBlur={handleCustomDurationSubmit}
+                      placeholder="Minutes"
+                      className="h-8 w-20 text-sm"
+                      min={1}
+                      max={480}
+                      autoFocus
+                    />
+                    <span className="text-xs text-muted-foreground">min</span>
+                  </div>
+                ) : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 gap-1.5 text-sm font-normal"
+                      >
+                        {formatDurationDisplay(plannedMins)}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-36">
+                      {DURATION_PRESETS.map((preset) => (
+                        <DropdownMenuItem
+                          key={preset.value}
+                          onClick={() => handleDurationChange(preset.value)}
+                          className={plannedMins === preset.value ? "bg-accent" : ""}
+                        >
+                          {preset.label}
+                        </DropdownMenuItem>
+                      ))}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => setIsCustomDuration(true)}>
+                        Custom...
+                      </DropdownMenuItem>
+                      {plannedMins && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => handleDurationChange(null)}
+                            className="text-muted-foreground"
+                          >
+                            Clear
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
+            </div>
+
+            {/* Time block info */}
+            {activeTimeBlock && (
+              <p className="text-xs text-muted-foreground">
+                Scheduled: {format(new Date(activeTimeBlock.startTime), "h:mm a")} - {format(new Date(activeTimeBlock.endTime), "h:mm a")}
+              </p>
+            )}
+            {!activeTimeBlock && task.scheduledDate && (
+              <p className="text-xs text-muted-foreground">
+                Not scheduled on calendar. Drag task to timeline to add a time block.
+              </p>
+            )}
           </div>
         </div>
 
