@@ -2,10 +2,10 @@ import * as React from "react";
 import { format, isToday, isTomorrow, isPast, isYesterday } from "date-fns";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { Clock } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import type { Task } from "@chronoflow/types";
 import { useTasks } from "@/hooks/useTasks";
-import { cn, formatDuration } from "@/lib/utils";
+import { cn, formatDurationHMM } from "@/lib/utils";
 import { ScrollArea, Skeleton } from "@/components/ui";
 import { SortableTaskCard, TaskCard, TaskCardPlaceholder } from "./task-card";
 import { AddTaskInline } from "./add-task-inline";
@@ -104,18 +104,29 @@ export function DayColumn({
     [pendingTasks]
   );
 
-  // Calculate total estimated time
+  // Calculate total estimated time for all tasks (pending + completed)
   const totalEstimatedMins = React.useMemo(
-    () => pendingTasks.reduce((sum, t) => sum + (t.estimatedMins ?? 0), 0),
-    [pendingTasks]
+    () => [...pendingTasks, ...completedTasks].reduce((sum, t) => sum + (t.estimatedMins ?? 0), 0),
+    [pendingTasks, completedTasks]
   );
 
-  // Get day label
+  // Calculate progress for today column
+  const totalTasks = pendingTasks.length + completedTasks.length;
+  const progressPercent = totalTasks > 0 
+    ? Math.round((completedTasks.length / totalTasks) * 100) 
+    : 0;
+
+  // Get day label - "Today", "Tomorrow", or day name like "Thursday"
   const getDayLabel = () => {
     if (today) return "Today";
     if (tomorrow) return "Tomorrow";
     if (yesterday) return "Yesterday";
     return format(date, "EEEE");
+  };
+
+  // Get formatted date like "January 29"
+  const getFormattedDate = () => {
+    return format(date, "MMMM d");
   };
 
   return (
@@ -131,41 +142,48 @@ export function DayColumn({
         pastDay && "opacity-60"
       )}
     >
-      {/* Day Header - Linear style */}
+      {/* Day Header - Sunsama style */}
       <div
         className={cn(
-          "sticky top-0 z-10 border-b border-border/40 bg-background/95 px-3 py-3 backdrop-blur-sm",
+          "sticky top-0 z-10 border-b border-border/40 bg-background/95 px-3 pt-3 pb-2 backdrop-blur-sm",
           today && "bg-primary/[0.02]"
         )}
       >
-        <div className="flex items-baseline justify-between">
-          <div className="flex items-baseline gap-2">
-            {/* Day name */}
-            <span
-              className={cn(
-                "text-sm font-medium",
-                today ? "text-primary" : "text-foreground"
-              )}
-            >
-              {getDayLabel()}
-            </span>
-            {/* Date number */}
-            <span className="text-sm text-muted-foreground">
-              {format(date, "MMM d")}
-            </span>
-          </div>
+        {/* Day name - large text */}
+        <div
+          className={cn(
+            "text-base font-semibold",
+            today ? "text-primary" : "text-foreground"
+          )}
+        >
+          {getDayLabel()}
+        </div>
+        
+        {/* Date - smaller text below */}
+        <div className="text-sm text-muted-foreground mt-0.5">
+          {getFormattedDate()}
+        </div>
 
-          {/* Stats */}
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            {pendingTasks.length > 0 && (
-              <span>{pendingTasks.length}</span>
-            )}
-            {totalEstimatedMins > 0 && (
-              <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {formatDuration(totalEstimatedMins)}
-              </span>
-            )}
+        {/* Progress bar - only show on Today column */}
+        {today && totalTasks > 0 && (
+          <div className="mt-2 h-1 w-full rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full bg-green-500 transition-all duration-300 ease-out"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+        )}
+
+        {/* Add task row with total time */}
+        <div className="flex items-center justify-between mt-3">
+          <AddTaskInline scheduledDate={dateString} compact />
+          
+          {/* Sort icon and total time */}
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <ArrowUpDown className="h-3.5 w-3.5" />
+            <span className="font-medium">
+              {formatDurationHMM(totalEstimatedMins)}
+            </span>
           </div>
         </div>
       </div>
@@ -231,10 +249,6 @@ export function DayColumn({
         </div>
       </ScrollArea>
 
-      {/* Add Task Button */}
-      <div className="border-t border-border/40 p-2">
-        <AddTaskInline scheduledDate={dateString} />
-      </div>
     </div>
   );
 }

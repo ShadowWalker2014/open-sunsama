@@ -1,91 +1,44 @@
 import * as React from "react";
 import { Plus } from "lucide-react";
-import { useCreateTask } from "@/hooks/useTasks";
-import { Button, Input } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { AddTaskModal } from "./add-task-modal";
 
 interface AddTaskInlineProps {
   scheduledDate: string;
   className?: string;
+  /** Compact mode for header display - Sunsama style */
+  compact?: boolean;
 }
 
 /**
- * Inline task creation component.
- * Shows a button that expands to an input field for quick task creation.
+ * Add task button that opens a modal.
+ * Supports compact mode for Sunsama-style column headers.
  */
-export function AddTaskInline({ scheduledDate, className }: AddTaskInlineProps) {
-  const [isAdding, setIsAdding] = React.useState(false);
-  const [title, setTitle] = React.useState("");
-  const inputRef = React.useRef<HTMLInputElement>(null);
-  const createTask = useCreateTask();
-
-  const handleSubmit = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (!title.trim()) return;
-
-    await createTask.mutateAsync({
-      title: title.trim(),
-      scheduledDate,
-    });
-
-    setTitle("");
-    // Keep the input open for rapid task entry
-    inputRef.current?.focus();
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleSubmit();
-    } else if (e.key === "Escape") {
-      setTitle("");
-      setIsAdding(false);
-    }
-  };
-
-  const handleBlur = () => {
-    // Only close if empty
-    if (!title.trim()) {
-      setIsAdding(false);
-    }
-  };
-
-  React.useEffect(() => {
-    if (isAdding && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isAdding]);
-
-  if (!isAdding) {
-    return (
-      <Button
-        variant="ghost"
-        className={cn(
-          "w-full justify-start gap-2 text-muted-foreground hover:text-foreground",
-          "h-11 sm:h-9", // Touch-friendly height on mobile
-          "active:bg-accent", // Touch feedback
-          className
-        )}
-        onClick={() => setIsAdding(true)}
-      >
-        <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
-        Add task
-      </Button>
-    );
-  }
+export function AddTaskInline({ scheduledDate, className, compact }: AddTaskInlineProps) {
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   return (
-    <form onSubmit={handleSubmit} className={cn("p-1", className)}>
-      <Input
-        ref={inputRef}
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        onKeyDown={handleKeyDown}
-        onBlur={handleBlur}
-        placeholder="What needs to be done?"
-        className="h-11 sm:h-9 text-base sm:text-sm" // Touch-friendly on mobile
-        disabled={createTask.isPending}
+    <>
+      <Button
+        variant="ghost"
+        size={compact ? "sm" : "default"}
+        className={cn(
+          "justify-start gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50",
+          compact ? "h-7 px-2 text-xs" : "w-full h-9 gap-2",
+          className
+        )}
+        onClick={() => setIsModalOpen(true)}
+      >
+        <Plus className={compact ? "h-3.5 w-3.5" : "h-4 w-4"} />
+        Add task
+      </Button>
+
+      <AddTaskModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        scheduledDate={scheduledDate}
       />
-    </form>
+    </>
   );
 }
