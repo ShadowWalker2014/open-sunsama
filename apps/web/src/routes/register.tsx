@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -59,8 +59,8 @@ export default function RegisterPage() {
   return (
     <AuthLayout>
       <AuthHeader
-        title="Create an account"
-        description="Enter your details below to create your account"
+        title="Create account"
+        description="Enter your details to get started"
       />
 
       <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
@@ -69,7 +69,7 @@ export default function RegisterPage() {
           <Input
             id="name"
             type="text"
-            placeholder="John Doe"
+            placeholder="Your name"
             autoComplete="name"
             disabled={isLoading}
             {...register("name", {
@@ -130,7 +130,7 @@ export default function RegisterPage() {
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="confirmPassword">Confirm Password</Label>
+          <Label htmlFor="confirmPassword">Confirm password</Label>
           <Input
             id="confirmPassword"
             type="password"
@@ -150,38 +150,21 @@ export default function RegisterPage() {
           )}
         </div>
 
-        <Button type="submit" disabled={isLoading} className="w-full">
+        <Button type="submit" disabled={isLoading} className="w-full mt-2">
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Create Account
+          Create account
         </Button>
       </form>
 
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            Or continue with
-          </span>
-        </div>
-      </div>
-
-      <Button variant="outline" type="button" disabled={isLoading}>
-        Continue with Google
-      </Button>
-
       <AuthFooter>
         Already have an account?{" "}
-        <a
-          href="/login"
-          className="underline underline-offset-4 hover:text-primary"
+        <Link
+          to="/login"
+          className="text-foreground hover:underline underline-offset-4"
         >
           Sign in
-        </a>
+        </Link>
       </AuthFooter>
     </AuthLayout>
   );
 }
-
-// Component exported as default above

@@ -50,8 +50,8 @@ export default function LoginPage() {
   return (
     <AuthLayout>
       <AuthHeader
-        title="Welcome back"
-        description="Enter your email to sign in to your account"
+        title="Sign in"
+        description="Enter your email and password"
       />
 
       <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
@@ -83,7 +83,7 @@ export default function LoginPage() {
             <Label htmlFor="password">Password</Label>
             <Link
               to="/forgot-password"
-              className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Forgot password?
             </Link>
@@ -107,32 +107,17 @@ export default function LoginPage() {
           )}
         </div>
 
-        <Button type="submit" disabled={isLoading} className="w-full">
+        <Button type="submit" disabled={isLoading} className="w-full mt-2">
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Sign In
+          Sign in
         </Button>
       </form>
-
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            Or continue with
-          </span>
-        </div>
-      </div>
-
-      <Button variant="outline" type="button" disabled={isLoading}>
-        Continue with Google
-      </Button>
 
       <AuthFooter>
         Don&apos;t have an account?{" "}
         <Link
           to="/register"
-          className="underline underline-offset-4 hover:text-primary"
+          className="text-foreground hover:underline underline-offset-4"
         >
           Sign up
         </Link>
@@ -140,5 +125,3 @@ export default function LoginPage() {
     </AuthLayout>
   );
 }
-
-// Component exported as default above
