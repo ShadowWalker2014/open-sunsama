@@ -119,3 +119,12 @@ export type {
   ReminderTimingOption,
 } from './notification.js';
 export { REMINDER_TIMING_OPTIONS } from './notification.js';
+
+// Attachment types
+export type {
+  Attachment,
+  CreateAttachmentInput,
+  UpdateAttachmentInput,
+  AttachmentFilterInput,
+  AttachmentWithMeta,
+} from './attachment.js';

@@ -21,6 +21,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   timeBlocks: many(timeBlocks),
   apiKeys: many(apiKeys),
   notificationPreferences: one(notificationPreferences),
+  attachments: many(attachments),
 }));
 
 // Import types for relations (will be defined in their respective files)
@@ -28,6 +29,7 @@ import { tasks } from './tasks';
 import { timeBlocks } from './time-blocks';
 import { apiKeys } from './api-keys';
 import { notificationPreferences } from './notification-preferences';
+import { attachments } from './attachments';
 
 // Zod schemas for validation
 export const insertUserSchema = createInsertSchema(users, {

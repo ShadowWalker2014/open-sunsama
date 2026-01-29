@@ -53,3 +53,11 @@ export type {
   NewNotificationPreferences,
   UpdateNotificationPreferences,
 } from './notification-preferences';
+
+export {
+  attachments,
+  attachmentsRelations,
+  insertAttachmentSchema,
+  selectAttachmentSchema,
+} from './attachments';
+export type { Attachment, NewAttachment } from './attachments';

@@ -4,6 +4,7 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import { users } from './users';
 import { timeBlocks } from './time-blocks';
+import { attachments } from './attachments';
 
 export const tasks = pgTable('tasks', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -30,6 +31,7 @@ export const tasksRelations = relations(tasks, ({ one, many }) => ({
     references: [users.id],
   }),
   timeBlocks: many(timeBlocks),
+  attachments: many(attachments),
 }));
 
 // Priority type
