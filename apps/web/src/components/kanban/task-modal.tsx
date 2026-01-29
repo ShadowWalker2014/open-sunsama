@@ -203,7 +203,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
             </div>
           </div>
 
-          {/* Description - now second */}
+          {/* Notes - now second */}
           <DescriptionField
             description={description}
             isEditing={isEditingDescription}

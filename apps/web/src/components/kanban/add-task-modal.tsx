@@ -128,9 +128,9 @@ export function AddTaskModal({
               <SubtaskList subtasks={subtasks} onSubtasksChange={setSubtasks} />
             </div>
 
-            {/* Description - second */}
+            {/* Notes - second */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-muted-foreground">Description</Label>
+              <Label className="text-xs font-medium text-muted-foreground">Notes</Label>
               <RichTextEditor
                 value={description}
                 onChange={setDescription}

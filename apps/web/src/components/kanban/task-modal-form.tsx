@@ -44,14 +44,14 @@ export function DescriptionField({
   return (
     <div className="space-y-1.5">
       <Label className="text-xs font-medium text-muted-foreground">
-        Description
+        Notes
       </Label>
       {isEditing ? (
         <div onBlur={onBlur}>
           <RichTextEditor
             value={description}
             onChange={onChange}
-            placeholder="Add a more detailed description..."
+            placeholder="Notes..."
             minHeight="100px"
           />
         </div>
@@ -67,7 +67,7 @@ export function DescriptionField({
           {description ? (
             <HtmlContent html={description} />
           ) : (
-            <span className="text-sm">Add a description...</span>
+            <span className="text-sm">Notes...</span>
           )}
         </div>
       )}
