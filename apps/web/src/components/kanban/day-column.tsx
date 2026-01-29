@@ -5,7 +5,7 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { ArrowUpDown } from "lucide-react";
 import type { Task } from "@chronoflow/types";
 import { useTasks } from "@/hooks/useTasks";
-import { cn, formatDurationHMM } from "@/lib/utils";
+import { cn, formatDuration } from "@/lib/utils";
 import { ScrollArea, Skeleton } from "@/components/ui";
 import { SortableTaskCard, TaskCard, TaskCardPlaceholder } from "./task-card";
 import { AddTaskInline } from "./add-task-inline";
@@ -182,7 +182,7 @@ export function DayColumn({
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <ArrowUpDown className="h-3.5 w-3.5" />
             <span className="font-medium">
-              {formatDurationHMM(totalEstimatedMins)}
+              {formatDuration(totalEstimatedMins)}
             </span>
           </div>
         </div>

@@ -43,15 +43,6 @@ export function formatDuration(minutes: number): string {
 }
 
 /**
- * Format duration in minutes to h:mm format (e.g., "6:00" for 6 hours)
- */
-export function formatDurationHMM(minutes: number): string {
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return `${hours}:${mins.toString().padStart(2, "0")}`;
-}
-
-/**
  * Generate a unique ID
  */
 export function generateId(): string {
