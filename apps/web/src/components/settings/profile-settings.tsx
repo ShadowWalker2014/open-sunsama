@@ -1,7 +1,8 @@
 import * as React from "react";
 import { useForm } from "react-hook-form";
-import { Loader2 } from "lucide-react";
+import { Loader2, Camera } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useUploadAvatar, validateAvatarFile } from "@/hooks/useUploadAvatar";
 import {
   Button,
   Input,
@@ -17,6 +18,7 @@ import {
   AvatarImage,
 } from "@/components/ui";
 import { toast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface ProfileForm {
   name: string;
@@ -30,6 +32,8 @@ interface ProfileForm {
 export function ProfileSettings() {
   const { user, updateUser } = useAuth();
   const [isLoading, setIsLoading] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const uploadAvatarMutation = useUploadAvatar();
 
   const {
     register,
@@ -52,6 +56,42 @@ export function ProfileSettings() {
       .toUpperCase()
       .slice(0, 2);
   }, [user]);
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file before uploading
+    const validation = validateAvatarFile(file);
+    if (!validation.valid) {
+      toast({
+        variant: "destructive",
+        title: "Invalid file",
+        description: validation.error,
+      });
+      // Reset the input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
+
+    // Upload the file
+    uploadAvatarMutation.mutate(file, {
+      onSettled: () => {
+        // Reset the input so the same file can be selected again if needed
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      },
+    });
+  };
+
+  const isUploadingAvatar = uploadAvatarMutation.isPending;
 
   const onSubmit = async (data: ProfileForm) => {
     setIsLoading(true);
@@ -88,13 +128,63 @@ export function ProfileSettings() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Avatar Section */}
           <div className="flex items-center gap-4">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={user?.avatarUrl ?? undefined} />
-              <AvatarFallback className="text-lg">{userInitials}</AvatarFallback>
-            </Avatar>
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+              aria-label="Upload avatar"
+            />
+            
+            {/* Clickable avatar with hover overlay */}
+            <button
+              type="button"
+              onClick={handleAvatarClick}
+              disabled={isUploadingAvatar}
+              className="group relative rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              aria-label="Change avatar"
+            >
+              <Avatar className="h-20 w-20">
+                <AvatarImage src={user?.avatarUrl ?? undefined} />
+                <AvatarFallback className="text-lg">{userInitials}</AvatarFallback>
+              </Avatar>
+              
+              {/* Hover overlay with camera icon */}
+              <div
+                className={cn(
+                  "absolute inset-0 flex items-center justify-center rounded-full transition-opacity",
+                  "bg-black/60 dark:bg-black/70",
+                  isUploadingAvatar
+                    ? "opacity-100"
+                    : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
+                )}
+              >
+                {isUploadingAvatar ? (
+                  <Loader2 className="h-6 w-6 animate-spin text-white" />
+                ) : (
+                  <Camera className="h-6 w-6 text-white" />
+                )}
+              </div>
+            </button>
+            
             <div>
-              <Button type="button" variant="outline" size="sm">
-                Change Avatar
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleAvatarClick}
+                disabled={isUploadingAvatar}
+              >
+                {isUploadingAvatar ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  "Change Avatar"
+                )}
               </Button>
               <p className="mt-1 text-xs text-muted-foreground">
                 JPG, PNG or GIF. Max 2MB.

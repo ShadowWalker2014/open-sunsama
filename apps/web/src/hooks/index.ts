@@ -77,3 +77,8 @@ export {
   type CreateSubtaskInput,
   type UpdateSubtaskInput,
 } from "./useSubtasks";
+export {
+  useUploadAvatar,
+  validateAvatarFile,
+  type UploadAvatarResponse,
+} from "./useUploadAvatar";
