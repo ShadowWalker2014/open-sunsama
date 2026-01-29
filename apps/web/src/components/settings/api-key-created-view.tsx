@@ -37,7 +37,7 @@ export function ApiKeyCreatedView({
         description: "API key copied to clipboard",
       });
       setTimeout(() => setCopied(false), 2000);
-    } catch (_error) {
+    } catch {
       toast({
         variant: "destructive",
         title: "Copy failed",

@@ -26,7 +26,7 @@ export function CreateApiKeyDialog({
     try {
       const response = await onSubmit(data);
       setCreatedKey(response);
-    } catch (_error) {
+    } catch {
       // Error handled by mutation
     }
   };

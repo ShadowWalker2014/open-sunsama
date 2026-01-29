@@ -1,5 +1,5 @@
 import * as React from "react";
-import { format, isSameDay, setHours, setMinutes, addMinutes } from "date-fns";
+import { format, isSameDay, setHours, addMinutes } from "date-fns";
 import type { TimeBlock as TimeBlockType } from "@chronoflow/types";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui";

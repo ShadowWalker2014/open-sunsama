@@ -1,6 +1,5 @@
-// @ts-nocheck - Route typing handled by TanStack Router
 import * as React from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,7 +14,7 @@ interface RegisterForm {
   confirmPassword: string;
 }
 
-function RegisterPage() {
+export default function RegisterPage() {
   const navigate = useNavigate();
   const { register: registerUser, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = React.useState(false);
@@ -185,6 +184,4 @@ function RegisterPage() {
   );
 }
 
-export const Route = createFileRoute("/register")({
-  component: RegisterPage,
-});
+// Component exported as default above

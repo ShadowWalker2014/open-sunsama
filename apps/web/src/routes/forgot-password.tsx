@@ -1,11 +1,9 @@
-// @ts-nocheck
 import * as React from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { Loader2, ArrowLeft, Mail, CheckCircle2 } from "lucide-react";
 import { AuthLayout, AuthHeader, AuthFooter } from "@/components/layout/auth-layout";
 import { Button, Input, Label } from "@/components/ui";
-import { toast } from "@/hooks/use-toast";
 import { getApi } from "@/lib/api";
 
 interface ForgotPasswordForm {
@@ -31,7 +29,7 @@ export default function ForgotPasswordPage() {
       await api.auth.requestPasswordReset(data.email);
       setSubmittedEmail(data.email);
       setIsSubmitted(true);
-    } catch (error) {
+    } catch {
       // Even on error, show success message to prevent email enumeration
       setSubmittedEmail(data.email);
       setIsSubmitted(true);

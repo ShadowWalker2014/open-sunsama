@@ -1,4 +1,3 @@
-// @ts-nocheck
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { Loader2, Eye, EyeOff, Check } from "lucide-react";
@@ -240,8 +239,7 @@ export function PasswordSettings() {
 
           <div className="flex justify-end">
             <Button type="submit" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Change Password
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Change Password
             </Button>
           </div>
         </form>

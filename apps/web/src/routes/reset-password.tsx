@@ -1,4 +1,3 @@
-// @ts-nocheck
 import * as React from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
@@ -7,7 +6,7 @@ import { AuthLayout, AuthHeader, AuthFooter } from "@/components/layout/auth-lay
 import { Button, Input, Label } from "@/components/ui";
 import { toast } from "@/hooks/use-toast";
 import { getApi } from "@/lib/api";
-import { PasswordRequirementsList, PASSWORD_REQUIREMENTS } from "./password-requirements";
+import { PasswordRequirementsList } from "./password-requirements";
 import { ResetPasswordSuccessState, ResetPasswordErrorState } from "./reset-password-states";
 
 interface ResetPasswordForm {

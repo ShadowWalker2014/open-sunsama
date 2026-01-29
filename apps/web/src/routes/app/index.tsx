@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { KanbanBoard } from "@/components/kanban";
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileBacklogSheet } from "@/components/layout/mobile-backlog-sheet";

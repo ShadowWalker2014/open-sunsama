@@ -1,7 +1,6 @@
 import * as React from "react";
 import { format } from "date-fns";
 import { Clock, ListTodo } from "lucide-react";
-import type { Task } from "@chronoflow/types";
 import { useCreateTimeBlock, useTasks } from "@/hooks";
 import {
   Button,

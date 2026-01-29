@@ -1,4 +1,3 @@
-// @ts-nocheck
 import * as React from "react";
 import { Outlet, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
