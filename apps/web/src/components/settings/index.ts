@@ -6,3 +6,6 @@ export { RevokeKeyDialog } from "./revoke-key-dialog";
 export { PasswordSettings } from "./password-settings";
 export { TaskReminderDialog } from "./task-reminder-dialog";
 export { EmailNotificationsDialog } from "./email-notifications-dialog";
+export { ProfileSettings } from "./profile-settings";
+export { AppearanceSettings } from "./appearance-settings";
+export { NotificationSettings } from "./notification-settings";
