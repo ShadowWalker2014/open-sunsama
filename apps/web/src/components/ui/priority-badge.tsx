@@ -1,14 +1,15 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TaskPriority } from "@chronoflow/types";
 
 /**
  * Linear-style priority indicators
- * P0 (Urgent): Red/orange, filled
- * P1 (High): Orange/yellow
- * P2 (Medium): Blue/gray (default, subtle)
- * P3 (Low): Gray, very subtle
+ * P0 (Urgent): Red background, white text - always visible
+ * P1 (High): Orange/amber background - always visible  
+ * P2 (Medium): Hidden by default (default priority, keep it clean)
+ * P3 (Low): Hidden by default (very subtle)
  */
 
 const priorityBadgeVariants = cva(
@@ -57,6 +58,27 @@ const priorityDotVariants = cva(
   }
 );
 
+/**
+ * Linear/Todoist-style priority tag variants
+ * Small, minimal tags that only show for important priorities
+ */
+const priorityTagVariants = cva(
+  "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide transition-colors duration-150",
+  {
+    variants: {
+      priority: {
+        P0: "bg-red-500 text-white",
+        P1: "bg-amber-500/90 text-white",
+        P2: "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300",
+        P3: "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500",
+      },
+    },
+    defaultVariants: {
+      priority: "P2",
+    },
+  }
+);
+
 export interface PriorityBadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof priorityBadgeVariants> {
@@ -77,6 +99,13 @@ const PRIORITY_SHORT_LABELS: Record<TaskPriority, string> = {
   P1: "P1",
   P2: "P2",
   P3: "P3",
+};
+
+const PRIORITY_TAG_LABELS: Record<TaskPriority, string> = {
+  P0: "Urgent",
+  P1: "High",
+  P2: "Med",
+  P3: "Low",
 };
 
 export function PriorityBadge({
@@ -180,4 +209,38 @@ export function PriorityIcon({
   );
 }
 
-export { PRIORITY_LABELS, PRIORITY_SHORT_LABELS, priorityBadgeVariants };
+/**
+ * Linear/Todoist-style priority tag for task cards
+ * Only renders for P0 and P1 (keeps UI clean for default/low priority)
+ */
+export interface PriorityTagProps {
+  priority: TaskPriority;
+  showIcon?: boolean;
+  className?: string;
+}
+
+export function PriorityTag({
+  priority,
+  showIcon = true,
+  className,
+}: PriorityTagProps) {
+  // Only show tag for urgent (P0) and high (P1) priorities
+  // P2 and P3 are hidden to keep the UI clean
+  if (priority === "P2" || priority === "P3") {
+    return null;
+  }
+
+  return (
+    <span
+      className={cn(priorityTagVariants({ priority }), className)}
+      title={PRIORITY_LABELS[priority]}
+    >
+      {showIcon && priority === "P0" && (
+        <AlertTriangle className="h-2.5 w-2.5" />
+      )}
+      {PRIORITY_TAG_LABELS[priority]}
+    </span>
+  );
+}
+
+export { PRIORITY_LABELS, PRIORITY_SHORT_LABELS, priorityBadgeVariants, priorityTagVariants };

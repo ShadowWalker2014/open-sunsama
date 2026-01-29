@@ -2,7 +2,7 @@ import * as React from "react";
 import { Check, Clock } from "lucide-react";
 import type { Task } from "@chronoflow/types";
 import { cn, formatDuration } from "@/lib/utils";
-import { PriorityDot } from "@/components/ui/priority-badge";
+import { PriorityTag } from "@/components/ui/priority-badge";
 
 interface TaskCardContentProps {
   task: Task;
@@ -29,9 +29,6 @@ export function TaskCardContent({
   onHoverChange,
   className,
 }: TaskCardContentProps) {
-  // Only show high priority indicators (P0, P1) to keep it minimal
-  const showPriority = task.priority === "P0" || task.priority === "P1";
-
   return (
     <div
       className={cn(
@@ -74,24 +71,22 @@ export function TaskCardContent({
 
       {/* Content */}
       <div className="min-w-0 flex-1 space-y-1">
-        {/* Title row with priority */}
-        <div className="flex items-start gap-2">
-          <p
-            className={cn(
-              "flex-1 text-sm font-medium leading-snug text-foreground",
-              isCompleted && "line-through text-muted-foreground"
-            )}
-          >
-            {task.title}
-          </p>
-          {/* Priority dot - only show for P0/P1 */}
-          {showPriority && !isCompleted && (
-            <PriorityDot priority={task.priority} size="sm" className="mt-1.5 shrink-0" />
+        {/* Title */}
+        <p
+          className={cn(
+            "text-sm font-medium leading-snug text-foreground",
+            isCompleted && "line-through text-muted-foreground"
           )}
-        </div>
+        >
+          {task.title}
+        </p>
 
-        {/* Meta info */}
-        <div className="flex items-center gap-2">
+        {/* Meta info row with priority tag and estimated time */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Priority tag - only shows for P0/P1, hidden for P2/P3 */}
+          {!isCompleted && (
+            <PriorityTag priority={task.priority} />
+          )}
           {/* Estimated time */}
           {task.estimatedMins && !isCompleted && (
             <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { format } from "date-fns";
-import { ChevronLeft, ChevronRight, CalendarDays, ArrowUpDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays, ArrowUpDown, Check } from "lucide-react";
 import type { TaskSortBy } from "@chronoflow/types";
 import {
   Button,
@@ -10,12 +10,32 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui";
 
-export type SortOption = TaskSortBy;
+// Extended sort option that includes direction
+export type SortOption = "position" | "priority-desc" | "priority-asc" | "createdAt-desc" | "createdAt-asc";
+
+// Map to extract base sort field and direction
+export function parseSortOption(sort: SortOption): { field: TaskSortBy; direction: "asc" | "desc" } {
+  switch (sort) {
+    case "priority-desc":
+      return { field: "priority", direction: "desc" };
+    case "priority-asc":
+      return { field: "priority", direction: "asc" };
+    case "createdAt-desc":
+      return { field: "createdAt", direction: "desc" };
+    case "createdAt-asc":
+      return { field: "createdAt", direction: "asc" };
+    case "position":
+    default:
+      return { field: "position", direction: "asc" };
+  }
+}
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: "position", label: "Manual" },
-  { value: "priority", label: "Priority" },
-  { value: "createdAt", label: "Created" },
+  { value: "priority-desc", label: "Priority (High → Low)" },
+  { value: "priority-asc", label: "Priority (Low → High)" },
+  { value: "createdAt-desc", label: "Date (Newest first)" },
+  { value: "createdAt-asc", label: "Date (Oldest first)" },
 ];
 
 // localStorage key for persisting sort preference
@@ -31,6 +51,8 @@ interface KanbanBoardToolbarProps {
   onSortChange: (sort: SortOption) => void;
 }
 
+const VALID_SORT_OPTIONS: SortOption[] = ["position", "priority-desc", "priority-asc", "createdAt-desc", "createdAt-asc"];
+
 /**
  * Hook to manage sort preference with localStorage persistence
  */
@@ -38,7 +60,7 @@ export function useSortPreference(): [SortOption, (sort: SortOption) => void] {
   const [sortBy, setSortBy] = React.useState<SortOption>(() => {
     if (typeof window === "undefined") return "position";
     const stored = localStorage.getItem(SORT_STORAGE_KEY);
-    if (stored && ["position", "priority", "createdAt"].includes(stored)) {
+    if (stored && VALID_SORT_OPTIONS.includes(stored as SortOption)) {
       return stored as SortOption;
     }
     return "position";
@@ -109,18 +131,16 @@ export function KanbanBoardToolbar({
               <span>{currentSortLabel}</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="w-52">
             {SORT_OPTIONS.map((option) => (
               <DropdownMenuItem
                 key={option.value}
                 onClick={() => onSortChange(option.value)}
-                className={sortBy === option.value ? "bg-accent" : ""}
+                className="flex items-center justify-between"
               >
-                {option.label}
+                <span>{option.label}</span>
                 {sortBy === option.value && (
-                  <span className="ml-auto text-xs text-muted-foreground">
-                    Current
-                  </span>
+                  <Check className="h-4 w-4 text-primary" />
                 )}
               </DropdownMenuItem>
             ))}

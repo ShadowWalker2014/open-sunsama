@@ -3,12 +3,13 @@ import { format, isToday, isTomorrow, isPast, isYesterday } from "date-fns";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Clock } from "lucide-react";
-import type { Task, TaskSortBy } from "@chronoflow/types";
+import type { Task } from "@chronoflow/types";
 import { useTasks } from "@/hooks/useTasks";
 import { cn, formatDuration } from "@/lib/utils";
 import { ScrollArea, Skeleton } from "@/components/ui";
-import { TaskCard, TaskCardPlaceholder } from "./task-card";
+import { SortableTaskCard, TaskCard, TaskCardPlaceholder } from "./task-card";
 import { AddTaskInline } from "./add-task-inline";
+import { type SortOption, parseSortOption } from "./kanban-board-toolbar";
 
 // Priority order for sorting (lower number = higher priority)
 const PRIORITY_ORDER: Record<string, number> = {
@@ -24,7 +25,7 @@ interface DayColumnProps {
   onSelectTask: (task: Task) => void;
   isOver?: boolean;
   activeTaskId?: string | null;
-  sortBy?: TaskSortBy;
+  sortBy?: SortOption;
 }
 
 /**
@@ -54,15 +55,20 @@ export function DayColumn({
   const pastDay = isPast(date) && !today && !yesterday;
   const isDropTarget = isOver || isOverDroppable;
 
-  // Sort function based on sortBy
+  // Sort function based on sortBy with direction support
   const sortTasks = React.useCallback(
     (taskList: Task[]) => {
       const sorted = [...taskList];
-      switch (sortBy) {
+      const { field, direction } = parseSortOption(sortBy);
+      
+      switch (field) {
         case "priority":
           return sorted.sort((a, b) => {
-            const priorityDiff =
-              (PRIORITY_ORDER[a.priority] ?? 2) - (PRIORITY_ORDER[b.priority] ?? 2);
+            const priorityA = PRIORITY_ORDER[a.priority] ?? 2;
+            const priorityB = PRIORITY_ORDER[b.priority] ?? 2;
+            const priorityDiff = direction === "desc" 
+              ? priorityA - priorityB  // High to Low (P0=0 first)
+              : priorityB - priorityA; // Low to High (P3=3 first)
             if (priorityDiff !== 0) return priorityDiff;
             return a.position - b.position;
           });
@@ -70,7 +76,9 @@ export function DayColumn({
           return sorted.sort((a, b) => {
             const dateA = new Date(a.createdAt).getTime();
             const dateB = new Date(b.createdAt).getTime();
-            return dateB - dateA; // Newest first
+            return direction === "desc" 
+              ? dateB - dateA  // Newest first
+              : dateA - dateB; // Oldest first
           });
         case "position":
         default:
@@ -178,7 +186,7 @@ export function DayColumn({
                 strategy={verticalListSortingStrategy}
               >
                 {pendingTasks.map((task) => (
-                  <TaskCard
+                  <SortableTaskCard
                     key={task.id}
                     task={task}
                     onSelect={onSelectTask}
