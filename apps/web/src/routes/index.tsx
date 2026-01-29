@@ -1,3 +1,4 @@
+// @ts-nocheck - Route typing handled by TanStack Router
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 /**

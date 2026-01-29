@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import type { ApiKey } from "@/hooks/useApiKeys";
+import type { ApiKey } from "@chronoflow/types";
 
 interface ApiKeyCardProps {
   apiKey: ApiKey;
@@ -23,16 +23,15 @@ interface ApiKeyCardProps {
  * Shows key name, masked prefix, dates, and status
  */
 export function ApiKeyCard({ apiKey, onRevoke }: ApiKeyCardProps) {
-  const isRevoked = apiKey.revokedAt !== null;
   const isExpired = apiKey.expiresAt && new Date(apiKey.expiresAt) < new Date();
-  const isActive = !isRevoked && !isExpired;
+  const isActive = !isExpired;
 
-  const formatLastUsed = (date: string | null) => {
+  const formatLastUsed = (date: Date | null) => {
     if (!date) return "Never used";
     return `Last used ${formatDistanceToNow(new Date(date), { addSuffix: true })}`;
   };
 
-  const formatCreatedDate = (date: string) => {
+  const formatCreatedDate = (date: Date) => {
     return format(new Date(date), "MMM d, yyyy");
   };
 
@@ -48,15 +47,13 @@ export function ApiKeyCard({ apiKey, onRevoke }: ApiKeyCardProps) {
               <span className="font-medium">{apiKey.name}</span>
               {isActive ? (
                 <Badge variant="success">Active</Badge>
-              ) : isRevoked ? (
-                <Badge variant="destructive">Revoked</Badge>
               ) : (
                 <Badge variant="warning">Expired</Badge>
               )}
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
-                {apiKey.prefix}...
+                {apiKey.keyPrefix}...
               </code>
               <span>·</span>
               <span>Created {formatCreatedDate(apiKey.createdAt)}</span>

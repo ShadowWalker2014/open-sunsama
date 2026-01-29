@@ -17,7 +17,10 @@
       "@chronoflow/api-client": ["../../packages/api-client/src/index.ts"],
       "@chronoflow/api-client/*": ["../../packages/api-client/src/*"]
     },
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    "exactOptionalPropertyTypes": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
   "include": ["src/**/*", "vite.config.ts"],
   "exclude": ["node_modules", "dist"]

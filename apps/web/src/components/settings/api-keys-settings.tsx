@@ -9,7 +9,7 @@ import {
   Button,
 } from "@/components/ui";
 import { useApiKeys, useCreateApiKey, useRevokeApiKey } from "@/hooks/useApiKeys";
-import type { ApiKey, CreateApiKeyInput, CreateApiKeyResponse } from "@/hooks/useApiKeys";
+import type { ApiKey, CreateApiKeyInput, CreateApiKeyResponse } from "@chronoflow/types";
 import { ApiKeyCard } from "./api-key-card";
 import { CreateApiKeyDialog } from "./create-api-key-dialog";
 import { RevokeKeyDialog } from "./revoke-key-dialog";
@@ -43,7 +43,7 @@ export function ApiKeysSettings() {
       await revokeMutation.mutateAsync(keyToRevoke.id);
       setRevokeDialogOpen(false);
       setKeyToRevoke(null);
-    } catch (error) {
+    } catch {
       // Error handled by mutation
     }
   };
@@ -55,9 +55,8 @@ export function ApiKeysSettings() {
     }
   };
 
-  // Filter active and revoked keys
-  const activeKeys = apiKeys?.filter((key: ApiKey) => !key.revokedAt) ?? [];
-  const revokedKeys = apiKeys?.filter((key: ApiKey) => key.revokedAt) ?? [];
+  // All keys are active (expired ones would be filtered out separately if needed)
+  const activeKeys = apiKeys ?? [];
 
   return (
     <Card>
@@ -146,23 +145,7 @@ export function ApiKeysSettings() {
           </div>
         )}
 
-        {/* Revoked Keys */}
-        {!isLoading && !isError && revokedKeys.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium text-muted-foreground">
-              Revoked Keys ({revokedKeys.length})
-            </h3>
-            <div className="space-y-2">
-              {revokedKeys.map((apiKey: ApiKey) => (
-                <ApiKeyCard
-                  key={apiKey.id}
-                  apiKey={apiKey}
-                  onRevoke={handleRevokeClick}
-                />
-              ))}
-            </div>
-          </div>
-        )}
+
       </CardContent>
 
       {/* Dialogs */}

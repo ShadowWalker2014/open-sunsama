@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Link } from "@tanstack/react-router";
 import {
   Calendar,
   LayoutGrid,
@@ -65,20 +64,20 @@ export function Header({ className }: HeaderProps) {
       <div className="container flex h-14 items-center">
         {/* Logo */}
         <div className="mr-4 flex">
-          <Link to="/app" className="mr-6 flex items-center space-x-2">
+          <a href="/app" className="mr-6 flex items-center space-x-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
               <Calendar className="h-4 w-4 text-primary-foreground" />
             </div>
             <span className="hidden font-bold sm:inline-block">Chronoflow</span>
-          </Link>
+          </a>
         </div>
 
         {/* Navigation */}
         <nav className="flex items-center gap-1">
-          <NavLink to="/app" icon={<LayoutGrid className="h-4 w-4" />}>
+          <NavLink href="/app" icon={<LayoutGrid className="h-4 w-4" />}>
             Tasks
           </NavLink>
-          <NavLink to="/app/calendar" icon={<Calendar className="h-4 w-4" />}>
+          <NavLink href="/app/calendar" icon={<Calendar className="h-4 w-4" />}>
             Calendar
           </NavLink>
         </nav>
@@ -129,16 +128,16 @@ export function Header({ className }: HeaderProps) {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link to="/app/settings" className="w-full cursor-pointer">
+                <a href="/app/settings" className="w-full cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
                   Profile
-                </Link>
+                </a>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/app/settings" className="w-full cursor-pointer">
+                <a href="/app/settings" className="w-full cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
                   Settings
-                </Link>
+                </a>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -157,23 +156,28 @@ export function Header({ className }: HeaderProps) {
 }
 
 interface NavLinkProps {
-  to: string;
+  href: string;
   icon?: React.ReactNode;
   children: React.ReactNode;
 }
 
-function NavLink({ to, icon, children }: NavLinkProps) {
+function NavLink({ href, icon, children }: NavLinkProps) {
+  // Check if current path matches for active state
+  const isActive = typeof window !== "undefined" && (
+    (href === "/app" && window.location.pathname === "/app") ||
+    (href !== "/app" && window.location.pathname.startsWith(href))
+  );
+  
   return (
-    <Link
-      to={to}
-      className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground [&.active]:bg-accent [&.active]:text-accent-foreground"
-      activeProps={{
-        className: "active",
-      }}
-      activeOptions={{ exact: to === "/app" }}
+    <a
+      href={href}
+      className={cn(
+        "inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
+        isActive && "bg-accent text-accent-foreground"
+      )}
     >
       {icon}
       <span className="hidden sm:inline">{children}</span>
-    </Link>
+    </a>
   );
 }

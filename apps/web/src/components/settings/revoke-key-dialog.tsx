@@ -8,7 +8,7 @@ import {
   DialogTitle,
   Button,
 } from "@/components/ui";
-import type { ApiKey } from "@/hooks/useApiKeys";
+import type { ApiKey } from "@chronoflow/types";
 
 interface RevokeKeyDialogProps {
   apiKey: ApiKey | null;
@@ -56,7 +56,7 @@ export function RevokeKeyDialog({
             <div className="rounded-lg border bg-muted/50 p-3">
               <p className="font-medium">{apiKey.name}</p>
               <code className="text-xs text-muted-foreground">
-                {apiKey.prefix}...
+                {apiKey.keyPrefix}...
               </code>
             </div>
           )}

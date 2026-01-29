@@ -14,7 +14,7 @@ import {
 } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
-import type { CreateApiKeyInput, CreateApiKeyResponse } from "@/hooks/useApiKeys";
+import type { CreateApiKeyInput, CreateApiKeyResponse, ApiKeyScope } from "@chronoflow/types";
 
 interface CreateApiKeyDialogProps {
   open: boolean;
@@ -83,7 +83,7 @@ export function CreateApiKeyDialog({
 
     const input: CreateApiKeyInput = {
       name: data.name,
-      scopes: selectedScopes,
+      scopes: selectedScopes as ApiKeyScope[],
       expiresAt: data.expiresAt || null,
     };
 

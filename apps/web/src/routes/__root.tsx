@@ -1,4 +1,3 @@
-import * as React from "react";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { Toaster } from "@/components/ui/toaster";
 
