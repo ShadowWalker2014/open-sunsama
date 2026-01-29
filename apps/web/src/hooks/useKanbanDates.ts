@@ -72,8 +72,11 @@ export function useKanbanDates({
     if (hasScrolledToTodayRef.current) return;
     const todayIndex = dates.findIndex((d) => isToday(d.date));
     if (todayIndex >= 0) {
-      virtualizer.scrollToIndex(todayIndex, { align: "start" });
-      hasScrolledToTodayRef.current = true;
+      // Use requestAnimationFrame to ensure the DOM is ready and measured
+      requestAnimationFrame(() => {
+        virtualizer.scrollToIndex(todayIndex, { align: "start" });
+        hasScrolledToTodayRef.current = true;
+      });
     }
   }, [dates, virtualizer]);
 

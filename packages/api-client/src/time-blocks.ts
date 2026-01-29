@@ -16,131 +16,48 @@ import type {
 import type { ChronoflowClient, RequestOptions } from "./client.js";
 
 /**
+ * Format a Date or string to HH:mm format for API
+ */
+function formatTimeForApi(time: Date | string): string {
+  const date = time instanceof Date ? time : new Date(time);
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
+/**
+ * Extract date in YYYY-MM-DD format from a Date or string
+ */
+function formatDateForApi(time: Date | string): string {
+  const date = time instanceof Date ? time : new Date(time);
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// API response wrapper type
+interface ApiResponseWrapper<T> {
+  success: boolean;
+  data: T;
+}
+
+/**
  * Time Blocks API interface
  */
 export interface TimeBlocksApi {
-  /**
-   * List time blocks with optional filters
-   * @param filters Optional filter criteria
-   * @returns Array of time blocks matching the filters
-   */
-  list(
-    filters?: TimeBlockFilterInput,
-    options?: RequestOptions
-  ): Promise<TimeBlock[]>;
-
-  /**
-   * List time blocks with their associated task data
-   * @param filters Optional filter criteria
-   * @returns Array of time blocks with task data
-   */
-  listWithTasks(
-    filters?: TimeBlockFilterInput,
-    options?: RequestOptions
-  ): Promise<TimeBlockWithTask[]>;
-
-  /**
-   * Create a new time block
-   * @param input Time block creation data
-   * @returns The created time block
-   */
-  create(
-    input: CreateTimeBlockInput,
-    options?: RequestOptions
-  ): Promise<TimeBlock>;
-
-  /**
-   * Get a time block by ID
-   * @param id Time block ID
-   * @returns The time block data
-   */
+  list(filters?: TimeBlockFilterInput, options?: RequestOptions): Promise<TimeBlock[]>;
+  listWithTasks(filters?: TimeBlockFilterInput, options?: RequestOptions): Promise<TimeBlockWithTask[]>;
+  create(input: CreateTimeBlockInput, options?: RequestOptions): Promise<TimeBlock>;
   get(id: string, options?: RequestOptions): Promise<TimeBlock>;
-
-  /**
-   * Get a time block with its associated task
-   * @param id Time block ID
-   * @returns The time block with task data
-   */
   getWithTask(id: string, options?: RequestOptions): Promise<TimeBlockWithTask>;
-
-  /**
-   * Update a time block
-   * @param id Time block ID
-   * @param input Fields to update
-   * @returns The updated time block
-   */
-  update(
-    id: string,
-    input: UpdateTimeBlockInput,
-    options?: RequestOptions
-  ): Promise<TimeBlock>;
-
-  /**
-   * Delete a time block
-   * @param id Time block ID
-   */
+  update(id: string, input: UpdateTimeBlockInput, options?: RequestOptions): Promise<TimeBlock>;
   delete(id: string, options?: RequestOptions): Promise<void>;
-
-  /**
-   * Quick schedule a task as a time block
-   * @param input Quick schedule data
-   * @returns The created time block
-   */
-  quickSchedule(
-    input: QuickScheduleInput,
-    options?: RequestOptions
-  ): Promise<TimeBlock>;
-
-  /**
-   * Get summary of time blocks for a period
-   * @param startDate Start of the period (ISO date string)
-   * @param endDate End of the period (ISO date string)
-   * @returns Summary statistics
-   */
-  getSummary(
-    startDate: string,
-    endDate: string,
-    options?: RequestOptions
-  ): Promise<TimeBlockSummary>;
-
-  /**
-   * Check for conflicts with existing time blocks
-   * @param startTime Start time to check
-   * @param endTime End time to check
-   * @param excludeId Optional ID to exclude (for updates)
-   * @returns Array of conflicting time blocks
-   */
-  checkConflicts(
-    startTime: Date | string,
-    endTime: Date | string,
-    excludeId?: string,
-    options?: RequestOptions
-  ): Promise<TimeBlockConflict[]>;
-
-  /**
-   * Batch create multiple time blocks
-   * @param inputs Array of time block creation data
-   * @returns Array of created time blocks
-   */
-  batchCreate(
-    inputs: CreateTimeBlockInput[],
-    options?: RequestOptions
-  ): Promise<TimeBlock[]>;
-
-  /**
-   * Batch update multiple time blocks
-   * @param updates Array of time block IDs and their update data
-   * @returns Array of updated time blocks
-   */
-  batchUpdate(
-    updates: Array<{ id: string; input: UpdateTimeBlockInput }>,
-    options?: RequestOptions
-  ): Promise<TimeBlock[]>;
-
-  /**
-   * Batch delete multiple time blocks
-   * @param ids Array of time block IDs to delete
-   */
+  quickSchedule(input: QuickScheduleInput, options?: RequestOptions): Promise<TimeBlock>;
+  getSummary(startDate: string, endDate: string, options?: RequestOptions): Promise<TimeBlockSummary>;
+  checkConflicts(startTime: Date | string, endTime: Date | string, excludeId?: string, options?: RequestOptions): Promise<TimeBlockConflict[]>;
+  batchCreate(inputs: CreateTimeBlockInput[], options?: RequestOptions): Promise<TimeBlock[]>;
+  batchUpdate(updates: Array<{ id: string; input: UpdateTimeBlockInput }>, options?: RequestOptions): Promise<TimeBlock[]>;
   batchDelete(ids: string[], options?: RequestOptions): Promise<void>;
 }
 
@@ -151,17 +68,10 @@ function filtersToSearchParams(
   filters?: TimeBlockFilterInput
 ): Record<string, string | number | boolean | undefined> {
   if (!filters) return {};
-
   return {
     date: filters.date,
-    startTimeFrom:
-      filters.startTimeFrom instanceof Date
-        ? filters.startTimeFrom.toISOString()
-        : filters.startTimeFrom,
-    startTimeTo:
-      filters.startTimeTo instanceof Date
-        ? filters.startTimeTo.toISOString()
-        : filters.startTimeTo,
+    startTimeFrom: filters.startTimeFrom instanceof Date ? filters.startTimeFrom.toISOString() : filters.startTimeFrom,
+    startTimeTo: filters.startTimeTo instanceof Date ? filters.startTimeTo.toISOString() : filters.startTimeTo,
     taskId: filters.taskId,
     unassignedOnly: filters.unassignedOnly,
   };
@@ -169,194 +79,143 @@ function filtersToSearchParams(
 
 /**
  * Create time blocks API methods bound to a client
- * @param client The Chronoflow client instance
- * @returns Time blocks API methods
  */
 export function createTimeBlocksApi(client: ChronoflowClient): TimeBlocksApi {
   return {
-    async list(
-      filters?: TimeBlockFilterInput,
-      options?: RequestOptions
-    ): Promise<TimeBlock[]> {
+    async list(filters?: TimeBlockFilterInput, options?: RequestOptions): Promise<TimeBlock[]> {
       const searchParams = filtersToSearchParams(filters);
-      return client.get<TimeBlock[]>("time-blocks", {
+      const response = await client.get<ApiResponseWrapper<TimeBlock[]>>("time-blocks", {
         ...options,
         searchParams: { ...options?.searchParams, ...searchParams },
       });
+      return response.data;
     },
 
-    async listWithTasks(
-      filters?: TimeBlockFilterInput,
-      options?: RequestOptions
-    ): Promise<TimeBlockWithTask[]> {
+    async listWithTasks(filters?: TimeBlockFilterInput, options?: RequestOptions): Promise<TimeBlockWithTask[]> {
       const searchParams = filtersToSearchParams(filters);
-      return client.get<TimeBlockWithTask[]>("time-blocks", {
+      const response = await client.get<ApiResponseWrapper<TimeBlockWithTask[]>>("time-blocks", {
         ...options,
-        searchParams: {
-          ...options?.searchParams,
-          ...searchParams,
-          includeTasks: true,
-        },
+        searchParams: { ...options?.searchParams, ...searchParams, includeTasks: true },
       });
+      return response.data;
     },
 
-    async create(
-      input: CreateTimeBlockInput,
-      options?: RequestOptions
-    ): Promise<TimeBlock> {
-      // Serialize dates to ISO strings
+    async create(input: CreateTimeBlockInput, options?: RequestOptions): Promise<TimeBlock> {
+      // Backend expects date in YYYY-MM-DD and times in HH:mm format
       const payload = {
         ...input,
-        startTime:
-          input.startTime instanceof Date
-            ? input.startTime.toISOString()
-            : input.startTime,
-        endTime:
-          input.endTime instanceof Date
-            ? input.endTime.toISOString()
-            : input.endTime,
+        date: formatDateForApi(input.startTime),
+        startTime: formatTimeForApi(input.startTime),
+        endTime: formatTimeForApi(input.endTime),
       };
-      return client.post<TimeBlock>("time-blocks", payload, options);
+      const response = await client.post<ApiResponseWrapper<TimeBlock>>("time-blocks", payload, options);
+      return response.data;
     },
 
     async get(id: string, options?: RequestOptions): Promise<TimeBlock> {
-      return client.get<TimeBlock>(`time-blocks/${id}`, options);
+      const response = await client.get<ApiResponseWrapper<TimeBlock>>(`time-blocks/${id}`, options);
+      return response.data;
     },
 
-    async getWithTask(
-      id: string,
-      options?: RequestOptions
-    ): Promise<TimeBlockWithTask> {
-      return client.get<TimeBlockWithTask>(`time-blocks/${id}`, {
+    async getWithTask(id: string, options?: RequestOptions): Promise<TimeBlockWithTask> {
+      const response = await client.get<ApiResponseWrapper<TimeBlockWithTask>>(`time-blocks/${id}`, {
         ...options,
         searchParams: { ...options?.searchParams, includeTask: true },
       });
+      return response.data;
     },
 
-    async update(
-      id: string,
-      input: UpdateTimeBlockInput,
-      options?: RequestOptions
-    ): Promise<TimeBlock> {
-      // Serialize dates to ISO strings
-      const payload = {
-        ...input,
-        startTime:
-          input.startTime instanceof Date
-            ? input.startTime.toISOString()
-            : input.startTime,
-        endTime:
-          input.endTime instanceof Date
-            ? input.endTime.toISOString()
-            : input.endTime,
-      };
-      return client.patch<TimeBlock>(`time-blocks/${id}`, payload, options);
+    async update(id: string, input: UpdateTimeBlockInput, options?: RequestOptions): Promise<TimeBlock> {
+      // Backend expects date in YYYY-MM-DD and times in HH:mm format
+      const payload: Record<string, unknown> = { ...input };
+      
+      // If startTime is provided, extract date and format time
+      if (input.startTime) {
+        payload.date = formatDateForApi(input.startTime);
+        payload.startTime = formatTimeForApi(input.startTime);
+      }
+      
+      // If endTime is provided, format it
+      if (input.endTime) {
+        payload.endTime = formatTimeForApi(input.endTime);
+      }
+      
+      const response = await client.patch<ApiResponseWrapper<TimeBlock>>(`time-blocks/${id}`, payload, options);
+      return response.data;
     },
 
     async delete(id: string, options?: RequestOptions): Promise<void> {
-      return client.delete<void>(`time-blocks/${id}`, options);
+      await client.delete<ApiResponseWrapper<void>>(`time-blocks/${id}`, options);
     },
 
-    async quickSchedule(
-      input: QuickScheduleInput,
-      options?: RequestOptions
-    ): Promise<TimeBlock> {
+    async quickSchedule(input: QuickScheduleInput, options?: RequestOptions): Promise<TimeBlock> {
+      // Backend expects date in YYYY-MM-DD and time in HH:mm format
       const payload = {
         ...input,
-        startTime:
-          input.startTime instanceof Date
-            ? input.startTime.toISOString()
-            : input.startTime,
+        date: formatDateForApi(input.startTime),
+        startTime: formatTimeForApi(input.startTime),
       };
-      return client.post<TimeBlock>(
-        "time-blocks/quick-schedule",
-        payload,
-        options
-      );
+      const response = await client.post<ApiResponseWrapper<TimeBlock>>("time-blocks/quick-schedule", payload, options);
+      return response.data;
     },
 
-    async getSummary(
-      startDate: string,
-      endDate: string,
-      options?: RequestOptions
-    ): Promise<TimeBlockSummary> {
-      return client.get<TimeBlockSummary>("time-blocks/summary", {
+    async getSummary(startDate: string, endDate: string, options?: RequestOptions): Promise<TimeBlockSummary> {
+      const response = await client.get<ApiResponseWrapper<TimeBlockSummary>>("time-blocks/summary", {
         ...options,
-        searchParams: {
-          ...options?.searchParams,
-          startDate,
-          endDate,
-        },
+        searchParams: { ...options?.searchParams, startDate, endDate },
       });
+      return response.data;
     },
 
-    async checkConflicts(
-      startTime: Date | string,
-      endTime: Date | string,
-      excludeId?: string,
-      options?: RequestOptions
-    ): Promise<TimeBlockConflict[]> {
-      return client.get<TimeBlockConflict[]>("time-blocks/conflicts", {
+    async checkConflicts(startTime: Date | string, endTime: Date | string, excludeId?: string, options?: RequestOptions): Promise<TimeBlockConflict[]> {
+      // Backend expects date in YYYY-MM-DD and times in HH:mm format
+      const response = await client.get<ApiResponseWrapper<TimeBlockConflict[]>>("time-blocks/conflicts", {
         ...options,
         searchParams: {
           ...options?.searchParams,
-          startTime:
-            startTime instanceof Date ? startTime.toISOString() : startTime,
-          endTime: endTime instanceof Date ? endTime.toISOString() : endTime,
+          date: formatDateForApi(startTime),
+          startTime: formatTimeForApi(startTime),
+          endTime: formatTimeForApi(endTime),
           excludeId,
         },
       });
+      return response.data;
     },
 
-    async batchCreate(
-      inputs: CreateTimeBlockInput[],
-      options?: RequestOptions
-    ): Promise<TimeBlock[]> {
+    async batchCreate(inputs: CreateTimeBlockInput[], options?: RequestOptions): Promise<TimeBlock[]> {
+      // Backend expects date in YYYY-MM-DD and times in HH:mm format
       const timeBlocks = inputs.map((input) => ({
         ...input,
-        startTime:
-          input.startTime instanceof Date
-            ? input.startTime.toISOString()
-            : input.startTime,
-        endTime:
-          input.endTime instanceof Date
-            ? input.endTime.toISOString()
-            : input.endTime,
+        date: formatDateForApi(input.startTime),
+        startTime: formatTimeForApi(input.startTime),
+        endTime: formatTimeForApi(input.endTime),
       }));
-      return client.post<TimeBlock[]>(
-        "time-blocks/batch",
-        { timeBlocks },
-        options
-      );
+      const response = await client.post<ApiResponseWrapper<TimeBlock[]>>("time-blocks/batch", { timeBlocks }, options);
+      return response.data;
     },
 
-    async batchUpdate(
-      updates: Array<{ id: string; input: UpdateTimeBlockInput }>,
-      options?: RequestOptions
-    ): Promise<TimeBlock[]> {
-      const serializedUpdates = updates.map(({ id, input }) => ({
-        id,
-        input: {
-          ...input,
-          startTime:
-            input.startTime instanceof Date
-              ? input.startTime.toISOString()
-              : input.startTime,
-          endTime:
-            input.endTime instanceof Date
-              ? input.endTime.toISOString()
-              : input.endTime,
-        },
-      }));
-      return client.patch<TimeBlock[]>(
-        "time-blocks/batch",
-        { updates: serializedUpdates },
-        options
-      );
+    async batchUpdate(updates: Array<{ id: string; input: UpdateTimeBlockInput }>, options?: RequestOptions): Promise<TimeBlock[]> {
+      // Backend expects date in YYYY-MM-DD and times in HH:mm format
+      const serializedUpdates = updates.map(({ id, input }) => {
+        const serializedInput: Record<string, unknown> = { ...input };
+        
+        if (input.startTime) {
+          serializedInput.date = formatDateForApi(input.startTime);
+          serializedInput.startTime = formatTimeForApi(input.startTime);
+        }
+        
+        if (input.endTime) {
+          serializedInput.endTime = formatTimeForApi(input.endTime);
+        }
+        
+        return { id, input: serializedInput };
+      });
+      const response = await client.patch<ApiResponseWrapper<TimeBlock[]>>("time-blocks/batch", { updates: serializedUpdates }, options);
+      return response.data;
     },
 
     async batchDelete(ids: string[], options?: RequestOptions): Promise<void> {
-      return client.delete<void>("time-blocks/batch", {
+      await client.delete<ApiResponseWrapper<void>>("time-blocks/batch", {
         ...options,
         searchParams: { ...options?.searchParams, ids: ids.join(",") },
       });
