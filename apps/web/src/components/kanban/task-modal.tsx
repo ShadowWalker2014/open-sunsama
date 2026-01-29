@@ -24,12 +24,11 @@ import {
   DialogHeader,
   Button,
   Input,
-  Label,
 } from "@/components/ui";
 import { SortableSubtaskItem, type Subtask } from "./sortable-subtask-item";
 import {
   DescriptionField,
-  PrioritySelector,
+  InlinePrioritySelector,
   EstimatedTimeField,
 } from "./task-modal-form";
 
@@ -132,51 +131,44 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b">
-          <div className="flex-1">
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onBlur={() => title !== task.title && handleSave()}
-              className="border-none p-0 text-lg font-semibold shadow-none focus-visible:ring-0 h-auto pr-8"
-              placeholder="Task title"
-            />
-            {task.scheduledDate && (
-              <div className="flex items-center gap-1.5 mt-2 text-sm text-muted-foreground">
-                <Calendar className="h-3.5 w-3.5" />
-                {format(new Date(task.scheduledDate), "EEEE, MMMM d")}
-              </div>
-            )}
+      <DialogContent className="max-w-xl p-0 gap-0 overflow-hidden">
+        <DialogHeader className="px-4 pt-4 pb-3 border-b">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onBlur={() => title !== task.title && handleSave()}
+                className="border-none p-0 text-base font-medium shadow-none focus-visible:ring-0 h-auto"
+                placeholder="Task title"
+              />
+              {task.scheduledDate && (
+                <div className="flex items-center gap-1.5 mt-1.5 text-xs text-muted-foreground">
+                  <Calendar className="h-3 w-3" />
+                  {format(new Date(task.scheduledDate), "EEEE, MMMM d")}
+                </div>
+              )}
+            </div>
+            <InlinePrioritySelector priority={priority} onChange={handlePriorityChange} />
           </div>
         </DialogHeader>
 
-        <div className="px-6 py-4 space-y-6 max-h-[60vh] overflow-y-auto">
-          <DescriptionField
-            description={description}
-            isEditing={isEditingDescription}
-            onEditingChange={setIsEditingDescription}
-            onChange={setDescription}
-            onBlur={() => {
-              if (description !== (task.notes || "")) handleSave();
-              setIsEditingDescription(false);
-            }}
-          />
-
-          <div className="space-y-3">
+        <div className="px-4 py-3 space-y-4 max-h-[55vh] overflow-y-auto">
+          {/* Subtasks - now first */}
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <span className="text-xs font-medium text-muted-foreground">
                 Subtasks
-              </Label>
+              </span>
               {subtasks.length > 0 && (
                 <span className="text-xs text-muted-foreground">
-                  {completedSubtasks}/{subtasks.length} done
+                  {completedSubtasks}/{subtasks.length}
                 </span>
               )}
             </div>
 
             {subtasks.length > 0 && (
-              <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+              <div className="h-0.5 w-full bg-muted rounded-full overflow-hidden">
                 <div
                   className="h-full bg-primary transition-all duration-300"
                   style={{ width: `${(completedSubtasks / subtasks.length) * 100}%` }}
@@ -186,7 +178,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
 
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSubtaskDragEnd}>
               <SortableContext items={subtaskIds} strategy={verticalListSortingStrategy}>
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   {subtasks.map((subtask) => (
                     <SortableSubtaskItem
                       key={subtask.id}
@@ -200,7 +192,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
             </DndContext>
 
             <div className="flex items-center gap-2">
-              <Plus className="h-4 w-4 text-muted-foreground" />
+              <Plus className="h-3.5 w-3.5 text-muted-foreground" />
               <Input
                 value={newSubtaskTitle}
                 onChange={(e) => setNewSubtaskTitle(e.target.value)}
@@ -211,8 +203,19 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
             </div>
           </div>
 
-          <PrioritySelector priority={priority} onChange={handlePriorityChange} />
+          {/* Description - now second */}
+          <DescriptionField
+            description={description}
+            isEditing={isEditingDescription}
+            onEditingChange={setIsEditingDescription}
+            onChange={setDescription}
+            onBlur={() => {
+              if (description !== (task.notes || "")) handleSave();
+              setIsEditingDescription(false);
+            }}
+          />
 
+          {/* Estimated Time - now third, no priority section */}
           <EstimatedTimeField
             value={estimatedMins}
             onChange={setEstimatedMins}
@@ -220,17 +223,17 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
           />
         </div>
 
-        <div className="px-6 py-4 border-t bg-muted/30 flex items-center justify-between">
+        <div className="px-4 py-2.5 border-t bg-muted/20 flex items-center justify-between">
           <Button
             variant="ghost"
             size="sm"
-            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            className="h-7 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
             onClick={handleDelete}
           >
-            <Trash2 className="h-4 w-4 mr-2" />
+            <Trash2 className="h-3.5 w-3.5 mr-1.5" />
             Delete
           </Button>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-[10px] text-muted-foreground">
             Created {format(new Date(task.createdAt), "MMM d, yyyy")}
           </div>
         </div>

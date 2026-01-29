@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Clock } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import type { TaskPriority } from "@chronoflow/types";
 import { cn } from "@/lib/utils";
 import { useCreateTask } from "@/hooks/useTasks";
@@ -7,7 +7,6 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle,
   DialogFooter,
   Button,
   Input,
@@ -20,6 +19,7 @@ import {
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
 import { SubtaskList, type Subtask } from "./subtask-list";
+import { CompactEstimatedTimeField } from "./task-modal-form";
 
 const PRIORITIES: TaskPriority[] = ["P0", "P1", "P2", "P3"];
 
@@ -80,63 +80,37 @@ export function AddTaskModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-md p-0 gap-0 overflow-hidden">
         <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>New Task</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            {/* Title */}
-            <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
+          <DialogHeader className="px-4 pt-4 pb-3 border-b">
+            <div className="flex items-center justify-between gap-3">
               <Input
                 ref={titleInputRef}
-                id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="What needs to be done?"
+                placeholder="Task title..."
                 required
+                className="border-none p-0 text-base font-medium shadow-none focus-visible:ring-0 h-auto flex-1"
               />
-            </div>
-
-            {/* Description */}
-            <div className="space-y-2">
-              <Label>Description</Label>
-              <RichTextEditor
-                value={description}
-                onChange={setDescription}
-                placeholder="Add details, notes, or context..."
-                minHeight="100px"
-              />
-            </div>
-
-            {/* Subtasks */}
-            <div className="space-y-2">
-              <Label>Subtasks</Label>
-              <SubtaskList subtasks={subtasks} onSubtasksChange={setSubtasks} />
-            </div>
-
-            {/* Priority */}
-            <div className="space-y-2">
-              <Label>Priority</Label>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     type="button"
-                    variant="outline"
-                    className="w-fit gap-2 h-9"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 gap-1 text-xs font-medium hover:bg-muted shrink-0"
                   >
                     <PriorityIcon priority={priority} />
-                    <span>{PRIORITY_LABELS[priority]}</span>
+                    <span>{priority}</span>
+                    <ChevronDown className="h-3 w-3 opacity-50" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-40">
+                <DropdownMenuContent align="end" className="w-32">
                   {PRIORITIES.map((p) => (
                     <DropdownMenuItem
                       key={p}
                       onClick={() => setPriority(p)}
-                      className={cn("gap-2", priority === p && "bg-accent")}
+                      className={cn("gap-2 text-xs", priority === p && "bg-accent")}
                     >
                       <PriorityIcon priority={p} />
                       <span>{PRIORITY_LABELS[p]}</span>
@@ -145,39 +119,53 @@ export function AddTaskModal({
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
+          </DialogHeader>
 
-            {/* Estimated time */}
-            <div className="space-y-2">
-              <Label>Estimated Time</Label>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="number"
-                  value={estimatedMins}
-                  onChange={(e) => setEstimatedMins(e.target.value)}
-                  placeholder="Minutes"
-                  className="w-24"
-                  min={1}
-                  max={480}
-                />
-                <span className="text-sm text-muted-foreground">minutes</span>
-              </div>
+          <div className="px-4 py-3 space-y-3 max-h-[50vh] overflow-y-auto">
+            {/* Subtasks - first */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-muted-foreground">Subtasks</Label>
+              <SubtaskList subtasks={subtasks} onSubtasksChange={setSubtasks} />
+            </div>
+
+            {/* Description - second */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-muted-foreground">Description</Label>
+              <RichTextEditor
+                value={description}
+                onChange={setDescription}
+                placeholder="Add details..."
+                minHeight="80px"
+              />
+            </div>
+
+            {/* Estimated time - third, using preset popover */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-muted-foreground">Estimated time</Label>
+              <CompactEstimatedTimeField
+                value={estimatedMins}
+                onChange={setEstimatedMins}
+              />
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="px-4 py-2.5 border-t bg-muted/20">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
+              size="sm"
+              className="h-8 text-sm"
               onClick={() => onOpenChange(false)}
             >
               Cancel
             </Button>
             <Button
               type="submit"
+              size="sm"
+              className="h-8 text-sm"
               disabled={!title.trim() || createTask.isPending}
             >
-              {createTask.isPending ? "Creating..." : "Create Task"}
+              {createTask.isPending ? "Creating..." : "Create"}
             </Button>
           </DialogFooter>
         </form>
