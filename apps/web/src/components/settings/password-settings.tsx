@@ -22,11 +22,69 @@ interface PasswordForm {
 }
 
 const PASSWORD_REQUIREMENTS = [
-  { label: "At least 8 characters", test: (pwd: string) => pwd.length >= 8 },
-  { label: "One uppercase letter", test: (pwd: string) => /[A-Z]/.test(pwd) },
-  { label: "One lowercase letter", test: (pwd: string) => /[a-z]/.test(pwd) },
-  { label: "One number", test: (pwd: string) => /[0-9]/.test(pwd) },
+  { label: "At least 8 characters", test: (p: string) => p.length >= 8 },
+  { label: "One uppercase letter", test: (p: string) => /[A-Z]/.test(p) },
+  { label: "One lowercase letter", test: (p: string) => /[a-z]/.test(p) },
+  { label: "One number", test: (p: string) => /[0-9]/.test(p) },
 ];
+
+interface PasswordInputProps {
+  id: string;
+  label: string;
+  placeholder: string;
+  autoComplete: string;
+  showPassword: boolean;
+  onToggleShow: () => void;
+  disabled: boolean;
+  error?: string;
+  register: ReturnType<typeof useForm<PasswordForm>>["register"];
+  registerOptions: Parameters<ReturnType<typeof useForm<PasswordForm>>["register"]>[1];
+}
+
+function PasswordInput({
+  id,
+  label,
+  placeholder,
+  autoComplete,
+  showPassword,
+  onToggleShow,
+  disabled,
+  error,
+  register,
+  registerOptions,
+}: PasswordInputProps) {
+  return (
+    <div className="grid gap-2">
+      <Label htmlFor={id}>{label}</Label>
+      <div className="relative">
+        <Input
+          id={id}
+          type={showPassword ? "text" : "password"}
+          placeholder={placeholder}
+          autoComplete={autoComplete}
+          disabled={disabled}
+          {...register(id as keyof PasswordForm, registerOptions)}
+        />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+          onClick={onToggleShow}
+        >
+          {showPassword ? (
+            <EyeOff className="h-4 w-4" />
+          ) : (
+            <Eye className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
+      {error && (
+        <p className="text-sm text-destructive">{error}</p>
+      )}
+    </div>
+  );
+}
 
 export function PasswordSettings() {
   const [isLoading, setIsLoading] = React.useState(false);
@@ -96,89 +154,49 @@ export function PasswordSettings() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Current Password */}
-          <div className="grid gap-2">
-            <Label htmlFor="currentPassword">Current Password</Label>
-            <div className="relative">
-              <Input
-                id="currentPassword"
-                type={showCurrentPassword ? "text" : "password"}
-                placeholder="Enter your current password"
-                autoComplete="current-password"
-                disabled={isLoading}
-                {...register("currentPassword", {
-                  required: "Current password is required",
-                })}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-              >
-                {showCurrentPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-            {errors.currentPassword && (
-              <p className="text-sm text-destructive">
-                {errors.currentPassword.message}
-              </p>
-            )}
-          </div>
+          <PasswordInput
+            id="currentPassword"
+            label="Current Password"
+            placeholder="Enter your current password"
+            autoComplete="current-password"
+            showPassword={showCurrentPassword}
+            onToggleShow={() => setShowCurrentPassword(!showCurrentPassword)}
+            disabled={isLoading}
+            error={errors.currentPassword?.message}
+            register={register}
+            registerOptions={{ required: "Current password is required" }}
+          />
 
-          {/* New Password */}
           <div className="grid gap-2">
-            <Label htmlFor="newPassword">New Password</Label>
-            <div className="relative">
-              <Input
-                id="newPassword"
-                type={showNewPassword ? "text" : "password"}
-                placeholder="Enter your new password"
-                autoComplete="new-password"
-                disabled={isLoading}
-                {...register("newPassword", {
-                  required: "New password is required",
-                  minLength: {
-                    value: 8,
-                    message: "Password must be at least 8 characters",
-                  },
-                  validate: {
-                    hasUppercase: (value) =>
-                      /[A-Z]/.test(value) ||
-                      "Password must contain at least one uppercase letter",
-                    hasLowercase: (value) =>
-                      /[a-z]/.test(value) ||
-                      "Password must contain at least one lowercase letter",
-                    hasNumber: (value) =>
-                      /[0-9]/.test(value) ||
-                      "Password must contain at least one number",
-                  },
-                })}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => setShowNewPassword(!showNewPassword)}
-              >
-                {showNewPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-            {errors.newPassword && (
-              <p className="text-sm text-destructive">
-                {errors.newPassword.message}
-              </p>
-            )}
+            <PasswordInput
+              id="newPassword"
+              label="New Password"
+              placeholder="Enter your new password"
+              autoComplete="new-password"
+              showPassword={showNewPassword}
+              onToggleShow={() => setShowNewPassword(!showNewPassword)}
+              disabled={isLoading}
+              error={errors.newPassword?.message}
+              register={register}
+              registerOptions={{
+                required: "New password is required",
+                minLength: {
+                  value: 8,
+                  message: "Password must be at least 8 characters",
+                },
+                validate: {
+                  hasUppercase: (value) =>
+                    /[A-Z]/.test(value) ||
+                    "Password must contain at least one uppercase letter",
+                  hasLowercase: (value) =>
+                    /[a-z]/.test(value) ||
+                    "Password must contain at least one lowercase letter",
+                  hasNumber: (value) =>
+                    /[0-9]/.test(value) ||
+                    "Password must contain at least one number",
+                },
+              }}
+            />
 
             {/* Password Requirements */}
             {newPassword && (
@@ -203,42 +221,22 @@ export function PasswordSettings() {
             )}
           </div>
 
-          {/* Confirm Password */}
-          <div className="grid gap-2">
-            <Label htmlFor="confirmPassword">Confirm New Password</Label>
-            <div className="relative">
-              <Input
-                id="confirmPassword"
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirm your new password"
-                autoComplete="new-password"
-                disabled={isLoading}
-                {...register("confirmPassword", {
-                  required: "Please confirm your new password",
-                  validate: (value) =>
-                    value === newPassword || "Passwords do not match",
-                })}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-            {errors.confirmPassword && (
-              <p className="text-sm text-destructive">
-                {errors.confirmPassword.message}
-              </p>
-            )}
-          </div>
+          <PasswordInput
+            id="confirmPassword"
+            label="Confirm New Password"
+            placeholder="Confirm your new password"
+            autoComplete="new-password"
+            showPassword={showConfirmPassword}
+            onToggleShow={() => setShowConfirmPassword(!showConfirmPassword)}
+            disabled={isLoading}
+            error={errors.confirmPassword?.message}
+            register={register}
+            registerOptions={{
+              required: "Please confirm your new password",
+              validate: (value) =>
+                value === newPassword || "Passwords do not match",
+            }}
+          />
 
           <div className="flex justify-end">
             <Button type="submit" disabled={isLoading}>

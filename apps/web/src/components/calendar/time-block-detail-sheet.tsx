@@ -1,37 +1,29 @@
 import * as React from "react";
 import { format } from "date-fns";
-import { Clock, FileText, Palette, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import type { TimeBlock } from "@chronoflow/types";
 import { useUpdateTimeBlock, useDeleteTimeBlock } from "@/hooks";
-import { cn } from "@/lib/utils";
 import {
   Button,
-  Input,
   Label,
   Separator,
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-  Textarea,
 } from "@/components/ui";
+import {
+  TimeBlockTitleSection,
+  TimeRangeSection,
+  ColorSection,
+  TimeBlockNotesSection,
+} from "./time-block-form-sections";
 
 interface TimeBlockDetailSheetProps {
   timeBlock: TimeBlock | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-const COLOR_OPTIONS = [
-  { value: "#3B82F6", label: "Blue" },
-  { value: "#10B981", label: "Green" },
-  { value: "#F59E0B", label: "Amber" },
-  { value: "#EF4444", label: "Red" },
-  { value: "#8B5CF6", label: "Purple" },
-  { value: "#EC4899", label: "Pink" },
-  { value: "#6366F1", label: "Indigo" },
-  { value: "#14B8A6", label: "Teal" },
-];
 
 /**
  * Slide-over panel for viewing and editing time block details.
@@ -106,14 +98,6 @@ export function TimeBlockDetailSheet({
     }
   };
 
-  const handleTimeChange = async (type: "start" | "end", value: string) => {
-    if (type === "start") {
-      setStartTime(value);
-    } else {
-      setEndTime(value);
-    }
-  };
-
   const handleTimeBlur = () => {
     if (!timeBlock) return;
     
@@ -174,87 +158,28 @@ export function TimeBlockDetailSheet({
         </SheetHeader>
 
         <div className="flex-1 space-y-6 overflow-y-auto py-4">
-          {/* Title */}
-          <div className="space-y-2">
-            <Label htmlFor="block-title">Title</Label>
-            <Input
-              id="block-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onBlur={handleTitleBlur}
-              className="text-lg font-semibold"
-              placeholder="Time block title"
-            />
-          </div>
+          <TimeBlockTitleSection
+            title={title}
+            onChange={setTitle}
+            onBlur={handleTitleBlur}
+          />
 
-          {/* Time Range */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Time Range
-            </Label>
-            <div className="flex items-center gap-2">
-              <Input
-                type="time"
-                value={startTime}
-                onChange={(e) => handleTimeChange("start", e.target.value)}
-                onBlur={handleTimeBlur}
-                className="flex-1"
-              />
-              <span className="text-muted-foreground">to</span>
-              <Input
-                type="time"
-                value={endTime}
-                onChange={(e) => handleTimeChange("end", e.target.value)}
-                onBlur={handleTimeBlur}
-                className="flex-1"
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Duration: {Math.floor(durationMins / 60)}h {durationMins % 60}m
-            </p>
-          </div>
+          <TimeRangeSection
+            startTime={startTime}
+            endTime={endTime}
+            durationMins={durationMins}
+            onStartTimeChange={setStartTime}
+            onEndTimeChange={setEndTime}
+            onBlur={handleTimeBlur}
+          />
 
-          {/* Color Selection */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <Palette className="h-4 w-4" />
-              Color
-            </Label>
-            <div className="flex flex-wrap gap-2">
-              {COLOR_OPTIONS.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  className={cn(
-                    "h-8 w-8 rounded-full border-2 transition-all",
-                    color === option.value
-                      ? "ring-2 ring-offset-2 ring-primary border-primary"
-                      : "border-transparent hover:border-muted-foreground/30"
-                  )}
-                  style={{ backgroundColor: option.value }}
-                  onClick={() => handleColorChange(option.value)}
-                  title={option.label}
-                />
-              ))}
-            </div>
-          </div>
+          <ColorSection color={color} onChange={handleColorChange} />
 
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="block-notes" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Notes
-            </Label>
-            <Textarea
-              id="block-notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              onBlur={handleNotesBlur}
-              placeholder="Add notes..."
-              rows={4}
-            />
-          </div>
+          <TimeBlockNotesSection
+            notes={notes}
+            onChange={setNotes}
+            onBlur={handleNotesBlur}
+          />
 
           <Separator />
 

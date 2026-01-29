@@ -1,10 +1,10 @@
 import * as React from "react";
 import {
-  format,
   addDays,
   subDays,
   startOfDay,
   isToday,
+  format,
 } from "date-fns";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
@@ -15,17 +15,14 @@ import {
   TouchSensor,
   useSensor,
   useSensors,
-  type DragStartEvent,
-  type DragEndEvent,
-  type DragOverEvent,
 } from "@dnd-kit/core";
-import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import type { Task } from "@chronoflow/types";
 import { useMoveTask } from "@/hooks/useTasks";
-import { Button } from "@/components/ui";
 import { DayColumn } from "./day-column";
 import { TaskCard } from "./task-card";
 import { TaskDetailPanel } from "./task-detail-panel";
+import { KanbanBoardToolbar } from "./kanban-board-toolbar";
+import { createDndHandlers } from "./kanban-dnd-handlers";
 
 // Number of days to show at a time
 const VISIBLE_DAYS = 7;
@@ -140,65 +137,17 @@ export function KanbanBoard() {
     })
   );
 
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    const task = active.data.current?.task as Task | undefined;
-    if (task) {
-      setActiveTask(task);
-    }
-  };
-
-  const handleDragOver = (event: DragOverEvent) => {
-    const { over } = event;
-    setOverId(over?.id as string ?? null);
-  };
-
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-    setActiveTask(null);
-    setOverId(null);
-
-    if (!over || !active.data.current?.task) return;
-
-    const task = active.data.current.task as Task;
-    const overId = over.id as string;
-
-    // Check if dropped on a day column
-    if (overId.startsWith("day-")) {
-      const targetDate = overId.replace("day-", "");
-      
-      // Only move if the date is different
-      if (targetDate !== task.scheduledDate) {
-        await moveTask.mutateAsync({
-          id: task.id,
-          targetDate,
-        });
-      }
-    } else if (over.data.current?.type === "task") {
-      // Dropped on another task - reorder within the same day
-      const overTask = over.data.current.task as Task;
-      
-      if (task.scheduledDate === overTask.scheduledDate) {
-        // Same day reorder - handled by SortableContext
-        // We need to call reorder API here
-        if (task.scheduledDate) {
-          // Get all tasks for this day and reorder
-          // This is simplified - in a real app you'd get the full list
-        }
-      } else {
-        // Different day - move task
-        await moveTask.mutateAsync({
-          id: task.id,
-          targetDate: overTask.scheduledDate,
-        });
-      }
-    }
-  };
-
-  const handleDragCancel = () => {
-    setActiveTask(null);
-    setOverId(null);
-  };
+  // Create DnD handlers
+  const {
+    handleDragStart,
+    handleDragOver,
+    handleDragEnd,
+    handleDragCancel,
+  } = createDndHandlers({
+    setActiveTask,
+    setOverId,
+    moveTask,
+  });
 
   // Calculate visible date range for header
   const visibleItems = virtualizer.getVirtualItems();
@@ -214,41 +163,13 @@ export function KanbanBoard() {
   return (
     <div className="flex h-full flex-col">
       {/* Toolbar */}
-      <div className="flex items-center justify-between border-b px-4 py-3">
-        <div className="flex items-center gap-4">
-          {/* Navigation Arrows */}
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={navigatePrevious}
-              title="Previous week"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" onClick={navigateToToday}>
-              <CalendarDays className="mr-2 h-4 w-4" />
-              Today
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={navigateNext}
-              title="Next week"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* Current Date Range */}
-          {firstVisibleDate && lastVisibleDate && (
-            <h2 className="text-lg font-semibold">
-              {format(firstVisibleDate, "MMM d")} -{" "}
-              {format(lastVisibleDate, "MMM d, yyyy")}
-            </h2>
-          )}
-        </div>
-      </div>
+      <KanbanBoardToolbar
+        firstVisibleDate={firstVisibleDate}
+        lastVisibleDate={lastVisibleDate}
+        onNavigatePrevious={navigatePrevious}
+        onNavigateNext={navigateNext}
+        onNavigateToday={navigateToToday}
+      />
 
       {/* Kanban Board */}
       <DndContext

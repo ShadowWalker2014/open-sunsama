@@ -2,7 +2,17 @@
 // Core kanban board view for Chronoflow
 
 export { KanbanBoard } from "./kanban-board";
+export { KanbanBoardToolbar } from "./kanban-board-toolbar";
+export { createDndHandlers } from "./kanban-dnd-handlers";
 export { DayColumn } from "./day-column";
 export { TaskCard, TaskCardPlaceholder } from "./task-card";
 export { AddTaskInline } from "./add-task-inline";
 export { TaskDetailPanel } from "./task-detail-panel";
+export {
+  TitleSection,
+  DateSection,
+  EstimatedTimeSection,
+  NotesSection,
+  ESTIMATED_TIME_OPTIONS,
+} from "./task-form-sections";
+export { TimeBlockItem, TimeBlocksList } from "./task-time-blocks";

@@ -2,23 +2,18 @@
 import * as React from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
-import { Loader2, Eye, EyeOff, Check, CheckCircle2, XCircle, ArrowLeft } from "lucide-react";
+import { Loader2, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { AuthLayout, AuthHeader, AuthFooter } from "@/components/layout/auth-layout";
 import { Button, Input, Label } from "@/components/ui";
 import { toast } from "@/hooks/use-toast";
 import { getApi } from "@/lib/api";
+import { PasswordRequirementsList, PASSWORD_REQUIREMENTS } from "./password-requirements";
+import { ResetPasswordSuccessState, ResetPasswordErrorState } from "./reset-password-states";
 
 interface ResetPasswordForm {
   newPassword: string;
   confirmPassword: string;
 }
-
-const PASSWORD_REQUIREMENTS = [
-  { label: "At least 8 characters", test: (pwd: string) => pwd.length >= 8 },
-  { label: "One uppercase letter", test: (pwd: string) => /[A-Z]/.test(pwd) },
-  { label: "One lowercase letter", test: (pwd: string) => /[a-z]/.test(pwd) },
-  { label: "One number", test: (pwd: string) => /[0-9]/.test(pwd) },
-];
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -89,58 +84,20 @@ export default function ResetPasswordPage() {
   // Success state
   if (resetStatus === "success") {
     return (
-      <AuthLayout>
-        <div className="flex flex-col items-center space-y-4 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
-            <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
-          </div>
-          <h1 className="text-2xl font-semibold tracking-tight">Password reset successful</h1>
-          <p className="text-sm text-muted-foreground max-w-[300px]">
-            Your password has been successfully reset. You can now log in with your new password.
-          </p>
-        </div>
-
-        <Button
-          className="w-full"
-          onClick={() => navigate({ to: "/login" })}
-        >
-          Continue to Login
-        </Button>
-      </AuthLayout>
+      <ResetPasswordSuccessState
+        onNavigateToLogin={() => navigate({ to: "/login" })}
+      />
     );
   }
 
   // Error state
   if (resetStatus === "error") {
     return (
-      <AuthLayout>
-        <div className="flex flex-col items-center space-y-4 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
-            <XCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
-          </div>
-          <h1 className="text-2xl font-semibold tracking-tight">Reset link invalid</h1>
-          <p className="text-sm text-muted-foreground max-w-[300px]">
-            {errorMessage}
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <Button
-            className="w-full"
-            onClick={() => navigate({ to: "/forgot-password" })}
-          >
-            Request new reset link
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full"
-            onClick={() => navigate({ to: "/login" })}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to login
-          </Button>
-        </div>
-      </AuthLayout>
+      <ResetPasswordErrorState
+        errorMessage={errorMessage}
+        onNavigateToForgotPassword={() => navigate({ to: "/forgot-password" })}
+        onNavigateToLogin={() => navigate({ to: "/login" })}
+      />
     );
   }
 
@@ -203,26 +160,7 @@ export default function ResetPasswordPage() {
           )}
 
           {/* Password Requirements */}
-          {newPassword && (
-            <div className="mt-2 space-y-1">
-              {PASSWORD_REQUIREMENTS.map((req, index) => {
-                const passed = req.test(newPassword);
-                return (
-                  <div
-                    key={index}
-                    className={`flex items-center gap-2 text-sm ${
-                      passed ? "text-green-600" : "text-muted-foreground"
-                    }`}
-                  >
-                    <Check
-                      className={`h-3 w-3 ${passed ? "opacity-100" : "opacity-30"}`}
-                    />
-                    {req.label}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          <PasswordRequirementsList password={newPassword} />
         </div>
 
         {/* Confirm Password */}

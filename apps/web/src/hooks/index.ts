@@ -56,6 +56,7 @@ export {
   type DragState,
   type DropPreview,
 } from "./useCalendarDnd";
+export type { CalendarDndOptions } from "./calendar-dnd-types";
 export {
   useNotificationPreferences,
   useUpdateNotificationPreferences,

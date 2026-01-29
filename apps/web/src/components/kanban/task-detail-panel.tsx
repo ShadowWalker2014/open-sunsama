@@ -1,48 +1,34 @@
 import * as React from "react";
-import { format } from "date-fns";
-import {
-  Calendar,
-  Check,
-  Clock,
-  FileText,
-  Trash2,
-  Undo2,
-} from "lucide-react";
-import type { Task, TimeBlock } from "@chronoflow/types";
+import { Check, Trash2, Undo2 } from "lucide-react";
+import type { Task } from "@chronoflow/types";
 import {
   useUpdateTask,
   useDeleteTask,
   useCompleteTask,
 } from "@/hooks/useTasks";
 import { useTimeBlocks } from "@/hooks/useTimeBlocks";
-import { cn, formatDuration } from "@/lib/utils";
 import {
   Button,
-  Input,
-  Label,
   Separator,
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-  Textarea,
   Badge,
 } from "@/components/ui";
+import {
+  TitleSection,
+  DateSection,
+  EstimatedTimeSection,
+  NotesSection,
+} from "./task-form-sections";
+import { TimeBlocksList } from "./task-time-blocks";
 
 interface TaskDetailPanelProps {
   task: Task | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-const ESTIMATED_TIME_OPTIONS = [
-  { value: 15, label: "15 min" },
-  { value: 30, label: "30 min" },
-  { value: 45, label: "45 min" },
-  { value: 60, label: "1 hour" },
-  { value: 90, label: "1.5 hours" },
-  { value: 120, label: "2 hours" },
-];
 
 /**
  * Slide-over panel for viewing and editing task details.
@@ -166,95 +152,32 @@ export function TaskDetailPanel({
         </SheetHeader>
 
         <div className="flex-1 space-y-6 overflow-y-auto py-4">
-          {/* Title */}
-          <div className="space-y-2">
-            <Label htmlFor="task-title">Title</Label>
-            <Input
-              id="task-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onBlur={handleTitleBlur}
-              className={cn(
-                "text-lg font-semibold",
-                isCompleted && "line-through text-muted-foreground"
-              )}
-            />
-          </div>
+          <TitleSection
+            title={title}
+            isCompleted={isCompleted}
+            onChange={setTitle}
+            onBlur={handleTitleBlur}
+          />
 
-          {/* Scheduled Date */}
-          <div className="space-y-2">
-            <Label htmlFor="task-date" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Scheduled Date
-            </Label>
-            <Input
-              id="task-date"
-              type="date"
-              value={scheduledDate}
-              onChange={(e) => handleDateChange(e.target.value)}
-            />
-          </div>
+          <DateSection
+            scheduledDate={scheduledDate}
+            onChange={handleDateChange}
+          />
 
-          {/* Estimated Time */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Estimated Time
-            </Label>
-            <div className="flex flex-wrap gap-2">
-              {ESTIMATED_TIME_OPTIONS.map((option) => (
-                <Button
-                  key={option.value}
-                  variant={estimatedMins === option.value ? "default" : "outline"}
-                  size="sm"
-                  onClick={() =>
-                    handleEstimatedTimeChange(
-                      estimatedMins === option.value ? null : option.value
-                    )
-                  }
-                >
-                  {option.label}
-                </Button>
-              ))}
-            </div>
-          </div>
+          <EstimatedTimeSection
+            estimatedMins={estimatedMins}
+            onChange={handleEstimatedTimeChange}
+          />
 
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="task-notes" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Notes
-            </Label>
-            <Textarea
-              id="task-notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              onBlur={handleNotesBlur}
-              placeholder="Add notes..."
-              rows={4}
-            />
-          </div>
+          <NotesSection
+            notes={notes}
+            onChange={setNotes}
+            onBlur={handleNotesBlur}
+          />
 
           <Separator />
 
-          {/* Time Blocks */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2 text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              Time Blocks
-            </Label>
-            {timeBlocks && timeBlocks.length > 0 ? (
-              <div className="space-y-2">
-                {timeBlocks.map((block) => (
-                  <TimeBlockItem key={block.id} timeBlock={block} />
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No time blocks scheduled for this task.
-              </p>
-            )}
-          </div>
+          <TimeBlocksList timeBlocks={timeBlocks} />
         </div>
 
         {/* Footer Actions */}
@@ -310,31 +233,5 @@ export function TaskDetailPanel({
         </div>
       </SheetContent>
     </Sheet>
-  );
-}
-
-interface TimeBlockItemProps {
-  timeBlock: TimeBlock;
-}
-
-function TimeBlockItem({ timeBlock }: TimeBlockItemProps) {
-  const startTime = new Date(timeBlock.startTime);
-  const endTime = new Date(timeBlock.endTime);
-  const durationMins = Math.round(
-    (endTime.getTime() - startTime.getTime()) / 60000
-  );
-
-  return (
-    <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2">
-      <div>
-        <p className="text-sm font-medium">
-          {format(startTime, "EEE, MMM d")}
-        </p>
-        <p className="text-xs text-muted-foreground">
-          {format(startTime, "h:mm a")} - {format(endTime, "h:mm a")}
-        </p>
-      </div>
-      <Badge variant="secondary">{formatDuration(durationMins)}</Badge>
-    </div>
   );
 }
