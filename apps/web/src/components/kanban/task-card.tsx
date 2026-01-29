@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useSortable } from "@dnd-kit/sortable";
-import { useDndContext } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import type { Task } from "@chronoflow/types";
 import { cn } from "@/lib/utils";
@@ -22,8 +21,6 @@ export function SortableTaskCard({ task, onSelect, isDragging: externalDragging 
   const [isHovered, setIsHovered] = React.useState(false);
   const completeTask = useCompleteTask();
   const isCompleted = !!task.completedAt;
-  
-  const { active, over } = useDndContext();
 
   const {
     attributes,
@@ -32,25 +29,27 @@ export function SortableTaskCard({ task, onSelect, isDragging: externalDragging 
     transform,
     transition,
     isDragging: isCurrentlyDragging,
+    isSorting,
+    isOver,
+    active,
+    over,
+    overIndex,
     index,
-    items,
   } = useSortable({
     id: task.id,
     data: { type: "task", task },
   });
 
-  // Calculate if this item is the drop target
-  const activeId = active?.id;
-  const overId = over?.id;
-  const isOver = overId === task.id && activeId !== task.id;
+  // Determine if we should show a drop indicator
+  // isOver is true when this item is being hovered by the dragged item
+  const showIndicator = isOver && active?.id !== task.id;
   
-  // Get the active item's index to determine drop indicator position
-  const activeIndex = activeId ? items.indexOf(String(activeId)) : -1;
-  const currentIndex = index;
-  
-  // Show drop indicator based on relative positions
-  const showDropIndicatorAbove = isOver && activeIndex > currentIndex;
-  const showDropIndicatorBelow = isOver && activeIndex < currentIndex && activeIndex !== -1;
+  // Determine indicator position based on where the item will be inserted
+  // If dragging from above (higher index) to current position -> show indicator above
+  // If dragging from below (lower index) to current position -> show indicator below
+  const activeIndex = active?.data?.current?.sortable?.index ?? -1;
+  const showDropIndicatorAbove = showIndicator && activeIndex > index;
+  const showDropIndicatorBelow = showIndicator && activeIndex < index && activeIndex !== -1;
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -85,7 +84,7 @@ export function SortableTaskCard({ task, onSelect, isDragging: externalDragging 
       >
         {/* Drop indicator line - above */}
         {showDropIndicatorAbove && (
-          <div className="absolute -top-0.5 left-0 right-0 h-0.5 bg-primary rounded-full z-10" />
+          <div className="absolute -top-1 left-0 right-0 h-0.5 bg-primary rounded-full z-10 shadow-[0_0_4px_rgba(var(--primary),0.5)]" />
         )}
         
         <TaskCardContent
@@ -100,7 +99,7 @@ export function SortableTaskCard({ task, onSelect, isDragging: externalDragging 
         
         {/* Drop indicator line - below */}
         {showDropIndicatorBelow && (
-          <div className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-primary rounded-full z-10" />
+          <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full z-10 shadow-[0_0_4px_rgba(var(--primary),0.5)]" />
         )}
       </div>
     </TaskContextMenu>

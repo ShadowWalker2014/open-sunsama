@@ -125,7 +125,7 @@ export function KanbanBoard() {
 
       if (!task) return;
 
-      // Check if dropped on a column
+      // Check if dropped on a column (not a task)
       const targetDate = findTargetColumnDate(over.id);
 
       if (targetDate) {
@@ -142,10 +142,20 @@ export function KanbanBoard() {
       // Check if dropped on another task (reordering within same column)
       if (isTaskId(over.id)) {
         const overTask = over.data.current?.task as Task | undefined;
+        
+        // If dropped on a task in a different column, move to that column
+        if (overTask && task.scheduledDate !== overTask.scheduledDate) {
+          moveTask.mutate({
+            id: taskId,
+            targetDate: overTask.scheduledDate,
+          });
+          return;
+        }
+        
+        // Reordering within the same column
         if (overTask && task.scheduledDate === overTask.scheduledDate && task.id !== overTask.id) {
-          // Get the sortable items from the active or over element's sortable context
-          // dnd-kit stores items in the sortable data
-          const sortableData = active.data.current?.sortable || over.data.current?.sortable;
+          // Get the sortable items from the active element's sortable context
+          const sortableData = active.data.current?.sortable;
           const columnTasks = sortableData?.items as string[] | undefined;
           
           if (columnTasks && task.scheduledDate) {
@@ -153,7 +163,7 @@ export function KanbanBoard() {
             const newIndex = columnTasks.indexOf(overTask.id);
             
             if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
-              // Reorder the task IDs
+              // Reorder the task IDs using arrayMove for correct ordering
               const newTaskIds = arrayMove(columnTasks, oldIndex, newIndex);
               
               // Persist the new order via API with optimistic update
