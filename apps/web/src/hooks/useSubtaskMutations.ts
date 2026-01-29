@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { Subtask, CreateSubtaskInput, UpdateSubtaskInput } from "@chronoflow/types";
+import { getApi } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
-import { subtaskKeys, type Subtask, type CreateSubtaskInput, type UpdateSubtaskInput } from "./useSubtasks";
+import { subtaskKeys } from "./useSubtasks";
 
 /**
  * Create a new subtask
@@ -14,29 +16,16 @@ export function useCreateSubtask() {
       data,
     }: {
       taskId: string;
-      data: CreateSubtaskInput;
+      data: Omit<CreateSubtaskInput, "taskId">;
     }): Promise<Subtask> => {
-      // TODO: Implement when API is ready
-      const newSubtask: Subtask = {
-        id: `temp-${Date.now()}`,
-        taskId,
-        title: data.title,
-        completed: data.completed ?? false,
-        position: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      return newSubtask;
+      const api = getApi();
+      return await api.subtasks.create(taskId, data);
     },
     onSuccess: (newSubtask, { taskId }) => {
       queryClient.setQueryData(
         subtaskKeys.list(taskId),
         (old: Subtask[] | undefined) => [...(old ?? []), newSubtask]
       );
-      toast({
-        title: "Subtask added",
-        description: `"${newSubtask.title}" has been added.`,
-      });
     },
     onError: (error) => {
       toast({
@@ -64,16 +53,8 @@ export function useUpdateSubtask() {
       subtaskId: string;
       data: UpdateSubtaskInput;
     }): Promise<Subtask> => {
-      // TODO: Implement when API is ready
-      return {
-        id: subtaskId,
-        taskId,
-        title: data.title ?? "",
-        completed: data.completed ?? false,
-        position: data.position ?? 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const api = getApi();
+      return await api.subtasks.update(taskId, subtaskId, data);
     },
     onSuccess: (updatedSubtask, { taskId }) => {
       queryClient.setQueryData(
@@ -100,14 +81,14 @@ export function useDeleteSubtask() {
 
   return useMutation({
     mutationFn: async ({
-      taskId: _taskId,
+      taskId,
       subtaskId,
     }: {
       taskId: string;
       subtaskId: string;
     }): Promise<string> => {
-      // TODO: Implement when API is ready
-      void _taskId;
+      const api = getApi();
+      await api.subtasks.delete(taskId, subtaskId);
       return subtaskId;
     },
     onSuccess: (deletedId, { taskId }) => {
@@ -115,10 +96,6 @@ export function useDeleteSubtask() {
         subtaskKeys.list(taskId),
         (old: Subtask[] | undefined) => old?.filter((st) => st.id !== deletedId) ?? []
       );
-      toast({
-        title: "Subtask deleted",
-        description: "The subtask has been removed.",
-      });
     },
     onError: (error) => {
       toast({
@@ -138,15 +115,14 @@ export function useReorderSubtasks() {
 
   return useMutation({
     mutationFn: async ({
-      taskId: _taskId,
-      subtaskIds: _subtaskIds,
+      taskId,
+      subtaskIds,
     }: {
       taskId: string;
       subtaskIds: string[];
-    }): Promise<void> => {
-      // TODO: Implement when API is ready
-      void _taskId;
-      void _subtaskIds;
+    }): Promise<Subtask[]> => {
+      const api = getApi();
+      return await api.subtasks.reorder(taskId, subtaskIds);
     },
     onMutate: async ({ taskId, subtaskIds }) => {
       await queryClient.cancelQueries({ queryKey: subtaskKeys.list(taskId) });
