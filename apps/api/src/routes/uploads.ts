@@ -4,7 +4,7 @@
  */
 
 import { Hono } from 'hono';
-import { getDb, eq, users } from '@chronoflow/database';
+import { getDb, eq, users, attachments } from '@chronoflow/database';
 import { ValidationError, NotFoundError } from '@chronoflow/utils';
 import { auth, type AuthVariables } from '../middleware/auth.js';
 import {
@@ -133,14 +133,21 @@ uploadsRouter.post('/attachments', auth, async (c) => {
   const buffer = Buffer.from(await file.arrayBuffer());
   const url = await uploadToS3(key, buffer, file.type);
 
+  // Save attachment metadata to database
+  const db = getDb();
+  const [attachment] = await db.insert(attachments).values({
+    taskId: typeof taskId === 'string' ? taskId : null,
+    userId,
+    url,
+    filename: file.name,
+    contentType: file.type,
+    size: file.size,
+    s3Key: key,
+  }).returning();
+
   return c.json({
     success: true,
-    data: {
-      url,
-      filename: file.name,
-      contentType: file.type,
-      size: file.size,
-    },
+    data: attachment,
   });
 });
 

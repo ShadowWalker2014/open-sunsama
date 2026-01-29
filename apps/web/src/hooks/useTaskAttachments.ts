@@ -129,15 +129,9 @@ export function useTaskAttachments(taskId: string) {
         throw new Error("Not authenticated");
       }
 
-      // Find the attachment to get the s3Key
-      const attachment = attachments.find((a) => a.id === attachmentId);
-      if (!attachment) {
-        throw new Error("Attachment not found");
-      }
-
       const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
       const response = await fetch(
-        `${baseUrl}/uploads/${encodeURIComponent(attachment.s3Key)}`,
+        `${baseUrl}/attachments/${attachmentId}`,
         {
           method: "DELETE",
           headers: {

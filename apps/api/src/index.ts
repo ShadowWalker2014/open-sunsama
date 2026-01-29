@@ -19,6 +19,7 @@ import { timeBlocksRouter } from './routes/time-blocks.js';
 import { apiKeysRouter } from './routes/api-keys.js';
 import { notificationsRouter } from './routes/notifications.js';
 import { uploadsRouter } from './routes/uploads.js';
+import { attachmentsRouter } from './routes/attachments.js';
 
 // Create Hono app
 const app = new Hono();
@@ -58,6 +59,7 @@ app.get('/', (c) => {
       apiKeys: '/api-keys',
       notifications: '/notifications',
       uploads: '/uploads',
+      attachments: '/attachments',
     },
   });
 });
@@ -70,6 +72,7 @@ app.route('/time-blocks', timeBlocksRouter);
 app.route('/api-keys', apiKeysRouter);
 app.route('/notifications', notificationsRouter);
 app.route('/uploads', uploadsRouter);
+app.route('/attachments', attachmentsRouter);
 
 // Error handling
 app.onError(errorHandler);
@@ -94,6 +97,7 @@ console.log(`
   ║   - *    /api-keys/* API key management                   ║
   ║   - *    /notifications/* Notification settings           ║
   ║   - *    /uploads/*  File uploads                         ║
+  ║   - *    /attachments/* Attachment management             ║
   ║                                                           ║
   ╚═══════════════════════════════════════════════════════════╝
 `);
