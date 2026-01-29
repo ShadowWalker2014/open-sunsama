@@ -4,8 +4,9 @@ import type {
   CreateTaskInput,
   UpdateTaskInput,
   TaskFilterInput,
+  ReorderTasksInput,
 } from "@chronoflow/types";
-import { getApiClient } from "@/lib/api";
+import { getApi } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 
 /**
@@ -26,23 +27,8 @@ export function useTasks(filters?: TaskFilterInput) {
   return useQuery({
     queryKey: taskKeys.list(filters ?? {}),
     queryFn: async () => {
-      const client = getApiClient();
-      const params: Record<string, string> = {};
-      
-      if (filters?.scheduledDate !== undefined) {
-        params.scheduledDate = filters.scheduledDate ?? "null";
-      }
-      if (filters?.completed !== undefined) {
-        params.completed = String(filters.completed);
-      }
-      if (filters?.scheduledDateFrom) {
-        params.scheduledDateFrom = filters.scheduledDateFrom;
-      }
-      if (filters?.scheduledDateTo) {
-        params.scheduledDateTo = filters.scheduledDateTo;
-      }
-      
-      return await client.tasks.list(params) as Task[];
+      const api = getApi();
+      return await api.tasks.list(filters);
     },
   });
 }
@@ -54,8 +40,8 @@ export function useTask(id: string) {
   return useQuery({
     queryKey: taskKeys.detail(id),
     queryFn: async () => {
-      const client = getApiClient();
-      return await client.tasks.get(id) as Task;
+      const api = getApi();
+      return await api.tasks.get(id);
     },
     enabled: !!id,
   });
@@ -68,9 +54,9 @@ export function useCreateTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: CreateTaskInput) => {
-      const client = getApiClient();
-      return await client.tasks.create(data) as Task;
+    mutationFn: async (data: CreateTaskInput): Promise<Task> => {
+      const api = getApi();
+      return await api.tasks.create(data);
     },
     onSuccess: (newTask) => {
       // Invalidate and refetch task lists
@@ -101,9 +87,9 @@ export function useUpdateTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateTaskInput }) => {
-      const client = getApiClient();
-      return await client.tasks.update(id, data) as Task;
+    mutationFn: async ({ id, data }: { id: string; data: UpdateTaskInput }): Promise<Task> => {
+      const api = getApi();
+      return await api.tasks.update(id, data);
     },
     onSuccess: (updatedTask) => {
       // Update the task in cache
@@ -129,9 +115,9 @@ export function useDeleteTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const client = getApiClient();
-      await client.tasks.delete(id);
+    mutationFn: async (id: string): Promise<string> => {
+      const api = getApi();
+      await api.tasks.delete(id);
       return id;
     },
     onSuccess: (deletedId) => {
@@ -160,15 +146,26 @@ export function useDeleteTask() {
  * Complete a task
  */
 export function useCompleteTask() {
-  const updateTask = useUpdateTask();
+  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, completed }: { id: string; completed: boolean }) => {
-      return updateTask.mutateAsync({
-        id,
-        data: {
-          completedAt: completed ? new Date() : null,
-        },
+    mutationFn: async ({ id, completed }: { id: string; completed: boolean }): Promise<Task> => {
+      const api = getApi();
+      if (completed) {
+        return await api.tasks.complete(id);
+      } else {
+        return await api.tasks.uncomplete(id);
+      }
+    },
+    onSuccess: (updatedTask) => {
+      queryClient.setQueryData(taskKeys.detail(updatedTask.id), updatedTask);
+      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Failed to update task",
+        description: error instanceof Error ? error.message : "Unknown error",
       });
     },
   });
@@ -193,7 +190,7 @@ export function useMoveTask() {
       return updateTask.mutateAsync({
         id,
         data: {
-          scheduledDate: targetDate,
+          scheduledDate: targetDate ?? undefined,
           position,
         },
       });
@@ -214,11 +211,10 @@ export function useReorderTasks() {
     }: {
       date: string;
       taskIds: string[];
-    }) => {
-      const client = getApiClient();
-      return await client.request("POST", "/tasks/reorder", {
-        body: { date, taskIds },
-      });
+    }): Promise<void> => {
+      const api = getApi();
+      const input: ReorderTasksInput = { date, taskIds };
+      await api.tasks.reorder(input);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });

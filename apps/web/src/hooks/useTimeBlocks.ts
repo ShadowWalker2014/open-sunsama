@@ -6,7 +6,7 @@ import type {
   TimeBlockFilterInput,
   QuickScheduleInput,
 } from "@chronoflow/types";
-import { getApiClient } from "@/lib/api";
+import { getApi } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 
 /**
@@ -28,29 +28,8 @@ export function useTimeBlocks(filters?: TimeBlockFilterInput) {
   return useQuery({
     queryKey: timeBlockKeys.list(filters ?? {}),
     queryFn: async () => {
-      const client = getApiClient();
-      const params: Record<string, string> = {};
-
-      if (filters?.date) {
-        params.date = filters.date;
-      }
-      if (filters?.taskId) {
-        params.taskId = filters.taskId;
-      }
-      if (filters?.startTimeFrom) {
-        params.startTimeFrom =
-          typeof filters.startTimeFrom === "string"
-            ? filters.startTimeFrom
-            : filters.startTimeFrom.toISOString();
-      }
-      if (filters?.startTimeTo) {
-        params.startTimeTo =
-          typeof filters.startTimeTo === "string"
-            ? filters.startTimeTo
-            : filters.startTimeTo.toISOString();
-      }
-
-      return (await client.timeBlocks.list(params)) as TimeBlock[];
+      const api = getApi();
+      return await api.timeBlocks.list(filters);
     },
   });
 }
@@ -79,8 +58,8 @@ export function useTimeBlock(id: string) {
   return useQuery({
     queryKey: timeBlockKeys.detail(id),
     queryFn: async () => {
-      const client = getApiClient();
-      return (await client.timeBlocks.get(id)) as TimeBlock;
+      const api = getApi();
+      return await api.timeBlocks.get(id);
     },
     enabled: !!id,
   });
@@ -93,9 +72,9 @@ export function useCreateTimeBlock() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: CreateTimeBlockInput) => {
-      const client = getApiClient();
-      return (await client.timeBlocks.create(data)) as TimeBlock;
+    mutationFn: async (data: CreateTimeBlockInput): Promise<TimeBlock> => {
+      const api = getApi();
+      return await api.timeBlocks.create(data);
     },
     onSuccess: (newTimeBlock) => {
       // Invalidate and refetch time block lists
@@ -135,9 +114,9 @@ export function useUpdateTimeBlock() {
     }: {
       id: string;
       data: UpdateTimeBlockInput;
-    }) => {
-      const client = getApiClient();
-      return (await client.timeBlocks.update(id, data)) as TimeBlock;
+    }): Promise<TimeBlock> => {
+      const api = getApi();
+      return await api.timeBlocks.update(id, data);
     },
     onSuccess: (updatedTimeBlock) => {
       // Update the time block in cache
@@ -166,9 +145,9 @@ export function useDeleteTimeBlock() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const client = getApiClient();
-      await client.timeBlocks.delete(id);
+    mutationFn: async (id: string): Promise<string> => {
+      const api = getApi();
+      await api.timeBlocks.delete(id);
       return id;
     },
     onSuccess: (deletedId) => {
@@ -200,11 +179,9 @@ export function useQuickSchedule() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: QuickScheduleInput) => {
-      const client = getApiClient();
-      return await client.request<TimeBlock>("POST", "/time-blocks/quick-schedule", {
-        body: data,
-      });
+    mutationFn: async (data: QuickScheduleInput): Promise<TimeBlock> => {
+      const api = getApi();
+      return await api.timeBlocks.quickSchedule(data);
     },
     onSuccess: (newTimeBlock) => {
       queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
@@ -230,14 +207,21 @@ export function useQuickSchedule() {
 
 /**
  * Start a time block (for time tracking)
+ * Note: Updates the start time to the current time
  */
 export function useStartTimeBlock() {
   const queryClient = useQueryClient();
+  const updateTimeBlock = useUpdateTimeBlock();
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const client = getApiClient();
-      return (await client.timeBlocks.start(id)) as TimeBlock;
+    mutationFn: async (id: string): Promise<TimeBlock> => {
+      // Update start time to now
+      return updateTimeBlock.mutateAsync({
+        id,
+        data: {
+          startTime: new Date(),
+        },
+      });
     },
     onSuccess: (updatedTimeBlock) => {
       queryClient.setQueryData(
@@ -263,14 +247,21 @@ export function useStartTimeBlock() {
 
 /**
  * Stop a time block (for time tracking)
+ * Note: Updates the end time to the current time
  */
 export function useStopTimeBlock() {
   const queryClient = useQueryClient();
+  const updateTimeBlock = useUpdateTimeBlock();
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const client = getApiClient();
-      return (await client.timeBlocks.stop(id)) as TimeBlock;
+    mutationFn: async (id: string): Promise<TimeBlock> => {
+      // Update end time to now
+      return updateTimeBlock.mutateAsync({
+        id,
+        data: {
+          endTime: new Date(),
+        },
+      });
     },
     onSuccess: (updatedTimeBlock) => {
       queryClient.setQueryData(

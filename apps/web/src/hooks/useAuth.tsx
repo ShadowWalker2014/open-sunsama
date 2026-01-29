@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { User, LoginInput, CreateUserInput, AuthResponse } from "@chronoflow/types";
-import { getApiClient, setAuthToken, clearApiClient } from "@/lib/api";
+import type { User, LoginInput, CreateUserInput, AuthResponse, UpdateUserInput } from "@chronoflow/types";
+import { getApi, setAuthToken, clearApiClient } from "@/lib/api";
 
 const AUTH_TOKEN_KEY = "chronoflow_token";
 const AUTH_USER_KEY = "chronoflow_user";
@@ -17,7 +17,7 @@ interface AuthContextValue extends AuthState {
   login: (credentials: LoginInput) => Promise<void>;
   register: (data: CreateUserInput) => Promise<void>;
   logout: () => void;
-  updateUser: (data: Partial<User>) => Promise<void>;
+  updateUser: (data: UpdateUserInput) => Promise<void>;
 }
 
 const AuthContext = React.createContext<AuthContextValue | null>(null);
@@ -75,13 +75,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Fetch current user
-  const { data: user, isLoading, refetch } = useQuery({
+  const { data: user, isLoading } = useQuery({
     queryKey: ["auth", "me"],
     queryFn: async () => {
       if (!token) return null;
       try {
-        const client = getApiClient();
-        return await client.user.me() as User;
+        const api = getApi();
+        return await api.auth.getMe();
       } catch {
         // If token is invalid, clear auth
         clearAuthData();
@@ -96,12 +96,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Login mutation
   const loginMutation = useMutation({
-    mutationFn: async (credentials: LoginInput) => {
-      const client = getApiClient();
-      const response = await client.request<AuthResponse>("POST", "/auth/login", {
-        body: credentials,
-      });
-      return response;
+    mutationFn: async (credentials: LoginInput): Promise<AuthResponse> => {
+      const api = getApi();
+      return await api.auth.login(credentials);
     },
     onSuccess: (data) => {
       storeAuthData(data.token, data.user);
@@ -112,12 +109,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Register mutation
   const registerMutation = useMutation({
-    mutationFn: async (data: CreateUserInput) => {
-      const client = getApiClient();
-      const response = await client.request<AuthResponse>("POST", "/auth/register", {
-        body: data,
-      });
-      return response;
+    mutationFn: async (data: CreateUserInput): Promise<AuthResponse> => {
+      const api = getApi();
+      return await api.auth.register(data);
     },
     onSuccess: (data) => {
       storeAuthData(data.token, data.user);
@@ -128,9 +122,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Update user mutation
   const updateUserMutation = useMutation({
-    mutationFn: async (data: Partial<User>) => {
-      const client = getApiClient();
-      return await client.user.update(data) as User;
+    mutationFn: async (data: UpdateUserInput): Promise<User> => {
+      const api = getApi();
+      return await api.auth.updateMe(data);
     },
     onSuccess: (updatedUser) => {
       queryClient.setQueryData(["auth", "me"], updatedUser);
@@ -153,7 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     queryClient.clear();
   }, [queryClient]);
 
-  const updateUser = React.useCallback(async (data: Partial<User>) => {
+  const updateUser = React.useCallback(async (data: UpdateUserInput) => {
     await updateUserMutation.mutateAsync(data);
   }, [updateUserMutation]);
 

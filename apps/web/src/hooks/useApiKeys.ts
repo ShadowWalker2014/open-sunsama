@@ -1,37 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getApiClient } from "@/lib/api";
+import type {
+  ApiKey,
+  CreateApiKeyInput,
+  CreateApiKeyResponse,
+} from "@chronoflow/types";
+import { getApi } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
-
-/**
- * API Key type definition
- */
-export interface ApiKey {
-  id: string;
-  name: string;
-  prefix: string;
-  scopes: string[];
-  createdAt: string;
-  expiresAt: string | null;
-  lastUsedAt: string | null;
-  revokedAt: string | null;
-}
-
-/**
- * Response after creating an API key (includes full key)
- */
-export interface CreateApiKeyResponse {
-  apiKey: ApiKey;
-  key: string; // Full key - only shown once!
-}
-
-/**
- * Input for creating a new API key
- */
-export interface CreateApiKeyInput {
-  name: string;
-  scopes: string[];
-  expiresAt?: string | null;
-}
 
 /**
  * Query key factory for API keys
@@ -48,10 +22,9 @@ export const apiKeyKeys = {
 export function useApiKeys() {
   return useQuery({
     queryKey: apiKeyKeys.lists(),
-    queryFn: async () => {
-      const client = getApiClient();
-      const response = await client.request<{ apiKeys: ApiKey[] }>("GET", "/api-keys");
-      return response.apiKeys;
+    queryFn: async (): Promise<ApiKey[]> => {
+      const api = getApi();
+      return await api.apiKeys.list();
     },
   });
 }
@@ -64,11 +37,8 @@ export function useCreateApiKey() {
 
   return useMutation({
     mutationFn: async (data: CreateApiKeyInput): Promise<CreateApiKeyResponse> => {
-      const client = getApiClient();
-      const response = await client.request<CreateApiKeyResponse>("POST", "/api-keys", {
-        body: data,
-      });
-      return response;
+      const api = getApi();
+      return await api.apiKeys.create(data);
     },
     onSuccess: (response) => {
       // Invalidate and refetch API keys list
@@ -96,9 +66,9 @@ export function useRevokeApiKey() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const client = getApiClient();
-      await client.request("DELETE", `/api-keys/${id}`);
+    mutationFn: async (id: string): Promise<string> => {
+      const api = getApi();
+      await api.apiKeys.revoke(id);
       return id;
     },
     onSuccess: () => {
@@ -119,3 +89,6 @@ export function useRevokeApiKey() {
     },
   });
 }
+
+// Re-export types for convenience
+export type { ApiKey, CreateApiKeyInput, CreateApiKeyResponse };
