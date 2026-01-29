@@ -54,6 +54,10 @@ export { createAuthApi, type AuthApi };
 import { createTasksApi, type TasksApi } from "./tasks.js";
 export { createTasksApi, type TasksApi };
 
+// Subtasks API
+import { createSubtasksApi, type SubtasksApi } from "./subtasks.js";
+export { createSubtasksApi, type SubtasksApi };
+
 // Time Blocks API
 import { createTimeBlocksApi, type TimeBlocksApi } from "./time-blocks.js";
 export { createTimeBlocksApi, type TimeBlocksApi };
@@ -85,11 +89,18 @@ export type {
   ChangePasswordInput,
   // Task types
   Task,
+  TaskPriority,
+  TaskSortBy,
   CreateTaskInput,
   UpdateTaskInput,
   ReorderTasksInput,
   TaskFilterInput,
   TaskStats,
+  // Subtask types
+  Subtask,
+  CreateSubtaskInput,
+  UpdateSubtaskInput,
+  ReorderSubtasksInput,
   // Time block types
   TimeBlock,
   CreateTimeBlockInput,
@@ -138,6 +149,8 @@ export function createApi(config: ApiClientConfig) {
     auth: createAuthApi(client),
     /** Tasks API methods */
     tasks: createTasksApi(client),
+    /** Subtasks API methods */
+    subtasks: createSubtasksApi(client),
     /** Time blocks API methods */
     timeBlocks: createTimeBlocksApi(client),
     /** API keys API methods */

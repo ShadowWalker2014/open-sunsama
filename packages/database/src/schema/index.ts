@@ -8,8 +8,18 @@ export {
   insertTaskSchema,
   selectTaskSchema,
   updateTaskSchema,
+  TASK_PRIORITIES,
 } from './tasks';
-export type { Task, NewTask, UpdateTask } from './tasks';
+export type { Task, NewTask, UpdateTask, TaskPriority } from './tasks';
+
+export {
+  subtasks,
+  subtasksRelations,
+  insertSubtaskSchema,
+  selectSubtaskSchema,
+  updateSubtaskSchema,
+} from './subtasks';
+export type { Subtask, NewSubtask, UpdateSubtask } from './subtasks';
 
 export {
   timeBlocks,

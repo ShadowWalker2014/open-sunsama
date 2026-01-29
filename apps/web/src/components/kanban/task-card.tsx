@@ -1,11 +1,12 @@
 import * as React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Check, Clock, GripVertical } from "lucide-react";
+import { Check, Clock } from "lucide-react";
 import type { Task } from "@chronoflow/types";
 import { cn, formatDuration } from "@/lib/utils";
-import { useCompleteTask, useUpdateTask } from "@/hooks/useTasks";
-import { Badge, Input } from "@/components/ui";
+import { useCompleteTask } from "@/hooks/useTasks";
+import { PriorityDot } from "@/components/ui/priority-badge";
+import { TaskContextMenu } from "./task-context-menu";
 
 interface TaskCardProps {
   task: Task;
@@ -14,15 +15,11 @@ interface TaskCardProps {
 }
 
 /**
- * Draggable task card for the kanban board.
- * Supports inline title editing on double-click, completion toggle, and drag-and-drop.
+ * Sortable task card for drag-and-drop reordering within columns.
+ * Uses @dnd-kit/sortable for smooth animations.
  */
-export function TaskCard({ task, onSelect, isDragging: externalDragging }: TaskCardProps) {
-  const [isEditing, setIsEditing] = React.useState(false);
-  const [editTitle, setEditTitle] = React.useState(task.title);
-  const inputRef = React.useRef<HTMLInputElement>(null);
-
-  const updateTask = useUpdateTask();
+export function SortableTaskCard({ task, onSelect, isDragging: externalDragging }: TaskCardProps) {
+  const [isHovered, setIsHovered] = React.useState(false);
   const completeTask = useCompleteTask();
   const isCompleted = !!task.completedAt;
 
@@ -32,7 +29,7 @@ export function TaskCard({ task, onSelect, isDragging: externalDragging }: TaskC
     setNodeRef,
     transform,
     transition,
-    isDragging,
+    isDragging: isCurrentlyDragging,
   } = useSortable({
     id: task.id,
     data: {
@@ -46,31 +43,7 @@ export function TaskCard({ task, onSelect, isDragging: externalDragging }: TaskC
     transition,
   };
 
-  const handleDoubleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsEditing(true);
-    setEditTitle(task.title);
-  };
-
-  const handleTitleSave = async () => {
-    if (editTitle.trim() && editTitle !== task.title) {
-      await updateTask.mutateAsync({
-        id: task.id,
-        data: { title: editTitle.trim() },
-      });
-    }
-    setIsEditing(false);
-  };
-
-  const handleTitleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleTitleSave();
-    } else if (e.key === "Escape") {
-      setEditTitle(task.title);
-      setIsEditing(false);
-    }
-  };
+  const dragging = isCurrentlyDragging || externalDragging;
 
   const handleToggleComplete = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -80,118 +53,205 @@ export function TaskCard({ task, onSelect, isDragging: externalDragging }: TaskC
     });
   };
 
-  const handleClick = () => {
-    if (!isEditing) {
+  const handleClick = (e: React.MouseEvent) => {
+    if (!dragging) {
+      e.stopPropagation();
       onSelect(task);
     }
   };
 
-  React.useEffect(() => {
-    if (isEditing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [isEditing]);
-
-  const dragging = isDragging || externalDragging;
+  // Only show high priority indicators (P0, P1) to keep it minimal
+  const showPriority = task.priority === "P0" || task.priority === "P1";
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={cn(
-        "group relative flex items-start gap-2 rounded-lg border bg-card p-3 transition-all",
-        "hover:border-primary/50 hover:shadow-md",
-        dragging && "opacity-50 shadow-lg ring-2 ring-primary",
-        isCompleted && "opacity-60"
-      )}
-      onClick={handleClick}
-      onDoubleClick={handleDoubleClick}
-    >
-      {/* Drag Handle - Touch-friendly size (44px minimum) */}
-      <button
+    <TaskContextMenu task={task} onEdit={() => onSelect(task)}>
+      <div
+        ref={setNodeRef}
+        style={style}
         {...attributes}
         {...listeners}
         className={cn(
-          "mt-0.5 cursor-grab touch-none transition-opacity",
-          // Always visible on touch devices, hover reveal on desktop
-          "opacity-40 sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100",
-          "active:cursor-grabbing active:opacity-100",
-          // Touch-friendly tap target
-          "-ml-1 p-2 -m-2"
+          // Base styles - Linear-inspired minimal card
+          "group relative flex items-start gap-3 rounded-lg px-3 py-2.5 transition-all duration-150",
+          // Background and border
+          "bg-card/50 hover:bg-card",
+          "border border-transparent hover:border-border/50",
+          // Cursor
+          "cursor-grab active:cursor-grabbing",
+          // Touch support
+          "touch-none select-none",
+          // Dragging state
+          isCurrentlyDragging && "opacity-30 z-50",
+          // DragOverlay state (elevated)
+          externalDragging && "shadow-xl ring-2 ring-primary/20 rotate-[0.5deg] cursor-grabbing bg-card",
+          // Completed state
+          isCompleted && "opacity-50"
         )}
-        onClick={(e) => e.stopPropagation()}
-        aria-label="Drag to reorder task"
+        onClick={handleClick}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        <GripVertical className="h-5 w-5 text-muted-foreground sm:h-4 sm:w-4" />
-      </button>
+        {/* Checkbox - appears on hover */}
+        <div
+          className={cn(
+            "relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all duration-150",
+            // Show/hide based on hover or completion
+            isCompleted || isHovered ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+            // Colors
+            isCompleted
+              ? "border-primary bg-primary text-primary-foreground"
+              : "border-muted-foreground/40 hover:border-primary hover:bg-primary/10"
+          )}
+          onClick={handleToggleComplete}
+          role="checkbox"
+          aria-checked={isCompleted}
+        >
+          {isCompleted && <Check className="h-2.5 w-2.5" strokeWidth={3} />}
+        </div>
 
-      {/* Completion Checkbox - Touch-friendly size (44px tap target) */}
-      <button
-        onClick={handleToggleComplete}
+        {/* Content */}
+        <div className="min-w-0 flex-1 space-y-1">
+          {/* Title row with priority */}
+          <div className="flex items-start gap-2">
+            <p
+              className={cn(
+                "flex-1 text-sm font-medium leading-snug text-foreground",
+                isCompleted && "line-through text-muted-foreground"
+              )}
+            >
+              {task.title}
+            </p>
+            {/* Priority dot - only show for P0/P1 */}
+            {showPriority && !isCompleted && (
+              <PriorityDot priority={task.priority} size="sm" className="mt-1.5 shrink-0" />
+            )}
+          </div>
+
+          {/* Meta info */}
+          <div className="flex items-center gap-2">
+            {/* Estimated time */}
+            {task.estimatedMins && !isCompleted && (
+              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                <Clock className="h-3 w-3" />
+                {formatDuration(task.estimatedMins)}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </TaskContextMenu>
+  );
+}
+
+/**
+ * Legacy TaskCard - used for DragOverlay display
+ * Linear-style task card with hover-reveal checkbox.
+ * Clean, minimal design with subtle interactions.
+ */
+export function TaskCard({ task, onSelect, isDragging: externalDragging }: TaskCardProps) {
+  const [isHovered, setIsHovered] = React.useState(false);
+  const completeTask = useCompleteTask();
+  const isCompleted = !!task.completedAt;
+
+  const dragging = externalDragging || false;
+
+  const handleToggleComplete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    await completeTask.mutateAsync({
+      id: task.id,
+      completed: !isCompleted,
+    });
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (!dragging) {
+      e.stopPropagation();
+      onSelect(task);
+    }
+  };
+
+  // Only show high priority indicators (P0, P1) to keep it minimal
+  const showPriority = task.priority === "P0" || task.priority === "P1";
+
+  return (
+    <div
+      className={cn(
+        // Base styles - Linear-inspired minimal card
+        "group relative flex items-start gap-3 rounded-lg px-3 py-2.5 transition-all duration-150",
+        // Background and border
+        "bg-card/50 hover:bg-card",
+        "border border-transparent hover:border-border/50",
+        // Cursor
+        "cursor-grab active:cursor-grabbing",
+        // Touch support
+        "touch-none select-none",
+        // DragOverlay state (elevated)
+        externalDragging && "shadow-xl ring-2 ring-primary/20 rotate-[0.5deg] cursor-grabbing bg-card",
+        // Completed state
+        isCompleted && "opacity-50"
+      )}
+      onClick={handleClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Checkbox - appears on hover */}
+      <div
         className={cn(
-          // Visual checkbox size
-          "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors",
-          // Touch-friendly tap area (padding creates 44px target)
-          "p-2 -m-2",
+          "relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all duration-150",
+          // Show/hide based on hover or completion
+          isCompleted || isHovered ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+          // Colors
           isCompleted
             ? "border-primary bg-primary text-primary-foreground"
-            : "border-muted-foreground/50 hover:border-primary active:border-primary"
+            : "border-muted-foreground/40 hover:border-primary hover:bg-primary/10"
         )}
-        aria-label={isCompleted ? "Mark as incomplete" : "Mark as complete"}
+        onClick={handleToggleComplete}
+        role="checkbox"
+        aria-checked={isCompleted}
       >
-        {isCompleted && <Check className="h-3.5 w-3.5" />}
-      </button>
+        {isCompleted && <Check className="h-2.5 w-2.5" strokeWidth={3} />}
+      </div>
 
       {/* Content */}
-      <div className="min-w-0 flex-1">
-        {isEditing ? (
-          <Input
-            ref={inputRef}
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
-            onBlur={handleTitleSave}
-            onKeyDown={handleTitleKeyDown}
-            className="h-auto border-none p-0 text-sm font-medium shadow-none focus-visible:ring-0"
-            onClick={(e) => e.stopPropagation()}
-          />
-        ) : (
+      <div className="min-w-0 flex-1 space-y-1">
+        {/* Title row with priority */}
+        <div className="flex items-start gap-2">
           <p
             className={cn(
-              "text-sm font-medium leading-tight",
+              "flex-1 text-sm font-medium leading-snug text-foreground",
               isCompleted && "line-through text-muted-foreground"
             )}
           >
             {task.title}
           </p>
-        )}
+          {/* Priority dot - only show for P0/P1 */}
+          {showPriority && !isCompleted && (
+            <PriorityDot priority={task.priority} size="sm" className="mt-1.5 shrink-0" />
+          )}
+        </div>
 
-        {/* Estimated Time Badge */}
-        {task.estimatedMins && (
-          <Badge
-            variant="secondary"
-            className={cn(
-              "mt-2 gap-1 text-xs",
-              isCompleted && "opacity-70"
-            )}
-          >
-            <Clock className="h-3 w-3" />
-            {formatDuration(task.estimatedMins)}
-          </Badge>
-        )}
+        {/* Meta info */}
+        <div className="flex items-center gap-2">
+          {/* Estimated time */}
+          {task.estimatedMins && !isCompleted && (
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              {formatDuration(task.estimatedMins)}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
 /**
- * Placeholder card shown when dragging a task
+ * Placeholder card shown when dragging into empty column
  */
 export function TaskCardPlaceholder() {
   return (
-    <div className="rounded-lg border-2 border-dashed border-primary/50 bg-primary/5 p-3">
-      <div className="h-4 w-3/4 rounded bg-muted" />
-      <div className="mt-2 h-3 w-1/4 rounded bg-muted" />
+    <div className="rounded-lg border-2 border-dashed border-primary/40 bg-primary/5 px-3 py-2.5">
+      <div className="h-4 w-2/3 rounded bg-primary/10" />
     </div>
   );
 }

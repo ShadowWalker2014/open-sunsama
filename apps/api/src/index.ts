@@ -14,6 +14,7 @@ import { serve } from '@hono/node-server';
 import { errorHandler, notFoundHandler } from './middleware/error.js';
 import { authRouter } from './routes/auth.js';
 import { tasksRouter } from './routes/tasks.js';
+import { subtasksRouter } from './routes/subtasks.js';
 import { timeBlocksRouter } from './routes/time-blocks.js';
 import { apiKeysRouter } from './routes/api-keys.js';
 import { notificationsRouter } from './routes/notifications.js';
@@ -51,6 +52,7 @@ app.get('/', (c) => {
     endpoints: {
       auth: '/auth',
       tasks: '/tasks',
+      subtasks: '/tasks/:taskId/subtasks',
       timeBlocks: '/time-blocks',
       apiKeys: '/api-keys',
       notifications: '/notifications',
@@ -61,6 +63,7 @@ app.get('/', (c) => {
 // Mount routes
 app.route('/auth', authRouter);
 app.route('/tasks', tasksRouter);
+app.route('/tasks', subtasksRouter);  // Subtask routes under /tasks/:taskId/subtasks
 app.route('/time-blocks', timeBlocksRouter);
 app.route('/api-keys', apiKeysRouter);
 app.route('/notifications', notificationsRouter);

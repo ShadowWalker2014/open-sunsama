@@ -6,6 +6,16 @@ import { z } from 'zod';
 import { uuidSchema, dateSchema } from '@chronoflow/utils';
 
 /**
+ * Priority levels for tasks
+ */
+export const prioritySchema = z.enum(['P0', 'P1', 'P2', 'P3']);
+
+/**
+ * Sort by options for tasks
+ */
+export const sortBySchema = z.enum(['priority', 'position', 'createdAt']);
+
+/**
  * Schema for creating a task
  */
 export const createTaskSchema = z.object({
@@ -13,6 +23,7 @@ export const createTaskSchema = z.object({
   notes: z.string().max(5000).optional().nullable(),
   scheduledDate: dateSchema.optional().nullable(),
   estimatedMins: z.number().int().positive().max(480).optional().nullable(),
+  priority: prioritySchema.optional(),
   position: z.number().int().nonnegative().optional(),
 });
 
@@ -24,6 +35,7 @@ export const updateTaskSchema = z.object({
   notes: z.string().max(5000).optional().nullable(),
   scheduledDate: dateSchema.optional().nullable(),
   estimatedMins: z.number().int().positive().max(480).optional().nullable(),
+  priority: prioritySchema.optional(),
   completedAt: z.string().datetime().optional().nullable(),
   position: z.number().int().nonnegative().optional(),
 });
@@ -37,6 +49,7 @@ export const taskFilterSchema = z.object({
   to: dateSchema.optional(),
   completed: z.enum(['true', 'false']).optional(),
   backlog: z.enum(['true', 'false']).optional(),
+  sortBy: sortBySchema.optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });

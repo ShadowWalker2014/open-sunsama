@@ -112,6 +112,7 @@ export interface TasksApi {
 
 /**
  * Convert TaskFilterInput to query parameters
+ * Maps frontend filter names to API query parameter names
  */
 function filtersToSearchParams(
   filters?: TaskFilterInput
@@ -119,12 +120,24 @@ function filtersToSearchParams(
   if (!filters) return {};
 
   return {
-    scheduledDate: filters.scheduledDate ?? undefined,
-    scheduledDateFrom: filters.scheduledDateFrom,
-    scheduledDateTo: filters.scheduledDateTo,
-    completed: filters.completed,
-    titleSearch: filters.titleSearch,
+    // API uses 'date' for single date filter
+    date: filters.scheduledDate ?? undefined,
+    // API uses 'from' and 'to' for date range
+    from: filters.scheduledDateFrom,
+    to: filters.scheduledDateTo,
+    // API uses string 'true'/'false' for completed filter
+    completed: filters.completed !== undefined ? String(filters.completed) : undefined,
+    // API uses 'backlog' for unscheduled tasks
+    backlog: filters.backlog !== undefined ? String(filters.backlog) : undefined,
+    // Sort by field
+    sortBy: filters.sortBy,
   };
+}
+
+// API response wrapper type
+interface ApiResponseWrapper<T> {
+  success: boolean;
+  data: T;
 }
 
 /**
@@ -139,21 +152,24 @@ export function createTasksApi(client: ChronoflowClient): TasksApi {
       options?: RequestOptions
     ): Promise<Task[]> {
       const searchParams = filtersToSearchParams(filters);
-      return client.get<Task[]>("tasks", {
+      const response = await client.get<ApiResponseWrapper<Task[]>>("tasks", {
         ...options,
         searchParams: { ...options?.searchParams, ...searchParams },
       });
+      return response.data;
     },
 
     async create(
       input: CreateTaskInput,
       options?: RequestOptions
     ): Promise<Task> {
-      return client.post<Task>("tasks", input, options);
+      const response = await client.post<ApiResponseWrapper<Task>>("tasks", input, options);
+      return response.data;
     },
 
     async get(id: string, options?: RequestOptions): Promise<Task> {
-      return client.get<Task>(`tasks/${id}`, options);
+      const response = await client.get<ApiResponseWrapper<Task>>(`tasks/${id}`, options);
+      return response.data;
     },
 
     async update(
@@ -161,26 +177,29 @@ export function createTasksApi(client: ChronoflowClient): TasksApi {
       input: UpdateTaskInput,
       options?: RequestOptions
     ): Promise<Task> {
-      return client.patch<Task>(`tasks/${id}`, input, options);
+      const response = await client.patch<ApiResponseWrapper<Task>>(`tasks/${id}`, input, options);
+      return response.data;
     },
 
     async delete(id: string, options?: RequestOptions): Promise<void> {
-      return client.delete<void>(`tasks/${id}`, options);
+      await client.delete<ApiResponseWrapper<void>>(`tasks/${id}`, options);
     },
 
     async reorder(
       input: ReorderTasksInput,
       options?: RequestOptions
     ): Promise<void> {
-      return client.post<void>("tasks/reorder", input, options);
+      await client.post<ApiResponseWrapper<void>>("tasks/reorder", input, options);
     },
 
     async complete(id: string, options?: RequestOptions): Promise<Task> {
-      return client.post<Task>(`tasks/${id}/complete`, undefined, options);
+      const response = await client.post<ApiResponseWrapper<Task>>(`tasks/${id}/complete`, undefined, options);
+      return response.data;
     },
 
     async uncomplete(id: string, options?: RequestOptions): Promise<Task> {
-      return client.post<Task>(`tasks/${id}/uncomplete`, undefined, options);
+      const response = await client.post<ApiResponseWrapper<Task>>(`tasks/${id}/uncomplete`, undefined, options);
+      return response.data;
     },
 
     async getStats(
@@ -188,28 +207,31 @@ export function createTasksApi(client: ChronoflowClient): TasksApi {
       options?: RequestOptions
     ): Promise<TaskStats> {
       const searchParams = filtersToSearchParams(filters);
-      return client.get<TaskStats>("tasks/stats", {
+      const response = await client.get<ApiResponseWrapper<TaskStats>>("tasks/stats", {
         ...options,
         searchParams: { ...options?.searchParams, ...searchParams },
       });
+      return response.data;
     },
 
     async batchCreate(
       inputs: CreateTaskInput[],
       options?: RequestOptions
     ): Promise<Task[]> {
-      return client.post<Task[]>("tasks/batch", { tasks: inputs }, options);
+      const response = await client.post<ApiResponseWrapper<Task[]>>("tasks/batch", { tasks: inputs }, options);
+      return response.data;
     },
 
     async batchUpdate(
       updates: Array<{ id: string; input: UpdateTaskInput }>,
       options?: RequestOptions
     ): Promise<Task[]> {
-      return client.patch<Task[]>("tasks/batch", { updates }, options);
+      const response = await client.patch<ApiResponseWrapper<Task[]>>("tasks/batch", { updates }, options);
+      return response.data;
     },
 
     async batchDelete(ids: string[], options?: RequestOptions): Promise<void> {
-      return client.delete<void>("tasks/batch", {
+      await client.delete<ApiResponseWrapper<void>>("tasks/batch", {
         ...options,
         searchParams: { ...options?.searchParams, ids: ids.join(",") },
       });

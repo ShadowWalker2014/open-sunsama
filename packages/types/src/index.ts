@@ -39,6 +39,8 @@ export type {
 // Task types
 export type {
   Task,
+  TaskPriority,
+  TaskSortBy,
   CreateTaskInput,
   UpdateTaskInput,
   ReorderTasksInput,
@@ -47,6 +49,14 @@ export type {
   TaskStats,
   TaskWithMeta,
 } from './task.js';
+
+// Subtask types
+export type {
+  Subtask,
+  CreateSubtaskInput,
+  UpdateSubtaskInput,
+  ReorderSubtasksInput,
+} from './subtask.js';
 
 // Time block types
 export type {

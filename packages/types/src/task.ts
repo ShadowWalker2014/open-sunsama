@@ -4,6 +4,12 @@
  */
 
 /**
+ * Task priority levels.
+ * P0 = Critical/Urgent, P1 = High, P2 = Medium (default), P3 = Low
+ */
+export type TaskPriority = 'P0' | 'P1' | 'P2' | 'P3';
+
+/**
  * Represents a task in the Chronoflow system.
  * Tasks are the core productivity unit that users create, schedule, and complete.
  */
@@ -32,6 +38,12 @@ export interface Task {
    * null indicates no estimate has been provided
    */
   estimatedMins: number | null;
+
+  /**
+   * Priority level of the task.
+   * P0 = Critical/Urgent, P1 = High, P2 = Medium (default), P3 = Low
+   */
+  priority: TaskPriority;
 
   /** 
    * Timestamp when the task was marked as completed.
@@ -72,6 +84,9 @@ export interface CreateTaskInput {
 
   /** Estimated time to complete the task in minutes */
   estimatedMins?: number;
+
+  /** Priority level (P0=Critical, P1=High, P2=Medium, P3=Low) */
+  priority?: TaskPriority;
 }
 
 /**
@@ -94,6 +109,9 @@ export interface UpdateTaskInput {
 
   /** Updated time estimate in minutes (use null to clear) */
   estimatedMins?: number | null;
+
+  /** Updated priority level */
+  priority?: TaskPriority;
 
   /** 
    * Set completion timestamp (use null to mark as incomplete).
@@ -144,6 +162,11 @@ export interface MoveTaskInput {
 }
 
 /**
+ * Sort options for task queries.
+ */
+export type TaskSortBy = 'priority' | 'position' | 'createdAt';
+
+/**
  * Filter options for querying tasks.
  * All fields are optional and combined with AND logic.
  */
@@ -160,8 +183,14 @@ export interface TaskFilterInput {
   /** Filter by completion status */
   completed?: boolean;
 
+  /** Filter for backlog (unscheduled) tasks */
+  backlog?: boolean;
+
   /** Search by title (case-insensitive partial match) */
   titleSearch?: string;
+
+  /** Sort by field (default: position) */
+  sortBy?: TaskSortBy;
 }
 
 /**

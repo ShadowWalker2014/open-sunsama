@@ -1,29 +1,34 @@
 import * as React from "react";
-import { format, isToday } from "date-fns";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+import { format, isToday, isTomorrow, isPast, isYesterday } from "date-fns";
 import { useDroppable } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Clock } from "lucide-react";
-import type { Task } from "@chronoflow/types";
+import type { Task, TaskSortBy } from "@chronoflow/types";
 import { useTasks } from "@/hooks/useTasks";
 import { cn, formatDuration } from "@/lib/utils";
-import { Badge, ScrollArea, Skeleton } from "@/components/ui";
+import { ScrollArea, Skeleton } from "@/components/ui";
 import { TaskCard, TaskCardPlaceholder } from "./task-card";
 import { AddTaskInline } from "./add-task-inline";
+
+// Priority order for sorting (lower number = higher priority)
+const PRIORITY_ORDER: Record<string, number> = {
+  P0: 0,
+  P1: 1,
+  P2: 2,
+  P3: 3,
+};
 
 interface DayColumnProps {
   date: Date;
   dateString: string;
   onSelectTask: (task: Task) => void;
-  isOver?: boolean | undefined;
-  activeTaskId?: string | null | undefined;
+  isOver?: boolean;
+  activeTaskId?: string | null;
+  sortBy?: TaskSortBy;
 }
 
 /**
- * Individual day column in the kanban board.
- * Shows tasks for a specific date with drag-and-drop support.
+ * Linear-style day column with clean header and task list.
  */
 export function DayColumn({
   date,
@@ -31,28 +36,64 @@ export function DayColumn({
   onSelectTask,
   isOver,
   activeTaskId,
+  sortBy = "position",
 }: DayColumnProps) {
   const { data: tasks, isLoading } = useTasks({ scheduledDate: dateString });
 
   const { setNodeRef, isOver: isOverDroppable } = useDroppable({
     id: `day-${dateString}`,
     data: {
-      type: "day",
+      type: "column",
       date: dateString,
     },
   });
 
   const today = isToday(date);
+  const tomorrow = isTomorrow(date);
+  const yesterday = isYesterday(date);
+  const pastDay = isPast(date) && !today && !yesterday;
   const isDropTarget = isOver || isOverDroppable;
+
+  // Sort function based on sortBy
+  const sortTasks = React.useCallback(
+    (taskList: Task[]) => {
+      const sorted = [...taskList];
+      switch (sortBy) {
+        case "priority":
+          return sorted.sort((a, b) => {
+            const priorityDiff =
+              (PRIORITY_ORDER[a.priority] ?? 2) - (PRIORITY_ORDER[b.priority] ?? 2);
+            if (priorityDiff !== 0) return priorityDiff;
+            return a.position - b.position;
+          });
+        case "createdAt":
+          return sorted.sort((a, b) => {
+            const dateA = new Date(a.createdAt).getTime();
+            const dateB = new Date(b.createdAt).getTime();
+            return dateB - dateA; // Newest first
+          });
+        case "position":
+        default:
+          return sorted.sort((a, b) => a.position - b.position);
+      }
+    },
+    [sortBy]
+  );
 
   // Separate pending and completed tasks
   const pendingTasks = React.useMemo(
-    () => tasks?.filter((t) => !t.completedAt).sort((a, b) => a.position - b.position) ?? [],
-    [tasks]
+    () => sortTasks(tasks?.filter((t) => !t.completedAt) ?? []),
+    [tasks, sortTasks]
   );
   const completedTasks = React.useMemo(
     () => tasks?.filter((t) => t.completedAt) ?? [],
     [tasks]
+  );
+
+  // Task IDs for sortable context
+  const taskIds = React.useMemo(
+    () => pendingTasks.map((t) => t.id),
+    [pendingTasks]
   );
 
   // Calculate total estimated time
@@ -61,72 +102,61 @@ export function DayColumn({
     [pendingTasks]
   );
 
-  // Get task IDs for sortable context
-  const taskIds = React.useMemo(
-    () => pendingTasks.map((t) => t.id),
-    [pendingTasks]
-  );
+  // Get day label
+  const getDayLabel = () => {
+    if (today) return "Today";
+    if (tomorrow) return "Tomorrow";
+    if (yesterday) return "Yesterday";
+    return format(date, "EEEE");
+  };
 
   return (
     <div
       ref={setNodeRef}
       className={cn(
-        "flex h-full min-w-[280px] max-w-[280px] flex-col border-r last:border-r-0 transition-colors",
-        today && "bg-primary/5",
-        isDropTarget && "bg-primary/10"
+        "flex h-full min-w-[280px] max-w-[280px] flex-col border-r border-border/40 transition-colors",
+        // Today highlight
+        today && "bg-primary/[0.02]",
+        // Drop target highlight
+        isDropTarget && "bg-primary/5",
+        // Past days are slightly muted
+        pastDay && "opacity-60"
       )}
     >
-      {/* Day Header */}
+      {/* Day Header - Linear style */}
       <div
         className={cn(
-          "sticky top-0 z-10 border-b bg-background/95 px-3 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60",
-          today && "bg-primary/5"
+          "sticky top-0 z-10 border-b border-border/40 bg-background/95 px-3 py-3 backdrop-blur-sm",
+          today && "bg-primary/[0.02]"
         )}
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {/* Day name and date */}
-            <div>
-              <p
-                className={cn(
-                  "text-xs font-semibold uppercase tracking-wide text-muted-foreground",
-                  today && "text-primary"
-                )}
-              >
-                {format(date, "EEE")}
-              </p>
-              <p
-                className={cn(
-                  "text-2xl font-bold tabular-nums",
-                  today && "text-primary"
-                )}
-              >
-                {format(date, "d")}
-              </p>
-            </div>
-            
-            {/* Today indicator */}
-            {today && (
-              <Badge variant="default" className="text-xs">
-                Today
-              </Badge>
-            )}
+        <div className="flex items-baseline justify-between">
+          <div className="flex items-baseline gap-2">
+            {/* Day name */}
+            <span
+              className={cn(
+                "text-sm font-medium",
+                today ? "text-primary" : "text-foreground"
+              )}
+            >
+              {getDayLabel()}
+            </span>
+            {/* Date number */}
+            <span className="text-sm text-muted-foreground">
+              {format(date, "MMM d")}
+            </span>
           </div>
 
           {/* Stats */}
-          <div className="text-right">
-            {/* Task count */}
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             {pendingTasks.length > 0 && (
-              <p className="text-sm font-medium text-muted-foreground">
-                {pendingTasks.length} task{pendingTasks.length !== 1 ? "s" : ""}
-              </p>
+              <span>{pendingTasks.length}</span>
             )}
-            {/* Total estimated time */}
             {totalEstimatedMins > 0 && (
-              <div className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 {formatDuration(totalEstimatedMins)}
-              </div>
+              </span>
             )}
           </div>
         </div>
@@ -134,19 +164,19 @@ export function DayColumn({
 
       {/* Tasks */}
       <ScrollArea className="flex-1">
-        <div className="p-2 pb-4">
+        <div className="p-2 space-y-1">
           {isLoading ? (
-            <div className="space-y-2">
-              <Skeleton className="h-16 w-full rounded-lg" />
-              <Skeleton className="h-16 w-full rounded-lg" />
+            <div className="space-y-2 p-1">
+              <Skeleton className="h-12 w-full rounded-lg" />
+              <Skeleton className="h-12 w-full rounded-lg" />
             </div>
           ) : (
-            <SortableContext
-              items={taskIds}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="space-y-2">
-                {/* Pending Tasks */}
+            <>
+              {/* Pending Tasks with sortable context for reordering */}
+              <SortableContext
+                items={taskIds}
+                strategy={verticalListSortingStrategy}
+              >
                 {pendingTasks.map((task) => (
                   <TaskCard
                     key={task.id}
@@ -155,53 +185,46 @@ export function DayColumn({
                     isDragging={activeTaskId === task.id}
                   />
                 ))}
+              </SortableContext>
 
-                {/* Drop indicator when empty */}
-                {pendingTasks.length === 0 && isDropTarget && (
-                  <TaskCardPlaceholder />
-                )}
+              {/* Drop indicator when empty */}
+              {pendingTasks.length === 0 && isDropTarget && (
+                <TaskCardPlaceholder />
+              )}
 
-                {/* Empty state */}
-                {pendingTasks.length === 0 && !isDropTarget && (
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <p className="text-sm text-muted-foreground">
-                      No tasks scheduled
-                    </p>
-                    <p className="text-xs text-muted-foreground/70">
-                      Drag tasks here or add new ones
-                    </p>
+              {/* Empty state */}
+              {pendingTasks.length === 0 && !isDropTarget && (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    No tasks
+                  </p>
+                </div>
+              )}
+
+              {/* Completed Tasks */}
+              {completedTasks.length > 0 && (
+                <div className="pt-3 mt-3 border-t border-border/40">
+                  <p className="text-xs font-medium text-muted-foreground mb-2 px-1">
+                    Completed ({completedTasks.length})
+                  </p>
+                  <div className="space-y-1">
+                    {completedTasks.map((task) => (
+                      <TaskCard
+                        key={task.id}
+                        task={task}
+                        onSelect={onSelectTask}
+                      />
+                    ))}
                   </div>
-                )}
-
-                {/* Completed Tasks Section */}
-                {completedTasks.length > 0 && (
-                  <div className="pt-4">
-                    <div className="flex items-center gap-2 pb-2">
-                      <div className="h-px flex-1 bg-border" />
-                      <span className="text-xs font-medium text-muted-foreground">
-                        Completed ({completedTasks.length})
-                      </span>
-                      <div className="h-px flex-1 bg-border" />
-                    </div>
-                    <div className="space-y-2">
-                      {completedTasks.map((task) => (
-                        <TaskCard
-                          key={task.id}
-                          task={task}
-                          onSelect={onSelectTask}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </SortableContext>
+                </div>
+              )}
+            </>
           )}
         </div>
       </ScrollArea>
 
       {/* Add Task Button */}
-      <div className="border-t p-2">
+      <div className="border-t border-border/40 p-2">
         <AddTaskInline scheduledDate={dateString} />
       </div>
     </div>

@@ -32,8 +32,20 @@ tasksRouter.get('/', requireScopes('tasks:read'), zValidator('query', taskFilter
   const [countResult] = await db.select({ count: sql<number>`count(*)::int` }).from(tasks).where(and(...conditions));
   const total = countResult?.count || 0;
 
+  // Determine sort order based on sortBy parameter
+  let orderByClause;
+  if (filters.sortBy === 'priority') {
+    // P0 first, then P1, P2, P3 (alphabetically works for P0-P3)
+    orderByClause = [asc(tasks.priority), asc(tasks.position), desc(tasks.createdAt)];
+  } else if (filters.sortBy === 'createdAt') {
+    orderByClause = [desc(tasks.createdAt)];
+  } else {
+    // Default: position (original behavior)
+    orderByClause = [asc(tasks.scheduledDate), asc(tasks.position), desc(tasks.createdAt)];
+  }
+
   const results = await db.select().from(tasks).where(and(...conditions))
-    .orderBy(asc(tasks.scheduledDate), asc(tasks.position), desc(tasks.createdAt))
+    .orderBy(...orderByClause)
     .limit(filters.limit).offset(offset);
 
   return c.json({
@@ -58,7 +70,8 @@ tasksRouter.post('/', requireScopes('tasks:write'), zValidator('json', createTas
 
   const [newTask] = await db.insert(tasks).values({
     userId, title: data.title, notes: data.notes ?? null,
-    scheduledDate: data.scheduledDate ?? null, estimatedMins: data.estimatedMins ?? null, position,
+    scheduledDate: data.scheduledDate ?? null, estimatedMins: data.estimatedMins ?? null,
+    priority: data.priority ?? 'P2', position,
   }).returning();
 
   return c.json({ success: true, data: newTask }, 201);
@@ -91,6 +104,7 @@ tasksRouter.patch('/:id', requireScopes('tasks:write'), zValidator('param', z.ob
   if (updates.notes !== undefined) updateData.notes = updates.notes;
   if (updates.scheduledDate !== undefined) updateData.scheduledDate = updates.scheduledDate;
   if (updates.estimatedMins !== undefined) updateData.estimatedMins = updates.estimatedMins;
+  if (updates.priority !== undefined) updateData.priority = updates.priority;
   if (updates.completedAt !== undefined) updateData.completedAt = updates.completedAt ? new Date(updates.completedAt) : null;
   if (updates.position !== undefined) updateData.position = updates.position;
 
@@ -117,13 +131,26 @@ tasksRouter.post('/reorder', requireScopes('tasks:write'), zValidator('json', re
   const { date, taskIds } = c.req.valid('json');
   const db = getDb();
 
+  const isBacklog = date === 'backlog';
+  const targetDate = isBacklog ? null : date;
+
+  // Update each task with new position and scheduled date
+  // This handles both reordering within a date AND moving tasks between dates
   await Promise.all(taskIds.map((taskId, index) =>
-    db.update(tasks).set({ position: index, updatedAt: new Date() }).where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
+    db.update(tasks)
+      .set({ 
+        position: index, 
+        scheduledDate: targetDate,
+        updatedAt: new Date() 
+      })
+      .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
   ));
 
-  const isBacklog = date === 'backlog';
+  // Fetch all tasks for the target date
   const dateCondition = isBacklog ? isNull(tasks.scheduledDate) : eq(tasks.scheduledDate, date);
-  const updatedTasks = await db.select().from(tasks).where(and(eq(tasks.userId, userId), dateCondition)).orderBy(asc(tasks.position));
+  const updatedTasks = await db.select().from(tasks)
+    .where(and(eq(tasks.userId, userId), dateCondition))
+    .orderBy(asc(tasks.position));
 
   return c.json({ success: true, data: updatedTasks, message: 'Tasks reordered successfully' });
 });
