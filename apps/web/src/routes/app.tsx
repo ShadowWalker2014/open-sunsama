@@ -24,7 +24,7 @@ export default function AppLayout() {
     return (
       <div className="flex min-h-screen flex-col">
         <div className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
-          <div className="container flex h-14 items-center">
+          <div className="flex h-14 w-full items-center px-4 sm:px-6">
             <Skeleton className="h-8 w-32" />
             <div className="flex-1" />
             <Skeleton className="h-8 w-8 rounded-full" />

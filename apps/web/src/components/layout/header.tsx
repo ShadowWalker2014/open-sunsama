@@ -100,7 +100,7 @@ export function Header({ className }: HeaderProps) {
         className
       )}
     >
-      <div className="container flex h-14 items-center">
+      <div className="flex h-14 w-full items-center px-4 sm:px-6">
         {/* Logo */}
         <div className="mr-4 flex">
           <a href="/app" className="mr-6 flex items-center space-x-2">
