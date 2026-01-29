@@ -1,0 +1,15 @@
+# Railway configuration for Open Sunsama monorepo
+# Each service should be configured in the Railway dashboard with:
+# - Root Directory: / (project root)
+# - Dockerfile Path: Dockerfile.api or Dockerfile.web
+# - Watch Paths: configured per service
+
+# This file provides default build settings
+[build]
+builder = "dockerfile"
+
+[deploy]
+healthcheckPath = "/"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
