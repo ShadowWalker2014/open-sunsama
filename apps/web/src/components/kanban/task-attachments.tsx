@@ -195,46 +195,36 @@ export function TaskAttachments({ taskId }: TaskAttachmentsProps) {
   const hasAttachments = attachments.length > 0 || uploadProgress.size > 0;
 
   return (
-    <div className="space-y-3">
-      {/* Upload Area */}
-      <div
+    <div className="space-y-2">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        className="hidden"
+        onChange={(e) => handleFileSelect(e.target.files)}
+        accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.md,.zip,.rar,.7z"
+      />
+
+      {/* Compact Upload Button */}
+      <button
+        type="button"
         className={cn(
-          "border-2 border-dashed rounded-lg p-4 text-center transition-colors cursor-pointer",
-          isDragOver
-            ? "border-primary bg-primary/5"
-            : "border-muted-foreground/25 hover:border-muted-foreground/40"
+          "flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors",
+          isDragOver && "text-primary"
         )}
+        onClick={() => fileInputRef.current?.click()}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
       >
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          className="hidden"
-          onChange={(e) => handleFileSelect(e.target.files)}
-          accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.md,.zip,.rar,.7z"
-        />
-        <div className="flex flex-col items-center gap-2">
-          {isUploading ? (
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          ) : (
-            <Upload className="h-6 w-6 text-muted-foreground" />
-          )}
-          <div className="text-sm text-muted-foreground">
-            {isUploading ? (
-              "Uploading..."
-            ) : (
-              <>
-                <span className="font-medium">Drop files here</span> or click to upload
-              </>
-            )}
-          </div>
-          <p className="text-xs text-muted-foreground/70">Max 10MB per file</p>
-        </div>
-      </div>
+        {isUploading ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        ) : (
+          <Upload className="h-3.5 w-3.5" />
+        )}
+        <span>{isUploading ? "Uploading..." : "Attach file"}</span>
+      </button>
 
       {/* Upload Progress / Errors */}
       {uploadProgress.size > 0 && (
@@ -345,12 +335,6 @@ export function TaskAttachments({ taskId }: TaskAttachmentsProps) {
         </div>
       )}
 
-      {/* Empty State */}
-      {!hasAttachments && (
-        <p className="text-sm text-muted-foreground text-center py-2">
-          No attachments yet
-        </p>
-      )}
 
       {/* Lightbox */}
       <Lightbox
