@@ -80,14 +80,6 @@ export function UnscheduledTasksPanel({
         </div>
       </ScrollArea>
 
-      {/* Footer with instructions */}
-      {!isLoading && tasks.length > 0 && (
-        <div className="border-t px-4 py-2">
-          <p className="text-xs text-muted-foreground text-center">
-            Drag tasks to the timeline to schedule them
-          </p>
-        </div>
-      )}
     </>
   );
 

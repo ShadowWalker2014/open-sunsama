@@ -3,7 +3,6 @@ import { Clock, GripVertical } from "lucide-react";
 import type { Task } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/utils";
-import { Badge } from "@/components/ui";
 
 interface UnscheduledTaskItemProps {
   task: Task;
@@ -95,14 +94,6 @@ export function UnscheduledTaskItem({
         )}
       </div>
 
-      {/* Visual indicator that this can be dragged - hidden on mobile */}
-      {!isMobile && (
-        <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-            Drag to schedule
-          </Badge>
-        </div>
-      )}
     </div>
   );
 }
