@@ -24,6 +24,7 @@ interface CalendarViewProps {
   initialDate?: Date;
   onTaskClick?: (task: Task) => void;
   onBlockClick?: (block: TimeBlock) => void;
+  onViewTask?: (taskId: string) => void;
   onTimeSlotClick?: (date: Date, startTime: Date, endTime: Date) => void;
   className?: string;
 }
@@ -35,6 +36,7 @@ export function CalendarView({
   initialDate = new Date(),
   onTaskClick,
   onBlockClick,
+  onViewTask,
   onTimeSlotClick,
   className,
 }: CalendarViewProps) {
@@ -236,6 +238,7 @@ export function CalendarView({
           onTimelineMouseUp={handleTimelineMouseUp}
           onTimelineMouseLeave={handleTimelineMouseLeave}
           {...(onBlockClick ? { onBlockClick } : {})}
+          {...(onViewTask ? { onViewTask } : {})}
           {...(onTimeSlotClick ? { onTimeSlotClick: (startTime: Date, endTime: Date) => onTimeSlotClick(selectedDate, startTime, endTime) } : {})}
         />
       </div>

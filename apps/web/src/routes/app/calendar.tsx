@@ -4,6 +4,7 @@ import { CalendarView } from "@/components/calendar";
 import { TaskModal } from "@/components/kanban/task-modal";
 import { TimeBlockDetailSheet } from "@/components/calendar/time-block-detail-sheet";
 import { CreateTimeBlockDialog } from "@/components/calendar/create-time-block-dialog";
+import { useTask } from "@/hooks";
 
 /**
  * Calendar page with time blocking functionality
@@ -12,6 +13,7 @@ import { CreateTimeBlockDialog } from "@/components/calendar/create-time-block-d
 export default function CalendarPage() {
   // Task detail panel state
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = React.useState<string | null>(null);
   const [taskPanelOpen, setTaskPanelOpen] = React.useState(false);
   
   // Time block detail sheet state
@@ -24,9 +26,25 @@ export default function CalendarPage() {
   const [createDialogStartTime, setCreateDialogStartTime] = React.useState<Date>(new Date());
   const [createDialogEndTime, setCreateDialogEndTime] = React.useState<Date>(new Date());
 
+  // Fetch task by ID when viewing from context menu
+  const { data: fetchedTask } = useTask(selectedTaskId ?? "");
+
+  // Update selectedTask when fetchedTask changes
+  React.useEffect(() => {
+    if (fetchedTask && selectedTaskId) {
+      setSelectedTask(fetchedTask);
+      setTaskPanelOpen(true);
+      setSelectedTaskId(null); // Clear the ID after fetching
+    }
+  }, [fetchedTask, selectedTaskId]);
+
   const handleTaskClick = (task: Task) => {
     setSelectedTask(task);
     setTaskPanelOpen(true);
+  };
+
+  const handleViewTask = (taskId: string) => {
+    setSelectedTaskId(taskId);
   };
 
   const handleBlockClick = (block: TimeBlock) => {
@@ -60,6 +78,7 @@ export default function CalendarPage() {
       <CalendarView
         onTaskClick={handleTaskClick}
         onBlockClick={handleBlockClick}
+        onViewTask={handleViewTask}
         onTimeSlotClick={handleTimeSlotClick}
       />
 

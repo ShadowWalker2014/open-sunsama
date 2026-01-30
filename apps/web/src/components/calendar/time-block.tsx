@@ -7,12 +7,14 @@ import {
   calculateYFromTime,
   HOUR_HEIGHT,
 } from "@/hooks/useCalendarDnd";
+import { TimeBlockContextMenu } from "./time-block-context-menu";
 
 interface TimeBlockProps {
   block: TimeBlockType;
   onClick?: () => void;
   onDragStart?: (e: React.MouseEvent) => void;
   onResizeStart?: (e: React.MouseEvent, edge: "top" | "bottom") => void;
+  onViewTask?: (taskId: string) => void;
   isSelected?: boolean;
   isDragging?: boolean;
   className?: string;
@@ -50,6 +52,7 @@ export function TimeBlock({
   onClick,
   onDragStart,
   onResizeStart,
+  onViewTask,
   isSelected = false,
   isDragging = false,
   className,
@@ -87,79 +90,85 @@ export function TimeBlock({
   };
 
   return (
-    <div
-      data-time-block
-      className={cn(
-        "absolute left-1 right-1 z-10 rounded-md border-l-4 shadow-sm transition-all select-none",
-        "hover:shadow-md hover:z-20",
-        isSelected && "ring-2 ring-primary ring-offset-1",
-        isDragging && "opacity-50 cursor-grabbing",
-        !isDragging && "cursor-grab",
-        className
-      )}
-      style={{
-        top: `${top}px`,
-        height: `${Math.max(height, 24)}px`,
-        backgroundColor: colors.bg,
-        borderColor: colors.border,
-      }}
-      onClick={onClick}
-      onMouseDown={handleMouseDown}
-      role="button"
-      tabIndex={0}
-      aria-label={`Time block: ${block.title} from ${format(startTime, "h:mm a")} to ${format(endTime, "h:mm a")}`}
+    <TimeBlockContextMenu
+      timeBlock={block}
+      onEdit={onClick}
+      onViewTask={onViewTask}
     >
-      {/* Top resize handle - Larger touch target on mobile */}
       <div
-        data-resize="top"
+        data-time-block
         className={cn(
-          "absolute top-0 left-0 right-0 cursor-ns-resize hover:bg-black/10 rounded-t-sm",
-          "h-3 sm:h-2", // Larger on mobile for touch
-          "-mt-1 sm:mt-0" // Extend beyond block for easier touch
+          "absolute left-1 right-1 z-10 rounded-md border-l-4 shadow-sm transition-all select-none",
+          "hover:shadow-md hover:z-20",
+          isSelected && "ring-2 ring-primary ring-offset-1",
+          isDragging && "opacity-50 cursor-grabbing",
+          !isDragging && "cursor-grab",
+          className
         )}
-        onMouseDown={handleTopResize}
-      />
-
-      {/* Content */}
-      <div
-        className={cn(
-          "flex h-full flex-col overflow-hidden px-2",
-          isCompact ? "py-0.5" : "py-1"
-        )}
-        style={{ color: colors.text }}
+        style={{
+          top: `${top}px`,
+          height: `${Math.max(height, 24)}px`,
+          backgroundColor: colors.bg,
+          borderColor: colors.border,
+        }}
+        onClick={onClick}
+        onMouseDown={handleMouseDown}
+        role="button"
+        tabIndex={0}
+        aria-label={`Time block: ${block.title} from ${format(startTime, "h:mm a")} to ${format(endTime, "h:mm a")}`}
       >
-        {/* Drag handle indicator */}
-        <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-30 hover:opacity-60">
-          <GripVertical className="h-3 w-3" />
+        {/* Top resize handle - Larger touch target on mobile */}
+        <div
+          data-resize="top"
+          className={cn(
+            "absolute top-0 left-0 right-0 cursor-ns-resize hover:bg-black/10 rounded-t-sm",
+            "h-3 sm:h-2", // Larger on mobile for touch
+            "-mt-1 sm:mt-0" // Extend beyond block for easier touch
+          )}
+          onMouseDown={handleTopResize}
+        />
+
+        {/* Content */}
+        <div
+          className={cn(
+            "flex h-full flex-col overflow-hidden px-2",
+            isCompact ? "py-0.5" : "py-1"
+          )}
+          style={{ color: colors.text }}
+        >
+          {/* Drag handle indicator */}
+          <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-30 hover:opacity-60">
+            <GripVertical className="h-3 w-3" />
+          </div>
+
+          {/* Title */}
+          <p className={cn(
+            "truncate font-medium",
+            isCompact ? "text-xs" : "text-sm"
+          )}>
+            {block.title}
+          </p>
+
+          {/* Time range - hide if too compact */}
+          {!isCompact && (
+            <p className="truncate text-xs opacity-80">
+              {format(startTime, "h:mm")} - {format(endTime, "h:mm a")}
+            </p>
+          )}
         </div>
 
-        {/* Title */}
-        <p className={cn(
-          "truncate font-medium",
-          isCompact ? "text-xs" : "text-sm"
-        )}>
-          {block.title}
-        </p>
-
-        {/* Time range - hide if too compact */}
-        {!isCompact && (
-          <p className="truncate text-xs opacity-80">
-            {format(startTime, "h:mm")} - {format(endTime, "h:mm a")}
-          </p>
-        )}
+        {/* Bottom resize handle - Larger touch target on mobile */}
+        <div
+          data-resize="bottom"
+          className={cn(
+            "absolute bottom-0 left-0 right-0 cursor-ns-resize hover:bg-black/10 rounded-b-sm",
+            "h-3 sm:h-2", // Larger on mobile for touch
+            "-mb-1 sm:mb-0" // Extend beyond block for easier touch
+          )}
+          onMouseDown={handleBottomResize}
+        />
       </div>
-
-      {/* Bottom resize handle - Larger touch target on mobile */}
-      <div
-        data-resize="bottom"
-        className={cn(
-          "absolute bottom-0 left-0 right-0 cursor-ns-resize hover:bg-black/10 rounded-b-sm",
-          "h-3 sm:h-2", // Larger on mobile for touch
-          "-mb-1 sm:mb-0" // Extend beyond block for easier touch
-        )}
-        onMouseDown={handleBottomResize}
-      />
-    </div>
+    </TimeBlockContextMenu>
   );
 }
 

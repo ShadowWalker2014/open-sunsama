@@ -27,6 +27,7 @@ interface TimelineProps {
   onBlockClick?: (block: TimeBlockType) => void;
   onBlockDragStart?: (block: TimeBlockType, e: React.MouseEvent) => void;
   onBlockResizeStart?: (block: TimeBlockType, edge: "top" | "bottom", e: React.MouseEvent) => void;
+  onViewTask?: (taskId: string) => void;
   onTimelineMouseMove?: (e: React.MouseEvent) => void;
   onTimelineMouseUp?: () => void;
   onTimelineMouseLeave?: () => void;
@@ -58,6 +59,7 @@ export function Timeline({
   onBlockClick,
   onBlockDragStart,
   onBlockResizeStart,
+  onViewTask,
   onTimelineMouseMove,
   onTimelineMouseUp,
   onTimelineMouseLeave,
@@ -221,6 +223,7 @@ export function Timeline({
                   onClick={() => onBlockClick?.(block)}
                   onDragStart={(e) => onBlockDragStart?.(block, e)}
                   onResizeStart={(e, edge) => onBlockResizeStart?.(block, edge, e)}
+                  onViewTask={onViewTask}
                   isDragging={dragState?.blockId === block.id}
                 />
               ))}
