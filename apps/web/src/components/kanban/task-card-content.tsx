@@ -2,6 +2,7 @@ import * as React from "react";
 import { Check } from "lucide-react";
 import type { Task } from "@open-sunsama/types";
 import { cn, formatDuration } from "@/lib/utils";
+import { useHoveredTask } from "@/hooks/useKeyboardShortcuts";
 
 interface TaskCardContentProps {
   task: Task;
@@ -37,6 +38,8 @@ export function TaskCardContent({
   tag,
   tagColor,
 }: TaskCardContentProps) {
+  const { setHoveredTask } = useHoveredTask();
+
   // Format scheduled time to "2:50 pm" format
   const formattedTime = React.useMemo(() => {
     if (!scheduledTime) return null;
@@ -67,8 +70,14 @@ export function TaskCardContent({
         className
       )}
       onClick={onClick}
-      onMouseEnter={() => onHoverChange(true)}
-      onMouseLeave={() => onHoverChange(false)}
+      onMouseEnter={() => {
+        onHoverChange(true);
+        setHoveredTask(task);
+      }}
+      onMouseLeave={() => {
+        onHoverChange(false);
+        setHoveredTask(null);
+      }}
     >
       {/* Top row: Checkbox, Time/Title, Duration */}
       <div className="flex items-start gap-2.5">

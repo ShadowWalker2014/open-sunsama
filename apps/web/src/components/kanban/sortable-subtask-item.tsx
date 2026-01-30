@@ -4,6 +4,7 @@ import { X, GripVertical, Check } from "lucide-react";
 import type { Subtask } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
+import { useHoveredTask } from "@/hooks/useKeyboardShortcuts";
 
 // Re-export for convenience
 export type { Subtask };
@@ -24,6 +25,7 @@ export function SortableSubtaskItem({
   onToggle,
   onDelete,
 }: SortableSubtaskItemProps) {
+  const { setHoveredSubtaskId } = useHoveredTask();
   const {
     attributes,
     listeners,
@@ -46,6 +48,8 @@ export function SortableSubtaskItem({
         "group flex items-center gap-2 py-1.5 rounded-md hover:bg-muted/50 transition-colors",
         isDragging && "opacity-50 bg-muted/30"
       )}
+      onMouseEnter={() => setHoveredSubtaskId(subtask.id)}
+      onMouseLeave={() => setHoveredSubtaskId(null)}
     >
       {/* Drag handle */}
       <div

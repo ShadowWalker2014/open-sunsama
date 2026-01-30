@@ -5,6 +5,7 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities";
 import type { Task } from "@open-sunsama/types";
 import { useTasks } from "@/hooks/useTasks";
+import { useHoveredTask } from "@/hooks/useKeyboardShortcuts";
 import { cn, formatDuration } from "@/lib/utils";
 import {
   Button,
@@ -219,6 +220,7 @@ interface SortableBacklogTaskCardProps {
  * - Dragging to calendar view (to create time blocks)
  */
 function SortableBacklogTaskCard({ task, onSelect }: SortableBacklogTaskCardProps) {
+  const { setHoveredTask } = useHoveredTask();
   const {
     attributes,
     listeners,
@@ -258,6 +260,8 @@ function SortableBacklogTaskCard({ task, onSelect }: SortableBacklogTaskCardProp
       {...attributes}
       {...listeners}
       onClick={onSelect}
+      onMouseEnter={() => setHoveredTask(task)}
+      onMouseLeave={() => setHoveredTask(null)}
       className={cn(
         "relative",
         isDragging && "opacity-30 z-50"
@@ -308,11 +312,14 @@ interface BacklogTaskCardProps {
  * Has muted/lighter styling to indicate completion.
  */
 function BacklogTaskCard({ task, onSelect }: BacklogTaskCardProps) {
+  const { setHoveredTask } = useHoveredTask();
   const isCompleted = !!task.completedAt;
 
   return (
     <div
       onClick={onSelect}
+      onMouseEnter={() => setHoveredTask(task)}
+      onMouseLeave={() => setHoveredTask(null)}
       className={cn(
         "group flex items-start gap-2.5 rounded-lg px-3 py-2 transition-all duration-200",
         "bg-card/30 hover:bg-card/50",
