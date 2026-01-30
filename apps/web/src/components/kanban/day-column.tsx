@@ -10,6 +10,7 @@ import { ScrollArea, Skeleton } from "@/components/ui";
 import { SortableTaskCard, TaskCard, TaskCardPlaceholder } from "./task-card";
 import { AddTaskInline } from "./add-task-inline";
 import { type SortOption, parseSortOption } from "./kanban-board-toolbar";
+import { useTasksDnd } from "@/lib/dnd/tasks-dnd-context";
 
 // Priority order for sorting (lower number = higher priority)
 const PRIORITY_ORDER: Record<string, number> = {
@@ -23,8 +24,6 @@ interface DayColumnProps {
   date: Date;
   dateString: string;
   onSelectTask: (task: Task) => void;
-  isOver?: boolean;
-  activeTaskId?: string | null;
   sortBy?: SortOption;
 }
 
@@ -35,11 +34,10 @@ export function DayColumn({
   date,
   dateString,
   onSelectTask,
-  isOver,
-  activeTaskId,
   sortBy = "position",
 }: DayColumnProps) {
   const { data: tasks, isLoading, isError, refetch } = useTasks({ scheduledDate: dateString });
+  const { activeTask, isDragging } = useTasksDnd();
 
   const { setNodeRef, isOver: isOverDroppable } = useDroppable({
     id: `day-${dateString}`,
@@ -53,7 +51,8 @@ export function DayColumn({
   const tomorrow = isTomorrow(date);
   const yesterday = isYesterday(date);
   const pastDay = isPast(date) && !today && !yesterday;
-  const isDropTarget = isOver || isOverDroppable;
+  const isDropTarget = isOverDroppable;
+  const activeTaskId = activeTask?.id;
 
   // Sort function based on sortBy with direction support
   const sortTasks = React.useCallback(
@@ -133,11 +132,13 @@ export function DayColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex h-full min-w-[280px] max-w-[280px] flex-col border-r border-border/40 transition-colors",
+        "flex h-full min-w-[280px] max-w-[280px] flex-col border-r border-border/40 transition-colors duration-150",
         // Today highlight
         today && "bg-primary/[0.02]",
-        // Drop target highlight
-        isDropTarget && "bg-primary/5",
+        // Subtle highlight during any drag operation
+        isDragging && !isDropTarget && "bg-muted/20",
+        // Drop target highlight with ring
+        isDropTarget && "bg-primary/5 ring-2 ring-primary/20 ring-inset",
         // Past days are slightly muted
         pastDay && "opacity-60"
       )}

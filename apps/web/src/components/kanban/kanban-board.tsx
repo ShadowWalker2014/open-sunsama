@@ -1,7 +1,6 @@
 import * as React from "react";
 import type { Task } from "@open-sunsama/types";
 import { useKanbanDates } from "@/hooks/useKanbanDates";
-import { useTasksDnd } from "@/lib/dnd/tasks-dnd-context";
 import { DayColumn } from "./day-column";
 import { TaskModal } from "./task-modal";
 import { KanbanBoardToolbar, useSortPreference } from "./kanban-board-toolbar";
@@ -23,9 +22,6 @@ export function KanbanBoard({ children }: KanbanBoardProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [sortBy, onSortChange] = useSortPreference();
-
-  // Get DnD state from shared context
-  const { activeTask, activeOverColumn } = useTasksDnd();
 
   // Use the kanban dates hook for date management and navigation
   const {
@@ -92,8 +88,6 @@ export function KanbanBoard({ children }: KanbanBoardProps) {
                     date={dateInfo.date}
                     dateString={dateInfo.dateString}
                     onSelectTask={setSelectedTask}
-                    isOver={activeOverColumn === dateInfo.dateString}
-                    activeTaskId={activeTask?.id}
                     sortBy={sortBy}
                   />
                 </div>

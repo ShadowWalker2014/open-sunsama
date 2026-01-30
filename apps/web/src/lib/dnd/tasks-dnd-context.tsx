@@ -4,22 +4,24 @@ import {
   DragOverlay,
   PointerSensor,
   TouchSensor,
+  KeyboardSensor,
   useSensor,
   useSensors,
   type DragStartEvent,
   type DragOverEvent,
   type DragEndEvent,
 } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
+import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { snapCenterToCursor } from "@dnd-kit/modifiers";
 import type { Task } from "@open-sunsama/types";
 import { useMoveTask, useReorderTasks } from "@/hooks/useTasks";
 import { TaskCard } from "@/components/kanban/task-card";
-import { columnPriorityCollision } from "./collision-detection";
+import { taskPriorityCollision } from "./collision-detection";
 
 interface TasksDndContextValue {
   activeTask: Task | null;
   activeOverColumn: string | null;
+  isDragging: boolean;
 }
 
 const TasksDndContext = React.createContext<TasksDndContextValue | null>(null);
@@ -50,7 +52,7 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
   const moveTask = useMoveTask();
   const reorderTasks = useReorderTasks();
 
-  // Drag and drop sensors
+  // Drag and drop sensors with keyboard support for accessibility
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -62,6 +64,9 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
         delay: 200,
         tolerance: 8,
       },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
     })
   );
 
@@ -222,7 +227,7 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
   }, []);
 
   const contextValue = React.useMemo(
-    () => ({ activeTask, activeOverColumn }),
+    () => ({ activeTask, activeOverColumn, isDragging: !!activeTask }),
     [activeTask, activeOverColumn]
   );
 
@@ -230,7 +235,7 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
     <TasksDndContext.Provider value={contextValue}>
       <DndContext
         sensors={sensors}
-        collisionDetection={columnPriorityCollision}
+        collisionDetection={taskPriorityCollision}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
@@ -238,10 +243,10 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
       >
         {children}
 
-        {/* Drag Overlay - follows cursor */}
+        {/* Drag Overlay - follows cursor with fixed width matching column */}
         <DragOverlay modifiers={[snapCenterToCursor]} dropAnimation={null}>
           {activeTask && (
-            <div className="w-[260px] pointer-events-none">
+            <div className="w-[264px] pointer-events-none">
               <TaskCard task={activeTask} onSelect={() => {}} isDragging />
             </div>
           )}

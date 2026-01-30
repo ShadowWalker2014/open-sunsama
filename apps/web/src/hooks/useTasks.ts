@@ -172,10 +172,11 @@ export function useCompleteTask() {
 }
 
 /**
- * Move a task to a different date
+ * Move a task to a different date with optimistic updates
+ * for instant visual feedback during drag-and-drop
  */
 export function useMoveTask() {
-  const updateTask = useUpdateTask();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({
@@ -186,14 +187,63 @@ export function useMoveTask() {
       id: string;
       targetDate: string | null;
       position?: number;
-    }) => {
-      return updateTask.mutateAsync({
-        id,
-        data: {
-          scheduledDate: targetDate ?? undefined,
-          position,
-        },
+    }): Promise<Task> => {
+      const api = getApi();
+      return await api.tasks.update(id, {
+        scheduledDate: targetDate ?? undefined,
+        position,
       });
+    },
+    onMutate: async ({ id, targetDate }) => {
+      // Cancel outgoing refetches to avoid overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: taskKeys.lists() });
+
+      // Snapshot all task list queries for rollback
+      const previousQueries = queryClient.getQueriesData<Task[]>({
+        queryKey: taskKeys.lists(),
+      });
+
+      // Find the task being moved from any cache
+      let movedTask: Task | undefined;
+      previousQueries.forEach(([, data]) => {
+        if (data) {
+          const found = data.find((t) => t.id === id);
+          if (found) movedTask = found;
+        }
+      });
+
+      if (movedTask) {
+        // Optimistically update all relevant caches
+        queryClient.setQueriesData<Task[]>(
+          { queryKey: taskKeys.lists() },
+          (old) => {
+            if (!old) return old;
+            return old.map((task) => {
+              if (task.id === id) {
+                return { ...task, scheduledDate: targetDate };
+              }
+              return task;
+            });
+          }
+        );
+      }
+
+      return { previousQueries };
+    },
+    onError: (_error, _variables, context) => {
+      // Rollback all queries on error
+      context?.previousQueries?.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+      toast({
+        variant: "destructive",
+        title: "Failed to move task",
+        description: _error instanceof Error ? _error.message : "Unknown error",
+      });
+    },
+    onSettled: () => {
+      // Invalidate all task lists to ensure server state
+      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
     },
   });
 }

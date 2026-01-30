@@ -7,15 +7,17 @@ import {
 } from "@dnd-kit/core";
 
 /**
- * Custom collision detection that handles both column drops and task reordering.
+ * Custom collision detection that handles both task reordering and column drops.
  * 
  * Strategy:
- * 1. First check if we're over a sortable task item (for reordering)
+ * 1. First check if we're over a sortable task item (for reordering within column)
  * 2. If not over a task, check if we're over a column (for cross-column moves)
  * 3. This allows visual drop indicators between tasks while still supporting
  *    column-level drop detection for empty columns or non-task areas
+ * 
+ * Tasks use closestCenter for accurate sorting, columns use pointerWithin.
  */
-export const columnPriorityCollision: CollisionDetection = (args) => {
+export const taskPriorityCollision: CollisionDetection = (args) => {
   const { droppableContainers, active } = args;
   
   // Separate containers into tasks and columns
