@@ -9,18 +9,6 @@ const config = getDefaultConfig(projectRoot);
 // Watch workspace packages (append to defaults)
 config.watchFolders = [...(config.watchFolders || []), workspaceRoot];
 
-// Block root node_modules/react from being resolved - force local version only
-config.resolver.blockList = [
-  // Block root's react to prevent version mismatch
-  new RegExp(`^${escapeRegex(path.resolve(workspaceRoot, 'node_modules/react'))}(/.*)?$`),
-  new RegExp(`^${escapeRegex(path.resolve(workspaceRoot, 'node_modules/scheduler'))}(/.*)?$`),
-];
-
-// Helper to escape regex special characters
-function escapeRegex(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 // Resolve modules - local first, then workspace
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
