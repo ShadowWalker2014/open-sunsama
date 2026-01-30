@@ -122,9 +122,13 @@ export function useKanbanDates({
   }, [dates, virtualizer]);
 
   // Load more days when scrolling near edges
-  // Skip during drag to prevent rapid navigation when dragging toward edges
+  // Skip during drag and before initial scroll to prevent unwanted navigation
   const handleScroll = React.useCallback(() => {
-    if (isDragging) return; // Don't navigate during drag operations
+    // Don't navigate during drag operations
+    if (isDragging) return;
+    // Don't navigate before initial scroll to today completes
+    // This prevents browser scroll position restoration from triggering navigation
+    if (!hasScrolledToTodayRef.current) return;
     
     const container = containerRef.current;
     if (!container) return;
