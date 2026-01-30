@@ -80,10 +80,10 @@ export function useKanbanDates({
     }
   }, [dates, virtualizer]);
 
-  // Handle navigation
+  // Handle navigation (one day at a time)
   const navigatePrevious = React.useCallback(() => {
     const scrollOffset = virtualizer.scrollOffset ?? 0;
-    const targetOffset = Math.max(0, scrollOffset - COLUMN_WIDTH * VISIBLE_DAYS);
+    const targetOffset = Math.max(0, scrollOffset - COLUMN_WIDTH);
     containerRef.current?.scrollTo({
       left: targetOffset,
       behavior: "smooth",
@@ -92,7 +92,7 @@ export function useKanbanDates({
 
   const navigateNext = React.useCallback(() => {
     const scrollOffset = virtualizer.scrollOffset ?? 0;
-    const targetOffset = scrollOffset + COLUMN_WIDTH * VISIBLE_DAYS;
+    const targetOffset = scrollOffset + COLUMN_WIDTH;
     containerRef.current?.scrollTo({
       left: targetOffset,
       behavior: "smooth",

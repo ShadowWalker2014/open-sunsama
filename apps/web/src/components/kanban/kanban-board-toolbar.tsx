@@ -95,7 +95,7 @@ export function KanbanBoardToolbar({
             variant="outline"
             size="icon"
             onClick={onNavigatePrevious}
-            title="Previous week"
+            title="Previous day"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -108,7 +108,7 @@ export function KanbanBoardToolbar({
             variant="outline"
             size="icon"
             onClick={onNavigateNext}
-            title="Next week"
+            title="Next day"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
