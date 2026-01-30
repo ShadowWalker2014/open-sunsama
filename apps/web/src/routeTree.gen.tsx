@@ -5,6 +5,7 @@ import { createRootRoute, createRoute, redirect, Outlet } from "@tanstack/react-
 import { Toaster } from "./components/ui/toaster";
 
 // Import route components
+import LandingPage from "./routes/landing";
 import LoginPage from "./routes/login";
 import RegisterPage from "./routes/register";
 import ForgotPasswordPage from "./routes/forgot-password";
@@ -30,13 +31,14 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
+  component: LandingPage,
   beforeLoad: () => {
+    // Redirect authenticated users to the app
     const token = localStorage.getItem("open_sunsama_token");
     if (token) {
       throw redirect({ to: "/app" });
-    } else {
-      throw redirect({ to: "/login" });
     }
+    // Otherwise, show the landing page (no redirect)
   },
 });
 
