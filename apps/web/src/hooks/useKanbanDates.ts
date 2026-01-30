@@ -71,17 +71,57 @@ export function useKanbanDates({
   // Scroll to today on mount - align to left edge
   // We intentionally run this only once on mount to set initial position
   const hasScrolledToTodayRef = React.useRef(false);
+  const scrollAttemptRef = React.useRef(0);
+  const maxScrollAttempts = 10;
+  
   React.useEffect(() => {
     if (hasScrolledToTodayRef.current) return;
+    
     const todayIndex = dates.findIndex((d) => isToday(d.date));
-    if (todayIndex >= 0) {
-      // Use requestAnimationFrame to ensure the DOM is ready and measured
+    if (todayIndex < 0) return;
+    
+    const attemptScroll = () => {
+      const container = containerRef.current;
+      
+      // Check if container is ready and has dimensions
+      if (!container || container.clientWidth === 0) {
+        // Container not ready, retry
+        scrollAttemptRef.current++;
+        if (scrollAttemptRef.current < maxScrollAttempts) {
+          requestAnimationFrame(attemptScroll);
+        }
+        return;
+      }
+      
+      // Calculate expected scroll position for today
+      const expectedScrollLeft = todayIndex * COLUMN_WIDTH;
+      
+      // Perform the scroll
+      virtualizer.scrollToIndex(todayIndex, { align: "start" });
+      
+      // Verify scroll succeeded after a frame
       requestAnimationFrame(() => {
-        virtualizer.scrollToIndex(todayIndex, { align: "start" });
-        hasScrolledToTodayRef.current = true;
+        const actualScrollLeft = container.scrollLeft;
+        const scrollSucceeded = Math.abs(actualScrollLeft - expectedScrollLeft) < COLUMN_WIDTH;
+        
+        if (scrollSucceeded) {
+          hasScrolledToTodayRef.current = true;
+        } else {
+          // Scroll didn't work, retry
+          scrollAttemptRef.current++;
+          if (scrollAttemptRef.current < maxScrollAttempts) {
+            requestAnimationFrame(attemptScroll);
+          } else {
+            // Give up but mark as done to prevent infinite loops
+            hasScrolledToTodayRef.current = true;
+          }
+        }
       });
-    }
-  }, [dates, virtualizer]);
+    };
+    
+    // Start scroll attempt after initial render
+    requestAnimationFrame(attemptScroll);
+  }, [dates, virtualizer, containerRef]);
 
   // Handle navigation (one day at a time)
   const navigatePrevious = React.useCallback(() => {
@@ -116,8 +156,9 @@ export function useKanbanDates({
       // Today is NOT in current date range (e.g., stuck far in past/future)
       // Reset centerDate to today - this regenerates the dates array
       setCenterDate(today);
-      // The useEffect will scroll to today after dates regenerate
+      // Reset scroll tracking so useEffect will scroll to today after dates regenerate
       hasScrolledToTodayRef.current = false;
+      scrollAttemptRef.current = 0;
     }
   }, [dates, virtualizer]);
 
