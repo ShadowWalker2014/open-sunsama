@@ -10,6 +10,7 @@ import { NotFoundError, uuidSchema } from '@open-sunsama/utils';
 import { auth, requireScopes, type AuthVariables } from '../middleware/auth.js';
 import {
   createTimeBlockSchema, updateTimeBlockSchema, timeBlockFilterSchema, calculateDuration,
+  quickScheduleSchema, calculateEndTime,
 } from '../validation/time-blocks.js';
 import { publishEvent } from '../lib/websocket/index.js';
 
@@ -78,6 +79,52 @@ timeBlocksRouter.post('/', requireScopes('time-blocks:write'), zValidator('json'
   if (newTimeBlock?.taskId) {
     [task] = await db.select().from(tasks).where(eq(tasks.id, newTimeBlock.taskId)).limit(1);
   }
+
+  // Publish realtime event (fire and forget)
+  if (newTimeBlock) {
+    publishEvent(userId, 'timeblock:created', {
+      timeBlockId: newTimeBlock.id,
+      date: newTimeBlock.date,
+    });
+  }
+
+  return c.json({ success: true, data: { ...newTimeBlock, task } }, 201);
+});
+
+/** POST /time-blocks/quick-schedule - Create a time block from a task */
+timeBlocksRouter.post('/quick-schedule', requireScopes('time-blocks:write'), zValidator('json', quickScheduleSchema), async (c) => {
+  const userId = c.get('userId');
+  const data = c.req.valid('json');
+  const db = getDb();
+
+  // Look up the task
+  const [task] = await db.select().from(tasks).where(and(eq(tasks.id, data.taskId), eq(tasks.userId, userId))).limit(1);
+  if (!task) throw new NotFoundError('Task', data.taskId);
+
+  // Calculate end time from start time + duration
+  const endTime = calculateEndTime(data.startTime, data.durationMins);
+  const durationMins = data.durationMins;
+
+  // Get next position for this date
+  const [maxPos] = await db
+    .select({ max: sql<number>`COALESCE(MAX(${timeBlocks.position}), -1)` })
+    .from(timeBlocks)
+    .where(and(eq(timeBlocks.userId, userId), eq(timeBlocks.date, data.date)));
+  const position = (maxPos?.max ?? -1) + 1;
+
+  // Create time block with task's title and link to task
+  const [newTimeBlock] = await db.insert(timeBlocks).values({
+    userId,
+    taskId: data.taskId,
+    title: task.title,
+    description: task.notes ?? null,
+    date: data.date,
+    startTime: data.startTime,
+    endTime,
+    durationMins,
+    color: data.color ?? '#3B82F6',
+    position,
+  }).returning();
 
   // Publish realtime event (fire and forget)
   if (newTimeBlock) {

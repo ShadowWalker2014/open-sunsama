@@ -77,3 +77,25 @@ export const timeBlockFilterSchema = z.object({
 export function calculateDuration(startTime: string, endTime: string): number {
   return parseTimeToMinutes(endTime) - parseTimeToMinutes(startTime);
 }
+
+/**
+ * Schema for quick scheduling a task as a time block
+ */
+export const quickScheduleSchema = z.object({
+  taskId: uuidSchema,
+  date: dateSchema,
+  startTime: timeSchema,
+  durationMins: z.number().int().min(5, 'Duration must be at least 5 minutes').max(480, 'Duration cannot exceed 8 hours').optional().default(30),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color').optional(),
+});
+
+/**
+ * Calculate end time from start time and duration in minutes
+ */
+export function calculateEndTime(startTime: string, durationMins: number): string {
+  const startMinutes = parseTimeToMinutes(startTime);
+  const endMinutes = startMinutes + durationMins;
+  const hours = Math.floor(endMinutes / 60) % 24; // Handle overflow past midnight
+  const minutes = endMinutes % 60;
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+}
