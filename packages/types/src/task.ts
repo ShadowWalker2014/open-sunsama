@@ -57,6 +57,12 @@ export interface Task {
    */
   position: number;
 
+  /**
+   * Whether subtasks should be hidden in the task card view.
+   * Default is false (subtasks are shown).
+   */
+  subtasksHidden: boolean;
+
   /** Timestamp when the task was created */
   createdAt: Date;
 
@@ -121,6 +127,9 @@ export interface UpdateTaskInput {
 
   /** Updated position for ordering */
   position?: number;
+
+  /** Whether to hide subtasks in the task card view */
+  subtasksHidden?: boolean;
 }
 
 /**

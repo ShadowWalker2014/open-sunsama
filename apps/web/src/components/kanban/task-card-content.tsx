@@ -24,6 +24,8 @@ interface TaskCardContentProps {
   subtasks?: Subtask[];
   /** Optional callback when a subtask is toggled */
   onToggleSubtask?: (subtaskId: string) => void;
+  /** Whether subtasks should be hidden */
+  subtasksHidden?: boolean;
 }
 
 /**
@@ -44,6 +46,7 @@ export function TaskCardContent({
   tagColor,
   subtasks,
   onToggleSubtask,
+  subtasksHidden,
 }: TaskCardContentProps) {
   const { setHoveredTask } = useHoveredTask();
 
@@ -143,7 +146,7 @@ export function TaskCardContent({
       </div>
 
       {/* Subtasks preview - inline with small checkboxes */}
-      {subtasksPreview && subtasksPreview.length > 0 && !isCompleted && (
+      {subtasksPreview && subtasksPreview.length > 0 && !isCompleted && !subtasksHidden && (
         <div className="pl-6 space-y-1">
           {subtasksPreview.map((subtask) => (
             <div 

@@ -1,0 +1,1 @@
+ALTER TABLE "tasks" ADD COLUMN "subtasks_hidden" boolean DEFAULT false NOT NULL;

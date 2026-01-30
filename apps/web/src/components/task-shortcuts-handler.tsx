@@ -5,7 +5,7 @@ import {
   shouldIgnoreShortcut,
   useHoveredTask,
 } from "@/hooks/useKeyboardShortcuts";
-import { useCompleteTask, useCreateTask, useDeleteTask, useMoveTask, useReorderTasks, useTasks } from "@/hooks/useTasks";
+import { useCompleteTask, useCreateTask, useDeleteTask, useMoveTask, useReorderTasks, useTasks, useUpdateTask } from "@/hooks/useTasks";
 import { useSubtasks, useUpdateSubtask } from "@/hooks/useSubtasks";
 import { useQuickSchedule } from "@/hooks";
 import { toast } from "@/hooks/use-toast";
@@ -38,6 +38,7 @@ export function TaskShortcutsHandler({
   const createTask = useCreateTask();
   const deleteTask = useDeleteTask();
   const moveTask = useMoveTask();
+  const updateTask = useUpdateTask();
   const updateSubtask = useUpdateSubtask();
   const quickSchedule = useQuickSchedule();
   
@@ -220,13 +221,18 @@ export function TaskShortcutsHandler({
         return;
       }
 
-      // Hide subtasks (H) - placeholder, not fully implemented yet
+      // Hide subtasks (H) - toggle subtasks visibility
       if (SHORTCUTS.hideSubtasks && matchesShortcut(event, SHORTCUTS.hideSubtasks)) {
         if (hoveredTask && subtasks && subtasks.length > 0) {
           event.preventDefault();
+          const newHiddenState = !hoveredTask.subtasksHidden;
+          updateTask.mutate({
+            id: hoveredTask.id,
+            data: { subtasksHidden: newHiddenState },
+          });
           toast({
-            title: "Toggle hide subtasks",
-            description: "This feature is not fully implemented yet.",
+            title: newHiddenState ? "Subtasks hidden" : "Subtasks shown",
+            description: `"${hoveredTask.title}"`,
           });
         }
         return;
@@ -311,6 +317,7 @@ export function TaskShortcutsHandler({
     createTask,
     deleteTask,
     moveTask,
+    updateTask,
     updateSubtask,
     reorderTasks,
     quickSchedule,

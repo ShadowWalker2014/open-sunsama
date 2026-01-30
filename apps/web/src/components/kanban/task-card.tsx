@@ -110,6 +110,7 @@ export function SortableTaskCard({ task, onSelect, isDragging: externalDragging 
           onHoverChange={setIsHovered}
           subtasks={subtasks}
           onToggleSubtask={handleToggleSubtask}
+          subtasksHidden={task.subtasksHidden}
         />
         
         {/* Drop indicator line - below */}
@@ -167,6 +168,7 @@ export function TaskCard({ task, onSelect, isDragging: externalDragging }: TaskC
       onHoverChange={setIsHovered}
       subtasks={subtasks}
       onToggleSubtask={handleToggleSubtask}
+      subtasksHidden={task.subtasksHidden}
     />
   );
 }

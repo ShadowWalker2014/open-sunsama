@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, date, integer, timestamp, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, date, integer, timestamp, index, boolean } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
@@ -18,6 +18,7 @@ export const tasks = pgTable('tasks', {
   priority: varchar('priority', { length: 2 }).notNull().default('P2'),
   completedAt: timestamp('completed_at'),
   position: integer('position').notNull().default(0),
+  subtasksHidden: boolean('subtasks_hidden').notNull().default(false),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => [
@@ -51,6 +52,7 @@ export const insertTaskSchema = createInsertSchema(tasks, {
   estimatedMins: z.number().int().positive().optional(),
   priority: z.enum(TASK_PRIORITIES).optional(),
   position: z.number().int().nonnegative().optional(),
+  subtasksHidden: z.boolean().optional(),
 });
 
 export const selectTaskSchema = createSelectSchema(tasks);

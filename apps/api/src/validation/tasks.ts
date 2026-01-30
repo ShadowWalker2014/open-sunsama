@@ -38,6 +38,7 @@ export const updateTaskSchema = z.object({
   priority: prioritySchema.optional(),
   completedAt: z.string().datetime().optional().nullable(),
   position: z.number().int().nonnegative().optional(),
+  subtasksHidden: z.boolean().optional(),
 });
 
 /**

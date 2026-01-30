@@ -66,9 +66,6 @@ export function TaskContextMenu({
   const { data: subtasks } = useSubtasks(task.id);
   const hasSubtasks = subtasks && subtasks.length > 0;
 
-  // Track hide subtasks state (placeholder - not persisted yet)
-  const [hideSubtasks, setHideSubtasks] = React.useState(false);
-
   const handleFocus = () => {
     // onFocus and onEdit do the same thing - open task detail
     if (onFocus) {
@@ -164,11 +161,14 @@ export function TaskContextMenu({
     });
   };
 
-  const handleToggleHideSubtasks = () => {
-    setHideSubtasks(!hideSubtasks);
+  const handleToggleHideSubtasks = async () => {
+    const newHiddenState = !task.subtasksHidden;
+    await updateTask.mutateAsync({
+      id: task.id,
+      data: { subtasksHidden: newHiddenState },
+    });
     toast({
-      title: hideSubtasks ? "Subtasks shown" : "Subtasks hidden",
-      description: "This preference is not persisted yet.",
+      title: newHiddenState ? "Subtasks hidden" : "Subtasks shown",
     });
   };
 
@@ -275,12 +275,12 @@ export function TaskContextMenu({
         {/* Hide subtasks - only show if task has subtasks */}
         {hasSubtasks && (
           <ContextMenuItem onClick={handleToggleHideSubtasks}>
-            {hideSubtasks ? (
+            {task.subtasksHidden ? (
               <Eye className="mr-2 h-4 w-4" />
             ) : (
               <EyeOff className="mr-2 h-4 w-4" />
             )}
-            {hideSubtasks ? "Show subtasks" : "Hide subtasks"}
+            {task.subtasksHidden ? "Show subtasks" : "Hide subtasks"}
             <ContextMenuShortcut>{SHORTCUTS.hideSubtasks && formatShortcut(SHORTCUTS.hideSubtasks)}</ContextMenuShortcut>
           </ContextMenuItem>
         )}

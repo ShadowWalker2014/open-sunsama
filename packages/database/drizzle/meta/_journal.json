@@ -8,6 +8,13 @@
       "when": 1769747129296,
       "tag": "0000_curvy_baron_zemo",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1769768273087,
+      "tag": "0001_flat_nightshade",
+      "breakpoints": true
     }
   ]
 }
