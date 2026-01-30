@@ -3,7 +3,9 @@
  */
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
-import type { UserPreferences } from "@open-sunsama/types";
+import type { UserPreferences, User } from "@open-sunsama/types";
+
+const AUTH_USER_KEY = "open_sunsama_user";
 
 /**
  * Hook to save user preferences to the database
@@ -36,17 +38,18 @@ export function useSavePreferences() {
         throw new Error(errorData.error?.message || "Failed to save preferences");
       }
 
-      return response.json();
+      const result = await response.json();
+      return result.data as User; // Return the updated user
     },
-    onSuccess: (data) => {
-      if (data) {
-        // Invalidate user query to refresh cached user data
-        queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+    onSuccess: (updatedUser) => {
+      if (updatedUser) {
+        // Directly update the cache with the new user data (no refetch needed)
+        queryClient.setQueryData(["auth", "me"], updatedUser);
+        // Also update localStorage to prevent stale fallback
+        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(updatedUser));
       }
     },
     onError: (error) => {
-      // Log error for debugging but don't disrupt user experience
-      // Preferences are still saved in localStorage as fallback
       console.error("[useSavePreferences] Failed to save to server:", error.message);
     },
   });
