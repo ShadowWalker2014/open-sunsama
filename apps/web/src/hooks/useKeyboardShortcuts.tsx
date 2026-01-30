@@ -55,13 +55,13 @@ export const SHORTCUTS: Record<string, ShortcutDefinition> = {
   },
   moveToTop: {
     key: "ArrowUp",
-    modifiers: { cmd: true, shift: true },
+    modifiers: { alt: true, shift: true },
     description: "Move task to top",
     category: "task",
   },
   moveToBottom: {
     key: "ArrowDown",
-    modifiers: { cmd: true, shift: true },
+    modifiers: { alt: true, shift: true },
     description: "Move task to bottom",
     category: "task",
   },

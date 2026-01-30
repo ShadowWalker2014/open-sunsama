@@ -44,14 +44,16 @@ export function TaskShortcutsHandler({
   const updateSubtask = useUpdateSubtask();
   const quickSchedule = useQuickSchedule();
   
-  // Fetch tasks for the hovered task's date to enable move to top/bottom
-  const { data: tasksInColumn } = useTasks(
-    hoveredTask?.scheduledDate 
+  // Fetch tasks for the hovered task's column to enable move to top/bottom
+  // Query is disabled when no task is hovered (passes undefined)
+  const columnFilters = React.useMemo(() => {
+    if (!hoveredTask) return undefined;
+    return hoveredTask.scheduledDate 
       ? { scheduledDate: hoveredTask.scheduledDate }
-      : hoveredTask && !hoveredTask.scheduledDate
-      ? { backlog: true }
-      : undefined
-  );
+      : { backlog: true };
+  }, [hoveredTask?.id, hoveredTask?.scheduledDate]);
+  
+  const { data: tasksInColumn } = useTasks(columnFilters);
   
   // Fetch subtasks for the hovered task
   const { data: subtasks } = useSubtasks(hoveredTask?.id ?? "");
@@ -240,7 +242,7 @@ export function TaskShortcutsHandler({
         return;
       }
 
-      // Move to top (Cmd + Shift + Up)
+      // Move to top (Alt + Shift + Up)
       if (SHORTCUTS.moveToTop && matchesShortcut(event, SHORTCUTS.moveToTop)) {
         if (hoveredTask && tasksInColumn) {
           event.preventDefault();
@@ -271,7 +273,7 @@ export function TaskShortcutsHandler({
         return;
       }
 
-      // Move to bottom (Cmd + Shift + Down)
+      // Move to bottom (Alt + Shift + Down)
       if (SHORTCUTS.moveToBottom && matchesShortcut(event, SHORTCUTS.moveToBottom)) {
         if (hoveredTask && tasksInColumn) {
           event.preventDefault();
