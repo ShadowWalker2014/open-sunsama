@@ -28,7 +28,7 @@ export function useTasks(filters?: TaskFilterInput) {
     queryFn: async () => {
       const api = getApi();
       const response = await api.tasks.list(filters);
-      return response.data;
+      return response.data ?? [];
     },
   });
 }

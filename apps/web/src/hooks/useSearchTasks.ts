@@ -46,6 +46,9 @@ export function useSearchTasks(params: SearchTasksParams) {
     staleTime: 30000, // Consider data fresh for 30 seconds
     refetchOnWindowFocus: false,
     select: (data) => {
+      // Safety check for undefined data
+      if (!data) return [];
+      
       // Client-side text search for responsiveness
       if (!query.trim()) return data;
       
