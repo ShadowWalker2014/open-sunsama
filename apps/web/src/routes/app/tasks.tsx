@@ -39,16 +39,17 @@ function groupTasksByDate(tasks: Task[]): TaskGroups {
     }
 
     const taskDate = parseISO(task.scheduledDate);
-    const isTaskOverdue =
-      !task.completedAt && isPast(taskDate) && task.scheduledDate < todayStr;
+    const isPastDate = task.scheduledDate < todayStr;
 
-    if (isTaskOverdue) {
-      groups.overdue.push(task);
-    } else if (isToday(taskDate)) {
+    if (isToday(taskDate)) {
       groups.today.push(task);
     } else if (isTomorrow(taskDate)) {
       groups.tomorrow.push(task);
-    } else if (task.scheduledDate > todayStr) {
+    } else if (isPastDate) {
+      // Past dates go to overdue (includes completed tasks for "all" view)
+      groups.overdue.push(task);
+    } else {
+      // Future dates
       const existing = groups.future.get(task.scheduledDate) || [];
       existing.push(task);
       groups.future.set(task.scheduledDate, existing);
