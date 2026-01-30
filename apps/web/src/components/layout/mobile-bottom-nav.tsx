@@ -1,5 +1,5 @@
 import * as React from "react";
-import { LayoutGrid, Calendar, Settings } from "lucide-react";
+import { LayoutGrid, List, Calendar, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -15,6 +15,11 @@ const navItems: NavItem[] = [
     icon: <LayoutGrid className="h-5 w-5" />,
     label: "Board",
     matchExact: true,
+  },
+  {
+    href: "/app/tasks",
+    icon: <List className="h-5 w-5" />,
+    label: "Tasks",
   },
   {
     href: "/app/calendar",

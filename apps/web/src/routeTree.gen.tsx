@@ -14,6 +14,7 @@ import AppLayout from "./routes/app";
 import TasksPage from "./routes/app/index";
 import CalendarPage from "./routes/app/calendar";
 import SettingsPage from "./routes/app/settings";
+import TasksListPage from "./routes/app/tasks";
 
 // Create root route
 const rootRoute = createRootRoute({
@@ -101,6 +102,12 @@ const appSettingsRoute = createRoute({
   component: SettingsPage,
 });
 
+const appTasksListRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/tasks",
+  component: TasksListPage,
+});
+
 // Build the route tree
 const routeTree = rootRoute.addChildren([
   indexRoute,
@@ -112,6 +119,7 @@ const routeTree = rootRoute.addChildren([
     appIndexRoute,
     appCalendarRoute,
     appSettingsRoute,
+    appTasksListRoute,
   ]),
 ]);
 
