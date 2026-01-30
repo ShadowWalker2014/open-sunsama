@@ -1,9 +1,10 @@
 import * as React from "react";
 import { format, isSameDay, setHours, addMinutes } from "date-fns";
-import type { TimeBlock as TimeBlockType } from "@open-sunsama/types";
+import type { TimeBlock as TimeBlockType, CalendarEvent } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui";
 import { TimeBlock, TimeBlockPreview } from "./time-block";
+import { ExternalEvent, AllDayEvent } from "./external-event";
 import {
   HOUR_HEIGHT,
   TIMELINE_START_HOUR,
@@ -19,6 +20,7 @@ import {
 interface TimelineProps {
   date: Date;
   timeBlocks: TimeBlockType[];
+  calendarEvents?: CalendarEvent[];
   isLoading?: boolean;
   dragState: DragState | null;
   dropPreview: DropPreview | null;
@@ -51,6 +53,7 @@ function generateHours(): number[] {
 export function Timeline({
   date,
   timeBlocks,
+  calendarEvents = [],
   isLoading = false,
   dragState,
   dropPreview,
@@ -98,6 +101,18 @@ export function Timeline({
     );
   }, [timeBlocks, date]);
 
+  // Filter and separate external calendar events for this day
+  const { timedEvents, allDayEvents } = React.useMemo(() => {
+    const dayEvents = calendarEvents.filter((event) =>
+      isSameDay(new Date(event.startTime), date)
+    );
+    
+    return {
+      timedEvents: dayEvents.filter((event) => !event.isAllDay),
+      allDayEvents: dayEvents.filter((event) => event.isAllDay),
+    };
+  }, [calendarEvents, date]);
+
   // Handle click on empty time slot
   const handleTimeSlotClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // Don't trigger if clicking on a time block
@@ -132,8 +147,20 @@ export function Timeline({
   };
 
   return (
-    <div className={cn("flex-1 overflow-hidden", className)}>
-      <ScrollArea className="h-full" ref={scrollAreaRef}>
+    <div className={cn("flex-1 overflow-hidden flex flex-col", className)}>
+      {/* All-day events banner */}
+      {allDayEvents.length > 0 && (
+        <div className="flex-shrink-0 border-b bg-muted/30 px-2 py-1.5 space-y-1">
+          <p className="text-xs font-medium text-muted-foreground mb-1">All day</p>
+          <div className="flex flex-wrap gap-1">
+            {allDayEvents.map((event) => (
+              <AllDayEvent key={event.id} event={event} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      <ScrollArea className="h-full flex-1" ref={scrollAreaRef}>
         <div
           className="flex"
           style={{ minHeight: hours.length * HOUR_HEIGHT }}
@@ -206,6 +233,12 @@ export function Timeline({
                 </div>
               </div>
             )}
+
+            {/* External calendar events (rendered behind time blocks) */}
+            {!isLoading &&
+              timedEvents.map((event) => (
+                <ExternalEvent key={event.id} event={event} />
+              ))}
 
             {/* Time blocks */}
             {!isLoading &&

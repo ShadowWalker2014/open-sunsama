@@ -5,6 +5,7 @@ export { CalendarView } from "./calendar-view";
 export { CalendarViewToolbar } from "./calendar-view-toolbar";
 export { Timeline } from "./timeline";
 export { TimeBlock, TimeBlockPreview } from "./time-block";
+export { ExternalEvent, AllDayEvent } from "./external-event";
 export { TimeBlockContextMenu } from "./time-block-context-menu";
 export { UnscheduledTasksPanel } from "./unscheduled-tasks";
 export { UnscheduledTaskItem, TaskItemSkeleton } from "./unscheduled-task-item";

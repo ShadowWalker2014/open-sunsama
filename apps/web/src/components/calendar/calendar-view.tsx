@@ -4,6 +4,7 @@ import {
   addDays,
   subDays,
   startOfDay,
+  endOfDay,
 } from "date-fns";
 import type { Task, TimeBlock } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
@@ -14,6 +15,7 @@ import {
   useMoveTimeBlock,
   useCascadeResizeTimeBlock,
 } from "@/hooks";
+import { useCalendarEvents } from "@/hooks/useCalendars";
 import { useCalendarDnd } from "@/hooks/useCalendarDnd";
 import { Timeline } from "./timeline";
 import { UnscheduledTasksPanel } from "./unscheduled-tasks";
@@ -57,6 +59,11 @@ export function CalendarView({
   // Fetch time blocks for selected date
   const { data: timeBlocks = [], isLoading: isLoadingBlocks } =
     useTimeBlocksForDate(dateString);
+
+  // Fetch external calendar events for selected date
+  const fromDate = format(startOfDay(selectedDate), "yyyy-MM-dd'T'HH:mm:ss");
+  const toDate = format(endOfDay(selectedDate), "yyyy-MM-dd'T'HH:mm:ss");
+  const { data: calendarEvents = [] } = useCalendarEvents(fromDate, toDate);
 
   // Mutations
   const createTimeBlock = useCreateTimeBlock();
@@ -232,6 +239,7 @@ export function CalendarView({
         <Timeline
           date={selectedDate}
           timeBlocks={timeBlocks}
+          calendarEvents={calendarEvents}
           isLoading={isLoading}
           dragState={dragState}
           dropPreview={dropPreview}
