@@ -31,8 +31,6 @@ export function useTimezoneSync(): void {
     if (deviceTimezone && deviceTimezone !== user.timezone) {
       syncAttempted.current = true;
       
-      console.log(`[Timezone Sync] Updating timezone from ${user.timezone} to ${deviceTimezone}`);
-      
       updateUser({ timezone: deviceTimezone }).catch((error) => {
         console.error('[Timezone Sync] Failed to update timezone:', error);
         // Reset flag so we can try again later

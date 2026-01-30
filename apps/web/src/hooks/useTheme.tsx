@@ -126,7 +126,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // This ensures React state is in sync with what index.html script already applied
   const [preferences, setPreferences] = React.useState<UserPreferences>(getStoredPreferences);
   const [resolvedTheme, setResolvedTheme] = React.useState<"light" | "dark">(getInitialResolvedTheme);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isLoading] = React.useState(false);
   const [hasLoadedFromUser, setHasLoadedFromUser] = React.useState(false);
   
   // Get user and save mutation for DB sync
