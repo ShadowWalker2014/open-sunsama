@@ -8,3 +8,4 @@ export {
   type Command,
   type CommandContext,
 } from "./commands";
+export { TASK_COMMANDS } from "./task-commands";

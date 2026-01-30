@@ -1,3 +1,6 @@
+import type { Task } from "@open-sunsama/types";
+import type { McpClient } from "@/lib/mcp-config";
+import type { CurrentView } from "@/lib/route-utils";
 import type { ThemeMode } from "@/lib/themes";
 
 export interface Command {
@@ -8,18 +11,37 @@ export interface Command {
   keywords: string[]; // For fuzzy search matching
   icon: string; // Lucide icon name
   action: (ctx: CommandContext) => void;
+  requiresHoveredTask?: boolean; // Only show when task is hovered
+  showInViews?: CurrentView[]; // View-specific commands
+  priority?: number; // Lower = more prominent (0-100, default 50)
 }
 
 // Navigate function type from TanStack Router
 type NavigateFn = (options: { to: string; search?: Record<string, string> }) => void;
 
 export interface CommandContext {
+  // Navigation & UI
   navigate: NavigateFn;
   setThemeMode: (mode: ThemeMode) => void;
   currentThemeMode: ThemeMode;
   openAddTask: () => void;
   openShortcuts: () => void;
   closeSearch: () => void;
+
+  // Context awareness
+  hoveredTask: Task | null;
+  currentView: CurrentView;
+
+  // Task actions
+  completeTask: (id: string) => void;
+  deleteTask: (id: string) => void;
+  duplicateTask: (task: Task) => void;
+  deferTask: (id: string, date: string | null) => void;
+  scheduleTask: (id: string) => void;
+
+  // MCP actions
+  copyMcpConfig: (client: McpClient) => void;
+  copyApiKey: () => void;
 }
 
 export const COMMANDS: Command[] = [
@@ -30,6 +52,7 @@ export const COMMANDS: Command[] = [
     category: "navigation",
     keywords: ["tasks", "board", "kanban", "home"],
     icon: "LayoutDashboard",
+    priority: 20,
     action: (ctx) => {
       ctx.navigate({ to: "/app" });
       ctx.closeSearch();
@@ -41,6 +64,7 @@ export const COMMANDS: Command[] = [
     category: "navigation",
     keywords: ["calendar", "timeline", "schedule"],
     icon: "Calendar",
+    priority: 21,
     action: (ctx) => {
       ctx.navigate({ to: "/app/calendar" });
       ctx.closeSearch();
@@ -52,6 +76,7 @@ export const COMMANDS: Command[] = [
     category: "navigation",
     keywords: ["settings", "preferences", "config"],
     icon: "Settings",
+    priority: 22,
     action: (ctx) => {
       ctx.navigate({ to: "/app/settings" });
       ctx.closeSearch();
@@ -63,6 +88,7 @@ export const COMMANDS: Command[] = [
     category: "navigation",
     keywords: ["api", "keys", "tokens", "developer"],
     icon: "Key",
+    priority: 23,
     action: (ctx) => {
       ctx.navigate({ to: "/app/settings", search: { tab: "api-keys" } });
       ctx.closeSearch();
@@ -77,6 +103,7 @@ export const COMMANDS: Command[] = [
     category: "actions",
     keywords: ["add", "create", "new", "task"],
     icon: "Plus",
+    priority: 25,
     action: (ctx) => {
       ctx.closeSearch();
       ctx.openAddTask();
@@ -89,6 +116,7 @@ export const COMMANDS: Command[] = [
     category: "actions",
     keywords: ["shortcuts", "keyboard", "help", "keys"],
     icon: "Keyboard",
+    priority: 26,
     action: (ctx) => {
       ctx.closeSearch();
       ctx.openShortcuts();
@@ -102,6 +130,7 @@ export const COMMANDS: Command[] = [
     category: "settings",
     keywords: ["theme", "light", "mode", "appearance"],
     icon: "Sun",
+    priority: 28,
     action: (ctx) => {
       ctx.setThemeMode("light");
       ctx.closeSearch();
@@ -113,6 +142,7 @@ export const COMMANDS: Command[] = [
     category: "settings",
     keywords: ["theme", "dark", "mode", "appearance"],
     icon: "Moon",
+    priority: 29,
     action: (ctx) => {
       ctx.setThemeMode("dark");
       ctx.closeSearch();
@@ -124,6 +154,7 @@ export const COMMANDS: Command[] = [
     category: "settings",
     keywords: ["theme", "system", "auto", "mode"],
     icon: "Monitor",
+    priority: 30,
     action: (ctx) => {
       ctx.setThemeMode("system");
       ctx.closeSearch();
