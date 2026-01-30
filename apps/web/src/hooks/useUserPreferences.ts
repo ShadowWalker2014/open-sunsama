@@ -32,14 +32,22 @@ export function useSavePreferences() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to save preferences");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error?.message || "Failed to save preferences");
       }
 
       return response.json();
     },
-    onSuccess: () => {
-      // Invalidate user query to refresh cached user data
-      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+    onSuccess: (data) => {
+      if (data) {
+        // Invalidate user query to refresh cached user data
+        queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      }
+    },
+    onError: (error) => {
+      // Log error for debugging but don't disrupt user experience
+      // Preferences are still saved in localStorage as fallback
+      console.error("[useSavePreferences] Failed to save to server:", error.message);
     },
   });
 }

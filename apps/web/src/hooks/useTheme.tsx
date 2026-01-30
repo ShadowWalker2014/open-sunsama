@@ -159,15 +159,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
-  // Debounced save to database
+  // Debounced save to database - user check is done at call site to avoid stale closures
   const debouncedSaveToDb = React.useMemo(
     () =>
       debounce((prefs: UserPreferences) => {
-        if (user) {
-          savePreferencesMutation.mutate(prefs);
-        }
+        savePreferencesMutation.mutate(prefs);
       }, 500),
-    [user, savePreferencesMutation]
+    [savePreferencesMutation]
   );
 
   // Listen for system theme changes
@@ -188,32 +186,38 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setPreferences(prev => {
       const newPrefs = { ...prev, themeMode: mode };
       savePreferences(newPrefs);
-      debouncedSaveToDb(newPrefs);
+      if (user) {
+        debouncedSaveToDb(newPrefs);
+      }
       const resolved = applyTheme(mode, prev.colorTheme, prev.fontFamily);
       setResolvedTheme(resolved);
       return newPrefs;
     });
-  }, [debouncedSaveToDb]);
+  }, [debouncedSaveToDb, user]);
 
   const setColorTheme = React.useCallback((theme: string) => {
     setPreferences(prev => {
       const newPrefs = { ...prev, colorTheme: theme };
       savePreferences(newPrefs);
-      debouncedSaveToDb(newPrefs);
+      if (user) {
+        debouncedSaveToDb(newPrefs);
+      }
       applyTheme(prev.themeMode, theme, prev.fontFamily);
       return newPrefs;
     });
-  }, [debouncedSaveToDb]);
+  }, [debouncedSaveToDb, user]);
 
   const setFontFamily = React.useCallback((font: FontFamily) => {
     setPreferences(prev => {
       const newPrefs = { ...prev, fontFamily: font };
       savePreferences(newPrefs);
-      debouncedSaveToDb(newPrefs);
+      if (user) {
+        debouncedSaveToDb(newPrefs);
+      }
       applyTheme(prev.themeMode, prev.colorTheme, font);
       return newPrefs;
     });
-  }, [debouncedSaveToDb]);
+  }, [debouncedSaveToDb, user]);
 
   const value = React.useMemo(
     () => ({
