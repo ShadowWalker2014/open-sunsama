@@ -22,6 +22,19 @@
       "cache": false,
       "persistent": true
     },
+    "@open-sunsama/mobile#dev": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
+    "@open-sunsama/mobile#build": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "@open-sunsama/mobile#typecheck": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "tsconfig.json"]
+    },
     "lint": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".eslintrc*", "eslint.config.*"]

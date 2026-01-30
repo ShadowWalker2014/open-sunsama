@@ -1,22 +1,11 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "target": "ESNext",
-    "lib": ["ES2022"],
-    "jsx": "react-native",
+    "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@open-sunsama/database": ["../../packages/database/src/index.ts"],
-      "@open-sunsama/database/*": ["../../packages/database/src/*"],
-      "@open-sunsama/types": ["../../packages/types/src/index.ts"],
-      "@open-sunsama/types/*": ["../../packages/types/src/*"],
-      "@open-sunsama/utils": ["../../packages/utils/src/index.ts"],
-      "@open-sunsama/utils/*": ["../../packages/utils/src/*"],
-      "@open-sunsama/api-client": ["../../packages/api-client/src/index.ts"],
-      "@open-sunsama/api-client/*": ["../../packages/api-client/src/*"]
+      "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
 }
