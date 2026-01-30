@@ -39,7 +39,7 @@ export function DayColumn({
   activeTaskId,
   sortBy = "position",
 }: DayColumnProps) {
-  const { data: tasks, isLoading } = useTasks({ scheduledDate: dateString });
+  const { data: tasks, isLoading, isError, refetch } = useTasks({ scheduledDate: dateString });
 
   const { setNodeRef, isOver: isOverDroppable } = useDroppable({
     id: `day-${dateString}`,
@@ -191,7 +191,17 @@ export function DayColumn({
       {/* Tasks */}
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-1">
-          {isLoading ? (
+          {isError ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <p className="text-xs text-destructive">Failed to load</p>
+              <button
+                onClick={() => refetch()}
+                className="text-xs text-muted-foreground hover:text-foreground mt-2 underline"
+              >
+                Retry
+              </button>
+            </div>
+          ) : isLoading ? (
             <div className="space-y-2 p-1">
               <Skeleton className="h-12 w-full rounded-lg" />
               <Skeleton className="h-12 w-full rounded-lg" />

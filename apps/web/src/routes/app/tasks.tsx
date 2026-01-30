@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Search, Filter, SortAsc, SortDesc, ChevronDown, Plus } from "lucide-react";
+import { Search, Filter, SortAsc, SortDesc, ChevronDown, Plus, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import type { Task, TaskPriority } from "@open-sunsama/types";
 import { useSearchTasks } from "@/hooks/useSearchTasks";
@@ -41,7 +41,7 @@ export default function TasksListPage() {
     return () => clearTimeout(timer);
   }, [query]);
 
-  const { data: tasks = [], isLoading } = useSearchTasks({
+  const { data: tasks = [], isLoading, isError, error, refetch } = useSearchTasks({
     query: debouncedQuery,
     status: statusFilter,
     priority: priorityFilter === "all" ? undefined : priorityFilter,
@@ -195,7 +195,21 @@ export default function TasksListPage() {
       
       {/* Task List */}
       <div ref={listRef} className="flex-1 overflow-y-auto">
-        {isLoading ? (
+        {isError ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <AlertCircle className="h-8 w-8 text-destructive/70 mb-3" />
+            <p className="text-sm font-medium text-destructive">Failed to load tasks</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {error instanceof Error ? error.message : "Please try again"}
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="text-xs text-muted-foreground hover:text-foreground mt-4 underline"
+            >
+              Retry
+            </button>
+          </div>
+        ) : isLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
           </div>
