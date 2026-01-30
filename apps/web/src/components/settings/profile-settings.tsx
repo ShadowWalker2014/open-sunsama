@@ -18,7 +18,7 @@ import {
   AvatarImage,
 } from "@/components/ui";
 import { toast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
+import { cn, getAvatarUrl } from "@/lib/utils";
 
 interface ProfileForm {
   name: string;
@@ -147,7 +147,7 @@ export function ProfileSettings() {
               aria-label="Change avatar"
             >
               <Avatar className="h-20 w-20">
-                <AvatarImage src={user?.avatarUrl ?? undefined} />
+                <AvatarImage src={getAvatarUrl(user?.avatarUrl)} />
                 <AvatarFallback className="text-lg">{userInitials}</AvatarFallback>
               </Avatar>
               

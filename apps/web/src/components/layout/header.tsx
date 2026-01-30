@@ -14,7 +14,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useSearch } from "@/hooks/useSearch";
 import { useTheme } from "@/hooks/useTheme";
-import { cn } from "@/lib/utils";
+import { cn, getAvatarUrl } from "@/lib/utils";
 import {
   Button,
   Avatar,
@@ -147,7 +147,7 @@ export function Header({ className }: HeaderProps) {
                 className="relative h-10 w-10 sm:h-9 sm:w-9 rounded-full"
               >
                 <Avatar className="h-9 w-9 sm:h-8 sm:w-8">
-                  <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.name ?? "User"} />
+                  <AvatarImage src={getAvatarUrl(user?.avatarUrl)} alt={user?.name ?? "User"} />
                   <AvatarFallback>{userInitials}</AvatarFallback>
                 </Avatar>
               </Button>

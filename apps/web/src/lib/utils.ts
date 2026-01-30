@@ -72,3 +72,20 @@ export function stripHtmlTags(html: string): string {
   // Use regex to remove HTML tags (works in SSR)
   return html.replace(/<[^>]*>/g, "").trim();
 }
+
+/**
+ * Get the full URL for an avatar image
+ * Avatar URLs are stored as relative paths (/uploads/...) which need the API base URL prepended
+ */
+export function getAvatarUrl(avatarUrl: string | null | undefined): string | undefined {
+  if (!avatarUrl) return undefined;
+
+  // If already a full URL, return as-is
+  if (avatarUrl.startsWith("http://") || avatarUrl.startsWith("https://")) {
+    return avatarUrl;
+  }
+
+  // Prepend API base URL for relative paths
+  const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
+  return `${apiBaseUrl}${avatarUrl}`;
+}
