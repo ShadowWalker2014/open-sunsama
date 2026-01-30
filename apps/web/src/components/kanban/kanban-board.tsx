@@ -44,6 +44,7 @@ export function KanbanBoard({ children }: KanbanBoardProps) {
       navigatePrevious,
       navigateNext,
       navigateToToday,
+      selectTask: setSelectedTask,
     }),
     [navigatePrevious, navigateNext, navigateToToday]
   );

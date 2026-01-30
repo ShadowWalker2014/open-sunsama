@@ -70,6 +70,33 @@ export const SHORTCUTS: Record<string, ShortcutDefinition> = {
     description: "Move to backlog (while hovering)",
     category: "task",
   },
+  deferToNextWeek: {
+    key: "Z",
+    modifiers: { shift: true },
+    description: "Defer to next week (while hovering)",
+    category: "task",
+  },
+  focus: {
+    key: "f",
+    description: "Focus on task (while hovering)",
+    category: "task",
+  },
+  addToCalendar: {
+    key: "x",
+    description: "Add to calendar (while hovering)",
+    category: "task",
+  },
+  duplicate: {
+    key: "d",
+    modifiers: { cmd: true },
+    description: "Duplicate task (while hovering)",
+    category: "task",
+  },
+  hideSubtasks: {
+    key: "h",
+    description: "Toggle hide subtasks (while hovering)",
+    category: "task",
+  },
   showShortcuts: {
     key: "?",
     modifiers: { shift: true },

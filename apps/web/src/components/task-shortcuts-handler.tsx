@@ -5,15 +5,19 @@ import {
   shouldIgnoreShortcut,
   useHoveredTask,
 } from "@/hooks/useKeyboardShortcuts";
-import { useCompleteTask, useDeleteTask, useMoveTask, useReorderTasks, useTasks } from "@/hooks/useTasks";
+import { useCompleteTask, useCreateTask, useDeleteTask, useMoveTask, useReorderTasks, useTasks } from "@/hooks/useTasks";
 import { useSubtasks, useUpdateSubtask } from "@/hooks/useSubtasks";
+import { useQuickSchedule } from "@/hooks";
 import { toast } from "@/hooks/use-toast";
+import { addDays, startOfWeek, format } from "date-fns";
+import type { Task } from "@open-sunsama/types";
 
 interface TaskShortcutsHandlerProps {
   onNavigateToday: () => void;
   onNavigateNext: () => void;
   onNavigatePrevious: () => void;
   onEditEstimate?: (taskId: string) => void;
+  onSelect?: (task: Task) => void;
 }
 
 /**
@@ -26,13 +30,16 @@ export function TaskShortcutsHandler({
   onNavigateNext,
   onNavigatePrevious,
   onEditEstimate,
+  onSelect,
 }: TaskShortcutsHandlerProps) {
   const { hoveredTask, hoveredSubtaskId } = useHoveredTask();
   
   const completeTask = useCompleteTask();
+  const createTask = useCreateTask();
   const deleteTask = useDeleteTask();
   const moveTask = useMoveTask();
   const updateSubtask = useUpdateSubtask();
+  const quickSchedule = useQuickSchedule();
   
   // Fetch tasks for the hovered task's date to enable move to top/bottom
   const { data: tasksInColumn } = useTasks(
@@ -150,6 +157,81 @@ export function TaskShortcutsHandler({
         return;
       }
 
+      // Defer to next week (Shift + Z)
+      if (SHORTCUTS.deferToNextWeek && matchesShortcut(event, SHORTCUTS.deferToNextWeek)) {
+        if (hoveredTask) {
+          event.preventDefault();
+          const nextMonday = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 7);
+          moveTask.mutate({
+            id: hoveredTask.id,
+            targetDate: format(nextMonday, "yyyy-MM-dd"),
+          });
+          toast({
+            title: "Deferred to next week",
+            description: `"${hoveredTask.title}"`,
+          });
+        }
+        return;
+      }
+
+      // Focus (F)
+      if (SHORTCUTS.focus && matchesShortcut(event, SHORTCUTS.focus)) {
+        if (hoveredTask && onSelect) {
+          event.preventDefault();
+          onSelect(hoveredTask);
+        }
+        return;
+      }
+
+      // Add to Calendar (X)
+      if (SHORTCUTS.addToCalendar && matchesShortcut(event, SHORTCUTS.addToCalendar)) {
+        if (hoveredTask) {
+          event.preventDefault();
+          const date = hoveredTask.scheduledDate || format(new Date(), "yyyy-MM-dd");
+          quickSchedule.mutate({
+            taskId: hoveredTask.id,
+            startTime: `${date}T09:00:00`,
+            durationMins: hoveredTask.estimatedMins ?? undefined,
+          });
+          toast({
+            title: "Added to calendar",
+            description: `"${hoveredTask.title}"`,
+          });
+        }
+        return;
+      }
+
+      // Duplicate (Cmd + D)
+      if (SHORTCUTS.duplicate && matchesShortcut(event, SHORTCUTS.duplicate)) {
+        if (hoveredTask) {
+          event.preventDefault();
+          createTask.mutate({
+            title: hoveredTask.title,
+            priority: hoveredTask.priority,
+            scheduledDate: hoveredTask.scheduledDate ?? undefined,
+            estimatedMins: hoveredTask.estimatedMins ?? undefined,
+            notes: hoveredTask.notes ?? undefined,
+          });
+          toast({
+            title: "Task duplicated",
+            description: `"${hoveredTask.title}"`,
+          });
+        }
+        return;
+      }
+
+      // Hide subtasks (H) - placeholder, not fully implemented yet
+      if (SHORTCUTS.hideSubtasks && matchesShortcut(event, SHORTCUTS.hideSubtasks)) {
+        if (hoveredTask && subtasks && subtasks.length > 0) {
+          event.preventDefault();
+          toast({
+            title: "Toggle hide subtasks",
+            description: "This feature is not fully implemented yet.",
+          });
+        }
+        return;
+      }
+
       // Move to top (Cmd + Shift + Up)
       if (SHORTCUTS.moveToTop && matchesShortcut(event, SHORTCUTS.moveToTop)) {
         if (hoveredTask && tasksInColumn) {
@@ -224,11 +306,14 @@ export function TaskShortcutsHandler({
     onNavigateNext,
     onNavigatePrevious,
     onEditEstimate,
+    onSelect,
     completeTask,
+    createTask,
     deleteTask,
     moveTask,
     updateSubtask,
     reorderTasks,
+    quickSchedule,
   ]);
 
   return null; // This component renders nothing

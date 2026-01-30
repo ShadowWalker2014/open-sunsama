@@ -1,9 +1,11 @@
 import * as React from "react";
+import type { Task } from "@open-sunsama/types";
 
 export interface KanbanNavigationContextValue {
   navigatePrevious: () => void;
   navigateNext: () => void;
   navigateToToday: () => void;
+  selectTask: (task: Task) => void;
 }
 
 const KanbanNavigationContext = React.createContext<KanbanNavigationContextValue | null>(null);

@@ -43,6 +43,7 @@ function TasksKeyboardShortcuts() {
       onNavigateToday={navigation.navigateToToday}
       onNavigateNext={navigation.navigateNext}
       onNavigatePrevious={navigation.navigatePrevious}
+      onSelect={navigation.selectTask}
     />
   );
 }
