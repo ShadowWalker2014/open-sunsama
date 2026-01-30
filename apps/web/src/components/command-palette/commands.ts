@@ -1,5 +1,4 @@
 import type { Task } from "@open-sunsama/types";
-import type { McpClient } from "@/lib/mcp-config";
 import type { CurrentView } from "@/lib/route-utils";
 import type { ThemeMode } from "@/lib/themes";
 
@@ -38,64 +37,10 @@ export interface CommandContext {
   duplicateTask: (task: Task) => void;
   deferTask: (id: string, date: string | null) => void;
   scheduleTask: (id: string) => void;
-
-  // MCP actions
-  copyMcpConfig: (client: McpClient) => void;
-  copyApiKey: () => void;
 }
 
 export const COMMANDS: Command[] = [
-  // Navigation
-  {
-    id: "tasks",
-    title: "Go to Tasks Board",
-    category: "navigation",
-    keywords: ["tasks", "board", "kanban", "home"],
-    icon: "LayoutDashboard",
-    priority: 20,
-    action: (ctx) => {
-      ctx.navigate({ to: "/app" });
-      ctx.closeSearch();
-    },
-  },
-  {
-    id: "calendar",
-    title: "Go to Calendar",
-    category: "navigation",
-    keywords: ["calendar", "timeline", "schedule"],
-    icon: "Calendar",
-    priority: 21,
-    action: (ctx) => {
-      ctx.navigate({ to: "/app/calendar" });
-      ctx.closeSearch();
-    },
-  },
-  {
-    id: "settings",
-    title: "Go to Settings",
-    category: "navigation",
-    keywords: ["settings", "preferences", "config"],
-    icon: "Settings",
-    priority: 22,
-    action: (ctx) => {
-      ctx.navigate({ to: "/app/settings" });
-      ctx.closeSearch();
-    },
-  },
-  {
-    id: "api-keys",
-    title: "Go to API Keys",
-    category: "navigation",
-    keywords: ["api", "keys", "tokens", "developer"],
-    icon: "Key",
-    priority: 23,
-    action: (ctx) => {
-      ctx.navigate({ to: "/app/settings", search: { tab: "api-keys" } });
-      ctx.closeSearch();
-    },
-  },
-
-  // Actions
+  // Actions (most useful first)
   {
     id: "add-task",
     title: "Add New Task",
@@ -103,7 +48,7 @@ export const COMMANDS: Command[] = [
     category: "actions",
     keywords: ["add", "create", "new", "task"],
     icon: "Plus",
-    priority: 25,
+    priority: 1,
     action: (ctx) => {
       ctx.closeSearch();
       ctx.openAddTask();
@@ -111,26 +56,76 @@ export const COMMANDS: Command[] = [
   },
   {
     id: "shortcuts",
-    title: "Show Keyboard Shortcuts",
+    title: "Keyboard Shortcuts",
     shortcut: "?",
     category: "actions",
-    keywords: ["shortcuts", "keyboard", "help", "keys"],
+    keywords: ["shortcuts", "keyboard", "help", "keys", "hotkeys"],
     icon: "Keyboard",
-    priority: 26,
+    priority: 2,
     action: (ctx) => {
       ctx.closeSearch();
       ctx.openShortcuts();
     },
   },
 
-  // Settings
+  // Navigation
+  {
+    id: "tasks",
+    title: "Tasks",
+    category: "navigation",
+    keywords: ["tasks", "board", "kanban", "home", "today"],
+    icon: "CheckSquare",
+    priority: 10,
+    action: (ctx) => {
+      ctx.navigate({ to: "/app" });
+      ctx.closeSearch();
+    },
+  },
+  {
+    id: "calendar",
+    title: "Calendar",
+    category: "navigation",
+    keywords: ["calendar", "timeline", "schedule", "time", "blocks"],
+    icon: "Calendar",
+    priority: 11,
+    action: (ctx) => {
+      ctx.navigate({ to: "/app/calendar" });
+      ctx.closeSearch();
+    },
+  },
+  {
+    id: "tasks-list",
+    title: "All Tasks",
+    category: "navigation",
+    keywords: ["all", "tasks", "list", "view", "manage"],
+    icon: "List",
+    priority: 12,
+    action: (ctx) => {
+      ctx.navigate({ to: "/app/tasks" });
+      ctx.closeSearch();
+    },
+  },
+  {
+    id: "settings",
+    title: "Settings",
+    category: "navigation",
+    keywords: ["settings", "preferences", "config", "account"],
+    icon: "Settings",
+    priority: 20,
+    action: (ctx) => {
+      ctx.navigate({ to: "/app/settings" });
+      ctx.closeSearch();
+    },
+  },
+
+  // Theme (lower priority, revealed by search)
   {
     id: "theme-light",
-    title: "Switch to Light Mode",
+    title: "Light Mode",
     category: "settings",
-    keywords: ["theme", "light", "mode", "appearance"],
+    keywords: ["theme", "light", "mode", "appearance", "bright"],
     icon: "Sun",
-    priority: 28,
+    priority: 30,
     action: (ctx) => {
       ctx.setThemeMode("light");
       ctx.closeSearch();
@@ -138,11 +133,11 @@ export const COMMANDS: Command[] = [
   },
   {
     id: "theme-dark",
-    title: "Switch to Dark Mode",
+    title: "Dark Mode",
     category: "settings",
-    keywords: ["theme", "dark", "mode", "appearance"],
+    keywords: ["theme", "dark", "mode", "appearance", "night"],
     icon: "Moon",
-    priority: 29,
+    priority: 31,
     action: (ctx) => {
       ctx.setThemeMode("dark");
       ctx.closeSearch();
@@ -150,11 +145,11 @@ export const COMMANDS: Command[] = [
   },
   {
     id: "theme-system",
-    title: "Use System Theme",
+    title: "System Theme",
     category: "settings",
     keywords: ["theme", "system", "auto", "mode"],
     icon: "Monitor",
-    priority: 30,
+    priority: 32,
     action: (ctx) => {
       ctx.setThemeMode("system");
       ctx.closeSearch();

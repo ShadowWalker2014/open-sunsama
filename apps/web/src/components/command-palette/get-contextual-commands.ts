@@ -7,17 +7,16 @@ import type { Command, CommandContext } from "./commands";
 /** Maximum commands to show when no query is typed */
 const MAX_DEFAULT_COMMANDS = 6;
 
-/** Keywords that trigger MCP commands to surface */
-const MCP_KEYWORDS = ["mcp", "ai", "cursor", "claude", "setup", "agent", "bot"];
+/** Keywords that trigger MCP-related header */
+const MCP_KEYWORDS = ["mcp", "ai", "cursor", "claude", "agent"];
 
 /**
  * Get contextually relevant commands based on user state and query
  * 
  * Design philosophy:
  * 1. When task is hovered → show task actions first
- * 2. When searching for MCP/AI → show MCP commands first  
- * 3. Default → show view-specific + global commands, max 6
- * 4. Type to reveal more commands
+ * 2. Default → show view-specific + global commands, max 6
+ * 3. Type to reveal more commands
  */
 export function getContextualCommands(
   allCommands: Command[],
@@ -52,8 +51,6 @@ export function getContextualCommands(
   });
   
   // Step 3: Sort by priority and context relevance
-  const isMcpSearch = MCP_KEYWORDS.some(kw => lowerQuery.includes(kw));
-  
   filtered.sort((a, b) => {
     // Task commands first when hovering a task
     if (context.hoveredTask) {
@@ -61,14 +58,6 @@ export function getContextualCommands(
       const bIsTask = b.requiresHoveredTask;
       if (aIsTask && !bIsTask) return -1;
       if (bIsTask && !aIsTask) return 1;
-    }
-    
-    // MCP commands first when searching for MCP-related terms
-    if (isMcpSearch) {
-      const aIsMcp = a.id.startsWith("mcp-") || a.id === "copy-api-key";
-      const bIsMcp = b.id.startsWith("mcp-") || b.id === "copy-api-key";
-      if (aIsMcp && !bIsMcp) return -1;
-      if (bIsMcp && !aIsMcp) return 1;
     }
     
     // Then by priority (lower is higher priority)
@@ -84,16 +73,9 @@ export function getContextualCommands(
 }
 
 /**
- * Check if MCP commands should be shown prominently
- */
-export function shouldShowMcpCommands(query: string): boolean {
-  const lowerQuery = query.toLowerCase().trim();
-  return MCP_KEYWORDS.some(kw => lowerQuery.includes(kw));
-}
-
-/**
  * Check if the query is searching for MCP-related content
  */
 export function isMcpQuery(query: string): boolean {
-  return shouldShowMcpCommands(query);
+  const lowerQuery = query.toLowerCase().trim();
+  return MCP_KEYWORDS.some(kw => lowerQuery.includes(kw));
 }
