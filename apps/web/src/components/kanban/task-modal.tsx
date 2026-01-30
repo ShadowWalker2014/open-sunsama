@@ -21,6 +21,7 @@ import type { Task, Subtask, TaskPriority } from "@open-sunsama/types";
 import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
 import { useUpdateTask, useDeleteTask, useCompleteTask } from "@/hooks/useTasks";
 import { useSubtasks, useCreateSubtask, useUpdateSubtask, useDeleteSubtask, useReorderSubtasks } from "@/hooks/useSubtasks";
+import { useHoveredTask } from "@/hooks";
 import { useTimeBlocks, useUpdateTimeBlock } from "@/hooks/useTimeBlocks";
 
 import {
@@ -116,7 +117,16 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   const [isCustomDuration, setIsCustomDuration] = React.useState(false);
   const [customDurationValue, setCustomDurationValue] = React.useState("");
 
+  const { setHoveredTask } = useHoveredTask();
   const updateTask = useUpdateTask();
+
+  // Set hovered task when modal is open so keyboard shortcuts (C to complete subtask) work
+  React.useEffect(() => {
+    if (open && task) {
+      setHoveredTask(task);
+    }
+    return () => setHoveredTask(null);
+  }, [open, task, setHoveredTask]);
 
   // Handle save on close
   const handleOpenChange = async (newOpen: boolean) => {
