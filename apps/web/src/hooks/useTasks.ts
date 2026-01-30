@@ -22,14 +22,19 @@ export const taskKeys = {
 
 /**
  * Fetch all tasks with optional filters
+ * Uses a high limit (200) for single-day queries to prevent truncation
  */
 export function useTasks(filters?: TaskFilterInput) {
   return useQuery({
     queryKey: taskKeys.list(filters ?? {}),
     queryFn: async () => {
       const api = getApi();
-      const response = await api.tasks.list(filters);
-      return response.data;
+      // Use high limit for single-day queries to prevent truncation
+      const effectiveFilters = filters?.scheduledDate 
+        ? { ...filters, limit: filters.limit ?? 200 }
+        : filters;
+      const response = await api.tasks.list(effectiveFilters);
+      return response.data ?? [];
     },
   });
 }

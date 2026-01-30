@@ -39,7 +39,7 @@ export function useSearchTasks(params: SearchTasksParams) {
       }
       
       const response = await api.tasks.list(filters as Parameters<typeof api.tasks.list>[0]);
-      const tasks = response.data || [];
+      const tasks = response.data ?? [];
       
       return tasks;
     },
@@ -65,16 +65,35 @@ export function useSearchTasks(params: SearchTasksParams) {
   });
 }
 
+export interface AllTasksResult {
+  tasks: Task[];
+  isTruncated: boolean;
+  total: number;
+}
+
 /**
  * Hook for getting all tasks (cached) for client-side operations
+ * Returns truncation info when results exceed the limit
  */
 export function useAllTasks() {
   return useQuery({
     queryKey: ["tasks", "all"],
-    queryFn: async (): Promise<Task[]> => {
+    queryFn: async (): Promise<AllTasksResult> => {
       const api = getApi();
-      const response = await api.tasks.list({ limit: 1000 } as Parameters<typeof api.tasks.list>[0]);
-      return response.data || [];
+      const limit = 1000;
+      const response = await api.tasks.list({ limit } as Parameters<typeof api.tasks.list>[0]);
+      const tasks = response.data ?? [];
+      const total = response.meta?.total ?? tasks.length;
+      const isTruncated = total > limit;
+      
+      if (isTruncated) {
+        console.warn(
+          `[useAllTasks] Results truncated: showing ${tasks.length} of ${total} tasks. ` +
+          `Consider using pagination or more specific filters.`
+        );
+      }
+      
+      return { tasks, isTruncated, total };
     },
     staleTime: 60000, // Cache for 1 minute
   });

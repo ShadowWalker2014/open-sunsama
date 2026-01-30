@@ -41,13 +41,16 @@ export function useInfiniteSearchTasks(params: InfiniteSearchTasksParams) {
 
       const response = await api.tasks.list(filters);
 
+      // Safely handle null/undefined response data
+      const data = response.data ?? [];
+
       // Apply client-side text filtering if query is provided
-      let filteredData = response.data;
+      let filteredData = data;
       if (query.trim()) {
         const lowerQuery = query.toLowerCase().trim();
         const searchTerms = lowerQuery.split(/\s+/);
 
-        filteredData = response.data.filter((task) => {
+        filteredData = data.filter((task) => {
           const titleLower = task.title.toLowerCase();
           const notesLower = (task.notes || "").toLowerCase();
 
