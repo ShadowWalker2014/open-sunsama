@@ -93,7 +93,7 @@ export function useCreateTask() {
 }
 
 /**
- * Update an existing task
+ * Update an existing task with optimistic updates for instant UI feedback
  */
 export function useUpdateTask() {
   const queryClient = useQueryClient();
@@ -103,19 +103,63 @@ export function useUpdateTask() {
       const api = getApi();
       return await api.tasks.update(id, data);
     },
-    onSuccess: (updatedTask) => {
-      // Update the task in cache
-      queryClient.setQueryData(taskKeys.detail(updatedTask.id), updatedTask);
-      
-      // Invalidate lists to ensure consistency
-      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+    onMutate: async ({ id, data }) => {
+      // Cancel outgoing refetches to avoid overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: taskKeys.lists() });
+      await queryClient.cancelQueries({ queryKey: taskKeys.detail(id) });
+
+      // Snapshot previous values for rollback
+      const previousTask = queryClient.getQueryData<Task>(taskKeys.detail(id));
+      const previousQueries = queryClient.getQueriesData<Task[]>({
+        queryKey: taskKeys.lists(),
+      });
+
+      // Optimistically update the task detail cache
+      if (previousTask) {
+        queryClient.setQueryData<Task>(taskKeys.detail(id), {
+          ...previousTask,
+          ...data,
+          updatedAt: new Date().toISOString(),
+        });
+      }
+
+      // Optimistically update all list caches
+      queryClient.setQueriesData<Task[]>(
+        { queryKey: taskKeys.lists() },
+        (old) => {
+          if (!old) return old;
+          return old.map((task) => {
+            if (task.id === id) {
+              return { ...task, ...data, updatedAt: new Date().toISOString() };
+            }
+            return task;
+          });
+        }
+      );
+
+      return { previousTask, previousQueries };
     },
-    onError: (error) => {
+    onError: (error, { id }, context) => {
+      // Rollback on error
+      if (context?.previousTask) {
+        queryClient.setQueryData(taskKeys.detail(id), context.previousTask);
+      }
+      context?.previousQueries?.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
       toast({
         variant: "destructive",
         title: "Failed to update task",
         description: error instanceof Error ? error.message : "Unknown error",
       });
+    },
+    onSuccess: (updatedTask) => {
+      // Update with actual server data
+      queryClient.setQueryData(taskKeys.detail(updatedTask.id), updatedTask);
+    },
+    onSettled: () => {
+      // Always refetch to ensure server state
+      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
     },
   });
 }

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { User, Lock, Palette, Bell, Key } from "lucide-react";
+import { User, Lock, Palette, Bell, Key, ListTodo } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   ApiKeysSettings,
@@ -7,14 +7,16 @@ import {
   ProfileSettings,
   AppearanceSettings,
   NotificationSettings,
+  TaskSettings,
 } from "@/components/settings";
 
-type SettingsTab = "profile" | "security" | "appearance" | "notifications" | "api";
+type SettingsTab = "profile" | "security" | "appearance" | "tasks" | "notifications" | "api";
 
 const TABS: { id: SettingsTab; label: string; icon: React.ElementType }[] = [
   { id: "profile", label: "Profile", icon: User },
   { id: "security", label: "Security", icon: Lock },
   { id: "appearance", label: "Appearance", icon: Palette },
+  { id: "tasks", label: "Tasks", icon: ListTodo },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "api", label: "API Keys", icon: Key },
 ];
@@ -55,6 +57,7 @@ export default function SettingsPage() {
           {activeTab === "profile" && <ProfileSettings />}
           {activeTab === "security" && <PasswordSettings />}
           {activeTab === "appearance" && <AppearanceSettings />}
+          {activeTab === "tasks" && <TaskSettings />}
           {activeTab === "notifications" && <NotificationSettings />}
           {activeTab === "api" && <ApiKeysSettings />}
         </div>

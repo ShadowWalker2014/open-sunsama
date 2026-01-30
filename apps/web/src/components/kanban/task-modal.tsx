@@ -115,6 +115,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [plannedMins, setPlannedMins] = React.useState<number | null>(null);
+  const [priority, setPriority] = React.useState<TaskPriority>("P3");
   const [newSubtaskTitle, setNewSubtaskTitle] = React.useState("");
   const [isAddingSubtask, setIsAddingSubtask] = React.useState(false);
   const [startTime, setStartTime] = React.useState<string>("");
@@ -182,6 +183,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
       setTitle(task.title);
       setDescription(task.notes || "");
       setPlannedMins(task.estimatedMins || null);
+      setPriority(task.priority);
       setIsAddingSubtask(false);
       setNewSubtaskTitle("");
       setIsCustomDuration(false);
@@ -287,11 +289,14 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     await completeTask.mutateAsync({ id: task.id, completed: !isCompleted });
   };
 
-  const handleSetPriority = async (priority: TaskPriority) => {
-    if (!task || task.priority === priority) return;
+  const handleSetPriority = async (newPriority: TaskPriority) => {
+    if (!task || priority === newPriority) return;
+    // Update local state immediately for instant UI feedback
+    setPriority(newPriority);
+    // Then update the server
     await updateTask.mutateAsync({
       id: task.id,
-      data: { priority },
+      data: { priority: newPriority },
     });
   };
 
@@ -462,8 +467,8 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-7 gap-2 px-2">
-                  <PriorityIcon priority={task.priority} />
-                  <span className="text-sm">{PRIORITY_LABELS[task.priority]}</span>
+                  <PriorityIcon priority={priority} />
+                  <span className="text-sm">{PRIORITY_LABELS[priority]}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-40">
@@ -471,11 +476,11 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                   <DropdownMenuItem
                     key={p}
                     onClick={() => handleSetPriority(p)}
-                    className={task.priority === p ? "bg-accent" : ""}
+                    className={priority === p ? "bg-accent" : ""}
                   >
                     <PriorityIcon priority={p} className="mr-2" />
                     {PRIORITY_LABELS[p]}
-                    {task.priority === p && (
+                    {priority === p && (
                       <span className="ml-auto text-xs text-muted-foreground">✓</span>
                     )}
                   </DropdownMenuItem>

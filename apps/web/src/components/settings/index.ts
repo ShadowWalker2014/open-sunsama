@@ -9,3 +9,4 @@ export { EmailNotificationsDialog } from "./email-notifications-dialog";
 export { ProfileSettings } from "./profile-settings";
 export { AppearanceSettings } from "./appearance-settings";
 export { NotificationSettings } from "./notification-settings";
+export { TaskSettings } from "./task-settings";

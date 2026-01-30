@@ -9,11 +9,6 @@ import {
   Separator,
   Switch,
   Skeleton,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
 } from "@/components/ui";
 import { toast } from "@/hooks/use-toast";
 import { TaskReminderDialog, EmailNotificationsDialog } from "@/components/settings";
@@ -23,19 +18,6 @@ import {
   requestNotificationPermission,
   getNotificationPermissionStatus,
 } from "@/hooks/useNotificationPreferences";
-import type { RolloverDestination, RolloverPosition } from "@open-sunsama/types";
-
-/** Rollover destination options */
-const ROLLOVER_DESTINATION_OPTIONS = [
-  { value: "next_day", label: "Next day" },
-  { value: "backlog", label: "Backlog" },
-] as const;
-
-/** Rollover position options */
-const ROLLOVER_POSITION_OPTIONS = [
-  { value: "top", label: "Top" },
-  { value: "bottom", label: "Bottom" },
-] as const;
 
 /** Get task reminders status text */
 function getTaskReminderStatus(preferences: { taskRemindersEnabled: boolean; reminderTiming: number } | undefined) {
@@ -99,18 +81,6 @@ export function NotificationSettings() {
     } finally {
       setPushLoading(false);
     }
-  };
-
-  const handleRolloverDestinationChange = async (value: string) => {
-    await updatePreferences.mutateAsync({ rolloverDestination: value as RolloverDestination });
-    const label = ROLLOVER_DESTINATION_OPTIONS.find((o) => o.value === value)?.label ?? value;
-    toast({ title: "Rollover destination updated", description: `Tasks will now rollover to: ${label}` });
-  };
-
-  const handleRolloverPositionChange = async (value: string) => {
-    await updatePreferences.mutateAsync({ rolloverPosition: value as RolloverPosition });
-    const label = ROLLOVER_POSITION_OPTIONS.find((o) => o.value === value)?.label ?? value;
-    toast({ title: "Rollover position updated", description: `Rolled-over tasks will appear at the ${label.toLowerCase()} of the list` });
   };
 
   if (error) {
@@ -193,73 +163,6 @@ export function NotificationSettings() {
                   onCheckedChange={handlePushToggle}
                   disabled={pushLoading || !permissionStatus.supported || permissionStatus.permission === "denied"}
                 />
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Task Rollover Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Task Rollover</CardTitle>
-          <CardDescription>Configure how incomplete tasks are handled at the end of each day</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {/* Rollover Destination */}
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="font-medium">Task rollover destination</p>
-                <p className="text-sm text-muted-foreground">When tasks rollover, should they go to the next day or back to backlog?</p>
-              </div>
-              {isLoading ? (
-                <Skeleton className="h-10 w-32" />
-              ) : (
-                <Select
-                  value={preferences?.rolloverDestination ?? "backlog"}
-                  onValueChange={handleRolloverDestinationChange}
-                  disabled={updatePreferences.isPending}
-                >
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ROLLOVER_DESTINATION_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-            <Separator />
-            {/* Rollover Position */}
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="font-medium">Task rollover position</p>
-                <p className="text-sm text-muted-foreground">When tasks rollover, should they appear at the top or bottom of the list?</p>
-              </div>
-              {isLoading ? (
-                <Skeleton className="h-10 w-32" />
-              ) : (
-                <Select
-                  value={preferences?.rolloverPosition ?? "top"}
-                  onValueChange={handleRolloverPositionChange}
-                  disabled={updatePreferences.isPending}
-                >
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ROLLOVER_POSITION_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               )}
             </div>
           </div>
