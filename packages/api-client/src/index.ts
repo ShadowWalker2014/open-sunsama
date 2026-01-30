@@ -7,7 +7,7 @@
  * import { createOpenSunsamaClient } from '@open-sunsama/api-client';
  *
  * const client = createOpenSunsamaClient({
- *   baseUrl: 'https://api.opensunsama.app/v1',
+ *   baseUrl: 'https://api.sunsama.com',
  *   token: 'your-jwt-token',
  * });
  *
@@ -134,7 +134,7 @@ export { REMINDER_TIMING_OPTIONS } from "@open-sunsama/types";
  * @example
  * ```typescript
  * const api = createApi({
- *   baseUrl: 'https://api.opensunsama.app/v1',
+ *   baseUrl: 'https://api.sunsama.com',
  *   token: 'your-jwt-token',
  * });
  *

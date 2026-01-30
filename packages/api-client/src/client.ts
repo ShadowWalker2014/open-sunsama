@@ -10,7 +10,7 @@ import { ApiError } from "./errors.js";
  * API Client configuration options
  */
 export interface ApiClientConfig {
-  /** Base URL for the API (e.g., "https://api.opensunsama.app/v1") */
+  /** Base URL for the API (e.g., "https://api.sunsama.com") */
   baseUrl: string;
 
   /** JWT token for authentication */
