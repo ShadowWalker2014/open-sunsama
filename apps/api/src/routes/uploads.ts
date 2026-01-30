@@ -61,17 +61,28 @@ uploadsRouter.post('/avatar', auth, async (c) => {
     });
   }
 
+  // Get current user to check for existing avatar
+  const db = getDb();
+  const [currentUser] = await db.select({ avatarUrl: users.avatarUrl }).from(users).where(eq(users.id, userId)).limit(1);
+  const oldAvatarUrl = currentUser?.avatarUrl;
+
   // Generate unique key and upload to S3
   const key = generateUniqueKey(userId, 'avatars', file.name);
   const buffer = Buffer.from(await file.arrayBuffer());
   const url = await uploadToS3(key, buffer, file.type);
 
   // Update user's avatar URL in database
-  const db = getDb();
   await db
     .update(users)
     .set({ avatarUrl: url, updatedAt: new Date() })
     .where(eq(users.id, userId));
+
+  // Delete old avatar from S3 after successful update (fire and forget)
+  if (oldAvatarUrl && oldAvatarUrl !== url) {
+    deleteFromS3ByUrl(oldAvatarUrl).catch(() => {
+      // Silently ignore deletion errors - old file will be orphaned but not critical
+    });
+  }
 
   return c.json({
     success: true,

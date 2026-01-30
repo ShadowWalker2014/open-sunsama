@@ -16,6 +16,7 @@ import {
   requestPasswordResetSchema, resetPasswordSchema,
 } from '../validation/auth.js';
 import { publishEvent } from '../lib/websocket/index.js';
+import { deleteFromS3ByUrl } from '../lib/s3.js';
 
 const authRouter = new Hono<{ Variables: AuthVariables }>();
 
@@ -81,6 +82,13 @@ authRouter.patch('/me', auth, zValidator('json', updateProfileSchema), async (c)
   const updates = c.req.valid('json');
   const db = getDb();
 
+  // Get current user to check for avatar changes
+  let oldAvatarUrl: string | null = null;
+  if (updates.avatarUrl !== undefined) {
+    const [currentUser] = await db.select({ avatarUrl: users.avatarUrl }).from(users).where(eq(users.id, userId)).limit(1);
+    oldAvatarUrl = currentUser?.avatarUrl ?? null;
+  }
+
   const updateData: Record<string, unknown> = { updatedAt: new Date() };
   const changedFields: string[] = [];
   if (updates.name !== undefined) {
@@ -102,6 +110,13 @@ authRouter.patch('/me', auth, zValidator('json', updateProfileSchema), async (c)
 
   const [updatedUser] = await db.update(users).set(updateData).where(eq(users.id, userId)).returning();
   if (!updatedUser) throw new AuthenticationError('User not found');
+
+  // Delete old avatar from S3 if avatarUrl changed (fire and forget)
+  if (oldAvatarUrl && updates.avatarUrl !== undefined && oldAvatarUrl !== updates.avatarUrl) {
+    deleteFromS3ByUrl(oldAvatarUrl).catch(() => {
+      // Silently ignore deletion errors - old file will be orphaned but not critical
+    });
+  }
 
   // Publish realtime event (fire and forget)
   if (process.env.REDIS_URL && changedFields.length > 0) {
