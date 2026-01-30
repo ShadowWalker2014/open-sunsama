@@ -36,7 +36,8 @@ export function DayColumn({
   onSelectTask,
   sortBy = "position",
 }: DayColumnProps) {
-  const { data: tasks, isLoading, isError, refetch } = useTasks({ scheduledDate: dateString });
+  // Use explicit limit to prevent accidental truncation (API default is 50)
+  const { data: tasks, isLoading, isError, refetch } = useTasks({ scheduledDate: dateString, limit: 200 });
   const { activeTask, isDragging } = useTasksDnd();
 
   const { setNodeRef, isOver: isOverDroppable } = useDroppable({

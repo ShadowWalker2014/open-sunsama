@@ -55,8 +55,13 @@ export function Sidebar({ className }: SidebarProps) {
     return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "true";
   });
 
-  const { data: tasks, isLoading } = useTasks({ backlog: true });
+  // Use high limit to ensure we get all backlog tasks (API default is 50)
+  const BACKLOG_LIMIT = 500;
+  const { data: tasks, isLoading } = useTasks({ backlog: true, limit: BACKLOG_LIMIT });
   const { activeTask, isDragging } = useTasksDnd();
+  
+  // If we hit exactly the limit, there may be more tasks than shown
+  const maybeTruncated = (tasks?.length ?? 0) >= BACKLOG_LIMIT;
 
   // Make backlog a drop target for unscheduling tasks
   const { setNodeRef: setDroppableRef, isOver } = useDroppable({
@@ -228,6 +233,15 @@ export function Sidebar({ className }: SidebarProps) {
                       />
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Truncation warning */}
+              {maybeTruncated && (
+                <div className="pt-3 mt-3 border-t border-border/40 px-2 text-center">
+                  <p className="text-xs text-amber-600 dark:text-amber-400">
+                    Showing first {BACKLOG_LIMIT} tasks. Some tasks may be hidden.
+                  </p>
                 </div>
               )}
             </>

@@ -30,7 +30,8 @@ export function MobileBacklogSheet({ trigger }: MobileBacklogSheetProps) {
   const [isAddingTask, setIsAddingTask] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
-  const { data: tasks, isLoading } = useTasks({ scheduledDate: null });
+  // Use high limit to ensure we get all backlog tasks (API default is 50)
+  const { data: tasks, isLoading } = useTasks({ scheduledDate: null, limit: 500 });
   const createTask = useCreateTask();
 
   const backlogTasks = React.useMemo(() => {
