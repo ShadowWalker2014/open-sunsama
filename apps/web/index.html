@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -7,12 +7,68 @@
     <meta name="description" content="Open Sunsama - Time-block your day with visual task management" />
     <meta name="theme-color" content="#0f172a" />
     <title>Open Sunsama</title>
+    
+    <!-- Geist Font (Vercel) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Font imports - Geist, Inter, JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Geist from CDN (or self-hosted) -->
+    <style>
+      @font-face {
+        font-family: 'Geist';
+        src: url('https://cdn.jsdelivr.net/npm/geist@1.1.0/dist/fonts/geist-sans/Geist-Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Geist';
+        src: url('https://cdn.jsdelivr.net/npm/geist@1.1.0/dist/fonts/geist-sans/Geist-Medium.woff2') format('woff2');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Geist';
+        src: url('https://cdn.jsdelivr.net/npm/geist@1.1.0/dist/fonts/geist-sans/Geist-SemiBold.woff2') format('woff2');
+        font-weight: 600;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Geist';
+        src: url('https://cdn.jsdelivr.net/npm/geist@1.1.0/dist/fonts/geist-sans/Geist-Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+    </style>
+    
+    <!-- Theme initialization script - prevents flash of wrong theme -->
     <script>
       // Apply theme before page renders to prevent flash
       (function() {
-        var theme = localStorage.getItem('open_sunsama_theme') || 'dark';
-        var isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        document.documentElement.classList.toggle('dark', isDark);
+        try {
+          var prefs = JSON.parse(localStorage.getItem('open_sunsama_preferences') || '{}');
+          var mode = prefs.themeMode || 'system';
+          var colorTheme = prefs.colorTheme || 'default';
+          var fontFamily = prefs.fontFamily || 'geist';
+          
+          var isDark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          
+          if (isDark) document.documentElement.classList.add('dark');
+          else document.documentElement.classList.remove('dark');
+          
+          if (colorTheme !== 'default') document.documentElement.classList.add('theme-' + colorTheme);
+          document.documentElement.classList.add('font-' + fontFamily);
+        } catch (e) {
+          // Fallback to dark theme on error
+          document.documentElement.classList.add('dark');
+          document.documentElement.classList.add('font-geist');
+        }
       })();
     </script>
   </head>
