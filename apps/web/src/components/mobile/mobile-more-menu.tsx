@@ -1,22 +1,19 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import {
-  Sunrise,
-  Sparkles,
-  Moon,
-  Archive,
   Inbox,
-  Target,
-  MessageSquare,
-  FileText,
-  CheckSquare,
-  Trello,
-  Mic,
-  MessageCircle,
+  User,
+  Lock,
+  Palette,
+  ListTodo,
+  Bell,
+  Key,
+  Terminal,
+  LogOut,
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { toast } from "@/hooks";
+import { useAuth } from "@/hooks/useAuth";
 
 interface MenuItem {
   id: string;
@@ -24,6 +21,7 @@ interface MenuItem {
   label: string;
   href?: string;
   onClick?: () => void;
+  destructive?: boolean;
 }
 
 interface MenuSection {
@@ -31,100 +29,9 @@ interface MenuSection {
   items: MenuItem[];
 }
 
-const menuSections: MenuSection[] = [
-  {
-    title: "Rituals",
-    items: [
-      {
-        id: "daily-planning",
-        icon: Sunrise,
-        label: "Daily planning",
-        onClick: () => toast({ title: "Coming soon", description: "Daily planning will be available soon." }),
-      },
-      {
-        id: "daily-highlights",
-        icon: Sparkles,
-        label: "Daily highlights",
-        onClick: () => toast({ title: "Coming soon", description: "Daily highlights will be available soon." }),
-      },
-      {
-        id: "daily-shutdown",
-        icon: Moon,
-        label: "Daily shutdown",
-        onClick: () => toast({ title: "Coming soon", description: "Daily shutdown will be available soon." }),
-      },
-    ],
-  },
-  {
-    title: "Work to be done",
-    items: [
-      {
-        id: "backlog",
-        icon: Inbox,
-        label: "Backlog",
-        href: "/app?backlog=true",
-      },
-      {
-        id: "archive",
-        icon: Archive,
-        label: "Archive",
-        onClick: () => toast({ title: "Coming soon", description: "Archive will be available soon." }),
-      },
-      {
-        id: "objectives",
-        icon: Target,
-        label: "Objectives",
-        onClick: () => toast({ title: "Coming soon", description: "Objectives will be available soon." }),
-      },
-    ],
-  },
-  {
-    title: "Integrations",
-    items: [
-      {
-        id: "slack",
-        icon: MessageSquare,
-        label: "Slack",
-        onClick: () => toast({ title: "Coming soon", description: "Slack integration will be available soon." }),
-      },
-      {
-        id: "notion",
-        icon: FileText,
-        label: "Notion",
-        onClick: () => toast({ title: "Coming soon", description: "Notion integration will be available soon." }),
-      },
-      {
-        id: "todoist",
-        icon: CheckSquare,
-        label: "Todoist",
-        onClick: () => toast({ title: "Coming soon", description: "Todoist integration will be available soon." }),
-      },
-      {
-        id: "trello",
-        icon: Trello,
-        label: "Trello",
-        onClick: () => toast({ title: "Coming soon", description: "Trello integration will be available soon." }),
-      },
-    ],
-  },
-  {
-    title: "Other",
-    items: [
-      {
-        id: "add-to-siri",
-        icon: Mic,
-        label: "Add to Siri",
-        onClick: () => toast({ title: "Coming soon", description: "Siri shortcuts will be available soon." }),
-      },
-      {
-        id: "support",
-        icon: MessageCircle,
-        label: "Send us a support message",
-        onClick: () => toast({ title: "Coming soon", description: "Support chat will be available soon." }),
-      },
-    ],
-  },
-];
+interface MobileMoreMenuProps {
+  onLogout?: () => void;
+}
 
 interface MenuItemComponentProps {
   item: MenuItem;
@@ -136,10 +43,18 @@ function MenuItemComponent({ item }: MenuItemComponentProps) {
   const content = (
     <>
       <div className="flex items-center gap-3">
-        <Icon className="h-5 w-5 text-muted-foreground" />
-        <span className="text-[15px]">{item.label}</span>
+        <Icon className={cn(
+          "h-5 w-5",
+          item.destructive ? "text-destructive" : "text-muted-foreground"
+        )} />
+        <span className={cn(
+          "text-[15px]",
+          item.destructive && "text-destructive"
+        )}>{item.label}</span>
       </div>
-      <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
+      {!item.destructive && (
+        <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
+      )}
     </>
   );
 
@@ -204,9 +119,89 @@ function MenuSectionComponent({ section, isLast }: MenuSectionComponentProps) {
 /**
  * Mobile More menu component
  * Displays grouped navigation items with section headers
- * Matching Sunsama mobile app design
+ * Only includes features that actually exist in the app
  */
-export function MobileMoreMenu() {
+export function MobileMoreMenu({ onLogout }: MobileMoreMenuProps) {
+  const { logout } = useAuth();
+
+  const handleLogout = React.useCallback(() => {
+    logout();
+    onLogout?.();
+  }, [logout, onLogout]);
+
+  const menuSections: MenuSection[] = React.useMemo(() => [
+    {
+      title: "Work",
+      items: [
+        {
+          id: "backlog",
+          icon: Inbox,
+          label: "Backlog",
+          href: "/app?backlog=true",
+        },
+      ],
+    },
+    {
+      title: "Settings",
+      items: [
+        {
+          id: "profile",
+          icon: User,
+          label: "Profile",
+          href: "/app/settings?tab=profile",
+        },
+        {
+          id: "security",
+          icon: Lock,
+          label: "Security",
+          href: "/app/settings?tab=security",
+        },
+        {
+          id: "appearance",
+          icon: Palette,
+          label: "Appearance",
+          href: "/app/settings?tab=appearance",
+        },
+        {
+          id: "tasks",
+          icon: ListTodo,
+          label: "Tasks",
+          href: "/app/settings?tab=tasks",
+        },
+        {
+          id: "notifications",
+          icon: Bell,
+          label: "Notifications",
+          href: "/app/settings?tab=notifications",
+        },
+        {
+          id: "api-keys",
+          icon: Key,
+          label: "API Keys",
+          href: "/app/settings?tab=api-keys",
+        },
+        {
+          id: "mcp",
+          icon: Terminal,
+          label: "MCP",
+          href: "/app/settings?tab=mcp",
+        },
+      ],
+    },
+    {
+      title: "Account",
+      items: [
+        {
+          id: "logout",
+          icon: LogOut,
+          label: "Log out",
+          onClick: handleLogout,
+          destructive: true,
+        },
+      ],
+    },
+  ], [handleLogout]);
+
   return (
     <div className="flex flex-col min-h-full bg-background">
       {/* Header */}
@@ -226,24 +221,6 @@ export function MobileMoreMenu() {
             isLast={index === menuSections.length - 1}
           />
         ))}
-
-        {/* Settings link at bottom */}
-        <div className="mt-4 mx-2">
-          <Link
-            to="/app/settings"
-            className={cn(
-              "flex w-full items-center justify-center px-4 py-3",
-              "min-h-[48px]",
-              "bg-card rounded-lg",
-              "text-[15px] font-medium",
-              "transition-colors",
-              "active:bg-accent/50",
-              "hover:bg-accent/30"
-            )}
-          >
-            Settings
-          </Link>
-        </div>
       </div>
     </div>
   );
