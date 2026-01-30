@@ -158,3 +158,32 @@ export function generateUniqueKey(
   const sanitizedFilename = sanitizeFilename(filename);
   return `${folder}/${userId}/${timestamp}-${sanitizedFilename}`;
 }
+
+/**
+ * Extract S3 key from a proxy URL
+ * URLs are in format: /uploads/{key}
+ * @param url - The proxy URL (e.g., /uploads/avatars/user-id/timestamp-filename.jpg)
+ * @returns The S3 key or null if not a valid proxy URL
+ */
+export function extractS3KeyFromUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  
+  // Handle proxy URLs: /uploads/{key}
+  if (url.startsWith('/uploads/')) {
+    return url.replace(/^\/uploads\//, '');
+  }
+  
+  return null;
+}
+
+/**
+ * Delete a file from S3 if the URL points to our S3 storage
+ * Safely handles null/undefined URLs and non-S3 URLs
+ * @param url - The proxy URL to delete
+ */
+export async function deleteFromS3ByUrl(url: string | null | undefined): Promise<void> {
+  const key = extractS3KeyFromUrl(url);
+  if (key) {
+    await deleteFromS3(key);
+  }
+}

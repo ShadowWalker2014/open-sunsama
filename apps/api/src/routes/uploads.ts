@@ -11,6 +11,7 @@ import {
   uploadToS3,
   getS3Object,
   deleteFromS3,
+  deleteFromS3ByUrl,
   generateUniqueKey,
 } from '../lib/s3.js';
 import {
