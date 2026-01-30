@@ -16,8 +16,8 @@ import {
   TimeBlockTitleSection,
   TimeRangeSection,
   ColorSection,
-  TimeBlockNotesSection,
 } from "./time-block-form-sections";
+import { NotesField } from "@/components/ui/notes-field";
 
 interface TimeBlockDetailSheetProps {
   timeBlock: TimeBlock | null;
@@ -175,11 +175,16 @@ export function TimeBlockDetailSheet({
 
           <ColorSection color={color} onChange={handleColorChange} />
 
-          <TimeBlockNotesSection
-            notes={notes}
-            onChange={setNotes}
-            onBlur={handleNotesBlur}
-          />
+          {/* Notes Section */}
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-muted-foreground">Notes</h4>
+            <NotesField
+              notes={notes}
+              onChange={setNotes}
+              onBlur={handleNotesBlur}
+              placeholder="Add notes..."
+            />
+          </div>
 
           <Separator />
 

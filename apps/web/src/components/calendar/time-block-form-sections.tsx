@@ -126,6 +126,9 @@ interface NotesSectionProps {
   onBlur: () => void;
 }
 
+/**
+ * @deprecated Use NotesField from "@/components/ui/notes-field" instead
+ */
 export function TimeBlockNotesSection({
   notes,
   onChange,
