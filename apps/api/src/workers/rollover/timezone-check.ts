@@ -2,7 +2,7 @@
  * Timezone rollover check handler
  * Runs every minute to detect timezones hitting midnight and queue batch jobs
  */
-import PgBoss from 'pg-boss';
+import type PgBoss from 'pg-boss';
 import { getDb, eq, and, isNotNull } from '@open-sunsama/database';
 import { users, rolloverLogs } from '@open-sunsama/database/schema';
 import { toZonedTime } from 'date-fns-tz';

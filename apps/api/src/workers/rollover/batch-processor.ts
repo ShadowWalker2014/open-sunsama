@@ -3,7 +3,7 @@
  * Handles updating tasks and creating rollover logs for batches of users
  * Respects user rollover settings (destination and position)
  */
-import PgBoss from 'pg-boss';
+import type PgBoss from 'pg-boss';
 import { getDb, and, lt, isNull, isNotNull, inArray, sql, eq } from '@open-sunsama/database';
 import { tasks, rolloverLogs, notificationPreferences } from '@open-sunsama/database/schema';
 import type { RolloverDestination, RolloverPosition } from '@open-sunsama/database/schema';

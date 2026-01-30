@@ -2,15 +2,19 @@
  * PG Boss client singleton for job queue management
  * Uses PostgreSQL for reliable, persistent job scheduling
  */
-import PgBoss from 'pg-boss';
+import * as PgBossModule from 'pg-boss';
 
-let boss: PgBoss | null = null;
+// Handle ESM/CJS interop - pg-boss is CommonJS
+const PgBoss = (PgBossModule as any).default || PgBossModule;
+type PgBossInstance = InstanceType<typeof PgBoss>;
+
+let boss: PgBossInstance | null = null;
 
 /**
  * Get or create the PG Boss instance
  * Lazily initializes and starts PG Boss on first call
  */
-export async function getPgBoss(): Promise<PgBoss> {
+export async function getPgBoss(): Promise<PgBossInstance> {
   if (!boss) {
     const databaseUrl = process.env.DATABASE_URL;
     if (!databaseUrl) {
@@ -28,7 +32,7 @@ export async function getPgBoss(): Promise<PgBoss> {
       deleteAfterDays: 7, // Delete archived jobs after 7 days
     });
 
-    boss.on('error', (error) => {
+    boss.on('error', (error: Error) => {
       console.error('[PG Boss Error]', error);
     });
 
