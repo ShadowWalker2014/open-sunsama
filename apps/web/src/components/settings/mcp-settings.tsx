@@ -195,11 +195,10 @@ export function McpSettings() {
   const generateConfig = (client: ClientTab, forDisplay: boolean = false): string => {
     const keyValue = forDisplay && hasKey ? blurKey(actualKey) : actualKey;
     
-    // Path where you cloned and built the MCP server
-    // See: https://github.com/ShadowWalker2014/open-sunsama/tree/main/mcp
+    // Use npx to run the published npm package (zero install)
     const baseConfig = {
-      command: "node",
-      args: ["~/.local/share/open-sunsama/mcp/build/index.js"],
+      command: "npx",
+      args: ["-y", "@open-sunsama/mcp"],
       env: {
         OPENSUNSAMA_API_KEY: keyValue,
         ...(apiUrl !== "https://api.opensunsama.com" && { OPENSUNSAMA_API_URL: apiUrl }),

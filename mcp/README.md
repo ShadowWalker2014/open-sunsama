@@ -18,12 +18,30 @@ An MCP (Model Context Protocol) server that enables AI agents like Claude, Curso
 
 ## Installation
 
+### Quick Start (Recommended)
+
+No installation required! Use `npx` to run directly:
+
+```json
+{
+  "mcpServers": {
+    "open-sunsama": {
+      "command": "npx",
+      "args": ["-y", "@open-sunsama/mcp"],
+      "env": {
+        "OPENSUNSAMA_API_KEY": "os_your-api-key-here"
+      }
+    }
+  }
+}
+```
+
 ### From Source (Development)
 
 ```bash
-# Clone the repository (recommended path for MCP config)
-git clone https://github.com/ShadowWalker2014/open-sunsama.git ~/.local/share/open-sunsama
-cd ~/.local/share/open-sunsama/mcp
+# Clone the repository
+git clone https://github.com/ShadowWalker2014/open-sunsama.git
+cd open-sunsama/mcp
 
 # Install dependencies
 bun install
@@ -80,8 +98,8 @@ Add to your Claude Desktop configuration file:
 {
   "mcpServers": {
     "open-sunsama": {
-      "command": "node",
-      "args": ["~/.local/share/open-sunsama/mcp/build/index.js"],
+      "command": "npx",
+      "args": ["-y", "@open-sunsama/mcp"],
       "env": {
         "OPENSUNSAMA_API_KEY": "os_your-api-key-here"
       }
@@ -100,8 +118,8 @@ Create `.cursor/mcp.json` in your project root or configure in **Cursor Settings
 {
   "mcpServers": {
     "open-sunsama": {
-      "command": "node",
-      "args": ["~/.local/share/open-sunsama/mcp/build/index.js"],
+      "command": "npx",
+      "args": ["-y", "@open-sunsama/mcp"],
       "env": {
         "OPENSUNSAMA_API_KEY": "os_your-api-key-here"
       }
@@ -121,8 +139,8 @@ Add to `~/.continue/config.json`:
   "mcpServers": [
     {
       "name": "open-sunsama",
-      "command": "node",
-      "args": ["~/.local/share/open-sunsama/mcp/build/index.js"],
+      "command": "npx",
+      "args": ["-y", "@open-sunsama/mcp"],
       "env": {
         "OPENSUNSAMA_API_KEY": "os_your-api-key-here"
       }
@@ -139,8 +157,8 @@ Most tools use a similar configuration format:
 {
   "mcpServers": {
     "open-sunsama": {
-      "command": "node",
-      "args": ["~/.local/share/open-sunsama/mcp/build/index.js"],
+      "command": "npx",
+      "args": ["-y", "@open-sunsama/mcp"],
       "env": {
         "OPENSUNSAMA_API_KEY": "os_your-api-key-here"
       }
@@ -149,7 +167,7 @@ Most tools use a similar configuration format:
 }
 ```
 
-### Running with Bun
+### Running with Bunx
 
 If you prefer Bun over Node.js:
 
@@ -157,8 +175,8 @@ If you prefer Bun over Node.js:
 {
   "mcpServers": {
     "open-sunsama": {
-      "command": "bun",
-      "args": ["run", "~/.local/share/open-sunsama/mcp/build/index.js"],
+      "command": "bunx",
+      "args": ["@open-sunsama/mcp"],
       "env": {
         "OPENSUNSAMA_API_KEY": "os_your-api-key-here"
       }
