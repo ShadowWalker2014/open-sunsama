@@ -4,9 +4,7 @@
  */
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { randomBytes } from 'crypto';
 import { getDb, eq, and, calendarAccounts, calendars } from '@open-sunsama/database';
-import { ValidationError } from '@open-sunsama/utils';
 import { auth, type AuthVariables } from '../middleware/auth.js';
 import { encrypt } from '../services/encryption.js';
 import {
@@ -15,29 +13,14 @@ import {
   type CalendarProvider,
 } from '../services/calendar-providers/index.js';
 import { oauthInitiateParamsSchema, oauthCallbackQuerySchema } from '../validation/calendar.js';
+import {
+  createOAuthState,
+  validateOAuthState,
+  deleteOAuthState,
+  verifyStateProvider,
+} from '../services/oauth-state.js';
 
 const calendarOAuthRouter = new Hono<{ Variables: AuthVariables }>();
-
-// In-memory state store (TTL: 10 minutes)
-// In production, use Redis with proper TTL
-interface OAuthState {
-  userId: string;
-  provider: 'google' | 'outlook';
-  createdAt: number;
-}
-
-const stateStore = new Map<string, OAuthState>();
-const STATE_TTL_MS = 10 * 60 * 1000; // 10 minutes
-
-// Cleanup expired states periodically
-setInterval(() => {
-  const now = Date.now();
-  for (const [state, data] of stateStore.entries()) {
-    if (now - data.createdAt > STATE_TTL_MS) {
-      stateStore.delete(state);
-    }
-  }
-}, 60 * 1000); // Run every minute
 
 function getProvider(providerName: 'google' | 'outlook'): CalendarProvider {
   switch (providerName) {
@@ -69,16 +52,7 @@ calendarOAuthRouter.get(
     const userId = c.get('userId');
     const { provider: providerName } = c.req.valid('param');
 
-    // Generate random state for CSRF protection
-    const state = randomBytes(32).toString('hex');
-    
-    // Store state with user info
-    stateStore.set(state, {
-      userId,
-      provider: providerName,
-      createdAt: Date.now(),
-    });
-
+    const state = createOAuthState(userId, providerName);
     const provider = getProvider(providerName);
     const redirectUri = getRedirectUri(providerName);
     const authUrl = provider.getAuthUrl(state, redirectUri);
@@ -108,54 +82,43 @@ calendarOAuthRouter.get(
     const webAppUrl = getWebAppUrl();
     const settingsUrl = `${webAppUrl}/app/settings`;
 
-    // Handle OAuth error from provider
     if (error) {
       console.error(`[Calendar OAuth] Provider error: ${error} - ${error_description}`);
       return c.redirect(`${settingsUrl}?calendar=error&message=${encodeURIComponent(error_description || error)}`);
     }
 
-    // Validate state
-    const storedState = stateStore.get(state);
+    const storedState = validateOAuthState(state);
     if (!storedState) {
       console.error('[Calendar OAuth] Invalid or expired state');
       return c.redirect(`${settingsUrl}?calendar=error&message=${encodeURIComponent('Invalid or expired state. Please try again.')}`);
     }
 
-    // Check if state matches provider
-    if (storedState.provider !== providerName) {
-      stateStore.delete(state);
+    if (!verifyStateProvider(storedState, providerName)) {
+      deleteOAuthState(state);
       console.error('[Calendar OAuth] Provider mismatch in state');
       return c.redirect(`${settingsUrl}?calendar=error&message=${encodeURIComponent('Provider mismatch. Please try again.')}`);
     }
 
-    // Clean up used state
-    stateStore.delete(state);
+    deleteOAuthState(state);
 
     const { userId } = storedState;
     const provider = getProvider(providerName);
     const redirectUri = getRedirectUri(providerName);
 
     try {
-      // Exchange code for tokens
       const tokens = await provider.exchangeCode(code, redirectUri);
-
-      // Get user email from provider (fetch calendars first to validate tokens work)
       const externalCalendars = await provider.listCalendars(tokens.accessToken);
-      
-      // Try to get email from calendar list (for Google, primary calendar ID is email)
-      // For Outlook, we'd need a separate call to get profile
+
       let email = '';
       let providerAccountId = '';
-      
+
       if (providerName === 'google') {
-        // For Google, the primary calendar ID is the user's email
-        const primaryCalendar = externalCalendars.find(cal => 
+        const primaryCalendar = externalCalendars.find(cal =>
           cal.externalId.includes('@') && !cal.externalId.includes('#')
         );
         email = primaryCalendar?.externalId || '';
         providerAccountId = email;
       } else {
-        // For Outlook, fetch user profile
         const profileResponse = await fetch('https://graph.microsoft.com/v1.0/me', {
           headers: { Authorization: `Bearer ${tokens.accessToken}` },
         });
@@ -172,7 +135,6 @@ calendarOAuthRouter.get(
 
       const db = getDb();
 
-      // Check if account already exists for this user and provider
       const [existingAccount] = await db
         .select()
         .from(calendarAccounts)
@@ -188,7 +150,6 @@ calendarOAuthRouter.get(
       let accountId: string;
 
       if (existingAccount) {
-        // Update existing account with new tokens
         const [updated] = await db
           .update(calendarAccounts)
           .set({
@@ -202,10 +163,9 @@ calendarOAuthRouter.get(
           })
           .where(eq(calendarAccounts.id, existingAccount.id))
           .returning();
-        
+
         accountId = updated!.id;
       } else {
-        // Create new account
         const [newAccount] = await db
           .insert(calendarAccounts)
           .values({
@@ -218,13 +178,11 @@ calendarOAuthRouter.get(
             tokenExpiresAt: tokens.expiresAt,
           })
           .returning();
-        
+
         accountId = newAccount!.id;
       }
 
-      // Fetch and store calendars
       for (const extCal of externalCalendars) {
-        // Check if calendar already exists
         const [existingCalendar] = await db
           .select()
           .from(calendars)
@@ -237,7 +195,6 @@ calendarOAuthRouter.get(
           .limit(1);
 
         if (existingCalendar) {
-          // Update calendar info
           await db
             .update(calendars)
             .set({
@@ -248,7 +205,6 @@ calendarOAuthRouter.get(
             })
             .where(eq(calendars.id, existingCalendar.id));
         } else {
-          // Create new calendar
           await db
             .insert(calendars)
             .values({
