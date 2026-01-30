@@ -8,7 +8,7 @@
  *
  * Usage:
  *   OPENSUNSAMA_API_KEY=cf_xxx open-sunsama-mcp
- *   OPENSUNSAMA_API_KEY=cf_xxx OPENSUNSAMA_API_URL=http://localhost:3001 open-sunsama-mcp
+ *   OPENSUNSAMA_API_KEY=cf_xxx OPENSUNSAMA_API_URL=http://localhost:3001 open-sunsama-mcp (for self-hosted/local)
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -21,7 +21,7 @@ import { registerUserTools } from "./tools/user.js";
 
 // Configuration from environment variables
 const API_KEY = process.env.OPENSUNSAMA_API_KEY;
-const API_URL = process.env.OPENSUNSAMA_API_URL || "http://localhost:3001";
+const API_URL = process.env.OPENSUNSAMA_API_URL || "https://api.opensunsama.com";
 
 // Validate required configuration
 if (!API_KEY) {

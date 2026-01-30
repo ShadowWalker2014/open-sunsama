@@ -141,7 +141,7 @@ Authorization: Bearer <jwt-token>
 ### Example: Create a Task (for AI agents)
 
 ```bash
-curl -X POST http://localhost:3001/tasks \
+curl -X POST https://api.opensunsama.com/tasks \
   -H "X-API-Key: cf_your-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -152,6 +152,8 @@ curl -X POST http://localhost:3001/tasks \
     "priority": "P1"
   }'
 ```
+
+> **Self-hosted/Local**: Replace `https://api.opensunsama.com` with your API URL (e.g., `http://localhost:3001`)
 
 ### Managing API Keys
 

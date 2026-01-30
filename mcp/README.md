@@ -12,7 +12,7 @@ An MCP (Model Context Protocol) server that enables AI agents like Claude, Curso
 
 ## Prerequisites
 
-1. A running Open Sunsama API server (default: `http://localhost:3001`)
+1. An Open Sunsama account (cloud: [opensunsama.com](https://opensunsama.com) or self-hosted)
 2. An API key from your Open Sunsama account
 3. Node.js 18+ or Bun runtime
 
@@ -50,22 +50,22 @@ bun run build
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `OPENSUNSAMA_API_KEY` | Yes | - | Your API key starting with `cf_` |
-| `OPENSUNSAMA_API_URL` | No | `http://localhost:3001` | API server URL |
+| `OPENSUNSAMA_API_URL` | No | `https://api.opensunsama.com` | API server URL |
 
-### Production API URL
+### Self-Hosted / Local Development
 
-If you're hosting Open Sunsama on a cloud provider (e.g., Railway, Render, Fly.io), update `OPENSUNSAMA_API_URL` to point to your production API:
+If you're running the API locally or self-hosting, set `OPENSUNSAMA_API_URL` to your API URL:
 
 ```json
 {
   "env": {
     "OPENSUNSAMA_API_KEY": "cf_your-api-key",
-    "OPENSUNSAMA_API_URL": "https://your-api.up.railway.app"
+    "OPENSUNSAMA_API_URL": "http://localhost:3001"
   }
 }
 ```
 
-**Note:** The default `http://localhost:3001` only works when running the API locally.
+**Note:** If you're using the official cloud version at [opensunsama.com](https://opensunsama.com), you can omit `OPENSUNSAMA_API_URL` (defaults to `https://api.opensunsama.com`).
 
 ## Usage with AI Assistants
 
@@ -83,15 +83,14 @@ Add to your Claude Desktop configuration file:
       "command": "node",
       "args": ["/path/to/open-sunsama/mcp/build/index.js"],
       "env": {
-        "OPENSUNSAMA_API_KEY": "cf_your-api-key-here",
-        "OPENSUNSAMA_API_URL": "http://localhost:3001"
+        "OPENSUNSAMA_API_KEY": "cf_your-api-key-here"
       }
     }
   }
 }
 ```
 
-> **Production**: Replace `http://localhost:3001` with your hosted API URL (e.g., `https://your-api.up.railway.app`)
+> **Self-hosted/Local**: Add `"OPENSUNSAMA_API_URL": "http://localhost:3001"` to the env object
 
 ### Cursor
 
@@ -104,15 +103,14 @@ Create `.cursor/mcp.json` in your project root or configure in **Cursor Settings
       "command": "node",
       "args": ["/path/to/open-sunsama/mcp/build/index.js"],
       "env": {
-        "OPENSUNSAMA_API_KEY": "cf_your-api-key-here",
-        "OPENSUNSAMA_API_URL": "http://localhost:3001"
+        "OPENSUNSAMA_API_KEY": "cf_your-api-key-here"
       }
     }
   }
 }
 ```
 
-> **Production**: Replace `http://localhost:3001` with your hosted API URL (e.g., `https://your-api.up.railway.app`)
+> **Self-hosted/Local**: Add `"OPENSUNSAMA_API_URL": "http://localhost:3001"` to the env object
 
 ### VS Code with Continue Extension
 
@@ -284,8 +282,8 @@ Make sure you've set the API key in your MCP configuration:
 
 ### "Network request failed" or Connection Errors
 
-1. Verify the API server is running: `curl http://localhost:3001/health`
-2. Check the `OPENSUNSAMA_API_URL` is correct
+1. Verify the API is reachable: `curl https://api.opensunsama.com/health`
+2. If self-hosted/local, check `OPENSUNSAMA_API_URL` is correct
 3. Ensure your API key has the required scopes
 
 ### Tools Not Appearing in AI Assistant
