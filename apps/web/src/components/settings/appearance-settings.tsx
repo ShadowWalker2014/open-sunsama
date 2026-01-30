@@ -1,102 +1,142 @@
 import * as React from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Label,
-} from "@/components/ui";
+import { Monitor, Sun, Moon, Check } from "lucide-react";
+import { useTheme } from "@/hooks/useTheme";
+import { COLOR_THEMES, FONT_OPTIONS, type ThemeMode } from "@/lib/themes";
+import { cn } from "@/lib/utils";
+import { Label } from "@/components/ui";
 
-const THEME_STORAGE_KEY = "open_sunsama_theme";
+const THEME_MODES: { id: ThemeMode; label: string; icon: React.ElementType }[] = [
+  { id: "system", label: "System", icon: Monitor },
+  { id: "light", label: "Light", icon: Sun },
+  { id: "dark", label: "Dark", icon: Moon },
+];
 
-type Theme = "light" | "dark" | "system";
-
-function getStoredTheme(): Theme {
-  if (typeof window === "undefined") return "dark";
-  const stored = localStorage.getItem(THEME_STORAGE_KEY);
-  if (stored === "light" || stored === "dark" || stored === "system") {
-    return stored;
-  }
-  return "dark";
-}
-
-function applyTheme(theme: Theme) {
-  const isDark =
-    theme === "dark" ||
-    (theme === "system" &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches);
-
-  if (isDark) {
-    document.documentElement.classList.add("dark");
-  } else {
-    document.documentElement.classList.remove("dark");
-  }
-}
-
-/**
- * Appearance settings component for customizing theme
- */
 export function AppearanceSettings() {
-  const [theme, setTheme] = React.useState<Theme>(getStoredTheme);
-
-  // Apply theme on mount and when it changes
-  React.useEffect(() => {
-    applyTheme(theme);
-    localStorage.setItem(THEME_STORAGE_KEY, theme);
-  }, [theme]);
-
-  // Listen for system theme changes when in "system" mode
-  React.useEffect(() => {
-    if (theme !== "system") return;
-
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = () => applyTheme("system");
-    mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme]);
-
-  const handleThemeChange = (value: string) => {
-    setTheme(value as Theme);
-  };
+  const { themeMode, colorTheme, fontFamily, setThemeMode, setColorTheme, setFontFamily, resolvedTheme } = useTheme();
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Appearance</CardTitle>
-        <CardDescription>
-          Customize how Open Sunsama looks on your device
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-4">
-          <Label>Theme</Label>
-          <div className="grid grid-cols-3 gap-4">
-            {(["light", "dark", "system"] as const).map((option) => (
+    <div className="space-y-8">
+      {/* Header */}
+      <div>
+        <h2 className="text-lg font-semibold">Appearance</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Customize the look and feel of your workspace
+        </p>
+      </div>
+
+      {/* Theme Mode - Segmented Control */}
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">Theme</Label>
+        <div className="inline-flex items-center rounded-lg border border-border bg-muted/30 p-1">
+          {THEME_MODES.map((mode) => {
+            const Icon = mode.icon;
+            const isActive = themeMode === mode.id;
+            return (
               <button
-                key={option}
-                type="button"
-                onClick={() => handleThemeChange(option)}
-                className={`flex flex-col items-center gap-2 rounded-lg border p-4 transition-all hover:border-primary ${
-                  theme === option ? "border-primary bg-accent" : ""
-                }`}
+                key={mode.id}
+                onClick={() => setThemeMode(mode.id)}
+                className={cn(
+                  "inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all",
+                  isActive
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
               >
-                <div
-                  className={`h-16 w-full rounded-md border ${
-                    option === "dark"
-                      ? "bg-zinc-900"
-                      : option === "light"
-                        ? "bg-white"
-                        : "bg-gradient-to-r from-white to-zinc-900"
-                  }`}
-                />
-                <span className="text-sm font-medium capitalize">{option}</span>
+                <Icon className="h-4 w-4" />
+                <span className="hidden sm:inline">{mode.label}</span>
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Color Themes - Grid Picker */}
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">Accent Color</Label>
+        <div className="grid grid-cols-4 gap-3">
+          {COLOR_THEMES.map((theme) => {
+            const isActive = colorTheme === theme.id;
+            const previewColor = resolvedTheme === "dark" ? theme.preview.dark : theme.preview.light;
+            
+            return (
+              <button
+                key={theme.id}
+                onClick={() => setColorTheme(theme.id)}
+                className={cn(
+                  "group relative flex flex-col items-center gap-2 rounded-lg border p-3 transition-all",
+                  isActive
+                    ? "border-primary bg-primary/5"
+                    : "border-border/50 hover:border-border hover:bg-accent/30"
+                )}
+              >
+                {/* Color preview circle */}
+                <div
+                  className={cn(
+                    "h-8 w-8 rounded-full transition-all",
+                    isActive && "ring-2 ring-offset-2 ring-offset-background"
+                  )}
+                  style={{ 
+                    backgroundColor: previewColor,
+                    ...(isActive && { "--tw-ring-color": previewColor } as React.CSSProperties),
+                  }}
+                >
+                  {isActive && (
+                    <div className="flex h-full items-center justify-center">
+                      <Check className="h-4 w-4 text-white drop-shadow-sm" />
+                    </div>
+                  )}
+                </div>
+                {/* Theme name */}
+                <span className={cn(
+                  "text-xs font-medium",
+                  isActive ? "text-foreground" : "text-muted-foreground"
+                )}>
+                  {theme.name}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Font Family */}
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">Font</Label>
+        <div className="space-y-2">
+          {FONT_OPTIONS.map((font) => {
+            const isActive = fontFamily === font.id;
+            
+            return (
+              <button
+                key={font.id}
+                onClick={() => setFontFamily(font.id)}
+                className={cn(
+                  "flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left transition-all",
+                  isActive
+                    ? "border-primary bg-primary/5"
+                    : "border-border/50 hover:border-border hover:bg-accent/30"
+                )}
+              >
+                <div>
+                  <p 
+                    className="text-sm font-medium"
+                    style={{ fontFamily: font.fontFamily }}
+                  >
+                    {font.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {font.description}
+                  </p>
+                </div>
+                {isActive && (
+                  <Check className="h-4 w-4 text-primary" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 }
 
