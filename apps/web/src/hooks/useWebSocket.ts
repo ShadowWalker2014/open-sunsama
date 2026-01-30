@@ -4,6 +4,7 @@ import { wsClient, type WebSocketEvent } from "@/lib/websocket";
 import { useAuth } from "@/hooks/useAuth";
 import { taskKeys } from "@/hooks/useTasks";
 import { timeBlockKeys } from "@/hooks/useTimeBlocks";
+import { subtaskKeys } from "@/hooks/useSubtasks";
 
 /**
  * Hook that manages WebSocket connection and query invalidation
@@ -69,10 +70,12 @@ function handleWebSocketEvent(
       // Also invalidate infinite search queries (used by "All Tasks" page)
       queryClient.invalidateQueries({ queryKey: ["tasks", "search", "infinite"] });
 
-      // For individual task changes, also invalidate the specific task
+      // For individual task changes, also invalidate the specific task and its subtasks
       if (event.payload && typeof event.payload === "object" && "taskId" in event.payload) {
         const { taskId } = event.payload as { taskId: string };
         queryClient.invalidateQueries({ queryKey: taskKeys.detail(taskId) });
+        // Subtask changes also emit task:updated, so invalidate subtasks too
+        queryClient.invalidateQueries({ queryKey: subtaskKeys.list(taskId) });
       }
 
       // Cross-invalidate time blocks when tasks are deleted/updated/completed
