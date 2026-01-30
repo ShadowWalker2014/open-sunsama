@@ -39,6 +39,62 @@ function blurKey(key: string): string {
 }
 
 /**
+ * Simple JSON syntax highlighter
+ * Returns React elements with colored spans
+ */
+function highlightJson(json: string): React.ReactNode[] {
+  const elements: React.ReactNode[] = [];
+  let key = 0;
+  
+  // Regex to match JSON tokens
+  const tokenRegex = /("(?:\\.|[^"\\])*")\s*:|("(?:\\.|[^"\\])*")|(-?\d+\.?\d*)|(\btrue\b|\bfalse\b|\bnull\b)|([{}[\],])|(\s+)/g;
+  
+  let match;
+  let lastIndex = 0;
+  
+  while ((match = tokenRegex.exec(json)) !== null) {
+    // Add any text before the match
+    if (match.index > lastIndex) {
+      elements.push(<span key={key++}>{json.slice(lastIndex, match.index)}</span>);
+    }
+    
+    const [fullMatch, propKey, str, num, bool, punct] = match;
+    
+    if (propKey) {
+      // Property key (includes the colon)
+      elements.push(
+        <span key={key++} className="text-sky-400">{propKey.slice(0, -1)}</span>,
+        <span key={key++} className="text-zinc-400">:</span>
+      );
+    } else if (str) {
+      // String value
+      elements.push(<span key={key++} className="text-amber-300">{str}</span>);
+    } else if (num) {
+      // Number
+      elements.push(<span key={key++} className="text-purple-400">{num}</span>);
+    } else if (bool) {
+      // Boolean or null
+      elements.push(<span key={key++} className="text-orange-400">{bool}</span>);
+    } else if (punct) {
+      // Punctuation
+      elements.push(<span key={key++} className="text-zinc-500">{punct}</span>);
+    } else {
+      // Whitespace or other
+      elements.push(<span key={key++}>{fullMatch}</span>);
+    }
+    
+    lastIndex = match.index + fullMatch.length;
+  }
+  
+  // Add any remaining text
+  if (lastIndex < json.length) {
+    elements.push(<span key={key++}>{json.slice(lastIndex)}</span>);
+  }
+  
+  return elements;
+}
+
+/**
  * MCP Integration settings tab
  * Shows setup instructions for various MCP clients with auto-generated API key
  */
@@ -298,12 +354,12 @@ export function McpSettings() {
                 )}
               </Button>
             </div>
-            <pre className="overflow-x-auto rounded-lg border bg-zinc-950 p-4 text-sm select-all">
+            <pre className="overflow-x-auto rounded-lg border bg-zinc-950 p-4 text-sm">
               <code className={cn(
-                "text-zinc-100",
+                "block font-mono",
                 hasKey && "blur-[2px] group-hover:blur-none transition-all"
               )}>
-                {configJsonDisplay}
+                {highlightJson(configJsonDisplay)}
               </code>
             </pre>
             {hasKey && (
