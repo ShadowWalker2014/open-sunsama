@@ -1,22 +1,14 @@
-import * as React from "react";
 import { KanbanBoard, useKanbanNavigation } from "@/components/kanban";
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileBacklogSheet } from "@/components/layout/mobile-backlog-sheet";
 import { TasksDndProvider } from "@/lib/dnd/tasks-dnd-context";
-import { KeyboardShortcutsHandler } from "@/components/keyboard-shortcuts-handler";
-import { AddTaskModal } from "@/components/kanban/add-task-modal";
+import { TaskShortcutsHandler } from "@/components/task-shortcuts-handler";
 
 /**
  * Main tasks/kanban view
  * Shows tasks organized by day in an infinite horizontal scrolling view
  */
 export default function TasksPage() {
-  const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
-
-  const handleAddTask = React.useCallback(() => {
-    setIsAddModalOpen(true);
-  }, []);
-
   return (
     <TasksDndProvider>
       <div className="flex h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-3.5rem)]">
@@ -31,17 +23,10 @@ export default function TasksPage() {
           <KanbanBoard>
             {/* Keyboard shortcuts handler rendered inside KanbanBoard 
                 to access the navigation context */}
-            <TasksKeyboardShortcuts onAddTask={handleAddTask} />
+            <TasksKeyboardShortcuts />
           </KanbanBoard>
         </div>
       </div>
-
-      {/* Add Task Modal triggered by keyboard shortcut */}
-      <AddTaskModal
-        open={isAddModalOpen}
-        onOpenChange={setIsAddModalOpen}
-        scheduledDate={null}
-      />
     </TasksDndProvider>
   );
 }
@@ -50,12 +35,11 @@ export default function TasksPage() {
  * Component that bridges the kanban navigation context to the keyboard shortcuts handler.
  * Must be rendered inside KanbanBoard to access the navigation context.
  */
-function TasksKeyboardShortcuts({ onAddTask }: { onAddTask: () => void }) {
+function TasksKeyboardShortcuts() {
   const navigation = useKanbanNavigation();
 
   return (
-    <KeyboardShortcutsHandler
-      onAddTask={onAddTask}
+    <TaskShortcutsHandler
       onNavigateToday={navigation.navigateToToday}
       onNavigateNext={navigation.navigateNext}
       onNavigatePrevious={navigation.navigatePrevious}

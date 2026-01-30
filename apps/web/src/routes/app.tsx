@@ -12,7 +12,9 @@ import {
 } from "@/hooks/useKeyboardShortcuts";
 import { SearchProvider, useSearch } from "@/hooks/useSearch";
 import { ShortcutsModal } from "@/components/ui/shortcuts-modal";
-import { TaskSearchModal } from "@/components/search/task-search-modal";
+import { GlobalShortcutsHandler } from "@/components/global-shortcuts-handler";
+import { CommandPalette } from "@/components/command-palette";
+import { AddTaskModal } from "@/components/kanban/add-task-modal";
 import { TaskModal } from "@/components/kanban/task-modal";
 
 /**
@@ -78,6 +80,11 @@ function AppLayoutInner() {
   const { showShortcutsModal, setShowShortcutsModal } = useShortcutsModal();
   const { isSearchOpen, closeSearch } = useSearch();
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = React.useState(false);
+
+  const handleAddTask = React.useCallback(() => {
+    setIsAddTaskModalOpen(true);
+  }, []);
 
   return (
     <>
@@ -90,14 +97,17 @@ function AppLayoutInner() {
         <MobileBottomNav />
       </div>
 
+      {/* Global Shortcuts Handler */}
+      <GlobalShortcutsHandler onAddTask={handleAddTask} />
+
       {/* Shortcuts Modal */}
       <ShortcutsModal
         open={showShortcutsModal}
         onOpenChange={setShowShortcutsModal}
       />
 
-      {/* Search Modal */}
-      <TaskSearchModal
+      {/* Command Palette */}
+      <CommandPalette
         open={isSearchOpen}
         onOpenChange={(open) => {
           if (!open) closeSearch();
@@ -106,6 +116,14 @@ function AppLayoutInner() {
           closeSearch();
           setSelectedTask(task);
         }}
+        onAddTask={handleAddTask}
+      />
+
+      {/* Add Task Modal triggered by global shortcut */}
+      <AddTaskModal
+        open={isAddTaskModalOpen}
+        onOpenChange={setIsAddTaskModalOpen}
+        scheduledDate={null}
       />
 
       {/* Task Modal for viewing selected task from search */}
