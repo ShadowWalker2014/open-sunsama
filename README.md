@@ -105,7 +105,7 @@ The API supports two authentication methods:
 API keys can be created in **Settings → API Keys** and are the recommended method for programmatic access:
 
 ```
-X-API-Key: cf_<your-api-key>
+X-API-Key: os_<your-api-key>
 ```
 
 API keys can be scoped to specific permissions:
@@ -142,7 +142,7 @@ Authorization: Bearer <jwt-token>
 
 ```bash
 curl -X POST https://api.opensunsama.com/tasks \
-  -H "X-API-Key: cf_your-api-key-here" \
+  -H "X-API-Key: os_your-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Review PR #123",

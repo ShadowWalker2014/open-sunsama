@@ -6,6 +6,7 @@
 // Constants
 export {
   API_KEY_PREFIX,
+  LEGACY_API_KEY_PREFIX,
   DEFAULT_TIMEZONE,
   ESTIMATED_MINS_OPTIONS,
   DATE_FORMAT,
@@ -87,6 +88,7 @@ export {
   generateApiKey,
   hashApiKey,
   validateApiKeyFormat,
+  getApiKeyPrefix,
   extractApiKeyPrefix,
   maskApiKey,
   verifyApiKey,

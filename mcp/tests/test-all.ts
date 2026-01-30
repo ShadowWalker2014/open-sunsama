@@ -6,8 +6,8 @@
  * the responses. It requires a running API server and valid API key.
  *
  * Usage:
- *   OPENSUNSAMA_API_KEY=cf_xxx bun run tests/test-all.ts
- *   OPENSUNSAMA_API_KEY=cf_xxx OPENSUNSAMA_API_URL=http://localhost:3001 bun run tests/test-all.ts
+ *   OPENSUNSAMA_API_KEY=os_xxx bun run tests/test-all.ts
+ *   OPENSUNSAMA_API_KEY=os_xxx OPENSUNSAMA_API_URL=http://localhost:3001 bun run tests/test-all.ts
  */
 
 import { ApiClient } from "../src/lib/api-client.js";

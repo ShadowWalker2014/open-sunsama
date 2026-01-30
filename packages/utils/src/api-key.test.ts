@@ -3,11 +3,12 @@ import {
   generateApiKey,
   hashApiKey,
   validateApiKeyFormat,
+  getApiKeyPrefix,
   extractApiKeyPrefix,
   maskApiKey,
   verifyApiKey,
 } from './api-key.js';
-import { API_KEY_PREFIX, API_KEY_LENGTH } from './constants.js';
+import { API_KEY_PREFIX, LEGACY_API_KEY_PREFIX, API_KEY_LENGTH } from './constants.js';
 
 describe('API key utilities', () => {
   describe('generateApiKey', () => {
@@ -43,29 +44,47 @@ describe('API key utilities', () => {
 
   describe('hashApiKey', () => {
     it('should return consistent hash for same key', () => {
-      const key = 'cf_12345678901234567890123456789012';
+      const key = 'os_12345678901234567890123456789012';
       const hash1 = hashApiKey(key);
       const hash2 = hashApiKey(key);
       expect(hash1).toBe(hash2);
     });
 
     it('should return different hash for different keys', () => {
-      const hash1 = hashApiKey('cf_12345678901234567890123456789012');
-      const hash2 = hashApiKey('cf_09876543210987654321098765432109');
+      const hash1 = hashApiKey('os_12345678901234567890123456789012');
+      const hash2 = hashApiKey('os_09876543210987654321098765432109');
       expect(hash1).not.toBe(hash2);
     });
 
     it('should return 64 character hex string', () => {
-      const hash = hashApiKey('cf_test');
+      const hash = hashApiKey('os_test');
       expect(hash.length).toBe(64);
       expect(/^[a-f0-9]+$/i.test(hash)).toBe(true);
     });
   });
 
+  describe('getApiKeyPrefix', () => {
+    it('should return os_ for new prefix', () => {
+      expect(getApiKeyPrefix('os_12345678901234567890123456789012')).toBe('os_');
+    });
+
+    it('should return cf_ for legacy prefix', () => {
+      expect(getApiKeyPrefix('cf_12345678901234567890123456789012')).toBe('cf_');
+    });
+
+    it('should return null for invalid prefix', () => {
+      expect(getApiKeyPrefix('xx_12345678901234567890123456789012')).toBeNull();
+    });
+  });
+
   describe('validateApiKeyFormat', () => {
-    it('should return true for valid key', () => {
+    it('should return true for valid key with new prefix', () => {
       const { key } = generateApiKey();
       expect(validateApiKeyFormat(key)).toBe(true);
+    });
+
+    it('should return true for valid key with legacy prefix (backward compatibility)', () => {
+      expect(validateApiKeyFormat('cf_12345678901234567890123456789012')).toBe(true);
     });
 
     it('should return false for wrong prefix', () => {
@@ -73,17 +92,26 @@ describe('API key utilities', () => {
     });
 
     it('should return false for wrong length', () => {
+      expect(validateApiKeyFormat('os_123')).toBe(false);
+      expect(validateApiKeyFormat('os_1234567890123456789012345678901234567890')).toBe(false);
       expect(validateApiKeyFormat('cf_123')).toBe(false);
       expect(validateApiKeyFormat('cf_1234567890123456789012345678901234567890')).toBe(false);
     });
 
     it('should return false for non-hex characters', () => {
+      expect(validateApiKeyFormat('os_1234567890123456789012345678901g')).toBe(false);
       expect(validateApiKeyFormat('cf_1234567890123456789012345678901g')).toBe(false);
     });
   });
 
   describe('extractApiKeyPrefix', () => {
-    it('should extract the correct prefix', () => {
+    it('should extract the correct prefix for new keys', () => {
+      const key = 'os_12345678901234567890123456789012';
+      const prefix = extractApiKeyPrefix(key);
+      expect(prefix).toBe('os_12345678');
+    });
+
+    it('should extract the correct prefix for legacy keys', () => {
       const key = 'cf_12345678901234567890123456789012';
       const prefix = extractApiKeyPrefix(key);
       expect(prefix).toBe('cf_12345678');
@@ -91,7 +119,13 @@ describe('API key utilities', () => {
   });
 
   describe('maskApiKey', () => {
-    it('should mask the key correctly', () => {
+    it('should mask the key correctly for new keys', () => {
+      const key = 'os_12345678901234567890123456789012';
+      const masked = maskApiKey(key);
+      expect(masked).toBe('os_12345678********');
+    });
+
+    it('should mask the key correctly for legacy keys', () => {
       const key = 'cf_12345678901234567890123456789012';
       const masked = maskApiKey(key);
       expect(masked).toBe('cf_12345678********');
@@ -115,7 +149,14 @@ describe('API key utilities', () => {
 
     it('should reject invalid key', () => {
       const { hash } = generateApiKey();
-      expect(verifyApiKey('cf_wrongkey01234567890123456789012', hash)).toBe(false);
+      expect(verifyApiKey('os_wrongkey01234567890123456789012', hash)).toBe(false);
+    });
+
+    it('should verify legacy keys correctly', () => {
+      // Legacy keys should still work - hash is based on the full key string
+      const legacyKey = 'cf_12345678901234567890123456789012';
+      const hash = hashApiKey(legacyKey);
+      expect(verifyApiKey(legacyKey, hash)).toBe(true);
     });
 
     it('should reject invalid hash', () => {

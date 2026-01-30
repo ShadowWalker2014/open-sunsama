@@ -7,8 +7,8 @@
  * time blocks, and calendars through the Open Sunsama API.
  *
  * Usage:
- *   OPENSUNSAMA_API_KEY=cf_xxx open-sunsama-mcp
- *   OPENSUNSAMA_API_KEY=cf_xxx OPENSUNSAMA_API_URL=http://localhost:3001 open-sunsama-mcp (for self-hosted/local)
+ *   OPENSUNSAMA_API_KEY=os_xxx open-sunsama-mcp
+ *   OPENSUNSAMA_API_KEY=os_xxx OPENSUNSAMA_API_URL=http://localhost:3001 open-sunsama-mcp (for self-hosted/local)
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -28,7 +28,7 @@ if (!API_KEY) {
   console.error("Error: OPENSUNSAMA_API_KEY environment variable is required");
   console.error("");
   console.error("Usage:");
-  console.error("  OPENSUNSAMA_API_KEY=cf_xxx open-sunsama-mcp");
+  console.error("  OPENSUNSAMA_API_KEY=os_xxx open-sunsama-mcp");
   console.error("");
   console.error("You can get an API key from the Open Sunsama web app:");
   console.error("  Settings → API Keys → Generate New Key");

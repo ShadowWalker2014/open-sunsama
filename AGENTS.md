@@ -65,7 +65,7 @@ opensunsama/
 
 #### Authentication Methods
 1. **JWT Token:** `Authorization: Bearer <token>` - For web/mobile sessions
-2. **API Key:** `X-API-Key: cf_<key>` - For AI agents with scoped permissions
+2. **API Key:** `X-API-Key: os_<key>` - For AI agents with scoped permissions
 
 #### API Key Scopes
 - `tasks:read`, `tasks:write`
@@ -210,7 +210,7 @@ import { createApi } from '@open-sunsama/api-client';
 
 const api = createApi({
   baseUrl: 'https://api.example.com',
-  token: 'jwt-token', // or apiKey: 'cf_...'
+  token: 'jwt-token', // or apiKey: 'os_...'
 });
 
 // API methods
@@ -394,27 +394,27 @@ AWS_S3_BUCKET_NAME=...
 1. Log in to the web app
 2. Go to Settings > API Keys
 3. Create a new key with required scopes
-4. Use `X-API-Key: cf_<your-key>` header
+4. Use `X-API-Key: os_<your-key>` header
 
 ### Common Operations
 ```bash
 # List today's tasks
-curl -H "X-API-Key: cf_..." https://api.example.com/tasks?date=2024-01-15
+curl -H "X-API-Key: os_..." https://api.example.com/tasks?date=2024-01-15
 
 # Create a task
-curl -X POST -H "X-API-Key: cf_..." -H "Content-Type: application/json" \
-  -d '{"title":"Meeting prep","priority":"P1","scheduledDate":"2024-01-15"}' \
-  https://api.example.com/tasks
+curl -X POST -H "X-API-Key: os_..." -H "Content-Type: application/json" \
+ -d '{"title":"Meeting prep","priority":"P1","scheduledDate":"2024-01-15"}' \
+ https://api.example.com/tasks
 
 # Complete a task
-curl -X PATCH -H "X-API-Key: cf_..." -H "Content-Type: application/json" \
-  -d '{"completedAt":"2024-01-15T10:00:00Z"}' \
-  https://api.example.com/tasks/{id}
+curl -X PATCH -H "X-API-Key: os_..." -H "Content-Type: application/json" \
+ -d '{"completedAt":"2024-01-15T10:00:00Z"}' \
+ https://api.example.com/tasks/{id}
 
 # Create a time block
-curl -X POST -H "X-API-Key: cf_..." -H "Content-Type: application/json" \
-  -d '{"title":"Deep work","date":"2024-01-15","startTime":"09:00","endTime":"11:00"}' \
-  https://api.example.com/time-blocks
+curl -X POST -H "X-API-Key: os_..." -H "Content-Type: application/json" \
+ -d '{"title":"Deep work","date":"2024-01-15","startTime":"09:00","endTime":"11:00"}' \
+ https://api.example.com/time-blocks
 ```
 
 ---

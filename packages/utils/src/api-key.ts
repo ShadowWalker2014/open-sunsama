@@ -3,7 +3,7 @@
  */
 
 import { createHash, randomBytes } from 'crypto';
-import { API_KEY_PREFIX, API_KEY_LENGTH } from './constants.js';
+import { API_KEY_PREFIX, LEGACY_API_KEY_PREFIX, API_KEY_LENGTH } from './constants.js';
 
 /**
  * Result of generating a new API key
@@ -43,35 +43,54 @@ export function hashApiKey(key: string): string {
 }
 
 /**
+ * Get the prefix used in an API key (supports both new and legacy prefixes)
+ * @param key - The API key to check
+ * @returns The prefix if valid, null otherwise
+ */
+export function getApiKeyPrefix(key: string): string | null {
+  if (key.startsWith(API_KEY_PREFIX)) {
+    return API_KEY_PREFIX;
+  }
+  if (key.startsWith(LEGACY_API_KEY_PREFIX)) {
+    return LEGACY_API_KEY_PREFIX;
+  }
+  return null;
+}
+
+/**
  * Validate the format of an API key
+ * Supports both new (os_) and legacy (cf_) prefixes for backward compatibility
  * @param key - The API key to validate
  * @returns True if the key format is valid
  */
 export function validateApiKeyFormat(key: string): boolean {
-  // Must start with the correct prefix
-  if (!key.startsWith(API_KEY_PREFIX)) {
+  // Must start with a valid prefix (new or legacy)
+  const prefix = getApiKeyPrefix(key);
+  if (!prefix) {
     return false;
   }
   
-  // Must have the correct total length
-  const expectedLength = API_KEY_PREFIX.length + API_KEY_LENGTH;
+  // Must have the correct total length (prefix length is same for both)
+  const expectedLength = prefix.length + API_KEY_LENGTH;
   if (key.length !== expectedLength) {
     return false;
   }
   
   // The random part must be valid hex
-  const randomPart = key.slice(API_KEY_PREFIX.length);
+  const randomPart = key.slice(prefix.length);
   const hexRegex = /^[a-f0-9]+$/i;
   return hexRegex.test(randomPart);
 }
 
 /**
  * Extract the prefix from an API key (for display/identification)
+ * Supports both new (os_) and legacy (cf_) prefixes
  * @param key - The full API key
  * @returns The prefix portion of the key
  */
 export function extractApiKeyPrefix(key: string): string {
-  return key.slice(0, API_KEY_PREFIX.length + 8);
+  const prefix = getApiKeyPrefix(key) || API_KEY_PREFIX;
+  return key.slice(0, prefix.length + 8);
 }
 
 /**

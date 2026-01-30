@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   API_KEY_PREFIX,
+  LEGACY_API_KEY_PREFIX,
   DEFAULT_TIMEZONE,
   ESTIMATED_MINS_OPTIONS,
   DATE_FORMAT,
@@ -15,7 +16,11 @@ import {
 
 describe('constants', () => {
   it('should have correct API_KEY_PREFIX', () => {
-    expect(API_KEY_PREFIX).toBe('cf_');
+    expect(API_KEY_PREFIX).toBe('os_');
+  });
+
+  it('should have correct LEGACY_API_KEY_PREFIX', () => {
+    expect(LEGACY_API_KEY_PREFIX).toBe('cf_');
   });
 
   it('should have correct DEFAULT_TIMEZONE', () => {

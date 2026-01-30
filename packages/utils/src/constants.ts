@@ -2,8 +2,11 @@
  * App constants for Open Sunsama
  */
 
-/** Prefix for all API keys */
-export const API_KEY_PREFIX = 'cf_' as const;
+/** Prefix for all API keys (new keys use this) */
+export const API_KEY_PREFIX = 'os_' as const;
+
+/** Legacy prefix for backward compatibility with existing keys */
+export const LEGACY_API_KEY_PREFIX = 'cf_' as const;
 
 /** Default timezone for date operations */
 export const DEFAULT_TIMEZONE = 'UTC' as const;

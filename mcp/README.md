@@ -49,7 +49,7 @@ bun run build
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `OPENSUNSAMA_API_KEY` | Yes | - | Your API key starting with `cf_` |
+| `OPENSUNSAMA_API_KEY` | Yes | - | Your API key starting with `os_` |
 | `OPENSUNSAMA_API_URL` | No | `https://api.opensunsama.com` | API server URL |
 
 ### Self-Hosted / Local Development
@@ -59,7 +59,7 @@ If you're running the API locally or self-hosting, set `OPENSUNSAMA_API_URL` to 
 ```json
 {
   "env": {
-    "OPENSUNSAMA_API_KEY": "cf_your-api-key",
+    "OPENSUNSAMA_API_KEY": "os_your-api-key",
     "OPENSUNSAMA_API_URL": "http://localhost:3001"
   }
 }
@@ -83,7 +83,7 @@ Add to your Claude Desktop configuration file:
       "command": "node",
       "args": ["/path/to/open-sunsama/mcp/build/index.js"],
       "env": {
-        "OPENSUNSAMA_API_KEY": "cf_your-api-key-here"
+        "OPENSUNSAMA_API_KEY": "os_your-api-key-here"
       }
     }
   }
@@ -103,7 +103,7 @@ Create `.cursor/mcp.json` in your project root or configure in **Cursor Settings
       "command": "node",
       "args": ["/path/to/open-sunsama/mcp/build/index.js"],
       "env": {
-        "OPENSUNSAMA_API_KEY": "cf_your-api-key-here"
+        "OPENSUNSAMA_API_KEY": "os_your-api-key-here"
       }
     }
   }
@@ -124,7 +124,7 @@ Add to `~/.continue/config.json`:
       "command": "node",
       "args": ["/path/to/open-sunsama/mcp/build/index.js"],
       "env": {
-        "OPENSUNSAMA_API_KEY": "cf_your-api-key-here"
+        "OPENSUNSAMA_API_KEY": "os_your-api-key-here"
       }
     }
   ]
@@ -142,7 +142,7 @@ Most tools use a similar configuration format:
       "command": "node",
       "args": ["/path/to/open-sunsama/mcp/build/index.js"],
       "env": {
-        "OPENSUNSAMA_API_KEY": "cf_your-api-key-here"
+        "OPENSUNSAMA_API_KEY": "os_your-api-key-here"
       }
     }
   }
@@ -160,7 +160,7 @@ If you prefer Bun over Node.js:
       "command": "bun",
       "args": ["run", "/path/to/open-sunsama/mcp/build/index.js"],
       "env": {
-        "OPENSUNSAMA_API_KEY": "cf_your-api-key-here"
+        "OPENSUNSAMA_API_KEY": "os_your-api-key-here"
       }
     }
   }
@@ -244,7 +244,7 @@ Run the test suite to verify your setup:
 
 ```bash
 # Set your API key
-export OPENSUNSAMA_API_KEY=cf_your-api-key-here
+export OPENSUNSAMA_API_KEY=os_your-api-key-here
 
 # Run all tests
 bun run test
@@ -260,7 +260,7 @@ bun run test:subtasks
 For interactive testing and debugging:
 
 ```bash
-export OPENSUNSAMA_API_KEY=cf_your-api-key-here
+export OPENSUNSAMA_API_KEY=os_your-api-key-here
 bun run inspector
 ```
 
@@ -275,7 +275,7 @@ Make sure you've set the API key in your MCP configuration:
 ```json
 {
   "env": {
-    "OPENSUNSAMA_API_KEY": "cf_your-actual-key"
+    "OPENSUNSAMA_API_KEY": "os_your-actual-key"
   }
 }
 ```
