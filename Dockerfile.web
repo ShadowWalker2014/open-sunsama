@@ -3,16 +3,27 @@ FROM oven/bun:1 as builder
 
 WORKDIR /app
 
-# Copy root package files
-COPY package.json bun.lock ./
-COPY turbo.json ./
+# Copy root package files and lockfile
+COPY package.json bun.lock turbo.json ./
 
-# Copy all packages and apps (needed for workspace dependencies)
-COPY packages/ ./packages/
-COPY apps/web/ ./apps/web/
+# Copy ALL package.json files first (needed for workspace resolution)
+COPY apps/api/package.json ./apps/api/
+COPY apps/web/package.json ./apps/web/
+COPY apps/desktop/package.json ./apps/desktop/
+COPY apps/mobile/package.json ./apps/mobile/
+COPY packages/database/package.json ./packages/database/
+COPY packages/types/package.json ./packages/types/
+COPY packages/utils/package.json ./packages/utils/
+COPY packages/api-client/package.json ./packages/api-client/
 
 # Install dependencies
 RUN bun install --frozen-lockfile
+
+# Copy source code for packages we need to build
+COPY packages/types/ ./packages/types/
+COPY packages/utils/ ./packages/utils/
+COPY packages/api-client/ ./packages/api-client/
+COPY apps/web/ ./apps/web/
 
 # Build args for environment variables needed at build time
 ARG VITE_API_URL
