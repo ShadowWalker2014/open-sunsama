@@ -1,0 +1,58 @@
+{
+  "name": "@open-sunsama/expo-mobile",
+  "version": "0.0.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "expo": {
+    "install": {
+      "exclude": ["@types/react"]
+    }
+  },
+  "scripts": {
+    "dev": "expo start",
+    "ios": "expo run:ios",
+    "android": "expo run:android",
+    "build:ios": "eas build --platform ios",
+    "build:android": "eas build --platform android",
+    "submit:ios": "eas submit --platform ios",
+    "submit:android": "eas submit --platform android",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo .expo"
+  },
+  "dependencies": {
+    "@open-sunsama/api-client": "workspace:*",
+    "@open-sunsama/types": "workspace:*",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@tanstack/react-query": "^5.62.7",
+    "date-fns": "^4.1.0",
+    "expo": "~54.0.0",
+    "expo-constants": "~18.0.13",
+    "expo-haptics": "~15.0.8",
+    "expo-linking": "~8.0.11",
+    "expo-localization": "~17.0.8",
+    "expo-router": "~6.0.22",
+    "expo-secure-store": "~15.0.8",
+    "expo-status-bar": "~3.0.9",
+    "react": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-gesture-handler": "~2.28.0",
+    "react-native-reanimated": "~4.1.1",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "~4.16.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@types/react": "~19.1.10",
+    "typescript": "~5.9.2"
+  },
+  "bun": {
+    "overrides": {
+      "react": "19.1.0",
+      "react-dom": "19.1.0"
+    },
+    "install": {
+      "local": ["react", "react-native", "scheduler"]
+    }
+  }
+}

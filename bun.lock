@@ -63,8 +63,8 @@
         "typescript": "^5.7.2",
       },
     },
-    "apps/mobile": {
-      "name": "@open-sunsama/mobile",
+    "apps/expo-mobile": {
+      "name": "@open-sunsama/expo-mobile",
       "version": "0.0.0",
       "dependencies": {
         "@open-sunsama/api-client": "workspace:*",
@@ -91,6 +91,22 @@
         "@babel/core": "^7.25.2",
         "@types/react": "~19.1.10",
         "typescript": "~5.9.2",
+      },
+    },
+    "apps/mobile": {
+      "name": "@open-sunsama/mobile",
+      "version": "0.0.0",
+      "dependencies": {
+        "@tauri-apps/api": "^2.2.0",
+        "@tauri-apps/plugin-biometric": "^2.2.0",
+        "@tauri-apps/plugin-deep-link": "^2.2.0",
+        "@tauri-apps/plugin-haptics": "^2.2.0",
+        "@tauri-apps/plugin-notification": "^2.2.0",
+        "@tauri-apps/plugin-store": "^2.2.0",
+      },
+      "devDependencies": {
+        "@tauri-apps/cli": "^2.2.4",
+        "typescript": "^5.9.2",
       },
     },
     "apps/web": {
@@ -761,6 +777,8 @@
 
     "@open-sunsama/desktop": ["@open-sunsama/desktop@workspace:apps/desktop"],
 
+    "@open-sunsama/expo-mobile": ["@open-sunsama/expo-mobile@workspace:apps/expo-mobile"],
+
     "@open-sunsama/mobile": ["@open-sunsama/mobile@workspace:apps/mobile"],
 
     "@open-sunsama/types": ["@open-sunsama/types@workspace:packages/types"],
@@ -1093,7 +1111,13 @@
 
     "@tauri-apps/plugin-autostart": ["@tauri-apps/plugin-autostart@2.5.1", "", { "dependencies": { "@tauri-apps/api": "^2.8.0" } }, "sha512-zS/xx7yzveCcotkA+8TqkI2lysmG2wvQXv2HGAVExITmnFfHAdj1arGsbbfs3o6EktRHf6l34pJxc3YGG2mg7w=="],
 
+    "@tauri-apps/plugin-biometric": ["@tauri-apps/plugin-biometric@2.3.2", "", { "dependencies": { "@tauri-apps/api": "^2.8.0" } }, "sha512-RFydYGKEJ6m4UWdcPsO+vJQUb3JyyfFeNoZSPDs0uWjvwHBs03xey5wWO+uowmFFy03JAff1l2idQAwuycO8Uw=="],
+
+    "@tauri-apps/plugin-deep-link": ["@tauri-apps/plugin-deep-link@2.4.6", "", { "dependencies": { "@tauri-apps/api": "^2.8.0" } }, "sha512-UUOSt0U5juK20uhO2MoHZX/IPblkrhUh+VPtIeu3RwtzI0R9Em3Auzfg/PwcZ9Pv8mLne3cQ4p9CFXD6WxqCZA=="],
+
     "@tauri-apps/plugin-global-shortcut": ["@tauri-apps/plugin-global-shortcut@2.3.1", "", { "dependencies": { "@tauri-apps/api": "^2.8.0" } }, "sha512-vr40W2N6G63dmBPaha1TsBQLLURXG538RQbH5vAm0G/ovVZyXJrmZR1HF1W+WneNloQvwn4dm8xzwpEXRW560g=="],
+
+    "@tauri-apps/plugin-haptics": ["@tauri-apps/plugin-haptics@2.3.2", "", { "dependencies": { "@tauri-apps/api": "^2.8.0" } }, "sha512-TqvBR5JoPodDQWPXsNymmyqp37dOpunZOdVVbx5xOAxki7rVwiCMvoEPdtJQNIrU+dQDfkQYZ2oDBVOu4hf+ig=="],
 
     "@tauri-apps/plugin-notification": ["@tauri-apps/plugin-notification@2.3.3", "", { "dependencies": { "@tauri-apps/api": "^2.8.0" } }, "sha512-Zw+ZH18RJb41G4NrfHgIuofJiymusqN+q8fGUIIV7vyCH+5sSn5coqRv/MWB9qETsUs97vmU045q7OyseCV3Qg=="],
 

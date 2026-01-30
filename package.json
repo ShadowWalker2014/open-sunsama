@@ -20,12 +20,16 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "turbo run dev --filter='!@open-sunsama/desktop' --filter='!@open-sunsama/mobile'",
+    "dev": "turbo run dev --filter='!@open-sunsama/desktop' --filter='!@open-sunsama/mobile' --filter='!@open-sunsama/expo-mobile'",
     "dev:web": "turbo run dev --filter=@open-sunsama/web --filter=@open-sunsama/api --filter=./packages/*",
     "dev:desktop": "turbo run dev --filter=@open-sunsama/desktop --filter=@open-sunsama/api --filter=./packages/*",
-    "dev:mobile": "turbo run dev --filter=@open-sunsama/mobile --filter=@open-sunsama/api --filter=./packages/*",
+    "dev:mobile:ios": "turbo run dev:ios --filter=@open-sunsama/mobile --filter=@open-sunsama/api --filter=./packages/*",
+    "dev:mobile:android": "turbo run dev:android --filter=@open-sunsama/mobile --filter=@open-sunsama/api --filter=./packages/*",
+    "dev:expo": "turbo run dev --filter=@open-sunsama/expo-mobile --filter=@open-sunsama/api --filter=./packages/*",
     "dev:all": "turbo run dev",
     "build": "turbo run build",
+    "build:mobile:ios": "turbo run build:ios --filter=@open-sunsama/mobile",
+    "build:mobile:android": "turbo run build:android --filter=@open-sunsama/mobile",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
     "test": "turbo run test",

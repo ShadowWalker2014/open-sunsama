@@ -1,0 +1,23 @@
+{
+  "$schema": "https://schema.tauri.app/config/2/capability",
+  "identifier": "default",
+  "description": "Default permissions for the mobile app",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "store:default",
+    "notification:default",
+    "notification:allow-request-permission",
+    "notification:allow-is-permission-granted",
+    "notification:allow-show",
+    "haptics:default",
+    "haptics:allow-impact",
+    "haptics:allow-notification",
+    "haptics:allow-selection",
+    "haptics:allow-vibrate",
+    "deep-link:default",
+    "biometric:default",
+    "biometric:allow-authenticate",
+    "biometric:allow-status"
+  ]
+}

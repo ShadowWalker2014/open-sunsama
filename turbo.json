@@ -22,16 +22,36 @@
       "cache": false,
       "persistent": true
     },
-    "@open-sunsama/mobile#dev": {
+    "@open-sunsama/mobile#dev:ios": {
       "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
     },
-    "@open-sunsama/mobile#build": {
+    "@open-sunsama/mobile#dev:android": {
       "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
+    "@open-sunsama/mobile#build:ios": {
+      "dependsOn": ["@open-sunsama/web#build"],
+      "outputs": ["src-tauri/gen/apple/build/**"],
+      "cache": false
+    },
+    "@open-sunsama/mobile#build:android": {
+      "dependsOn": ["@open-sunsama/web#build"],
+      "outputs": ["src-tauri/gen/android/app/build/**"],
       "cache": false
     },
     "@open-sunsama/mobile#typecheck": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "tsconfig.json"]
+    },
+    "@open-sunsama/expo-mobile#dev": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
+    "@open-sunsama/expo-mobile#typecheck": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", "tsconfig.json"]
     },

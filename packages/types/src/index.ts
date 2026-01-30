@@ -118,6 +118,8 @@ export type {
   UpdateNotificationPreferencesInput,
   NotificationPreferencesResponse,
   ReminderTimingOption,
+  RolloverDestination,
+  RolloverPosition,
 } from './notification.js';
 export { REMINDER_TIMING_OPTIONS } from './notification.js';
 

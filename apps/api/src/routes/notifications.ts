@@ -56,7 +56,7 @@ function getDefaultPreferences(userId: string): Omit<NotificationPreferences, 'i
     emailNotificationsEnabled: false,
     dailySummaryEnabled: false,
     pushNotificationsEnabled: false,
-    rolloverDestination: 'next_day',
+    rolloverDestination: 'backlog',
     rolloverPosition: 'top',
   };
 }
