@@ -5,6 +5,7 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "noEmit": true,
+    "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
@@ -17,7 +18,7 @@
       "@open-sunsama/api-client": ["../../packages/api-client/src/index.ts"],
       "@open-sunsama/api-client/*": ["../../packages/api-client/src/*"]
     },
-    "types": ["vite/client"],
+    "types": ["vite/client", "node"],
     "exactOptionalPropertyTypes": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false

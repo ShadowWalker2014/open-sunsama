@@ -4,6 +4,10 @@
   "version": "0.0.0",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
+  "overrides": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/your-org/open-sunsama.git"
@@ -39,12 +43,8 @@
     "eslint": "^9.17.0",
     "prettier": "^3.4.2",
     "turbo": "^2.3.3",
-    "typescript": "^5.7.2",
+    "typescript": "^5.9.2",
     "typescript-eslint": "^8.0.0"
-  },
-  "overrides": {
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1"
   },
   "dependencies": {
     "pg-boss": "^12.7.2"
