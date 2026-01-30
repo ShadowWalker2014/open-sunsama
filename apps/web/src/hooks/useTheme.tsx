@@ -65,6 +65,15 @@ function getSystemTheme(): "light" | "dark" {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
+// Get initial resolved theme from stored preferences (for sync initialization)
+function getInitialResolvedTheme(): "light" | "dark" {
+  const prefs = getStoredPreferences();
+  if (prefs.themeMode === "system") {
+    return getSystemTheme();
+  }
+  return prefs.themeMode;
+}
+
 // Apply theme to document
 function applyTheme(mode: ThemeMode, colorTheme: string, fontFamily: FontFamily) {
   const root = document.documentElement;
@@ -113,22 +122,22 @@ function debounce<T extends (...args: Parameters<T>) => void>(
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [preferences, setPreferences] = React.useState<UserPreferences>(DEFAULT_PREFERENCES);
-  const [resolvedTheme, setResolvedTheme] = React.useState<"light" | "dark">("dark");
+  // Use lazy initialization to read from localStorage on first render
+  // This ensures React state is in sync with what index.html script already applied
+  const [preferences, setPreferences] = React.useState<UserPreferences>(getStoredPreferences);
+  const [resolvedTheme, setResolvedTheme] = React.useState<"light" | "dark">(getInitialResolvedTheme);
+  const [isLoading, setIsLoading] = React.useState(false);
   const [hasLoadedFromUser, setHasLoadedFromUser] = React.useState(false);
   
   // Get user and save mutation for DB sync
   const { user } = useAuth();
   const savePreferencesMutation = useSavePreferences();
 
-  // Initialize on mount from localStorage
+  // Apply theme on mount to ensure DOM is in sync (index.html should have done this, but this is a safety net)
+  // We read from localStorage directly to avoid dependency on React state
   React.useEffect(() => {
     const stored = getStoredPreferences();
-    setPreferences(stored);
-    const resolved = applyTheme(stored.themeMode, stored.colorTheme, stored.fontFamily);
-    setResolvedTheme(resolved);
-    setIsLoading(false);
+    applyTheme(stored.themeMode, stored.colorTheme, stored.fontFamily);
   }, []);
 
   // Load preferences from user when they log in
