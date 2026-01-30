@@ -27,6 +27,10 @@ export async function registerRolloverWorkers(): Promise<void> {
 
   const boss = await getPgBoss();
 
+  // Create queues first (required in pg-boss v10+)
+  await boss.createQueue(JOBS.TIMEZONE_ROLLOVER_CHECK);
+  await boss.createQueue(JOBS.USER_BATCH_ROLLOVER);
+
   // Schedule the timezone check to run every minute
   await boss.schedule(JOBS.TIMEZONE_ROLLOVER_CHECK, '* * * * *', {}, {
     tz: 'UTC',
