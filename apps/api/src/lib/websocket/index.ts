@@ -1,6 +1,7 @@
 /**
  * WebSocket server for real-time notifications
  * Integrates with Redis pub/sub for horizontal scaling
+ * Falls back to direct broadcasting for local development without Redis
  */
 
 import { WebSocketServer, type WebSocket } from 'ws';
@@ -12,7 +13,10 @@ import { getRedisSubscriber, getRedisPublisher } from '../redis.js';
 
 let wss: WebSocketServer | null = null;
 
-// Track which user channels we've subscribed to
+// Track if Redis is available for pub/sub
+let redisEnabled = false;
+
+// Track which user channels we've subscribed to (only used with Redis)
 const subscribedChannels = new Set<string>();
 
 /**
@@ -89,50 +93,69 @@ export function initWebSocket(server: Server): WebSocketServer {
 /**
  * Subscribe to a user's Redis channel
  * Called when a user connects to ensure we receive their events
+ * No-op if Redis is not available (direct broadcast mode)
  *
  * @param userId - The user ID to subscribe to
  */
 function subscribeToUserChannel(userId: string): void {
+  // Skip if Redis is not enabled (using direct broadcast mode)
+  if (!redisEnabled) return;
+
   const channel = getUserChannel(userId);
 
   // Don't subscribe twice to the same channel
   if (subscribedChannels.has(channel)) return;
 
-  const subscriber = getRedisSubscriber();
-  subscriber.subscribe(channel);
-  subscribedChannels.add(channel);
-
-  console.log(`[WS] Subscribed to Redis channel: ${channel}`);
+  try {
+    const subscriber = getRedisSubscriber();
+    subscriber.subscribe(channel);
+    subscribedChannels.add(channel);
+    console.log(`[WS] Subscribed to Redis channel: ${channel}`);
+  } catch (error) {
+    console.error(`[WS] Failed to subscribe to Redis channel:`, error);
+  }
 }
 
 /**
  * Initialize the Redis subscriber message handler
  * Call once during server startup BEFORE initializing WebSocket
+ * Returns true if Redis was successfully initialized, false otherwise
  */
-export function initRedisSubscriber(): void {
-  const subscriber = getRedisSubscriber();
+export function initRedisSubscriber(): boolean {
+  try {
+    const subscriber = getRedisSubscriber();
 
-  subscriber.on('message', (channel: string, message: string) => {
-    // Extract userId from channel name (user:{userId}:events)
-    const match = channel.match(/^user:([^:]+):events$/);
-    if (!match || !match[1]) return;
+    subscriber.on('message', (channel: string, message: string) => {
+      // Extract userId from channel name (user:{userId}:events)
+      const match = channel.match(/^user:([^:]+):events$/);
+      if (!match || !match[1]) return;
 
-    const userId = match[1];
+      const userId = match[1];
 
-    try {
-      const event = JSON.parse(message) as WebSocketEvent;
-      wsManager.broadcastToUser(userId, event);
-    } catch (error) {
-      console.error('[WS] Failed to parse Redis message:', error);
-    }
-  });
+      try {
+        const event = JSON.parse(message) as WebSocketEvent;
+        wsManager.broadcastToUser(userId, event);
+      } catch (error) {
+        console.error('[WS] Failed to parse Redis message:', error);
+      }
+    });
 
-  console.log('[WS] Redis subscriber initialized');
+    redisEnabled = true;
+    console.log('[WS] Redis subscriber initialized');
+    return true;
+  } catch {
+    console.log('[WS] Redis not available, using direct broadcast mode');
+    redisEnabled = false;
+    return false;
+  }
 }
 
 /**
  * Publish an event to a user's channel
  * Called from route handlers after data mutations
+ *
+ * Uses Redis pub/sub if available, otherwise broadcasts directly
+ * to connected WebSocket clients (for local development)
  *
  * @param userId - The user ID to publish to
  * @param type - The event type
@@ -143,16 +166,27 @@ export async function publishEvent(
   type: WebSocketEventType,
   payload: unknown
 ): Promise<void> {
-  const publisher = getRedisPublisher();
-  const channel = getUserChannel(userId);
-
   const event: WebSocketEvent = {
     type,
     payload,
     timestamp: new Date().toISOString(),
   };
 
-  await publisher.publish(channel, JSON.stringify(event));
+  if (redisEnabled) {
+    // Use Redis pub/sub for multi-server support
+    try {
+      const publisher = getRedisPublisher();
+      const channel = getUserChannel(userId);
+      await publisher.publish(channel, JSON.stringify(event));
+    } catch (error) {
+      console.error('[WS] Redis publish failed, falling back to direct broadcast:', error);
+      // Fallback to direct broadcast
+      wsManager.broadcastToUser(userId, event);
+    }
+  } else {
+    // Direct broadcast for local development without Redis
+    wsManager.broadcastToUser(userId, event);
+  }
 }
 
 /**

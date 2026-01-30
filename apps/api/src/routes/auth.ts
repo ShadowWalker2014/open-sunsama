@@ -119,7 +119,7 @@ authRouter.patch('/me', auth, zValidator('json', updateProfileSchema), async (c)
   }
 
   // Publish realtime event (fire and forget)
-  if (process.env.REDIS_URL && changedFields.length > 0) {
+  if (changedFields.length > 0) {
     publishEvent(userId, 'user:updated', {
       fields: changedFields,
     });

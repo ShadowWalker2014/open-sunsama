@@ -77,7 +77,7 @@ tasksRouter.post('/', requireScopes('tasks:write'), zValidator('json', createTas
   }).returning();
 
   // Publish realtime event (fire and forget)
-  if (process.env.REDIS_URL && newTask) {
+  if (newTask) {
     publishEvent(userId, 'task:created', {
       taskId: newTask.id,
       scheduledDate: newTask.scheduledDate,
@@ -122,7 +122,7 @@ tasksRouter.patch('/:id', requireScopes('tasks:write'), zValidator('param', z.ob
 
   // Publish realtime event (fire and forget)
   // Use 'task:completed' if completedAt changed to a truthy value, otherwise 'task:updated'
-  if (process.env.REDIS_URL && updatedTask) {
+  if (updatedTask) {
     const eventType = updates.completedAt ? 'task:completed' : 'task:updated';
     publishEvent(userId, eventType, {
       taskId: updatedTask.id,
@@ -145,12 +145,10 @@ tasksRouter.delete('/:id', requireScopes('tasks:write'), zValidator('param', z.o
   await db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
 
   // Publish realtime event (fire and forget)
-  if (process.env.REDIS_URL) {
-    publishEvent(userId, 'task:deleted', {
-      taskId: id,
-      scheduledDate: existing.scheduledDate,
-    });
-  }
+  publishEvent(userId, 'task:deleted', {
+    taskId: id,
+    scheduledDate: existing.scheduledDate,
+  });
 
   return c.json({ success: true, message: 'Task deleted successfully' });
 });
@@ -167,7 +165,7 @@ tasksRouter.post('/:id/complete', requireScopes('tasks:write'), zValidator('para
   const [updatedTask] = await db.update(tasks).set({ completedAt: new Date(), updatedAt: new Date() }).where(and(eq(tasks.id, id), eq(tasks.userId, userId))).returning();
 
   // Publish realtime event (fire and forget)
-  if (process.env.REDIS_URL && updatedTask) {
+  if (updatedTask) {
     publishEvent(userId, 'task:completed', {
       taskId: updatedTask.id,
       scheduledDate: updatedTask.scheduledDate,
@@ -189,7 +187,7 @@ tasksRouter.post('/:id/uncomplete', requireScopes('tasks:write'), zValidator('pa
   const [updatedTask] = await db.update(tasks).set({ completedAt: null, updatedAt: new Date() }).where(and(eq(tasks.id, id), eq(tasks.userId, userId))).returning();
 
   // Publish realtime event (fire and forget)
-  if (process.env.REDIS_URL && updatedTask) {
+  if (updatedTask) {
     publishEvent(userId, 'task:updated', {
       taskId: updatedTask.id,
       scheduledDate: updatedTask.scheduledDate,
@@ -227,12 +225,10 @@ tasksRouter.post('/reorder', requireScopes('tasks:write'), zValidator('json', re
     .orderBy(asc(tasks.position));
 
   // Publish realtime event (fire and forget)
-  if (process.env.REDIS_URL) {
-    publishEvent(userId, 'task:reordered', {
-      date,
-      taskIds,
-    });
-  }
+  publishEvent(userId, 'task:reordered', {
+    date,
+    taskIds,
+  });
 
   return c.json({ success: true, data: updatedTasks, message: 'Tasks reordered successfully' });
 });

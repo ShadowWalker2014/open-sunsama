@@ -11,6 +11,7 @@ import {
   useShortcutsModal,
 } from "@/hooks/useKeyboardShortcuts";
 import { SearchProvider, useSearch } from "@/hooks/useSearch";
+import { useWebSocket } from "@/hooks/useWebSocket";
 import { ShortcutsModal } from "@/components/ui/shortcuts-modal";
 import { GlobalShortcutsHandler } from "@/components/global-shortcuts-handler";
 import { CommandPalette } from "@/components/command-palette";
@@ -77,6 +78,9 @@ export default function AppLayout() {
  * Inner component that can use the shortcuts hooks
  */
 function AppLayoutInner() {
+  // Initialize WebSocket for realtime updates
+  useWebSocket();
+
   const { showShortcutsModal, setShowShortcutsModal } = useShortcutsModal();
   const { isSearchOpen, closeSearch } = useSearch();
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);

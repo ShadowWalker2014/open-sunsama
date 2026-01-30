@@ -167,14 +167,20 @@ async function startServer(): Promise<void> {
     }
   });
 
-  // Initialize WebSocket if Redis is configured
-  const wsEnabled = !!process.env.REDIS_URL;
-  if (wsEnabled) {
-    initRedisSubscriber();
-    initWebSocket(httpServer);
-  } else {
-    console.log('[WS] REDIS_URL not set, WebSocket disabled');
+  // Initialize WebSocket server
+  // Redis is optional - without it, events are broadcast directly (single-server mode)
+  const redisConfigured = !!process.env.REDIS_URL;
+  let redisEnabled = false;
+  
+  if (redisConfigured) {
+    redisEnabled = initRedisSubscriber();
   }
+  
+  // Always initialize WebSocket server
+  initWebSocket(httpServer);
+  
+  const wsMode = redisEnabled ? 'Redis pub/sub' : 'direct broadcast (local dev)';
+  console.log(`[WS] WebSocket enabled with ${wsMode}`);
 
   // Start listening
   httpServer.listen(port, () => {
@@ -200,7 +206,7 @@ async function startServer(): Promise<void> {
   ║   - Task Rollover (${process.env.ROLLOVER_ENABLED !== 'false' ? 'enabled' : 'disabled'})                           ║
   ║                                                           ║
   ║   WebSocket:                                              ║
-  ║   - ${wsEnabled ? 'Enabled at /ws' : 'Disabled (REDIS_URL not set)'}                              ║
+  ║   - Enabled at /ws (${redisEnabled ? 'Redis' : 'direct'})                        ║
   ║                                                           ║
   ╚═══════════════════════════════════════════════════════════╝
 `);

@@ -80,7 +80,7 @@ timeBlocksRouter.post('/', requireScopes('time-blocks:write'), zValidator('json'
   }
 
   // Publish realtime event (fire and forget)
-  if (process.env.REDIS_URL && newTimeBlock) {
+  if (newTimeBlock) {
     publishEvent(userId, 'timeblock:created', {
       timeBlockId: newTimeBlock.id,
       date: newTimeBlock.date,
@@ -144,7 +144,7 @@ timeBlocksRouter.patch('/:id', requireScopes('time-blocks:write'), zValidator('p
   }
 
   // Publish realtime event (fire and forget)
-  if (process.env.REDIS_URL && updatedTimeBlock) {
+  if (updatedTimeBlock) {
     publishEvent(userId, 'timeblock:updated', {
       timeBlockId: updatedTimeBlock.id,
       date: updatedTimeBlock.date,
@@ -166,12 +166,10 @@ timeBlocksRouter.delete('/:id', requireScopes('time-blocks:write'), zValidator('
   await db.delete(timeBlocks).where(and(eq(timeBlocks.id, id), eq(timeBlocks.userId, userId)));
 
   // Publish realtime event (fire and forget)
-  if (process.env.REDIS_URL) {
-    publishEvent(userId, 'timeblock:deleted', {
-      timeBlockId: id,
-      date: existing.date,
-    });
-  }
+  publishEvent(userId, 'timeblock:deleted', {
+    timeBlockId: id,
+    date: existing.date,
+  });
 
   return c.json({ success: true, message: 'Time block deleted successfully' });
 });
