@@ -3,6 +3,7 @@ import { ChevronDown, Clock } from "lucide-react";
 import type { TaskPriority } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { useCreateTask } from "@/hooks/useTasks";
+import { useCreateSubtask } from "@/hooks/useSubtaskMutations";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
+import { SubtaskList, type Subtask } from "./subtask-list";
 
 const PRIORITIES: TaskPriority[] = ["P0", "P1", "P2", "P3"];
 
@@ -54,8 +56,10 @@ export function AddTaskModal({
   const [description, setDescription] = React.useState("");
   const [estimatedMins, setEstimatedMins] = React.useState<string>("");
   const [priority, setPriority] = React.useState<TaskPriority>("P2");
+  const [subtasks, setSubtasks] = React.useState<Subtask[]>([]);
 
   const createTask = useCreateTask();
+  const createSubtask = useCreateSubtask();
   const titleInputRef = React.useRef<HTMLInputElement>(null);
 
   // Focus title input when modal opens
@@ -72,6 +76,7 @@ export function AddTaskModal({
       setDescription("");
       setEstimatedMins("");
       setPriority("P2");
+      setSubtasks([]);
     }
   }, [open]);
 
@@ -79,13 +84,25 @@ export function AddTaskModal({
     e.preventDefault();
     if (!title.trim()) return;
 
-    await createTask.mutateAsync({
+    const newTask = await createTask.mutateAsync({
       title: title.trim(),
       notes: description || undefined,
       scheduledDate: scheduledDate || undefined,
       estimatedMins: estimatedMins ? parseInt(estimatedMins, 10) : undefined,
       priority,
     });
+
+    // Create subtasks after task is created
+    if (subtasks.length > 0) {
+      await Promise.all(
+        subtasks.map((st) =>
+          createSubtask.mutateAsync({
+            taskId: newTask.id,
+            data: { title: st.title },
+          })
+        )
+      );
+    }
 
     onOpenChange(false);
   };
@@ -120,6 +137,15 @@ export function AddTaskModal({
                 onChange={setDescription}
                 placeholder="Add details..."
                 minHeight="60px"
+              />
+            </div>
+
+            {/* Subtasks */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-muted-foreground">Subtasks</Label>
+              <SubtaskList
+                subtasks={subtasks}
+                onSubtasksChange={setSubtasks}
               />
             </div>
 
@@ -211,9 +237,9 @@ export function AddTaskModal({
               type="submit"
               size="sm"
               className="h-8"
-              disabled={!title.trim() || createTask.isPending}
+              disabled={!title.trim() || createTask.isPending || createSubtask.isPending}
             >
-              {createTask.isPending ? "Creating..." : "Create"}
+              {createTask.isPending || createSubtask.isPending ? "Creating..." : "Create"}
             </Button>
           </DialogFooter>
         </form>
