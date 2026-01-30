@@ -4,7 +4,6 @@ import { CalendarView } from "@/components/calendar";
 import { TaskModal } from "@/components/kanban/task-modal";
 import { TimeBlockDetailSheet } from "@/components/calendar/time-block-detail-sheet";
 import { CreateTimeBlockDialog } from "@/components/calendar/create-time-block-dialog";
-import { useTask } from "@/hooks";
 
 /**
  * Calendar page with time blocking functionality
@@ -12,7 +11,7 @@ import { useTask } from "@/hooks";
  */
 export default function CalendarPage() {
   // Task detail panel state
-  const [selectedTaskId, setSelectedTaskId] = React.useState<string | null>(null);
+  const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [taskPanelOpen, setTaskPanelOpen] = React.useState(false);
   
   // Time block detail sheet state
@@ -25,11 +24,8 @@ export default function CalendarPage() {
   const [createDialogStartTime, setCreateDialogStartTime] = React.useState<Date>(new Date());
   const [createDialogEndTime, setCreateDialogEndTime] = React.useState<Date>(new Date());
 
-  // Fetch the selected task data
-  const { data: selectedTask } = useTask(selectedTaskId ?? "");
-
   const handleTaskClick = (task: Task) => {
-    setSelectedTaskId(task.id);
+    setSelectedTask(task);
     setTaskPanelOpen(true);
   };
 
@@ -41,7 +37,7 @@ export default function CalendarPage() {
   const handleTaskPanelOpenChange = (open: boolean) => {
     setTaskPanelOpen(open);
     if (!open) {
-      setSelectedTaskId(null);
+      setSelectedTask(null);
     }
   };
 
@@ -69,7 +65,7 @@ export default function CalendarPage() {
 
       {/* Task Modal - reused from kanban */}
       <TaskModal
-        task={selectedTask ?? null}
+        task={selectedTask}
         open={taskPanelOpen}
         onOpenChange={handleTaskPanelOpenChange}
       />
