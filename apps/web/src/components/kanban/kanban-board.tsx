@@ -34,8 +34,6 @@ export function KanbanBoard({ children }: KanbanBoardProps) {
     navigateNext,
     navigateToToday,
     handleScroll,
-    firstVisibleDate,
-    lastVisibleDate,
   } = useKanbanDates({ containerRef, isDragging });
 
   // Memoize navigation context value
@@ -54,8 +52,6 @@ export function KanbanBoard({ children }: KanbanBoardProps) {
       <div className="flex h-full flex-col bg-background">
         {/* Toolbar */}
         <KanbanBoardToolbar
-          firstVisibleDate={firstVisibleDate}
-          lastVisibleDate={lastVisibleDate}
           onNavigatePrevious={navigatePrevious}
           onNavigateNext={navigateNext}
           onNavigateToday={navigateToToday}

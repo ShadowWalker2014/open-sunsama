@@ -1,5 +1,4 @@
 import * as React from "react";
-import { format } from "date-fns";
 import { ChevronLeft, ChevronRight, CalendarDays, ArrowUpDown, Check } from "lucide-react";
 import type { TaskSortBy } from "@open-sunsama/types";
 import {
@@ -43,8 +42,6 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 const SORT_STORAGE_KEY = "open-sunsama-kanban-sort";
 
 interface KanbanBoardToolbarProps {
-  firstVisibleDate: Date | null;
-  lastVisibleDate: Date | null;
   onNavigatePrevious: () => void;
   onNavigateNext: () => void;
   onNavigateToday: () => void;
@@ -76,8 +73,6 @@ export function useSortPreference(): [SortOption, (sort: SortOption) => void] {
 }
 
 export function KanbanBoardToolbar({
-  firstVisibleDate,
-  lastVisibleDate,
   onNavigatePrevious,
   onNavigateNext,
   onNavigateToday,
@@ -120,13 +115,6 @@ export function KanbanBoardToolbar({
           </Button>
         </div>
 
-        {/* Current Date Range - Hidden on mobile */}
-        {firstVisibleDate && lastVisibleDate && (
-          <h2 className="hidden sm:block text-base sm:text-lg font-semibold">
-            {format(firstVisibleDate, "MMM d")} -{" "}
-            {format(lastVisibleDate, "MMM d, yyyy")}
-          </h2>
-        )}
       </div>
 
       {/* Sort Dropdown */}
