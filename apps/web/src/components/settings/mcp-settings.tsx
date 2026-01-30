@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Check, Copy, Loader2, Terminal, AlertCircle, RefreshCw } from "lucide-react";
+import { Check, Copy, Loader2, Terminal, RefreshCw } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -13,6 +13,7 @@ import { useApiKeys, useCreateApiKey } from "@/hooks/useApiKeys";
 import type { ApiKey, ApiKeyScope } from "@open-sunsama/types";
 
 const MCP_KEY_NAME = "MCP Integration";
+const MCP_KEY_STORAGE_KEY = "opensunsama_mcp_key";
 const ALL_SCOPES: ApiKeyScope[] = [
   "tasks:read",
   "tasks:write",
@@ -31,6 +32,14 @@ const CLIENT_TABS: { id: ClientTab; label: string }[] = [
 ];
 
 /**
+ * Blur a string for display (show first 8 chars, blur rest)
+ */
+function blurKey(key: string): string {
+  if (key.length <= 12) return key;
+  return key.slice(0, 12) + "•".repeat(Math.min(key.length - 12, 24));
+}
+
+/**
  * MCP Integration settings tab
  * Shows setup instructions for various MCP clients with auto-generated API key
  */
@@ -44,17 +53,28 @@ export function McpSettings() {
   const createMutation = useCreateApiKey();
 
   // Get the API URL from environment
-  const apiUrl = import.meta.env.VITE_API_URL || "https://api.opensunsama.com";
+  const apiUrl = import.meta.env.VITE_API_URL || "https://api.sunsama.com";
 
-  // Find existing MCP key
+  // Load key from localStorage on mount
+  React.useEffect(() => {
+    const storedKey = localStorage.getItem(MCP_KEY_STORAGE_KEY);
+    if (storedKey) {
+      setMcpKey(storedKey);
+    }
+  }, []);
+
+  // Find existing MCP key in the API keys list
   const existingMcpKey = React.useMemo(() => {
     return apiKeys?.find((key: ApiKey) => key.name === MCP_KEY_NAME);
   }, [apiKeys]);
 
-  // Auto-create MCP key if it doesn't exist
+  // Auto-create MCP key if it doesn't exist (and we don't have one stored)
   React.useEffect(() => {
     const createMcpKeyIfNeeded = async () => {
-      if (isLoadingKeys || existingMcpKey || isCreatingKey || mcpKey) return;
+      // Don't create if still loading, already creating, or we have a key
+      if (isLoadingKeys || isCreatingKey) return;
+      if (mcpKey) return; // Already have key from localStorage
+      if (existingMcpKey) return; // Key exists in API but not in localStorage (old key)
 
       setIsCreatingKey(true);
       const response = await createMutation.mutateAsync({
@@ -62,6 +82,8 @@ export function McpSettings() {
         scopes: ALL_SCOPES,
         expiresAt: null,
       });
+      // Store in localStorage for persistence
+      localStorage.setItem(MCP_KEY_STORAGE_KEY, response.key);
       setMcpKey(response.key);
       setIsCreatingKey(false);
     };
@@ -82,6 +104,8 @@ export function McpSettings() {
       scopes: ALL_SCOPES,
       expiresAt: null,
     });
+    // Store in localStorage for persistence
+    localStorage.setItem(MCP_KEY_STORAGE_KEY, response.key);
     setMcpKey(response.key);
     setIsCreatingKey(false);
   };
@@ -108,47 +132,28 @@ export function McpSettings() {
     );
   }
 
-  // The API key to display - either newly created or existing (prefix only)
-  const displayKey = mcpKey || (existingMcpKey ? existingMcpKey.keyPrefix + "..." : null);
-  const hasFullKey = !!mcpKey;
+  // The actual API key (from localStorage or newly created)
+  const actualKey = mcpKey || "os_your-api-key-here";
+  const hasKey = !!mcpKey;
 
-  // Generate config JSON for each client
-  const generateConfig = (client: ClientTab): string => {
-    const keyPlaceholder = hasFullKey ? mcpKey : "os_your-api-key-here";
+  // Generate config JSON for each client (with actual key for copying)
+  const generateConfig = (client: ClientTab, forDisplay: boolean = false): string => {
+    const keyValue = forDisplay && hasKey ? blurKey(actualKey) : actualKey;
     
     const baseConfig = {
       command: "node",
       args: ["/path/to/open-sunsama/mcp/build/index.js"],
       env: {
-        OPENSUNSAMA_API_KEY: keyPlaceholder,
-        ...(apiUrl !== "https://api.opensunsama.com" && { OPENSUNSAMA_API_URL: apiUrl }),
+        OPENSUNSAMA_API_KEY: keyValue,
+        ...(apiUrl !== "https://api.sunsama.com" && { OPENSUNSAMA_API_URL: apiUrl }),
       },
     };
 
     switch (client) {
       case "general":
-        return JSON.stringify(
-          {
-            mcpServers: {
-              "open-sunsama": baseConfig,
-            },
-          },
-          null,
-          2
-        );
-
       case "cursor":
-        return JSON.stringify(
-          {
-            mcpServers: {
-              "open-sunsama": baseConfig,
-            },
-          },
-          null,
-          2
-        );
-
       case "claude":
+      case "windsurf":
         return JSON.stringify(
           {
             mcpServers: {
@@ -168,17 +173,6 @@ export function McpSettings() {
                 ...baseConfig,
               },
             ],
-          },
-          null,
-          2
-        );
-
-      case "windsurf":
-        return JSON.stringify(
-          {
-            mcpServers: {
-              "open-sunsama": baseConfig,
-            },
           },
           null,
           2
@@ -204,7 +198,8 @@ export function McpSettings() {
     }
   };
 
-  const configJson = generateConfig(activeClient);
+  const configJsonDisplay = generateConfig(activeClient, true);
+  const configJsonCopy = generateConfig(activeClient, false);
 
   return (
     <Card>
@@ -223,36 +218,29 @@ export function McpSettings() {
               <Terminal className="mt-0.5 h-5 w-5 text-muted-foreground" />
               <div className="space-y-1">
                 <p className="text-sm font-medium">Your MCP API Key</p>
-                {hasFullKey ? (
-                  <div className="flex items-center gap-2">
-                    <code className="rounded bg-background px-2 py-1 font-mono text-xs">
-                      {mcpKey}
-                    </code>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0"
-                      onClick={() => handleCopy(mcpKey!, "apiKey")}
-                    >
-                      {copiedField === "apiKey" ? (
-                        <Check className="h-3.5 w-3.5 text-green-500" />
-                      ) : (
-                        <Copy className="h-3.5 w-3.5" />
-                      )}
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">
-                      Key prefix: <code className="rounded bg-background px-1">{displayKey}</code>
-                    </p>
-                    <div className="flex items-center gap-2 rounded-md border border-amber-500/20 bg-amber-500/10 px-2 py-1.5">
-                      <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
-                      <p className="text-xs text-amber-600 dark:text-amber-400">
-                        Full key was shown only once at creation. Generate a new key to see it.
-                      </p>
-                    </div>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <code className="rounded bg-background px-2 py-1 font-mono text-xs select-all">
+                    <span className={cn(hasKey && "blur-[3px] hover:blur-none transition-all")}>
+                      {actualKey}
+                    </span>
+                  </code>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={() => handleCopy(actualKey, "apiKey")}
+                  >
+                    {copiedField === "apiKey" ? (
+                      <Check className="h-3.5 w-3.5 text-green-500" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+                </div>
+                {hasKey && (
+                  <p className="text-xs text-muted-foreground">
+                    Hover to reveal • Click to select • Copy button copies full key
+                  </p>
                 )}
               </div>
             </div>
@@ -300,13 +288,13 @@ export function McpSettings() {
           </div>
 
           {/* Code Block */}
-          <div className="relative">
+          <div className="relative group">
             <div className="absolute right-2 top-2 z-10">
               <Button
                 variant="ghost"
                 size="sm"
                 className="h-7 gap-1.5 bg-background/80 text-xs backdrop-blur-sm"
-                onClick={() => handleCopy(configJson, "config")}
+                onClick={() => handleCopy(configJsonCopy, "config")}
               >
                 {copiedField === "config" ? (
                   <>
@@ -321,9 +309,19 @@ export function McpSettings() {
                 )}
               </Button>
             </div>
-            <pre className="overflow-x-auto rounded-lg border bg-zinc-950 p-4 text-sm">
-              <code className="text-zinc-100">{configJson}</code>
+            <pre className="overflow-x-auto rounded-lg border bg-zinc-950 p-4 text-sm select-all">
+              <code className={cn(
+                "text-zinc-100",
+                hasKey && "blur-[2px] group-hover:blur-none transition-all"
+              )}>
+                {configJsonDisplay}
+              </code>
             </pre>
+            {hasKey && (
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Hover to reveal • Copy button copies config with full API key
+              </p>
+            )}
           </div>
 
           {/* Instructions */}
@@ -339,7 +337,7 @@ export function McpSettings() {
           </div>
 
           {/* Note about API URL */}
-          {apiUrl !== "https://api.opensunsama.com" && (
+          {apiUrl !== "https://api.sunsama.com" && (
             <div className="rounded-md border border-blue-500/20 bg-blue-500/10 px-3 py-2">
               <p className="text-xs text-blue-600 dark:text-blue-400">
                 <strong>Note:</strong> Your configuration includes a custom API URL ({apiUrl}) since you're not using the default cloud API.
