@@ -88,10 +88,10 @@ export interface PriorityBadgeProps
 }
 
 const PRIORITY_LABELS: Record<TaskPriority, string> = {
-  P0: "Urgent",
-  P1: "High",
-  P2: "Medium",
-  P3: "Low",
+  P0: "P0",
+  P1: "P1",
+  P2: "P2",
+  P3: "P3",
 };
 
 const PRIORITY_SHORT_LABELS: Record<TaskPriority, string> = {
@@ -102,10 +102,10 @@ const PRIORITY_SHORT_LABELS: Record<TaskPriority, string> = {
 };
 
 const PRIORITY_TAG_LABELS: Record<TaskPriority, string> = {
-  P0: "Urgent",
-  P1: "High",
-  P2: "Med",
-  P3: "Low",
+  P0: "P0",
+  P1: "P1",
+  P2: "P2",
+  P3: "P3",
 };
 
 export function PriorityBadge({

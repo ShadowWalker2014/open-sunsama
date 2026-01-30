@@ -389,6 +389,34 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
 
         {/* Main Content */}
         <div className="px-4 py-4 space-y-4 max-h-[50vh] overflow-y-auto">
+          {/* Priority Section */}
+          <div className="flex items-center justify-between py-2">
+            <span className="text-sm text-muted-foreground">Priority</span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-7 gap-2 px-2">
+                  <PriorityIcon priority={priority} />
+                  <span className="text-sm">{PRIORITY_LABELS[priority]}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                {PRIORITIES.map((p) => (
+                  <DropdownMenuItem
+                    key={p}
+                    onClick={() => handleSetPriority(p)}
+                    className={priority === p ? "bg-accent" : ""}
+                  >
+                    <PriorityIcon priority={p} className="mr-2" />
+                    {PRIORITY_LABELS[p]}
+                    {priority === p && (
+                      <span className="ml-auto text-xs text-muted-foreground">✓</span>
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
           {/* Subtasks Section */}
           <div className="space-y-2">
             <h4 className="text-sm font-medium text-muted-foreground">Subtasks</h4>
@@ -460,34 +488,6 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
 
           {/* Attachments - minimal */}
           <TaskAttachments taskId={task.id} />
-
-          {/* Priority Section */}
-          <div className="flex items-center justify-between py-2">
-            <span className="text-sm text-muted-foreground">Priority</span>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-7 gap-2 px-2">
-                  <PriorityIcon priority={priority} />
-                  <span className="text-sm">{PRIORITY_LABELS[priority]}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40">
-                {PRIORITIES.map((p) => (
-                  <DropdownMenuItem
-                    key={p}
-                    onClick={() => handleSetPriority(p)}
-                    className={priority === p ? "bg-accent" : ""}
-                  >
-                    <PriorityIcon priority={p} className="mr-2" />
-                    {PRIORITY_LABELS[p]}
-                    {priority === p && (
-                      <span className="ml-auto text-xs text-muted-foreground">✓</span>
-                    )}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
 
           {/* Time & Duration Section */}
           <div className="space-y-3">

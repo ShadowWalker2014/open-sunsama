@@ -129,29 +129,9 @@ export function AddTaskModal({
 
           {/* Main Content */}
           <div className="px-4 py-4 space-y-4 max-h-[50vh] overflow-y-auto">
-            {/* Notes */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-muted-foreground">Notes</Label>
-              <RichTextEditor
-                value={description}
-                onChange={setDescription}
-                placeholder="Add details..."
-                minHeight="60px"
-              />
-            </div>
-
-            {/* Subtasks */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-muted-foreground">Subtasks</Label>
-              <SubtaskList
-                subtasks={subtasks}
-                onSubtasksChange={setSubtasks}
-              />
-            </div>
-
-            {/* Inline options: Priority and Time */}
-            <div className="flex items-center gap-3">
-              {/* Priority */}
+            {/* Priority */}
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium text-muted-foreground">Priority</Label>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -165,7 +145,7 @@ export function AddTaskModal({
                     <ChevronDown className="h-3 w-3 opacity-50" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-32">
+                <DropdownMenuContent align="end" className="w-32">
                   {PRIORITIES.map((p) => (
                     <DropdownMenuItem
                       key={p}
@@ -178,8 +158,31 @@ export function AddTaskModal({
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
+            </div>
 
-              {/* Estimated time */}
+            {/* Subtasks */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-muted-foreground">Subtasks</Label>
+              <SubtaskList
+                subtasks={subtasks}
+                onSubtasksChange={setSubtasks}
+              />
+            </div>
+
+            {/* Notes */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-muted-foreground">Notes</Label>
+              <RichTextEditor
+                value={description}
+                onChange={setDescription}
+                placeholder="Add details..."
+                minHeight="60px"
+              />
+            </div>
+
+            {/* Estimated time */}
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium text-muted-foreground">Duration</Label>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
