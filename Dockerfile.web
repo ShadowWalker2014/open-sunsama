@@ -27,7 +27,9 @@ COPY apps/web/ ./apps/web/
 
 # Build args for environment variables needed at build time
 ARG VITE_API_URL
+ARG VITE_WS_URL
 ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_WS_URL=$VITE_WS_URL
 
 # Build the packages and web app
 RUN bun run build --filter=@open-sunsama/types --filter=@open-sunsama/utils --filter=@open-sunsama/api-client --filter=@open-sunsama/web

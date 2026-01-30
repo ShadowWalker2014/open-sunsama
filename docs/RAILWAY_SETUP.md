@@ -66,6 +66,7 @@ Go to Railway Dashboard → Open Sunsama → web service → Settings:
 NODE_ENV=production
 PORT=3000
 VITE_API_URL=https://<api-domain>.up.railway.app
+VITE_WS_URL=wss://<api-domain>.up.railway.app
 ```
 
 ### 3. Database Setup (Postgres)
