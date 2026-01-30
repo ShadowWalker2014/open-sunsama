@@ -88,6 +88,10 @@ export const JOBS = {
   TIMEZONE_ROLLOVER_CHECK: 'timezone-rollover-check',
   /** Processes a batch of users for task rollover */
   USER_BATCH_ROLLOVER: 'user-batch-rollover',
+  /** Runs every minute to check which timezones hit 6 AM for daily summary */
+  DAILY_SUMMARY_CHECK: 'daily-summary-check',
+  /** Sends daily summary email to individual user */
+  SEND_DAILY_SUMMARY: 'send-daily-summary',
 } as const;
 
 export type JobName = typeof JOBS[keyof typeof JOBS];
