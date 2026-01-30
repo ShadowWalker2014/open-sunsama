@@ -76,6 +76,12 @@ function handleWebSocketEvent(
         const { taskId } = event.payload as { taskId: string };
         queryClient.invalidateQueries({ queryKey: taskKeys.detail(taskId) });
       }
+
+      // Cross-invalidate time blocks when tasks are deleted/updated/completed
+      // This ensures calendar view refreshes when linked tasks change
+      if (event.type === "task:deleted" || event.type === "task:updated" || event.type === "task:completed") {
+        queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
+      }
       break;
 
     // Time block events
