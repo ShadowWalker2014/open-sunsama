@@ -1,21 +1,17 @@
 import * as React from "react";
-import { format, isSameDay, setHours, addMinutes, startOfDay } from "date-fns";
-import { Menu } from "lucide-react";
+import { format, isSameDay, setHours, setMinutes, addMinutes, startOfDay } from "date-fns";
+import { Menu, Plus } from "lucide-react";
 import type { Task, TimeBlock as TimeBlockType } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import {
   useTasks,
   useTimeBlocksForDate,
-  useCreateTimeBlock,
 } from "@/hooks";
 import {
   HOUR_HEIGHT,
   TIMELINE_START_HOUR,
   TIMELINE_END_HOUR,
   calculateYFromTime,
-  calculateTimeFromY,
-  snapToInterval,
-  SNAP_INTERVAL,
 } from "@/hooks/useCalendarDnd";
 import {
   ScrollArea,
@@ -81,9 +77,6 @@ export function MobileCalendarView({
   const { data: timeBlocks = [], isLoading: isLoadingBlocks } =
     useTimeBlocksForDate(dateString);
 
-  // Create time block mutation
-  const createTimeBlock = useCreateTimeBlock();
-
   // Filter tasks that don't have a time block on this day
   const unscheduledTasks = React.useMemo(() => {
     const blockedTaskIds = new Set(
@@ -127,36 +120,6 @@ export function MobileCalendarView({
       isSameDay(new Date(block.startTime), selectedDate)
     );
   }, [timeBlocks, selectedDate]);
-
-  // Handle tap on empty time slot
-  const handleTimeSlotTap = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Don't trigger if clicking on a time block
-    if ((e.target as HTMLElement).closest("[data-time-block]")) {
-      return;
-    }
-
-    const container = e.currentTarget;
-    const rect = container.getBoundingClientRect();
-
-    // Calculate Y relative to the timeline content
-    const relativeY = e.clientY - rect.top;
-
-    // Calculate time from Y position
-    const clickedTime = calculateTimeFromY(relativeY, selectedDate);
-    const snappedStartTime = snapToInterval(clickedTime, SNAP_INTERVAL);
-    const snappedEndTime = addMinutes(snappedStartTime, 60);
-
-    if (onTimeSlotClick) {
-      onTimeSlotClick(selectedDate, snappedStartTime, snappedEndTime);
-    } else {
-      // Default behavior: create a new time block
-      createTimeBlock.mutate({
-        title: "New Time Block",
-        startTime: snappedStartTime,
-        endTime: snappedEndTime,
-      });
-    }
-  };
 
   const isLoading = isLoadingTasks || isLoadingBlocks;
 
@@ -224,11 +187,10 @@ export function MobileCalendarView({
           <div
             ref={timelineRef}
             className={cn(
-              "relative flex-1 cursor-pointer",
+              "relative flex-1",
               "touch-pan-y",
               isToday && "bg-accent/5"
             )}
-            onClick={handleTimeSlotTap}
           >
             {/* Hour grid lines */}
             {hours.map((hour) => (
@@ -287,6 +249,31 @@ export function MobileCalendarView({
           </div>
         </div>
       </ScrollArea>
+
+      {/* FAB for creating time blocks */}
+      <button
+        onClick={() => {
+          // Create a time block starting at next hour
+          const now = new Date();
+          const startHour = now.getHours() + 1;
+          const startTime = setHours(setMinutes(selectedDate, 0), startHour);
+          const endTime = addMinutes(startTime, 60);
+          
+          if (onTimeSlotClick) {
+            onTimeSlotClick(selectedDate, startTime, endTime);
+          }
+        }}
+        className={cn(
+          "fixed bottom-24 right-4 z-40",
+          "flex h-14 w-14 items-center justify-center",
+          "rounded-full bg-primary text-primary-foreground shadow-lg",
+          "hover:bg-primary/90 active:scale-95 transition-all",
+          "lg:hidden"
+        )}
+        aria-label="Add time block"
+      >
+        <Plus className="h-6 w-6" />
+      </button>
     </div>
   );
 }
