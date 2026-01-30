@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Check, Circle } from "lucide-react";
+import { Check } from "lucide-react";
 import type { Task, Subtask } from "@open-sunsama/types";
 import { cn, formatDuration } from "@/lib/utils";
 import { useHoveredTask } from "@/hooks/useKeyboardShortcuts";
@@ -22,6 +22,8 @@ interface TaskCardContentProps {
   tagColor?: string | null;
   /** Optional subtasks to display inline */
   subtasks?: Subtask[];
+  /** Optional callback when a subtask is toggled */
+  onToggleSubtask?: (subtaskId: string) => void;
 }
 
 /**
@@ -41,6 +43,7 @@ export function TaskCardContent({
   tag,
   tagColor,
   subtasks,
+  onToggleSubtask,
 }: TaskCardContentProps) {
   const { setHoveredTask } = useHoveredTask();
 
@@ -143,14 +146,28 @@ export function TaskCardContent({
       {subtasksPreview && subtasksPreview.length > 0 && !isCompleted && (
         <div className="pl-6 space-y-0.5">
           {subtasksPreview.map((subtask) => (
-            <div key={subtask.id} className="flex items-center gap-1.5">
-              {subtask.completed ? (
-                <div className="h-3 w-3 rounded-full bg-primary/60 flex items-center justify-center">
+            <div 
+              key={subtask.id} 
+              className="flex items-center gap-1.5 group/subtask cursor-pointer hover:bg-muted/30 rounded -mx-1 px-1"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleSubtask?.(subtask.id);
+              }}
+              role="checkbox"
+              aria-checked={subtask.completed}
+            >
+              <div 
+                className={cn(
+                  "h-3 w-3 rounded-full flex items-center justify-center transition-colors",
+                  subtask.completed 
+                    ? "bg-primary/60" 
+                    : "border border-muted-foreground/40 group-hover/subtask:border-primary group-hover/subtask:bg-primary/10"
+                )}
+              >
+                {subtask.completed && (
                   <Check className="h-2 w-2 text-primary-foreground" strokeWidth={3} />
-                </div>
-              ) : (
-                <Circle className="h-3 w-3 text-muted-foreground/40" strokeWidth={1.5} />
-              )}
+                )}
+              </div>
               <span
                 className={cn(
                   "text-xs text-muted-foreground truncate",
