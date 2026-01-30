@@ -6,10 +6,10 @@
  */
 
 import 'dotenv/config';
+import { createServer, type Server as HttpServer } from 'http';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
-import { serve } from '@hono/node-server';
 
 import { errorHandler, notFoundHandler } from './middleware/error.js';
 import { authRouter } from './routes/auth.js';
@@ -22,6 +22,8 @@ import { uploadsRouter } from './routes/uploads.js';
 import { attachmentsRouter } from './routes/attachments.js';
 import { registerAllWorkers } from './workers/index.js';
 import { stopPgBoss, isPgBossRunning, getPgBoss, JOBS } from './lib/pgboss.js';
+import { initWebSocket, initRedisSubscriber } from './lib/websocket/index.js';
+import { closeRedisConnections } from './lib/redis.js';
 
 // Create Hono app
 const app = new Hono();
@@ -106,6 +108,9 @@ app.notFound(notFoundHandler);
 // Start server
 const port = parseInt(process.env.PORT || '3001', 10);
 
+// Reference to HTTP server for graceful shutdown
+let httpServer: HttpServer | null = null;
+
 /**
  * Initialize and start the server
  */
@@ -119,7 +124,61 @@ async function startServer(): Promise<void> {
     // This allows the API to function without background jobs
   }
 
-  console.log(`
+  // Create HTTP server from Hono app
+  httpServer = createServer(async (req, res) => {
+    // Convert Node.js IncomingHttpHeaders to a plain object for Request
+    const headers: Record<string, string> = {};
+    for (const [key, value] of Object.entries(req.headers)) {
+      if (typeof value === 'string') {
+        headers[key] = value;
+      } else if (Array.isArray(value)) {
+        headers[key] = value.join(', ');
+      }
+    }
+
+    const response = await app.fetch(
+      new Request(`http://${req.headers.host}${req.url}`, {
+        method: req.method,
+        headers,
+        body: req.method !== 'GET' && req.method !== 'HEAD' ? req : undefined,
+        duplex: 'half',
+      } as RequestInit)
+    );
+
+    res.statusCode = response.status;
+    response.headers.forEach((value, key) => {
+      res.setHeader(key, value);
+    });
+
+    if (response.body) {
+      const reader = response.body.getReader();
+      const pump = async () => {
+        const { done, value } = await reader.read();
+        if (done) {
+          res.end();
+          return;
+        }
+        res.write(value);
+        await pump();
+      };
+      await pump();
+    } else {
+      res.end();
+    }
+  });
+
+  // Initialize WebSocket if Redis is configured
+  const wsEnabled = !!process.env.REDIS_URL;
+  if (wsEnabled) {
+    initRedisSubscriber();
+    initWebSocket(httpServer);
+  } else {
+    console.log('[WS] REDIS_URL not set, WebSocket disabled');
+  }
+
+  // Start listening
+  httpServer.listen(port, () => {
+    console.log(`
   ╔═══════════════════════════════════════════════════════════╗
   ║                                                           ║
   ║   Open Sunsama API                                        ║
@@ -140,12 +199,11 @@ async function startServer(): Promise<void> {
   ║   Background Jobs:                                        ║
   ║   - Task Rollover (${process.env.ROLLOVER_ENABLED !== 'false' ? 'enabled' : 'disabled'})                           ║
   ║                                                           ║
+  ║   WebSocket:                                              ║
+  ║   - ${wsEnabled ? 'Enabled at /ws' : 'Disabled (REDIS_URL not set)'}                              ║
+  ║                                                           ║
   ╚═══════════════════════════════════════════════════════════╝
 `);
-
-  serve({
-    fetch: app.fetch,
-    port,
   });
 }
 
@@ -154,7 +212,17 @@ async function gracefulShutdown(signal: string): Promise<void> {
   console.log(`\n[Server] Received ${signal}, shutting down gracefully...`);
   
   try {
+    // Close HTTP server (stops accepting new connections)
+    if (httpServer) {
+      httpServer.close();
+    }
+
+    // Stop background job processor
     await stopPgBoss();
+
+    // Close Redis connections
+    await closeRedisConnections();
+
     console.log('[Server] Cleanup complete');
   } catch (error) {
     console.error('[Server] Error during shutdown:', error);
