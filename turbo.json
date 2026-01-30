@@ -5,9 +5,19 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "build/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "build/**", "src-tauri/target/release/bundle/**"]
     },
     "dev": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
+    "@open-sunsama/desktop#build": {
+      "dependsOn": ["@open-sunsama/web#build"],
+      "outputs": ["src-tauri/target/release/bundle/**"],
+      "cache": false
+    },
+    "@open-sunsama/desktop#dev": {
       "dependsOn": ["^build"],
       "cache": false,
       "persistent": true

@@ -99,3 +99,11 @@ export {
   isVideoFile,
   attachmentKeys,
 } from "./useTaskAttachments";
+export {
+  useIsDesktop,
+  useNativeNotification,
+  useAutoLaunch,
+  useDesktopSettings,
+  useDesktopEvents,
+  useDesktop,
+} from "./useDesktop";

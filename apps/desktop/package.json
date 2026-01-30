@@ -2,19 +2,25 @@
   "name": "@open-sunsama/desktop",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "echo 'Electron app - placeholder'",
-    "build": "echo 'Electron app - placeholder'",
-    "lint": "echo 'Electron app - placeholder'",
-    "typecheck": "echo 'Electron app - placeholder'",
-    "clean": "rm -rf node_modules .turbo"
+    "dev": "tauri dev",
+    "build": "tsc --noEmit && tauri build",
+    "build:tauri": "tauri build",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo src-tauri/target",
+    "tauri": "tauri"
   },
   "dependencies": {
-    "@open-sunsama/api-client": "workspace:*",
-    "@open-sunsama/types": "workspace:*",
-    "@open-sunsama/utils": "workspace:*"
+    "@tauri-apps/api": "^2.2.0",
+    "@tauri-apps/plugin-autostart": "^2.2.0",
+    "@tauri-apps/plugin-global-shortcut": "^2.2.0",
+    "@tauri-apps/plugin-notification": "^2.2.0",
+    "@tauri-apps/plugin-store": "^2.2.0"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.2.4",
     "typescript": "^5.7.2"
   }
 }
