@@ -100,9 +100,13 @@ function highlightJson(json: string): React.ReactNode[] {
 export function McpSettings() {
   const [activeClient, setActiveClient] = React.useState<ClientTab>("cursor");
   const [copiedField, setCopiedField] = React.useState<string | null>(null);
-  const [mcpKey, setMcpKey] = React.useState<string | null>(null);
+  const [mcpKey, setMcpKey] = React.useState<string | null>(() => {
+    // Initialize from localStorage synchronously to prevent unnecessary key creation
+    return localStorage.getItem(MCP_KEY_STORAGE_KEY);
+  });
   const [isCreatingKey, setIsCreatingKey] = React.useState(false);
   const [showKey, setShowKey] = React.useState(false);
+  const hasAttemptedCreate = React.useRef(false);
 
   const { isLoading: isLoadingKeys } = useApiKeys();
   const createMutation = useCreateApiKey();
@@ -110,38 +114,28 @@ export function McpSettings() {
   // Get the API URL from environment
   const apiUrl = import.meta.env.VITE_API_URL || "https://api.opensunsama.com";
 
-  // Load key from localStorage on mount
-  React.useEffect(() => {
-    const storedKey = localStorage.getItem(MCP_KEY_STORAGE_KEY);
-    if (storedKey) {
-      setMcpKey(storedKey);
-    }
-  }, []);
-
-  // Auto-create MCP key if we don't have one in localStorage
-  // Note: Even if a key exists in the API, we can't retrieve its value (only shown once)
-  // So we always need a key in localStorage to display it
+  // Auto-create MCP key only once if we don't have one in localStorage
   React.useEffect(() => {
     const createMcpKeyIfNeeded = async () => {
-      // Don't create if still loading, already creating, or we have a key
-      if (isLoadingKeys || isCreatingKey) return;
-      if (mcpKey) return; // Already have key from localStorage
+      // Don't create if: still loading, already creating, already have a key, or already tried
+      if (isLoadingKeys || isCreatingKey || mcpKey || hasAttemptedCreate.current) return;
 
-      // Create a new key (even if one exists in API, we can't retrieve its value)
+      // Mark that we've attempted to create
+      hasAttemptedCreate.current = true;
+
       setIsCreatingKey(true);
       const response = await createMutation.mutateAsync({
         name: MCP_KEY_NAME,
         scopes: ALL_SCOPES,
         expiresAt: null,
       });
-      // Store in localStorage for persistence
       localStorage.setItem(MCP_KEY_STORAGE_KEY, response.key);
       setMcpKey(response.key);
       setIsCreatingKey(false);
     };
 
     createMcpKeyIfNeeded();
-  }, [isLoadingKeys, isCreatingKey, mcpKey, createMutation]);
+  }, [isLoadingKeys]); // Only depend on isLoadingKeys - run once when loading completes
 
   const handleCopy = async (text: string, field: string) => {
     await navigator.clipboard.writeText(text);
