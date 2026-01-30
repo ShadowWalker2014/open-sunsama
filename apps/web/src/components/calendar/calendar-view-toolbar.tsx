@@ -66,7 +66,7 @@ export function CalendarViewToolbar({
           <div>
             <h2 className="text-base sm:text-lg font-semibold leading-none">
               {format(selectedDate, "EEE")}
-              <span className="hidden sm:inline">{format(selectedDate, "EE").replace(/^../, "")}</span>
+              <span className="hidden sm:inline">{format(selectedDate, "EEEE").replace(/^.../, "")}</span>
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground">
               {format(selectedDate, "MMM d")}
