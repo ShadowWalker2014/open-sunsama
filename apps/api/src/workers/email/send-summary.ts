@@ -10,7 +10,7 @@ import {
   sendDailySummaryEmail, 
   getThemeHexColor,
   type EmailTaskItem 
-} from '../../lib/email.js';
+} from '../../lib/email/index.js';
 
 /**
  * Process a single user's daily summary email

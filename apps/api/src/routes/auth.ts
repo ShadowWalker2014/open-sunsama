@@ -17,7 +17,7 @@ import {
 } from '../validation/auth.js';
 import { publishEvent } from '../lib/websocket/index.js';
 import { deleteFromS3ByUrl } from '../lib/s3.js';
-import { sendPasswordResetEmail, getThemeHexColor } from '../lib/email.js';
+import { sendPasswordResetEmail, getThemeHexColor } from '../lib/email/index.js';
 
 const authRouter = new Hono<{ Variables: AuthVariables }>();
 
