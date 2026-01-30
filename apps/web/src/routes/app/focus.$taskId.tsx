@@ -1,7 +1,8 @@
 import * as React from "react";
 import { useParams, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { useTask, useUpdateTask } from "@/hooks/useTasks";
+import { format } from "date-fns";
+import { useTask, useUpdateTask, useTasks } from "@/hooks/useTasks";
 import { Button } from "@/components/ui";
 import {
   FocusHeader,
@@ -23,6 +24,38 @@ export default function FocusPage() {
 
   const [notes, setNotes] = React.useState("");
   const [isCalendarOpen, setIsCalendarOpen] = React.useState(false);
+  const [wasCompleted, setWasCompleted] = React.useState(false);
+
+  // Fetch today's tasks to find next incomplete task
+  const today = format(new Date(), "yyyy-MM-dd");
+  const { data: todayTasks = [] } = useTasks({ scheduledDate: today });
+
+  // Get incomplete tasks sorted by position (excluding current)
+  const nextIncompleteTask = React.useMemo(() => {
+    const incompleteTasks = todayTasks
+      .filter(t => !t.completedAt && t.id !== taskId)
+      .sort((a, b) => a.position - b.position);
+    return incompleteTasks[0] ?? null;
+  }, [todayTasks, taskId]);
+
+  // Track if task was just completed to trigger auto-navigation
+  React.useEffect(() => {
+    if (task?.completedAt && !wasCompleted) {
+      setWasCompleted(true);
+      // Small delay for visual feedback before switching
+      const timer = setTimeout(() => {
+        if (nextIncompleteTask) {
+          navigate({ to: "/app/focus/$taskId", params: { taskId: nextIncompleteTask.id } });
+        } else {
+          navigate({ to: "/app/focus/complete" });
+        }
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+    if (!task?.completedAt) {
+      setWasCompleted(false);
+    }
+  }, [task?.completedAt, wasCompleted, nextIncompleteTask, navigate]);
 
   // Sync notes with task data
   React.useEffect(() => {

@@ -16,6 +16,7 @@ import CalendarPage from "./routes/app/calendar";
 import SettingsPage from "./routes/app/settings";
 import TasksListPage from "./routes/app/tasks";
 import FocusPage from "./routes/app/focus.$taskId";
+import FocusCompletePage from "./routes/app/focus.complete";
 
 // Create root route
 const rootRoute = createRootRoute({
@@ -115,6 +116,12 @@ const appFocusRoute = createRoute({
   component: FocusPage,
 });
 
+const appFocusCompleteRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/focus/complete",
+  component: FocusCompletePage,
+});
+
 // Build the route tree
 const routeTree = rootRoute.addChildren([
   indexRoute,
@@ -128,6 +135,7 @@ const routeTree = rootRoute.addChildren([
     appSettingsRoute,
     appTasksListRoute,
     appFocusRoute,
+    appFocusCompleteRoute,
   ]),
 ]);
 
