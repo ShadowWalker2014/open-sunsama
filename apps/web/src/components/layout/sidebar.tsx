@@ -4,17 +4,17 @@ import {
   Inbox, 
   ChevronLeft, 
   ChevronRight, 
-  Check, 
 } from "lucide-react";
 import { useDroppable } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { Task } from "@open-sunsama/types";
-import { useTasks } from "@/hooks/useTasks";
-import { useHoveredTask } from "@/hooks/useKeyboardShortcuts";
+import { useTasks, useCompleteTask } from "@/hooks/useTasks";
+import { TaskCardContent } from "@/components/kanban/task-card-content";
+import { TaskContextMenu } from "@/components/kanban/task-context-menu";
 import { useTasksDnd } from "@/lib/dnd/tasks-dnd-context";
-import { cn, formatDuration } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import {
   Button,
   ScrollArea,
@@ -266,7 +266,7 @@ interface SortableBacklogTaskCardProps {
  * - Dragging to calendar view (to create time blocks)
  */
 function SortableBacklogTaskCard({ task, onSelect }: SortableBacklogTaskCardProps) {
-  const { setHoveredTask } = useHoveredTask();
+  const completeTask = useCompleteTask();
   const {
     attributes,
     listeners,
@@ -299,53 +299,43 @@ function SortableBacklogTaskCard({ task, onSelect }: SortableBacklogTaskCardProp
     transition,
   };
 
+  const onTaskClick = () => onSelect();
+
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      onClick={onSelect}
-      onMouseEnter={() => setHoveredTask(task)}
-      onMouseLeave={() => setHoveredTask(null)}
-      className={cn(
-        "relative",
-        isDragging && "opacity-30 z-50"
-      )}
-    >
-      {/* Drop indicator line - above */}
-      {showDropIndicatorAbove && (
-        <div className="absolute -top-0.5 left-0 right-0 h-0.5 bg-primary rounded-full z-10" />
-      )}
-      
+    <TaskContextMenu task={task} onEdit={onTaskClick}>
       <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
         className={cn(
-          "group flex items-center justify-between gap-2 rounded px-2 py-1.5 transition-all duration-150",
-          "hover:bg-muted/50",
-          "cursor-grab active:cursor-grabbing touch-none select-none"
+          "relative",
+          isDragging && "opacity-30 z-50"
         )}
       >
-        {/* Content - compact */}
-        <div className="min-w-0 flex-1 flex items-center gap-2">
-          <div className="h-3.5 w-3.5 rounded-full border border-muted-foreground/40 shrink-0" />
-          <p className="text-xs leading-snug truncate text-foreground/90">
-            {task.title}
-          </p>
-        </div>
+        {/* Drop indicator line - above */}
+        {showDropIndicatorAbove && (
+          <div className="absolute -top-0.5 left-0 right-0 h-0.5 bg-primary rounded-full z-10" />
+        )}
         
-        {/* Duration - compact */}
-        {task.estimatedMins && task.estimatedMins > 0 && (
-          <span className="shrink-0 text-[10px] text-muted-foreground/60 tabular-nums">
-            {formatDuration(task.estimatedMins)}
-          </span>
+        <TaskCardContent
+          task={task}
+          isCompleted={!!task.completedAt}
+          isHovered={false}
+          onToggleComplete={(e) => {
+            e.stopPropagation();
+            completeTask.mutate({ id: task.id, completed: !task.completedAt });
+          }}
+          onClick={onTaskClick}
+          onHoverChange={() => {}}
+        />
+        
+        {/* Drop indicator line - below */}
+        {showDropIndicatorBelow && (
+          <div className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-primary rounded-full z-10" />
         )}
       </div>
-      
-      {/* Drop indicator line - below */}
-      {showDropIndicatorBelow && (
-        <div className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-primary rounded-full z-10" />
-      )}
-    </div>
+    </TaskContextMenu>
   );
 }
 
@@ -359,45 +349,25 @@ interface BacklogTaskCardProps {
  * Has muted/lighter styling to indicate completion.
  */
 function BacklogTaskCard({ task, onSelect }: BacklogTaskCardProps) {
-  const { setHoveredTask } = useHoveredTask();
-  const isCompleted = !!task.completedAt;
+  const completeTask = useCompleteTask();
+
+  const onTaskClick = () => onSelect();
 
   return (
-    <div
-      onClick={onSelect}
-      onMouseEnter={() => setHoveredTask(task)}
-      onMouseLeave={() => setHoveredTask(null)}
-      className={cn(
-        "group flex items-center justify-between gap-2 rounded px-2 py-1.5 transition-all duration-150",
-        "hover:bg-muted/30",
-        "cursor-pointer select-none",
-        isCompleted && "opacity-50 hover:opacity-60"
-      )}
-    >
-      {/* Content - compact */}
-      <div className="min-w-0 flex-1 flex items-center gap-2">
-        {/* Completion indicator */}
-        {isCompleted && (
-          <div className="h-3.5 w-3.5 rounded-full bg-primary/60 flex items-center justify-center shrink-0">
-            <Check className="h-2 w-2 text-primary-foreground" strokeWidth={3} />
-          </div>
-        )}
-        <p
-          className={cn(
-            "text-xs leading-snug truncate",
-            isCompleted && "line-through text-muted-foreground"
-          )}
-        >
-          {task.title}
-        </p>
+    <TaskContextMenu task={task} onEdit={onTaskClick}>
+      <div>
+        <TaskCardContent
+          task={task}
+          isCompleted={!!task.completedAt}
+          isHovered={false}
+          onToggleComplete={(e) => {
+            e.stopPropagation();
+            completeTask.mutate({ id: task.id, completed: !task.completedAt });
+          }}
+          onClick={onTaskClick}
+          onHoverChange={() => {}}
+        />
       </div>
-      
-      {/* Duration - compact */}
-      {task.estimatedMins && task.estimatedMins > 0 && (
-        <span className="shrink-0 text-[10px] text-muted-foreground/50 tabular-nums">
-          {formatDuration(task.estimatedMins)}
-        </span>
-      )}
-    </div>
+    </TaskContextMenu>
   );
 }
