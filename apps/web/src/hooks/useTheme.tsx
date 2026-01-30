@@ -133,6 +133,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const savePreferencesMutation = useSavePreferences();
 
+  // Ref to store the latest save function - avoids stale closure in debounced function
+  const saveToDbRef = React.useRef(savePreferencesMutation.mutate);
+  React.useLayoutEffect(() => {
+    saveToDbRef.current = savePreferencesMutation.mutate;
+  });
+
   // Apply theme on mount to ensure DOM is in sync (index.html should have done this, but this is a safety net)
   // We read from localStorage directly to avoid dependency on React state
   React.useEffect(() => {
@@ -159,13 +165,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
-  // Debounced save to database - user check is done at call site to avoid stale closures
+  // Debounced save to database - stable function that calls the latest mutate via ref
   const debouncedSaveToDb = React.useMemo(
     () =>
       debounce((prefs: UserPreferences) => {
-        savePreferencesMutation.mutate(prefs);
+        saveToDbRef.current(prefs);
       }, 500),
-    [savePreferencesMutation]
+    [] // Empty deps - function is created once, but always calls latest via ref
   );
 
   // Listen for system theme changes
