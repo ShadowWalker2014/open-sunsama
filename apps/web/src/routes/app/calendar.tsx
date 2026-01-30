@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { Task, TimeBlock } from "@open-sunsama/types";
 import { CalendarView } from "@/components/calendar";
-import { TaskDetailPanel } from "@/components/kanban/task-detail-panel";
+import { TaskModal } from "@/components/kanban/task-modal";
 import { TimeBlockDetailSheet } from "@/components/calendar/time-block-detail-sheet";
 import { CreateTimeBlockDialog } from "@/components/calendar/create-time-block-dialog";
 import { useTask } from "@/hooks";
@@ -67,8 +67,8 @@ export default function CalendarPage() {
         onTimeSlotClick={handleTimeSlotClick}
       />
 
-      {/* Task Detail Panel - reused from kanban */}
-      <TaskDetailPanel
+      {/* Task Modal - reused from kanban */}
+      <TaskModal
         task={selectedTask ?? null}
         open={taskPanelOpen}
         onOpenChange={handleTaskPanelOpenChange}
