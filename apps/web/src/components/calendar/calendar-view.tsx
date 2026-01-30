@@ -49,6 +49,7 @@ export function CalendarView({
   // Fetch tasks for selected date (unscheduled = scheduled for this day but no time block)
   const { data: allTasks = [], isLoading: isLoadingTasks } = useTasks({
     scheduledDate: dateString,
+    limit: 200,
   });
 
   // Fetch time blocks for selected date

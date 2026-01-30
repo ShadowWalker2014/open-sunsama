@@ -44,7 +44,7 @@ export function CreateTimeBlockDialog({
   
   // Fetch unscheduled tasks for today that could be associated
   const dateString = format(date, "yyyy-MM-dd");
-  const { data: tasks = [] } = useTasks({ scheduledDate: dateString });
+  const { data: tasks = [] } = useTasks({ scheduledDate: dateString, limit: 200 });
 
   // Filter to incomplete tasks
   const availableTasks = tasks.filter((task) => !task.completedAt);

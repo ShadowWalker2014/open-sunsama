@@ -39,12 +39,15 @@ export function CommandPalette({ open, onOpenChange, onSelectTask, onAddTask }: 
   }, [query]);
 
   const filteredCommands = React.useMemo(() => filterCommands(COMMANDS, query), [query]);
+  const SEARCH_LIMIT = 100;
   const { data: tasks = [], isLoading: isSearchingTasks } = useSearchTasks({
     query: debouncedQuery,
     status: "all",
+    limit: SEARCH_LIMIT,
   });
 
   const showTasks = debouncedQuery.trim().length > 0;
+  const hasMoreResults = tasks.length >= SEARCH_LIMIT;
   const showCreateOption = showTasks && tasks.length === 0 && debouncedQuery.trim().length > 2;
   const commandItems = filteredCommands;
   const taskItems = showTasks ? tasks : [];
@@ -162,8 +165,11 @@ export function CommandPalette({ open, onOpenChange, onSelectTask, onAddTask }: 
               )}
               {taskItems.length > 0 && (
                 <>
-                  <div className="px-3 py-1.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wider mt-1">
-                    Tasks
+                  <div className="px-3 py-1.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wider mt-1 flex items-center justify-between">
+                    <span>Tasks</span>
+                    <span className="normal-case tracking-normal font-normal">
+                      {hasMoreResults ? `${taskItems.length}+ results` : `${taskItems.length} result${taskItems.length !== 1 ? 's' : ''}`}
+                    </span>
                   </div>
                   {taskItems.map((task, index) => (
                     <TaskItem
