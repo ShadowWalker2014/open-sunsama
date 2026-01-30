@@ -6,17 +6,14 @@ const workspaceRoot = path.resolve(projectRoot, '../..');
 
 const config = getDefaultConfig(projectRoot);
 
-// Watch workspace packages
-config.watchFolders = [workspaceRoot];
+// Watch workspace packages (append to defaults)
+config.watchFolders = [...(config.watchFolders || []), workspaceRoot];
 
 // Resolve modules from workspace root
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
   path.resolve(workspaceRoot, 'node_modules'),
 ];
-
-// Ensure proper resolution for symlinked packages
-config.resolver.disableHierarchicalLookup = true;
 
 // Support workspace package resolution
 config.resolver.extraNodeModules = {
