@@ -60,68 +60,28 @@ export function useKanbanDates({
   }, [centerDate]);
 
   // Setup virtualizer for horizontal scrolling
+  // Start at today's position immediately (BUFFER_DAYS = index of today)
   const virtualizer = useVirtualizer({
     count: dates.length,
     getScrollElement: () => containerRef.current,
     estimateSize: () => COLUMN_WIDTH,
     horizontal: true,
     overscan: 3,
+    initialOffset: BUFFER_DAYS * COLUMN_WIDTH, // Start at today (no scrolling animation)
   });
 
-  // Scroll to today on mount - align to left edge
-  // We intentionally run this only once on mount to set initial position
-  const hasScrolledToTodayRef = React.useRef(false);
-  const scrollAttemptRef = React.useRef(0);
-  const maxScrollAttempts = 10;
+  // Track if initial scroll position is set (for infinite scroll logic)
+  const hasInitializedRef = React.useRef(false);
   
+  // Mark as initialized after first render with container ready
   React.useEffect(() => {
-    if (hasScrolledToTodayRef.current) return;
+    if (hasInitializedRef.current) return;
     
-    const todayIndex = dates.findIndex((d) => isToday(d.date));
-    if (todayIndex < 0) return;
-    
-    const attemptScroll = () => {
-      const container = containerRef.current;
-      
-      // Check if container is ready and has dimensions
-      if (!container || container.clientWidth === 0) {
-        // Container not ready, retry
-        scrollAttemptRef.current++;
-        if (scrollAttemptRef.current < maxScrollAttempts) {
-          requestAnimationFrame(attemptScroll);
-        }
-        return;
-      }
-      
-      // Calculate expected scroll position for today
-      const expectedScrollLeft = todayIndex * COLUMN_WIDTH;
-      
-      // Perform the scroll
-      virtualizer.scrollToIndex(todayIndex, { align: "start" });
-      
-      // Verify scroll succeeded after a frame
-      requestAnimationFrame(() => {
-        const actualScrollLeft = container.scrollLeft;
-        const scrollSucceeded = Math.abs(actualScrollLeft - expectedScrollLeft) < COLUMN_WIDTH;
-        
-        if (scrollSucceeded) {
-          hasScrolledToTodayRef.current = true;
-        } else {
-          // Scroll didn't work, retry
-          scrollAttemptRef.current++;
-          if (scrollAttemptRef.current < maxScrollAttempts) {
-            requestAnimationFrame(attemptScroll);
-          } else {
-            // Give up but mark as done to prevent infinite loops
-            hasScrolledToTodayRef.current = true;
-          }
-        }
-      });
-    };
-    
-    // Start scroll attempt after initial render
-    requestAnimationFrame(attemptScroll);
-  }, [dates, virtualizer, containerRef]);
+    const container = containerRef.current;
+    if (container && container.clientWidth > 0) {
+      hasInitializedRef.current = true;
+    }
+  }, [containerRef]);
 
   // Handle navigation (one day at a time)
   const navigatePrevious = React.useCallback(() => {
@@ -156,20 +116,19 @@ export function useKanbanDates({
       // Today is NOT in current date range (e.g., stuck far in past/future)
       // Reset centerDate to today - this regenerates the dates array
       setCenterDate(today);
-      // Reset scroll tracking so useEffect will scroll to today after dates regenerate
-      hasScrolledToTodayRef.current = false;
-      scrollAttemptRef.current = 0;
+      // Reset initialization tracking so scroll logic is refreshed
+      hasInitializedRef.current = false;
     }
   }, [dates, virtualizer]);
 
   // Load more days when scrolling near edges
-  // Skip during drag and before initial scroll to prevent unwanted navigation
+  // Skip during drag and before initial render to prevent unwanted navigation
   const handleScroll = React.useCallback(() => {
     // Don't navigate during drag operations
     if (isDragging) return;
-    // Don't navigate before initial scroll to today completes
+    // Don't navigate before initial render completes
     // This prevents browser scroll position restoration from triggering navigation
-    if (!hasScrolledToTodayRef.current) return;
+    if (!hasInitializedRef.current) return;
     
     const container = containerRef.current;
     if (!container) return;
