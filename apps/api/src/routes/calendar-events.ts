@@ -44,7 +44,7 @@ calendarEventsRouter.get(
     const calendarIds = parseCalendarIds(calendarIdsParam);
 
     // First, get enabled calendars for user
-    let enabledCalendarQuery = db
+    const enabledCalendarQuery = db
       .select({ id: calendars.id })
       .from(calendars)
       .where(

@@ -17,12 +17,9 @@ import {
   type CalendarProvider,
   type SyncOptions,
   type ExternalEvent,
-  type SyncResult,
 } from './calendar-providers/index.js';
 import { listCalDavEvents } from './calendar-providers/icloud.js';
 import { publishEvent } from '../lib/websocket/index.js';
-
-type CalendarAccount = Awaited<ReturnType<typeof getDb>>['query']['calendarAccounts'] extends { findFirst: (args: unknown) => Promise<infer T> } ? NonNullable<T> : never;
 
 export function getProvider(providerName: string): CalendarProvider | null {
   switch (providerName) {
