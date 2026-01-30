@@ -1,6 +1,6 @@
 import * as React from "react";
 import { format, differenceInMinutes } from "date-fns";
-import type { CalendarEvent, Calendar } from "@open-sunsama/types";
+import type { CalendarEvent } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { ExternalLink, CalendarDays } from "lucide-react";
 import {

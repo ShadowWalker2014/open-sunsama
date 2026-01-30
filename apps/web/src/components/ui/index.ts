@@ -115,3 +115,9 @@ export { FileIcon, getFileTypeColor } from "./file-icon";
 export { Lightbox } from "./lightbox";
 export { ShortcutsModal, Kbd } from "./shortcuts-modal";
 export { ShortcutHint } from "./shortcut-hint";
+export {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "./tooltip";
