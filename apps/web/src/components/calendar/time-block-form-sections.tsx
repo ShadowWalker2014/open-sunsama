@@ -78,13 +78,13 @@ export function TimeRangeSection({
 
 export const COLOR_OPTIONS = [
   { value: "#3B82F6", label: "Blue" },
-  { value: "#10B981", label: "Green" },
+  { value: "#22C55E", label: "Green" },
   { value: "#F59E0B", label: "Amber" },
   { value: "#EF4444", label: "Red" },
-  { value: "#8B5CF6", label: "Purple" },
+  { value: "#A855F7", label: "Purple" },
   { value: "#EC4899", label: "Pink" },
   { value: "#6366F1", label: "Indigo" },
-  { value: "#14B8A6", label: "Teal" },
+  { value: "#0EA5E9", label: "Sky" },
 ];
 
 interface ColorSectionProps {

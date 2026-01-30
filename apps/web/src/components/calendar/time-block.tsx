@@ -1,6 +1,5 @@
 import * as React from "react";
 import { format, differenceInMinutes } from "date-fns";
-import { GripVertical } from "lucide-react";
 import type { TimeBlock as TimeBlockType } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import {
@@ -21,26 +20,38 @@ interface TimeBlockProps {
 }
 
 /**
+ * Convert hex color to rgba string
+ */
+function hexToRgba(hex: string, alpha: number): string {
+  // Remove # if present
+  const cleanHex = hex.replace("#", "");
+  
+  // Parse hex values
+  const r = parseInt(cleanHex.substring(0, 2), 16);
+  const g = parseInt(cleanHex.substring(2, 4), 16);
+  const b = parseInt(cleanHex.substring(4, 6), 16);
+  
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+/**
  * Get color classes based on task status or custom color
+ * Returns semi-transparent backgrounds for a clean Sunsama-like look
  */
 function getBlockColors(block: TimeBlockType): {
   bg: string;
   border: string;
   text: string;
+  textMuted: string;
 } {
-  if (block.color) {
-    return {
-      bg: block.color,
-      border: block.color,
-      text: "white",
-    };
-  }
-
-  // Default to primary color
+  // Default blue color
+  const baseColor = block.color || "#3B82F6";
+  
   return {
-    bg: "hsl(var(--primary))",
-    border: "hsl(var(--primary))",
-    text: "hsl(var(--primary-foreground))",
+    bg: hexToRgba(baseColor, 0.15),
+    border: hexToRgba(baseColor, 0.6),
+    text: "inherit", // Use foreground color
+    textMuted: "inherit", // Use muted-foreground via class
   };
 }
 
@@ -98,8 +109,8 @@ export function TimeBlock({
       <div
         data-time-block
         className={cn(
-          "absolute left-1 right-1 z-10 rounded-md border-l-4 shadow-sm transition-all select-none",
-          "hover:shadow-md hover:z-20",
+          "absolute left-1 right-1 z-10 my-0.5 rounded-md border-l-[3px] transition-all select-none",
+          "hover:brightness-95 hover:z-20",
           isSelected && "ring-2 ring-primary ring-offset-1",
           isDragging && "opacity-50 cursor-grabbing",
           !isDragging && "cursor-grab",
@@ -107,7 +118,7 @@ export function TimeBlock({
         )}
         style={{
           top: `${top}px`,
-          height: `${Math.max(height, 24)}px`,
+          height: `${Math.max(height - 4, 20)}px`, // Account for margin
           backgroundColor: colors.bg,
           borderColor: colors.border,
         }}
@@ -134,24 +145,18 @@ export function TimeBlock({
             "flex h-full flex-col overflow-hidden px-2",
             isCompact ? "py-0.5" : "py-1"
           )}
-          style={{ color: colors.text }}
         >
-          {/* Drag handle indicator */}
-          <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-30 hover:opacity-60">
-            <GripVertical className="h-3 w-3" />
-          </div>
-
-          {/* Title */}
+          {/* Title - dark text for readability */}
           <p className={cn(
-            "truncate font-medium",
+            "truncate font-medium text-foreground",
             isCompact ? "text-xs" : "text-sm"
           )}>
             {block.title}
           </p>
 
-          {/* Time range - hide if too compact */}
+          {/* Time range - muted text, hide if too compact */}
           {!isCompact && (
-            <p className="truncate text-xs opacity-80">
+            <p className="truncate text-xs text-muted-foreground">
               {format(startTime, "h:mm")} - {format(endTime, "h:mm a")}
             </p>
           )}
@@ -192,23 +197,23 @@ export function TimeBlockPreview({
   height,
   color,
 }: TimeBlockPreviewProps) {
+  const baseColor = color || "#3B82F6";
+  
   return (
     <div
-      className="absolute left-1 right-1 z-30 rounded-md border-2 border-dashed border-primary/60 bg-primary/20 pointer-events-none"
+      className="absolute left-1 right-1 z-30 my-0.5 rounded-md border-2 border-dashed pointer-events-none"
       style={{
         top: `${top}px`,
-        height: `${Math.max(height, 24)}px`,
-        ...(color && {
-          borderColor: color,
-          backgroundColor: `${color}33`,
-        }),
+        height: `${Math.max(height - 4, 20)}px`,
+        borderColor: hexToRgba(baseColor, 0.6),
+        backgroundColor: hexToRgba(baseColor, 0.2),
       }}
     >
       <div className="flex h-full flex-col overflow-hidden px-2 py-1">
-        <p className="truncate text-sm font-medium text-primary">
+        <p className="truncate text-sm font-medium text-foreground">
           {title}
         </p>
-        <p className="truncate text-xs text-primary/70">
+        <p className="truncate text-xs text-muted-foreground">
           {format(startTime, "h:mm")} - {format(endTime, "h:mm a")}
         </p>
       </div>
