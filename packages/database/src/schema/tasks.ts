@@ -1,5 +1,5 @@
-import { pgTable, uuid, varchar, text, date, integer, timestamp } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
+import { pgTable, uuid, varchar, text, date, integer, timestamp, index } from 'drizzle-orm/pg-core';
+import { relations, sql } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import { users } from './users';
@@ -20,7 +20,12 @@ export const tasks = pgTable('tasks', {
   position: integer('position').notNull().default(0),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}, (table) => [
+  // Index for rollover queries - finding incomplete tasks by user and scheduled date
+  index('tasks_user_scheduled_incomplete_idx')
+    .on(table.userId, table.scheduledDate)
+    .where(sql`${table.completedAt} IS NULL`),
+]);
 
 // Import subtasks for relations (defined in separate file to avoid circular imports)
 // The actual relation is defined in subtasks.ts using the tasks table

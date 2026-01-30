@@ -1,0 +1,45 @@
+version: '3.8'
+
+# Docker Compose configuration for local development
+# Run: docker-compose up -d
+
+services:
+  # PostgreSQL database
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: opensunsama
+      POSTGRES_PASSWORD: opensunsama
+      POSTGRES_DB: opensunsama
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U opensunsama"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # API server (optional - use for testing production build)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    environment:
+      DATABASE_URL: postgresql://opensunsama:opensunsama@postgres:5432/opensunsama
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-min-32-chars-long}
+      CORS_ORIGIN: http://localhost:3000
+      PORT: 3001
+      ROLLOVER_ENABLED: "true"
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles:
+      - api  # Only run when explicitly requested with --profile api
+
+volumes:
+  postgres_data:

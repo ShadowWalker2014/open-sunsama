@@ -33,6 +33,11 @@ FROM node:20-slim
 
 WORKDIR /app
 
+# Install required system dependencies for pg-boss
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy built bundle and dependencies
 COPY --from=builder /app/apps/api/dist ./dist
 COPY --from=builder /app/apps/api/package.json ./
@@ -41,6 +46,10 @@ COPY --from=builder /app/node_modules ./node_modules
 # Expose port
 ENV PORT=3001
 EXPOSE 3001
+
+# Health check - ensures API is responding
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD node -e "fetch('http://localhost:3001/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"
 
 # Start the server
 CMD ["node", "dist/index.js"]

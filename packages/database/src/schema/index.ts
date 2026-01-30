@@ -61,3 +61,13 @@ export {
   selectAttachmentSchema,
 } from './attachments';
 export type { Attachment, NewAttachment } from './attachments';
+
+export {
+  rolloverLogs,
+  insertRolloverLogSchema,
+  selectRolloverLogSchema,
+} from './rollover-log';
+export type { RolloverLog, NewRolloverLog } from './rollover-log';
+
+// Re-export relation helpers for query building
+export { relations } from 'drizzle-orm';

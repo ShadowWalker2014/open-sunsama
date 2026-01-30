@@ -20,6 +20,8 @@ import { apiKeysRouter } from './routes/api-keys.js';
 import { notificationsRouter } from './routes/notifications.js';
 import { uploadsRouter } from './routes/uploads.js';
 import { attachmentsRouter } from './routes/attachments.js';
+import { registerAllWorkers } from './workers/index.js';
+import { stopPgBoss, isPgBossRunning, getPgBoss, JOBS } from './lib/pgboss.js';
 
 // Create Hono app
 const app = new Hono();
@@ -35,13 +37,36 @@ app.use('*', cors({
   credentials: true,
 }));
 
-// Health check endpoint
-app.get('/health', (c) => {
-  return c.json({
+// Health check endpoint with PG Boss stats
+app.get('/health', async (c) => {
+  const healthData: Record<string, unknown> = {
     status: 'ok',
     timestamp: new Date().toISOString(),
     version: process.env.npm_package_version || '0.0.0',
-  });
+  };
+
+  // Add PG Boss job queue stats if running
+  if (isPgBossRunning()) {
+    try {
+      const boss = await getPgBoss();
+      const pendingRolloverBatches = await boss.getQueueSize(JOBS.USER_BATCH_ROLLOVER);
+      healthData.jobs = {
+        pgBossRunning: true,
+        pendingRolloverBatches,
+      };
+    } catch {
+      healthData.jobs = {
+        pgBossRunning: true,
+        error: 'Failed to get queue stats',
+      };
+    }
+  } else {
+    healthData.jobs = {
+      pgBossRunning: false,
+    };
+  }
+
+  return c.json(healthData);
 });
 
 // API info endpoint
@@ -81,10 +106,23 @@ app.notFound(notFoundHandler);
 // Start server
 const port = parseInt(process.env.PORT || '3001', 10);
 
-console.log(`
+/**
+ * Initialize and start the server
+ */
+async function startServer(): Promise<void> {
+  // Initialize PG Boss and register workers
+  try {
+    await registerAllWorkers();
+  } catch (error) {
+    console.error('[Server] Failed to initialize workers:', error);
+    // Continue starting the server even if workers fail
+    // This allows the API to function without background jobs
+  }
+
+  console.log(`
   ╔═══════════════════════════════════════════════════════════╗
   ║                                                           ║
-  ║   ⏰  Open Sunsama API                                     ║
+  ║   Open Sunsama API                                        ║
   ║                                                           ║
   ║   Server running at http://localhost:${port}                 ║
   ║                                                           ║
@@ -99,12 +137,49 @@ console.log(`
   ║   - *    /uploads/*  File uploads                         ║
   ║   - *    /attachments/* Attachment management             ║
   ║                                                           ║
+  ║   Background Jobs:                                        ║
+  ║   - Task Rollover (${process.env.ROLLOVER_ENABLED !== 'false' ? 'enabled' : 'disabled'})                           ║
+  ║                                                           ║
   ╚═══════════════════════════════════════════════════════════╝
 `);
 
-serve({
-  fetch: app.fetch,
-  port,
+  serve({
+    fetch: app.fetch,
+    port,
+  });
+}
+
+// Graceful shutdown handlers
+async function gracefulShutdown(signal: string): Promise<void> {
+  console.log(`\n[Server] Received ${signal}, shutting down gracefully...`);
+  
+  try {
+    await stopPgBoss();
+    console.log('[Server] Cleanup complete');
+  } catch (error) {
+    console.error('[Server] Error during shutdown:', error);
+  }
+  
+  process.exit(0);
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// Handle uncaught errors
+process.on('uncaughtException', (error) => {
+  console.error('[Server] Uncaught exception:', error);
+  gracefulShutdown('uncaughtException');
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Server] Unhandled rejection at:', promise, 'reason:', reason);
+});
+
+// Start the server
+startServer().catch((error) => {
+  console.error('[Server] Failed to start:', error);
+  process.exit(1);
 });
 
 export default app;

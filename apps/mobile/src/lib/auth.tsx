@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { User, LoginInput, CreateUserInput, AuthResponse, UpdateUserInput } from '@open-sunsama/types';
 import { getApi, setAuthToken, clearAuthToken, getToken, setToken, removeToken, initializeApi } from './api';
+import { getDeviceTimezone } from './timezone';
 
 interface AuthState {
   user: User | null;
@@ -37,6 +38,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })();
   }, []);
 
+  // Track if timezone sync has been attempted for this session
+  const timezoneSyncAttempted = React.useRef(false);
+
   // Fetch current user
   const { data: user, isLoading: isUserLoading } = useQuery({
     queryKey: ['auth', 'me'],
@@ -57,6 +61,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: false,
   });
+
+  // Sync device timezone with server
+  React.useEffect(() => {
+    if (!user || timezoneSyncAttempted.current) return;
+    
+    const deviceTimezone = getDeviceTimezone();
+    
+    // Only update if different from server
+    if (deviceTimezone && deviceTimezone !== user.timezone) {
+      timezoneSyncAttempted.current = true;
+      console.log(`[Timezone Sync] Updating timezone from ${user.timezone} to ${deviceTimezone}`);
+      
+      const api = getApi();
+      api.auth.updateMe({ timezone: deviceTimezone })
+        .then((updatedUser) => {
+          queryClient.setQueryData(['auth', 'me'], updatedUser);
+        })
+        .catch((error) => {
+          console.error('[Timezone Sync] Failed to update timezone:', error);
+          // Reset flag so we can try again later
+          timezoneSyncAttempted.current = false;
+        });
+    } else {
+      timezoneSyncAttempted.current = true;
+    }
+  }, [user?.id]);
 
   // Login mutation
   const loginMutation = useMutation({

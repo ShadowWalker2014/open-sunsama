@@ -4,9 +4,19 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
+import { useTimezoneSync } from "@/hooks/useTimezoneSync";
 import { routeTree } from "./routeTree.gen.tsx";
 
 import "./index.css";
+
+/**
+ * Component that syncs user timezone with the server
+ * Must be inside AuthProvider to access user state
+ */
+function TimezoneSync({ children }: { children: React.ReactNode }) {
+  useTimezoneSync();
+  return <>{children}</>;
+}
 
 // Create the router instance
 const router = createRouter({
@@ -46,7 +56,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          <RouterProvider router={router} />
+          <TimezoneSync>
+            <RouterProvider router={router} />
+          </TimezoneSync>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
