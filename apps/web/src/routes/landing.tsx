@@ -146,15 +146,29 @@ export default function LandingPage() {
             <span className="mx-2">·</span>
             <span>Free and open source</span>
           </div>
-          <a
-            href="https://github.com/ShadowWalker2014/open-sunsama"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <Github className="h-4 w-4" />
-            <span>View on GitHub</span>
-          </a>
+          <nav className="flex items-center gap-4 text-sm text-muted-foreground">
+            <Link
+              to="/privacy"
+              className="hover:text-foreground transition-colors"
+            >
+              Privacy
+            </Link>
+            <Link
+              to="/terms"
+              className="hover:text-foreground transition-colors"
+            >
+              Terms
+            </Link>
+            <a
+              href="https://github.com/ShadowWalker2014/open-sunsama"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 hover:text-foreground transition-colors"
+            >
+              <Github className="h-4 w-4" />
+              <span>GitHub</span>
+            </a>
+          </nav>
         </div>
       </footer>
     </div>

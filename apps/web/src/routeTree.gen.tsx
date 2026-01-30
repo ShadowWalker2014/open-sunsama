@@ -10,6 +10,8 @@ import LoginPage from "./routes/login";
 import RegisterPage from "./routes/register";
 import ForgotPasswordPage from "./routes/forgot-password";
 import ResetPasswordPage from "./routes/reset-password";
+import PrivacyPage from "./routes/privacy";
+import TermsPage from "./routes/terms";
 import AppLayout from "./routes/app";
 import TasksPage from "./routes/app/index";
 import CalendarPage from "./routes/app/calendar";
@@ -82,6 +84,18 @@ const resetPasswordRoute = createRoute({
   },
 });
 
+const privacyRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/privacy",
+  component: PrivacyPage,
+});
+
+const termsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/terms",
+  component: TermsPage,
+});
+
 const appRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/app",
@@ -143,6 +157,8 @@ const routeTree = rootRoute.addChildren([
   registerRoute,
   forgotPasswordRoute,
   resetPasswordRoute,
+  privacyRoute,
+  termsRoute,
   appRoute.addChildren([
     appIndexRoute,
     appCalendarRoute,
