@@ -6,4 +6,10 @@ export default defineConfig({
   dts: true,
   clean: true,
   sourcemap: true,
+  // Bundle workspace packages so the output is self-contained
+  noExternal: [
+    '@open-sunsama/database',
+    '@open-sunsama/types',
+    '@open-sunsama/utils',
+  ],
 });
