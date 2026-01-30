@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Plus, Inbox, Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Inbox, Clock, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -34,11 +34,16 @@ export function Sidebar({ className }: SidebarProps) {
 
   const { data: tasks, isLoading } = useTasks({ backlog: true });
 
-  const backlogTasks = React.useMemo(() => {
-    const filtered = tasks?.filter((task) => !task.completedAt) ?? [];
-    // Sort by position for consistent ordering after drag-and-drop
-    return filtered.sort((a, b) => a.position - b.position);
+  // Separate pending and completed tasks
+  const { pendingTasks, completedTasks } = React.useMemo(() => {
+    const all = tasks ?? [];
+    const pending = all.filter((task) => !task.completedAt).sort((a, b) => a.position - b.position);
+    const completed = all.filter((task) => task.completedAt);
+    return { pendingTasks: pending, completedTasks: completed };
   }, [tasks]);
+
+  // For backwards compatibility with collapsed view count
+  const backlogTasks = pendingTasks;
 
   const toggleCollapsed = React.useCallback(() => {
     setIsCollapsed((prev) => {
@@ -127,7 +132,7 @@ export function Sidebar({ className }: SidebarProps) {
                 <Skeleton key={i} className="h-10 w-full rounded-lg" />
               ))}
             </div>
-          ) : backlogTasks.length === 0 ? (
+          ) : pendingTasks.length === 0 && completedTasks.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <p className="text-sm text-muted-foreground">
                 No unscheduled tasks
@@ -137,18 +142,48 @@ export function Sidebar({ className }: SidebarProps) {
               </p>
             </div>
           ) : (
-            <SortableContext
-              items={backlogTasks.map((t) => t.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {backlogTasks.map((task) => (
-                <SortableBacklogTaskCard
-                  key={task.id}
-                  task={task}
-                  onSelect={() => setSelectedTask(task)}
-                />
-              ))}
-            </SortableContext>
+            <>
+              {/* Pending Tasks */}
+              <SortableContext
+                items={pendingTasks.map((t) => t.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {pendingTasks.map((task) => (
+                  <SortableBacklogTaskCard
+                    key={task.id}
+                    task={task}
+                    onSelect={() => setSelectedTask(task)}
+                  />
+                ))}
+              </SortableContext>
+
+              {/* Empty pending state when there are only completed tasks */}
+              {pendingTasks.length === 0 && completedTasks.length > 0 && (
+                <div className="flex flex-col items-center justify-center py-6 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    All tasks completed!
+                  </p>
+                </div>
+              )}
+
+              {/* Completed Tasks in Backlog */}
+              {completedTasks.length > 0 && (
+                <div className="pt-3 mt-3 border-t border-border/40">
+                  <p className="text-xs font-medium text-muted-foreground mb-2 px-1">
+                    Completed ({completedTasks.length})
+                  </p>
+                  <div className="space-y-1">
+                    {completedTasks.map((task) => (
+                      <BacklogTaskCard
+                        key={task.id}
+                        task={task}
+                        onSelect={() => setSelectedTask(task)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </ScrollArea>
@@ -259,6 +294,58 @@ function SortableBacklogTaskCard({ task, onSelect }: SortableBacklogTaskCardProp
       {showDropIndicatorBelow && (
         <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full z-10 shadow-[0_0_4px_rgba(var(--primary),0.5)]" />
       )}
+    </div>
+  );
+}
+
+interface BacklogTaskCardProps {
+  task: Task;
+  onSelect: () => void;
+}
+
+/**
+ * Non-sortable backlog task card for completed tasks.
+ * Has muted/lighter styling to indicate completion.
+ */
+function BacklogTaskCard({ task, onSelect }: BacklogTaskCardProps) {
+  const isCompleted = !!task.completedAt;
+
+  return (
+    <div
+      onClick={onSelect}
+      className={cn(
+        "group flex items-start gap-2.5 rounded-lg px-3 py-2 transition-all duration-200",
+        "bg-card/30 hover:bg-card/50",
+        "border border-transparent hover:border-border/30",
+        "cursor-pointer select-none",
+        // Completed state - muted styling
+        isCompleted && "opacity-60 hover:opacity-70"
+      )}
+    >
+      {/* Completion indicator */}
+      {isCompleted && (
+        <div className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/80 text-primary-foreground">
+          <Check className="h-2.5 w-2.5" strokeWidth={3} />
+        </div>
+      )}
+
+      {/* Content */}
+      <div className="min-w-0 flex-1">
+        <p
+          className={cn(
+            "text-sm font-medium leading-snug truncate",
+            isCompleted && "line-through text-muted-foreground"
+          )}
+        >
+          {task.title}
+        </p>
+        {task.estimatedMins && (
+          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground/70 mt-1">
+            <Clock className="h-3 w-3" />
+            {formatDuration(task.estimatedMins)}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

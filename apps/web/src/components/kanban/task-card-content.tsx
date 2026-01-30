@@ -52,7 +52,7 @@ export function TaskCardContent({
     <div
       className={cn(
         // Base styles - Sunsama-inspired card
-        "group relative flex flex-col gap-1 rounded-lg px-3 py-2.5 transition-all duration-150",
+        "group relative flex flex-col gap-1 rounded-lg px-3 py-2.5 transition-all duration-200",
         // Background and border
         "bg-card/50 hover:bg-card",
         "border border-border/30 hover:border-border/50",
@@ -62,8 +62,8 @@ export function TaskCardContent({
         "touch-none select-none",
         // DragOverlay state (elevated)
         isDragging && "shadow-xl ring-2 ring-primary/20 rotate-[0.5deg] cursor-grabbing bg-card",
-        // Completed state
-        isCompleted && "opacity-50",
+        // Completed state - muted styling with smooth transition
+        isCompleted && "opacity-60 hover:opacity-70 bg-card/30 hover:bg-card/40",
         className
       )}
       onClick={onClick}
