@@ -7,21 +7,7 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { ApiClient, TimeBlock } from "../lib/api-client.js";
-
-/**
- * Format an API response for MCP tool output
- */
-function formatResponse(data: unknown, isError = false): {
-  content: Array<{ type: "text"; text: string }>;
-  isError?: boolean;
-} {
-  const text = typeof data === "string" ? data : JSON.stringify(data, null, 2);
-  return {
-    content: [{ type: "text", text }],
-    ...(isError && { isError: true }),
-  };
-}
+import type { ApiClient, TimeBlock } from "../lib/api-client.js";
 
 /**
  * Format a time block for display with human-readable information
@@ -74,7 +60,9 @@ function formatSchedule(blocks: TimeBlock[], date: string): string {
     const taskInfo = block.taskId
       ? ` [Task: ${block.task?.title || block.taskId}]`
       : "";
-    lines.push(`${block.startTime} - ${block.endTime}: ${block.title}${taskInfo}`);
+    lines.push(
+      `${block.startTime} - ${block.endTime}: ${block.title}${taskInfo}`
+    );
     if (block.description) {
       lines.push(`  └─ ${block.description}`);
     }
@@ -85,11 +73,28 @@ function formatSchedule(blocks: TimeBlock[], date: string): string {
   const hours = Math.floor(totalMins / 60);
   const mins = totalMins % 60;
   lines.push("─".repeat(40));
-  lines.push(
-    `Total: ${blocks.length} blocks, ${hours}h ${mins}m scheduled`
-  );
+  lines.push(`Total: ${blocks.length} blocks, ${hours}h ${mins}m scheduled`);
 
   return lines.join("\n");
+}
+
+/**
+ * Creates a success response for MCP tools
+ */
+function successResponse(text: string) {
+  return {
+    content: [{ type: "text" as const, text }],
+  };
+}
+
+/**
+ * Creates an error response for MCP tools
+ */
+function errorResponse(message: string) {
+  return {
+    content: [{ type: "text" as const, text: `Error: ${message}` }],
+    isError: true,
+  };
 }
 
 /**
@@ -166,31 +171,27 @@ start/end times, duration, description, color, and any linked task info.`,
         });
 
         if (!response.success) {
-          return formatResponse(
-            {
-              error: response.error?.message || "Failed to list time blocks",
-              code: response.error?.code,
-              details: response.error?.errors,
-            },
-            true
+          return errorResponse(
+            response.error?.message || "Failed to list time blocks"
           );
         }
 
         const blocks = response.data || [];
-        const result = {
-          timeBlocks: blocks,
-          count: blocks.length,
-          pagination: response.meta,
-        };
 
-        return formatResponse(result);
+        if (blocks.length === 0) {
+          return successResponse("No time blocks found matching your criteria.");
+        }
+
+        let result = blocks.map((b) => formatTimeBlock(b)).join("\n\n---\n\n");
+
+        if (response.meta) {
+          result += `\n\n---\nPage ${response.meta.page} of ${response.meta.totalPages} (${response.meta.total} total blocks)`;
+        }
+
+        return successResponse(result);
       } catch (error) {
-        return formatResponse(
-          {
-            error: "Failed to list time blocks",
-            message: error instanceof Error ? error.message : String(error),
-          },
-          true
+        return errorResponse(
+          error instanceof Error ? error.message : "Unknown error"
         );
       }
     }
@@ -217,28 +218,15 @@ duration in minutes, description, color, and linked task details if any.`,
         const response = await apiClient.getTimeBlock(input.id);
 
         if (!response.success) {
-          return formatResponse(
-            {
-              error: response.error?.message || "Time block not found",
-              code: response.error?.code,
-              timeBlockId: input.id,
-            },
-            true
+          return errorResponse(
+            response.error?.message || "Time block not found"
           );
         }
 
-        return formatResponse({
-          timeBlock: response.data,
-          formatted: formatTimeBlock(response.data!),
-        });
+        return successResponse(formatTimeBlock(response.data!));
       } catch (error) {
-        return formatResponse(
-          {
-            error: "Failed to get time block",
-            timeBlockId: input.id,
-            message: error instanceof Error ? error.message : String(error),
-          },
-          true
+        return errorResponse(
+          error instanceof Error ? error.message : "Unknown error"
         );
       }
     }
@@ -296,9 +284,7 @@ You can optionally link it to an existing task to track what you'll work on.`,
         .string()
         .max(1000)
         .optional()
-        .describe(
-          "Optional: Additional notes or context for this time block"
-        ),
+        .describe("Optional: Additional notes or context for this time block"),
       color: z
         .string()
         .optional()
@@ -311,64 +297,35 @@ You can optionally link it to an existing task to track what you'll work on.`,
         // Validate time format
         const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
         if (!timeRegex.test(input.startTime)) {
-          return formatResponse(
-            {
-              error: "Invalid start time format",
-              message:
-                "Start time must be in HH:MM 24-hour format (e.g., '09:00', '14:30')",
-              provided: input.startTime,
-            },
-            true
+          return errorResponse(
+            `Invalid start time format '${input.startTime}'. Use HH:MM 24-hour format (e.g., '09:00', '14:30')`
           );
         }
         if (!timeRegex.test(input.endTime)) {
-          return formatResponse(
-            {
-              error: "Invalid end time format",
-              message:
-                "End time must be in HH:MM 24-hour format (e.g., '11:00', '16:00')",
-              provided: input.endTime,
-            },
-            true
+          return errorResponse(
+            `Invalid end time format '${input.endTime}'. Use HH:MM 24-hour format (e.g., '11:00', '16:00')`
           );
         }
 
         // Validate date format
         const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
         if (!dateRegex.test(input.date)) {
-          return formatResponse(
-            {
-              error: "Invalid date format",
-              message: "Date must be in YYYY-MM-DD format (e.g., '2024-01-15')",
-              provided: input.date,
-            },
-            true
+          return errorResponse(
+            `Invalid date format '${input.date}'. Use YYYY-MM-DD format (e.g., '2024-01-15')`
           );
         }
 
         // Validate end time is after start time
         if (input.endTime <= input.startTime) {
-          return formatResponse(
-            {
-              error: "Invalid time range",
-              message: "End time must be after start time",
-              startTime: input.startTime,
-              endTime: input.endTime,
-            },
-            true
+          return errorResponse(
+            `End time (${input.endTime}) must be after start time (${input.startTime})`
           );
         }
 
         // Validate color format if provided
         if (input.color && !/^#[0-9A-Fa-f]{6}$/.test(input.color)) {
-          return formatResponse(
-            {
-              error: "Invalid color format",
-              message:
-                "Color must be a 6-digit hex code (e.g., '#3B82F6')",
-              provided: input.color,
-            },
-            true
+          return errorResponse(
+            `Invalid color format '${input.color}'. Use 6-digit hex code (e.g., '#3B82F6')`
           );
         }
 
@@ -383,28 +340,17 @@ You can optionally link it to an existing task to track what you'll work on.`,
         });
 
         if (!response.success) {
-          return formatResponse(
-            {
-              error: response.error?.message || "Failed to create time block",
-              code: response.error?.code,
-              details: response.error?.errors,
-            },
-            true
+          return errorResponse(
+            response.error?.message || "Failed to create time block"
           );
         }
 
-        return formatResponse({
-          message: "Time block created successfully",
-          timeBlock: response.data,
-          formatted: formatTimeBlock(response.data!),
-        });
+        return successResponse(
+          `Time block created successfully!\n\n${formatTimeBlock(response.data!)}`
+        );
       } catch (error) {
-        return formatResponse(
-          {
-            error: "Failed to create time block",
-            message: error instanceof Error ? error.message : String(error),
-          },
-          true
+        return errorResponse(
+          error instanceof Error ? error.message : "Unknown error"
         );
       }
     }
@@ -469,35 +415,20 @@ To clear optional fields (description, color, taskId), pass null explicitly.`,
         // Validate time formats if provided
         const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
         if (updates.startTime && !timeRegex.test(updates.startTime)) {
-          return formatResponse(
-            {
-              error: "Invalid start time format",
-              message: "Start time must be in HH:MM 24-hour format",
-              provided: updates.startTime,
-            },
-            true
+          return errorResponse(
+            `Invalid start time format '${updates.startTime}'. Use HH:MM 24-hour format`
           );
         }
         if (updates.endTime && !timeRegex.test(updates.endTime)) {
-          return formatResponse(
-            {
-              error: "Invalid end time format",
-              message: "End time must be in HH:MM 24-hour format",
-              provided: updates.endTime,
-            },
-            true
+          return errorResponse(
+            `Invalid end time format '${updates.endTime}'. Use HH:MM 24-hour format`
           );
         }
 
         // Validate date format if provided
         if (updates.date && !/^\d{4}-\d{2}-\d{2}$/.test(updates.date)) {
-          return formatResponse(
-            {
-              error: "Invalid date format",
-              message: "Date must be in YYYY-MM-DD format",
-              provided: updates.date,
-            },
-            true
+          return errorResponse(
+            `Invalid date format '${updates.date}'. Use YYYY-MM-DD format`
           );
         }
 
@@ -507,13 +438,8 @@ To clear optional fields (description, color, taskId), pass null explicitly.`,
           updates.color !== undefined &&
           !/^#[0-9A-Fa-f]{6}$/.test(updates.color)
         ) {
-          return formatResponse(
-            {
-              error: "Invalid color format",
-              message: "Color must be a 6-digit hex code (e.g., '#3B82F6')",
-              provided: updates.color,
-            },
-            true
+          return errorResponse(
+            `Invalid color format '${updates.color}'. Use 6-digit hex code (e.g., '#3B82F6')`
           );
         }
 
@@ -530,42 +456,25 @@ To clear optional fields (description, color, taskId), pass null explicitly.`,
         if (updates.color !== undefined) updateData.color = updates.color;
 
         if (Object.keys(updateData).length === 0) {
-          return formatResponse(
-            {
-              error: "No updates provided",
-              message: "Please provide at least one field to update",
-            },
-            true
+          return errorResponse(
+            "No updates provided. Please provide at least one field to update."
           );
         }
 
         const response = await apiClient.updateTimeBlock(id, updateData);
 
         if (!response.success) {
-          return formatResponse(
-            {
-              error: response.error?.message || "Failed to update time block",
-              code: response.error?.code,
-              timeBlockId: id,
-              details: response.error?.errors,
-            },
-            true
+          return errorResponse(
+            response.error?.message || "Failed to update time block"
           );
         }
 
-        return formatResponse({
-          message: "Time block updated successfully",
-          timeBlock: response.data,
-          formatted: formatTimeBlock(response.data!),
-        });
+        return successResponse(
+          `Time block updated successfully!\n\n${formatTimeBlock(response.data!)}`
+        );
       } catch (error) {
-        return formatResponse(
-          {
-            error: "Failed to update time block",
-            timeBlockId: input.id,
-            message: error instanceof Error ? error.message : String(error),
-          },
-          true
+        return errorResponse(
+          error instanceof Error ? error.message : "Unknown error"
         );
       }
     }
@@ -591,28 +500,17 @@ Any linked task will NOT be deleted, only the link will be removed.`,
         const response = await apiClient.deleteTimeBlock(input.id);
 
         if (!response.success) {
-          return formatResponse(
-            {
-              error: response.error?.message || "Failed to delete time block",
-              code: response.error?.code,
-              timeBlockId: input.id,
-            },
-            true
+          return errorResponse(
+            response.error?.message || "Failed to delete time block"
           );
         }
 
-        return formatResponse({
-          message: "Time block deleted successfully",
-          deletedId: input.id,
-        });
+        return successResponse(
+          `Time block deleted successfully. (ID: ${input.id})`
+        );
       } catch (error) {
-        return formatResponse(
-          {
-            error: "Failed to delete time block",
-            timeBlockId: input.id,
-            message: error instanceof Error ? error.message : String(error),
-          },
-          true
+        return errorResponse(
+          error instanceof Error ? error.message : "Unknown error"
         );
       }
     }
@@ -652,33 +550,18 @@ To unlink a task, pass null as the taskId.`,
         });
 
         if (!response.success) {
-          return formatResponse(
-            {
-              error: response.error?.message || "Failed to update time block",
-              code: response.error?.code,
-              timeBlockId: input.timeBlockId,
-              details: response.error?.errors,
-            },
-            true
+          return errorResponse(
+            response.error?.message || "Failed to update time block"
           );
         }
 
         const action = input.taskId ? "linked" : "unlinked";
-        return formatResponse({
-          message: `Task ${action} successfully`,
-          timeBlock: response.data,
-          taskId: input.taskId,
-          formatted: formatTimeBlock(response.data!),
-        });
+        return successResponse(
+          `Task ${action} successfully!\n\n${formatTimeBlock(response.data!)}`
+        );
       } catch (error) {
-        return formatResponse(
-          {
-            error: "Failed to link/unlink task",
-            timeBlockId: input.timeBlockId,
-            taskId: input.taskId,
-            message: error instanceof Error ? error.message : String(error),
-          },
-          true
+        return errorResponse(
+          error instanceof Error ? error.message : "Unknown error"
         );
       }
     }
@@ -713,13 +596,8 @@ The schedule shows times, titles, and linked tasks in an easy-to-read format.`,
       try {
         // Validate date format
         if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date)) {
-          return formatResponse(
-            {
-              error: "Invalid date format",
-              message: "Date must be in YYYY-MM-DD format (e.g., '2024-01-15')",
-              provided: input.date,
-            },
-            true
+          return errorResponse(
+            `Invalid date format '${input.date}'. Use YYYY-MM-DD format (e.g., '2024-01-15')`
           );
         }
 
@@ -729,31 +607,16 @@ The schedule shows times, titles, and linked tasks in an easy-to-read format.`,
         });
 
         if (!response.success) {
-          return formatResponse(
-            {
-              error: response.error?.message || "Failed to get schedule",
-              code: response.error?.code,
-              date: input.date,
-            },
-            true
+          return errorResponse(
+            response.error?.message || "Failed to get schedule"
           );
         }
 
         const blocks = response.data || [];
-        return formatResponse({
-          date: input.date,
-          schedule: formatSchedule(blocks, input.date),
-          timeBlocks: blocks,
-          count: blocks.length,
-        });
+        return successResponse(formatSchedule(blocks, input.date));
       } catch (error) {
-        return formatResponse(
-          {
-            error: "Failed to get schedule",
-            date: input.date,
-            message: error instanceof Error ? error.message : String(error),
-          },
-          true
+        return errorResponse(
+          error instanceof Error ? error.message : "Unknown error"
         );
       }
     }
