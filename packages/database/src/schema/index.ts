@@ -47,11 +47,15 @@ export {
   selectNotificationPreferencesSchema,
   updateNotificationPreferencesSchema,
   REMINDER_TIMING_OPTIONS,
+  ROLLOVER_DESTINATION_OPTIONS,
+  ROLLOVER_POSITION_OPTIONS,
 } from './notification-preferences';
 export type {
   NotificationPreferences,
   NewNotificationPreferences,
   UpdateNotificationPreferences,
+  RolloverDestination,
+  RolloverPosition,
 } from './notification-preferences';
 
 export {
