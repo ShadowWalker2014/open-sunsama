@@ -65,7 +65,7 @@ export function KanbanBoard({ children }: KanbanBoardProps) {
         {/* Kanban Board - DndContext is provided by TasksDndProvider */}
         <div
           ref={containerRef}
-          className="flex-1 overflow-x-auto overflow-y-hidden"
+          className="flex-1 overflow-x-auto overflow-y-hidden snap-x snap-mandatory sm:snap-none scroll-smooth"
           onScroll={handleScroll}
         >
           <div
@@ -81,7 +81,7 @@ export function KanbanBoard({ children }: KanbanBoardProps) {
               return (
                 <div
                   key={dateInfo.dateString}
-                  className="absolute left-0 top-0 h-full"
+                  className="absolute left-0 top-0 h-full snap-start snap-always"
                   style={{
                     width: `${virtualItem.size}px`,
                     transform: `translateX(${virtualItem.start}px)`,
