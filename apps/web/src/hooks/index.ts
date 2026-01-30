@@ -129,3 +129,19 @@ export { useTimezoneSync, getDeviceTimezone } from "./useTimezoneSync";
 export { useWebSocket } from "./useWebSocket";
 export { useTimer, formatTime, formatMins } from "./useTimer";
 export { useIsMobile } from "./useIsMobile";
+export {
+  useCalendarAccounts,
+  useCalendars,
+  useCalendarEvents,
+  useDisconnectAccount,
+  useSyncAccount,
+  useUpdateCalendar,
+  useConnectICloud,
+  getOAuthUrl,
+  calendarKeys,
+  type CalendarAccount,
+  type Calendar,
+  type CalendarEvent,
+  type ConnectCalDavRequest,
+  type UpdateCalendarRequest,
+} from "./useCalendars";
