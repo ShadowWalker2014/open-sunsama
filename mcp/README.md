@@ -352,5 +352,5 @@ This MCP server is part of the Open Sunsama project and follows the same license
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/your-org/open-sunsama/issues)
-- **Documentation**: [Open Sunsama Docs](https://github.com/your-org/open-sunsama)
+- **Issues**: [GitHub Issues](https://github.com/AquaWolf/open-sunsama/issues)
+- **Documentation**: [Open Sunsama Docs](https://github.com/AquaWolf/open-sunsama)
