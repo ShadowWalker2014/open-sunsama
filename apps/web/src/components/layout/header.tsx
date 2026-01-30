@@ -124,6 +124,11 @@ export function Header({ className }: HeaderProps) {
         {/* Spacer */}
         <div className="flex-1" />
 
+        {/* Global Shortcut Hint - Hidden on mobile */}
+        <div className="hidden lg:flex items-center mr-4 text-xs text-muted-foreground/50">
+          Press <kbd className="mx-1 rounded border border-border/50 bg-muted/50 px-1.5 py-0.5 text-[10px] font-medium">?</kbd> for shortcuts
+        </div>
+
         {/* Actions */}
         <div className="flex items-center gap-1 sm:gap-2">
           {/* Theme Toggle - Touch-friendly */}

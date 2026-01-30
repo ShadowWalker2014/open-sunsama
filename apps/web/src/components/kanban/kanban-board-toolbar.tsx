@@ -8,6 +8,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  ShortcutHint,
 } from "@/components/ui";
 
 // Extended sort option that includes direction
@@ -98,9 +99,10 @@ export function KanbanBoardToolbar({
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" onClick={onNavigateToday}>
+          <Button variant="outline" onClick={onNavigateToday} className="group">
             <CalendarDays className="mr-2 h-4 w-4" />
             Today
+            <ShortcutHint shortcutKey="goToToday" className="ml-2" showOnHover />
           </Button>
           <Button
             variant="outline"
