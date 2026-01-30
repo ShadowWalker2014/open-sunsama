@@ -107,3 +107,14 @@ export {
   useDesktopEvents,
   useDesktop,
 } from "./useDesktop";
+export {
+  SHORTCUTS,
+  formatShortcut,
+  matchesShortcut,
+  shouldIgnoreShortcut,
+  HoveredTaskProvider,
+  useHoveredTask,
+  ShortcutsProvider,
+  useShortcutsModal,
+  type ShortcutDefinition,
+} from "./useKeyboardShortcuts.tsx";
