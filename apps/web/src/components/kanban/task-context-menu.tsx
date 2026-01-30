@@ -1,5 +1,6 @@
 import * as React from "react";
 import { format, addDays, startOfWeek } from "date-fns";
+import { useNavigate } from "@tanstack/react-router";
 import {
   Focus,
   Calendar,
@@ -46,9 +47,10 @@ interface TaskContextMenuProps {
 export function TaskContextMenu({
   task,
   children,
-  onEdit,
-  onFocus,
+  onEdit: _onEdit,
+  onFocus: _onFocus,
 }: TaskContextMenuProps) {
+  const navigate = useNavigate();
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
   const createTask = useCreateTask();
@@ -67,12 +69,8 @@ export function TaskContextMenu({
   const hasSubtasks = subtasks && subtasks.length > 0;
 
   const handleFocus = () => {
-    // onFocus and onEdit do the same thing - open task detail
-    if (onFocus) {
-      onFocus();
-    } else if (onEdit) {
-      onEdit();
-    }
+    // Navigate to focus mode for this task
+    navigate({ to: "/app/focus/$taskId", params: { taskId: task.id } });
   };
 
   const handleAddToCalendar = async () => {

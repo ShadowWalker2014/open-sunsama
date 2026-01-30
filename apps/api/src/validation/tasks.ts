@@ -35,6 +35,7 @@ export const updateTaskSchema = z.object({
   notes: z.string().max(5000).optional().nullable(),
   scheduledDate: dateSchema.optional().nullable(),
   estimatedMins: z.number().int().positive().max(480).optional().nullable(),
+  actualMins: z.number().int().nonnegative().optional().nullable(),
   priority: prioritySchema.optional(),
   completedAt: z.string().datetime().optional().nullable(),
   position: z.number().int().nonnegative().optional(),

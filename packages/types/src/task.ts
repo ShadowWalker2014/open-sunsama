@@ -40,6 +40,12 @@ export interface Task {
   estimatedMins: number | null;
 
   /**
+   * Actual time spent on the task in minutes.
+   * Tracked via focus mode timer.
+   */
+  actualMins: number | null;
+
+  /**
    * Priority level of the task.
    * P0 = Critical/Urgent, P1 = High, P2 = Medium (default), P3 = Low
    */
@@ -118,6 +124,9 @@ export interface UpdateTaskInput {
 
   /** Updated priority level */
   priority?: TaskPriority;
+
+  /** Updated actual time spent in minutes */
+  actualMins?: number | null;
 
   /** 
    * Set completion timestamp (use null to mark as incomplete).
