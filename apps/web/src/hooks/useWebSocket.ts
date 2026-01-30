@@ -28,17 +28,15 @@ export function useWebSocket(): void {
       return;
     }
 
-    // Don't reconnect if we're already connected with the same token
-    if (connectedRef.current && tokenRef.current === token) {
-      return;
+    // Connect if not already connected with this token
+    if (!connectedRef.current || tokenRef.current !== token) {
+      wsClient.connect(token);
+      connectedRef.current = true;
+      tokenRef.current = token;
     }
 
-    // Connect WebSocket
-    wsClient.connect(token);
-    connectedRef.current = true;
-    tokenRef.current = token;
-
-    // Subscribe to events and invalidate queries
+    // Always subscribe to events (subscription is independent of connection state)
+    // This ensures handlers are re-added after effect cleanup (e.g., HMR, queryClient change)
     const unsubscribe = wsClient.subscribe((event: WebSocketEvent) => {
       handleWebSocketEvent(event, queryClient);
     });
