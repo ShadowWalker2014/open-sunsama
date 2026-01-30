@@ -4,6 +4,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { Header } from "@/components/layout/header";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { Skeleton } from "@/components/ui";
+import {
+  HoveredTaskProvider,
+  ShortcutsProvider,
+  useShortcutsModal,
+} from "@/hooks/useKeyboardShortcuts";
+import { ShortcutsModal } from "@/components/ui/shortcuts-modal";
 
 /**
  * Main app layout - requires authentication
@@ -51,14 +57,37 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-1 pb-16 lg:pb-0">
-        <Outlet />
-      </main>
-      {/* Mobile bottom navigation - hidden on lg screens */}
-      <MobileBottomNav />
-    </div>
+    <HoveredTaskProvider>
+      <ShortcutsProvider>
+        <AppLayoutInner />
+      </ShortcutsProvider>
+    </HoveredTaskProvider>
+  );
+}
+
+/**
+ * Inner component that can use the shortcuts hooks
+ */
+function AppLayoutInner() {
+  const { showShortcutsModal, setShowShortcutsModal } = useShortcutsModal();
+
+  return (
+    <>
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        <main className="flex-1 pb-16 lg:pb-0">
+          <Outlet />
+        </main>
+        {/* Mobile bottom navigation - hidden on lg screens */}
+        <MobileBottomNav />
+      </div>
+
+      {/* Shortcuts Modal */}
+      <ShortcutsModal
+        open={showShortcutsModal}
+        onOpenChange={setShowShortcutsModal}
+      />
+    </>
   );
 }
 

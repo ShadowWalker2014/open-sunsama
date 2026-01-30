@@ -18,3 +18,8 @@ export {
 } from "./task-form-sections";
 export { TimeBlockItem, TimeBlocksList } from "./task-time-blocks";
 export { TaskAttachments } from "./task-attachments";
+export {
+  KanbanNavigationProvider,
+  useKanbanNavigation,
+  useKanbanNavigationOptional,
+} from "./kanban-navigation-context";
