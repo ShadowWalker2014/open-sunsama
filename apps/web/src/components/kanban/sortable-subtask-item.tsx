@@ -1,3 +1,4 @@
+import * as React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { X, GripVertical, Check } from "lucide-react";
@@ -13,19 +14,24 @@ interface SortableSubtaskItemProps {
   subtask: Subtask;
   onToggle: () => void;
   onDelete: () => void;
+  onUpdate?: (title: string) => void;
 }
 
 /**
- * Sortable subtask item with drag handle for use in task modals.
- * Uses @dnd-kit/sortable for drag-and-drop reordering.
- * Supports Sunsama-style time columns when showTimeColumns is true.
+ * Sortable subtask item with drag handle and inline editing.
+ * Click on title to edit directly.
  */
 export function SortableSubtaskItem({
   subtask,
   onToggle,
   onDelete,
+  onUpdate,
 }: SortableSubtaskItemProps) {
   const { setHoveredSubtaskId } = useHoveredTask();
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editValue, setEditValue] = React.useState(subtask.title);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
   const {
     attributes,
     listeners,
@@ -38,6 +44,45 @@ export function SortableSubtaskItem({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+  };
+
+  // Focus input when entering edit mode
+  React.useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  // Sync edit value when subtask changes
+  React.useEffect(() => {
+    setEditValue(subtask.title);
+  }, [subtask.title]);
+
+  const handleTitleClick = () => {
+    if (onUpdate) {
+      setIsEditing(true);
+    }
+  };
+
+  const handleSave = () => {
+    const trimmed = editValue.trim();
+    if (trimmed && trimmed !== subtask.title && onUpdate) {
+      onUpdate(trimmed);
+    } else {
+      setEditValue(subtask.title);
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSave();
+    } else if (e.key === "Escape") {
+      setEditValue(subtask.title);
+      setIsEditing(false);
+    }
   };
 
   return (
@@ -76,15 +121,32 @@ export function SortableSubtaskItem({
         )}
       </button>
 
-      {/* Title */}
-      <span
-        className={cn(
-          "flex-1 text-sm",
-          subtask.completed && "line-through text-muted-foreground"
-        )}
-      >
-        {subtask.title}
-      </span>
+      {/* Title - click to edit */}
+      {isEditing ? (
+        <input
+          ref={inputRef}
+          type="text"
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          onBlur={handleSave}
+          onKeyDown={handleKeyDown}
+          className={cn(
+            "flex-1 text-[13px] bg-transparent border-none outline-none",
+            "focus:ring-0 p-0"
+          )}
+        />
+      ) : (
+        <span
+          onClick={handleTitleClick}
+          className={cn(
+            "flex-1 text-[13px] cursor-text",
+            subtask.completed && "line-through text-muted-foreground",
+            onUpdate && "hover:bg-muted/30 rounded px-1 -mx-1"
+          )}
+        >
+          {subtask.title}
+        </span>
+      )}
 
       {/* Delete button - shows on hover */}
       <Button

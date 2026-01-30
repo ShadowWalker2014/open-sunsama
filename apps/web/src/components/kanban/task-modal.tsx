@@ -551,6 +551,11 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                       subtask={subtask}
                       onToggle={() => toggleSubtask(subtask)}
                       onDelete={() => handleDeleteSubtask(subtask.id)}
+                      onUpdate={(title) => updateSubtask.mutate({ 
+                        taskId: task!.id, 
+                        subtaskId: subtask.id, 
+                        data: { title } 
+                      })}
                     />
                   ))}
                 </div>
