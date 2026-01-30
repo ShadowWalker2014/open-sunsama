@@ -1,6 +1,8 @@
 import * as React from "react";
 import { Plus, Inbox, Clock, ChevronLeft, ChevronRight } from "lucide-react";
-import { useDraggable } from "@dnd-kit/core";
+import { useSortable } from "@dnd-kit/sortable";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import type { Task } from "@open-sunsama/types";
 import { useTasks } from "@/hooks/useTasks";
 import { cn, formatDuration } from "@/lib/utils";
@@ -33,7 +35,9 @@ export function Sidebar({ className }: SidebarProps) {
   const { data: tasks, isLoading } = useTasks({ backlog: true });
 
   const backlogTasks = React.useMemo(() => {
-    return tasks?.filter((task) => !task.completedAt) ?? [];
+    const filtered = tasks?.filter((task) => !task.completedAt) ?? [];
+    // Sort by position for consistent ordering after drag-and-drop
+    return filtered.sort((a, b) => a.position - b.position);
   }, [tasks]);
 
   const toggleCollapsed = React.useCallback(() => {
@@ -133,13 +137,18 @@ export function Sidebar({ className }: SidebarProps) {
               </p>
             </div>
           ) : (
-            backlogTasks.map((task) => (
-              <BacklogTaskCard
-                key={task.id}
-                task={task}
-                onSelect={() => setSelectedTask(task)}
-              />
-            ))
+            <SortableContext
+              items={backlogTasks.map((t) => t.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {backlogTasks.map((task) => (
+                <SortableBacklogTaskCard
+                  key={task.id}
+                  task={task}
+                  onSelect={() => setSelectedTask(task)}
+                />
+              ))}
+            </SortableContext>
           )}
         </div>
       </ScrollArea>
@@ -163,51 +172,93 @@ export function Sidebar({ className }: SidebarProps) {
   );
 }
 
-interface BacklogTaskCardProps {
+interface SortableBacklogTaskCardProps {
   task: Task;
   onSelect: () => void;
 }
 
-function BacklogTaskCard({ task, onSelect }: BacklogTaskCardProps) {
+/**
+ * Sortable backlog task card that supports:
+ * - Reordering within the backlog (drag to reorder)
+ * - Dragging to kanban day columns (to schedule)
+ * - Dragging to calendar view (to create time blocks)
+ */
+function SortableBacklogTaskCard({ task, onSelect }: SortableBacklogTaskCardProps) {
   const {
     attributes,
     listeners,
     setNodeRef,
+    transform,
+    transition,
     isDragging,
-  } = useDraggable({
+    isOver,
+    active,
+    index,
+  } = useSortable({
     id: task.id,
     data: {
       type: "task",
       task,
+      source: "backlog",
     },
   });
+
+  // Determine if we should show a drop indicator
+  const showIndicator = isOver && active?.id !== task.id;
+  
+  // Determine indicator position based on where the item will be inserted
+  const activeIndex = active?.data?.current?.sortable?.index ?? -1;
+  const showDropIndicatorAbove = showIndicator && activeIndex > index;
+  const showDropIndicatorBelow = showIndicator && activeIndex < index && activeIndex !== -1;
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
 
   return (
     <div
       ref={setNodeRef}
+      style={style}
       {...attributes}
       {...listeners}
       onClick={onSelect}
       className={cn(
-        "group flex items-start gap-3 rounded-lg px-3 py-2 transition-all duration-150",
-        "bg-card/50 hover:bg-card",
-        "border border-transparent hover:border-border/50",
-        "cursor-grab active:cursor-grabbing touch-none select-none",
-        isDragging && "opacity-30"
+        "relative",
+        isDragging && "opacity-30 z-50"
       )}
     >
-      {/* Content */}
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium leading-snug truncate">
-          {task.title}
-        </p>
-        {task.estimatedMins && (
-          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground mt-1">
-            <Clock className="h-3 w-3" />
-            {formatDuration(task.estimatedMins)}
-          </span>
+      {/* Drop indicator line - above */}
+      {showDropIndicatorAbove && (
+        <div className="absolute -top-1 left-0 right-0 h-0.5 bg-primary rounded-full z-10 shadow-[0_0_4px_rgba(var(--primary),0.5)]" />
+      )}
+      
+      <div
+        className={cn(
+          "group flex items-start gap-3 rounded-lg px-3 py-2 transition-all duration-150",
+          "bg-card/50 hover:bg-card",
+          "border border-transparent hover:border-border/50",
+          "cursor-grab active:cursor-grabbing touch-none select-none"
         )}
+      >
+        {/* Content */}
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium leading-snug truncate">
+            {task.title}
+          </p>
+          {task.estimatedMins && (
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground mt-1">
+              <Clock className="h-3 w-3" />
+              {formatDuration(task.estimatedMins)}
+            </span>
+          )}
+        </div>
       </div>
+      
+      {/* Drop indicator line - below */}
+      {showDropIndicatorBelow && (
+        <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full z-10 shadow-[0_0_4px_rgba(var(--primary),0.5)]" />
+      )}
     </div>
   );
 }

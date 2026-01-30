@@ -199,7 +199,7 @@ export function useMoveTask() {
 }
 
 /**
- * Reorder tasks within a date
+ * Reorder tasks within a date or backlog
  * Uses optimistic updates for smooth drag-and-drop experience
  */
 export function useReorderTasks() {
@@ -210,7 +210,7 @@ export function useReorderTasks() {
       date,
       taskIds,
     }: {
-      date: string;
+      date: string; // "backlog" for backlog tasks, or "YYYY-MM-DD" for scheduled tasks
       taskIds: string[];
     }): Promise<void> => {
       const api = getApi();
@@ -218,11 +218,17 @@ export function useReorderTasks() {
       await api.tasks.reorder(input);
     },
     onMutate: async ({ date, taskIds }) => {
+      // Determine the correct query key based on whether it's backlog or a date
+      const isBacklog = date === "backlog";
+      const queryKey = isBacklog 
+        ? taskKeys.list({ backlog: true })
+        : taskKeys.list({ scheduledDate: date });
+
       // Cancel any outgoing refetches to avoid overwriting optimistic update
-      await queryClient.cancelQueries({ queryKey: taskKeys.list({ scheduledDate: date }) });
+      await queryClient.cancelQueries({ queryKey });
 
       // Snapshot the previous value
-      const previousTasks = queryClient.getQueryData<Task[]>(taskKeys.list({ scheduledDate: date }));
+      const previousTasks = queryClient.getQueryData<Task[]>(queryKey);
 
       // Optimistically update the cache with new positions
       if (previousTasks) {
@@ -237,19 +243,16 @@ export function useReorderTasks() {
         const tasksNotInOrder = previousTasks.filter((t) => !taskIds.includes(t.id));
         const finalTasks = [...reorderedTasks, ...tasksNotInOrder];
 
-        queryClient.setQueryData(taskKeys.list({ scheduledDate: date }), finalTasks);
+        queryClient.setQueryData(queryKey, finalTasks);
       }
 
       // Return context with previous value for rollback
-      return { previousTasks, date };
+      return { previousTasks, date, queryKey };
     },
     onError: (error, _variables, context) => {
       // Rollback to previous value on error
-      if (context?.previousTasks) {
-        queryClient.setQueryData(
-          taskKeys.list({ scheduledDate: context.date }),
-          context.previousTasks
-        );
+      if (context?.previousTasks && context?.queryKey) {
+        queryClient.setQueryData(context.queryKey, context.previousTasks);
       }
       toast({
         variant: "destructive",
@@ -259,7 +262,11 @@ export function useReorderTasks() {
     },
     onSettled: (_data, _error, { date }) => {
       // Always refetch after error or success to ensure server state
-      queryClient.invalidateQueries({ queryKey: taskKeys.list({ scheduledDate: date }) });
+      const isBacklog = date === "backlog";
+      const queryKey = isBacklog 
+        ? taskKeys.list({ backlog: true })
+        : taskKeys.list({ scheduledDate: date });
+      queryClient.invalidateQueries({ queryKey });
     },
   });
 }
