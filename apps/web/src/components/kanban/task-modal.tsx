@@ -128,6 +128,28 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     return () => setHoveredTask(null);
   }, [open, task, setHoveredTask]);
 
+  // Handle F key to switch to focus mode
+  React.useEffect(() => {
+    if (!open || !task) return;
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if typing in an input/textarea
+      const target = e.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+        return;
+      }
+      
+      if (e.key === "f" || e.key === "F") {
+        e.preventDefault();
+        onOpenChange(false);
+        navigate({ to: "/app/focus/$taskId", params: { taskId: task.id } });
+      }
+    };
+    
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, task, onOpenChange, navigate]);
+
   // Handle save on close
   const handleOpenChange = async (newOpen: boolean) => {
     if (!newOpen && task) {
