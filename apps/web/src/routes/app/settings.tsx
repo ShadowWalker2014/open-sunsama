@@ -1,6 +1,13 @@
 import * as React from "react";
-import { User, Lock, Palette, Bell, Key, ListTodo, Terminal } from "lucide-react";
+import { User, Lock, Palette, Bell, Key, ListTodo, Terminal, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import {
   ApiKeysSettings,
   PasswordSettings,
@@ -23,9 +30,69 @@ const TABS: { id: SettingsTab; label: string; icon: React.ElementType }[] = [
   { id: "mcp", label: "MCP", icon: Terminal },
 ];
 
+function SettingsContent({ tab }: { tab: SettingsTab }) {
+  switch (tab) {
+    case "profile":
+      return <ProfileSettings />;
+    case "security":
+      return <PasswordSettings />;
+    case "appearance":
+      return <AppearanceSettings />;
+    case "tasks":
+      return <TaskSettings />;
+    case "notifications":
+      return <NotificationSettings />;
+    case "api":
+      return <ApiKeysSettings />;
+    case "mcp":
+      return <McpSettings />;
+  }
+}
+
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = React.useState<SettingsTab>("profile");
+  const [openSheet, setOpenSheet] = React.useState<SettingsTab | null>(null);
+  const isMobile = useIsMobile();
 
+  // Mobile layout: List of sections that open sheets
+  if (isMobile) {
+    return (
+      <div className="h-[calc(100vh-2.75rem)] overflow-y-auto">
+        <div className="divide-y divide-border/40">
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setOpenSheet(tab.id)}
+                className="flex w-full items-center justify-between px-4 py-3.5 text-left transition-colors hover:bg-accent/50 active:bg-accent"
+              >
+                <div className="flex items-center gap-3">
+                  <Icon className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-[15px] font-medium">{tab.label}</span>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground/60" />
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Settings Sheet */}
+        <Sheet open={openSheet !== null} onOpenChange={(open) => !open && setOpenSheet(null)}>
+          <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+            <SheetHeader className="mb-4">
+              <SheetTitle>
+                {TABS.find((t) => t.id === openSheet)?.label}
+              </SheetTitle>
+            </SheetHeader>
+            {openSheet && <SettingsContent tab={openSheet} />}
+          </SheetContent>
+        </Sheet>
+      </div>
+    );
+  }
+
+  // Desktop layout: Sidebar + content
   return (
     <div className="flex h-[calc(100vh-2.75rem)] overflow-hidden">
       {/* Left Navigation - Linear style */}
@@ -56,13 +123,7 @@ export default function SettingsPage() {
       {/* Content Area */}
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-xl px-6 py-4">
-          {activeTab === "profile" && <ProfileSettings />}
-          {activeTab === "security" && <PasswordSettings />}
-          {activeTab === "appearance" && <AppearanceSettings />}
-          {activeTab === "tasks" && <TaskSettings />}
-          {activeTab === "notifications" && <NotificationSettings />}
-          {activeTab === "api" && <ApiKeysSettings />}
-          {activeTab === "mcp" && <McpSettings />}
+          <SettingsContent tab={activeTab} />
         </div>
       </main>
     </div>
