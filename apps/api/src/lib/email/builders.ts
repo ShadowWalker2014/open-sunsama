@@ -3,13 +3,7 @@
  */
 import { escapeHtml } from './template';
 
-// =============================================================================
-// TYPES
-// =============================================================================
-
-/**
- * Task item for email lists
- */
+/** Task item for email lists */
 export interface EmailTaskItem {
   title: string;
   priority?: 'P0' | 'P1' | 'P2' | 'P3';
@@ -17,13 +11,7 @@ export interface EmailTaskItem {
   isCompleted?: boolean;
 }
 
-// =============================================================================
-// CONSTANTS
-// =============================================================================
-
-/**
- * Priority colors for task badges
- */
+/** Priority colors for task badges */
 const PRIORITY_COLORS: Record<string, { bg: string; text: string }> = {
   P0: { bg: '#fef2f2', text: '#dc2626' },
   P1: { bg: '#fff7ed', text: '#ea580c' },
@@ -31,13 +19,7 @@ const PRIORITY_COLORS: Record<string, { bg: string; text: string }> = {
   P3: { bg: '#f0fdf4', text: '#16a34a' },
 };
 
-// =============================================================================
-// HELPER FUNCTIONS
-// =============================================================================
-
-/**
- * Format minutes to a human-readable duration
- */
+/** Format minutes to a human-readable duration */
 export function formatDuration(minutes: number): string {
   if (minutes < 60) {
     return `${minutes}m`;
@@ -50,9 +32,7 @@ export function formatDuration(minutes: number): string {
   return `${hours}h ${remainingMins}m`;
 }
 
-/**
- * Group tasks by priority
- */
+/** Group tasks by priority */
 export function groupTasksByPriority(
   tasks: EmailTaskItem[]
 ): { P0: EmailTaskItem[]; P1: EmailTaskItem[]; P2: EmailTaskItem[]; P3: EmailTaskItem[]; none: EmailTaskItem[] } {
@@ -76,27 +56,17 @@ export function groupTasksByPriority(
   return groups;
 }
 
-// =============================================================================
-// CONTENT BUILDERS
-// =============================================================================
-
-/**
- * Create a heading (h1 style)
- */
+/** Create a heading (h1 style) */
 export function createHeading(text: string): string {
   return `<h1 style="margin: 0 0 16px 0; font-size: 24px; font-weight: 600; color: #111827; letter-spacing: -0.02em;">${escapeHtml(text)}</h1>`;
 }
 
-/**
- * Create a paragraph (body text)
- */
+/** Create a paragraph (body text) */
 export function createParagraph(text: string): string {
   return `<p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">${escapeHtml(text)}</p>`;
 }
 
-/**
- * Create a CTA button
- */
+/** Create a CTA button */
 export function createButton(
   text: string,
   url: string,
@@ -114,30 +84,22 @@ export function createButton(
 </table>`.trim();
 }
 
-/**
- * Create a horizontal divider
- */
+/** Create a horizontal divider */
 export function createDivider(): string {
   return `<div style="border-top: 1px solid #e5e7eb; margin: 24px 0;"></div>`;
 }
 
-/**
- * Create muted/small text
- */
+/** Create muted/small text */
 export function createMutedText(text: string): string {
   return `<p style="margin: 0 0 8px 0; font-size: 13px; line-height: 1.5; color: #9ca3af;">${escapeHtml(text)}</p>`;
 }
 
-/**
- * Create a secondary text (slightly larger than muted)
- */
+/** Create a secondary text (slightly larger than muted) */
 export function createSecondaryText(text: string): string {
   return `<p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #6b7280;">${escapeHtml(text)}</p>`;
 }
 
-/**
- * Create a task list for daily summary emails
- */
+/** Create a task list for daily summary emails */
 export function createTaskList(tasks: EmailTaskItem[]): string {
   if (tasks.length === 0) {
     return `<p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #6b7280; font-style: italic;">No tasks scheduled</p>`;
@@ -182,9 +144,7 @@ export function createTaskList(tasks: EmailTaskItem[]): string {
 </table>`.trim();
 }
 
-/**
- * Create a stats row (for daily summary)
- */
+/** Create a stats row (for daily summary) */
 export function createStatsRow(stats: Array<{ label: string; value: string | number }>): string {
   const statItems = stats
     .map(
