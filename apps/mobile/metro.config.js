@@ -15,10 +15,17 @@ config.resolver.nodeModulesPaths = [
   path.resolve(workspaceRoot, 'node_modules'),
 ];
 
-// Support workspace package resolution
+// Force React and React Native core packages to resolve from mobile's node_modules
+// This prevents version mismatch when root has a different React version
 config.resolver.extraNodeModules = {
+  // Workspace packages
   '@open-sunsama/api-client': path.resolve(workspaceRoot, 'packages/api-client/src'),
   '@open-sunsama/types': path.resolve(workspaceRoot, 'packages/types/src'),
+  // Force local React resolution to avoid version mismatch
+  'react': path.resolve(projectRoot, 'node_modules/react'),
+  'react-native': path.resolve(projectRoot, 'node_modules/react-native'),
+  'react/jsx-runtime': path.resolve(projectRoot, 'node_modules/react/jsx-runtime'),
+  'react/jsx-dev-runtime': path.resolve(projectRoot, 'node_modules/react/jsx-dev-runtime'),
 };
 
 // Resolve .js imports to .ts files (ESM imports in workspace packages)
