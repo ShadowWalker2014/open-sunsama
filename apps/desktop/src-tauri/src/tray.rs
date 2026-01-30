@@ -1,5 +1,5 @@
 use tauri::{
-    menu::{Menu, MenuItem},
+    menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     Manager,
 };
@@ -8,9 +8,9 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let new_task = MenuItem::with_id(app, "new_task", "New Task", true, Some("CmdOrCtrl+Shift+T"))?;
     let today = MenuItem::with_id(app, "today", "Today View", true, None::<&str>)?;
     let calendar = MenuItem::with_id(app, "calendar", "Calendar", true, None::<&str>)?;
-    let separator1 = MenuItem::with_id(app, "sep1", "---", false, None::<&str>)?;
+    let separator1 = PredefinedMenuItem::separator(app)?;
     let show_hide = MenuItem::with_id(app, "show_hide", "Show/Hide Window", true, Some("CmdOrCtrl+Shift+O"))?;
-    let separator2 = MenuItem::with_id(app, "sep2", "---", false, None::<&str>)?;
+    let separator2 = PredefinedMenuItem::separator(app)?;
     let settings = MenuItem::with_id(app, "settings", "Settings...", true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "Quit Open Sunsama", true, Some("CmdOrCtrl+Q"))?;
 
