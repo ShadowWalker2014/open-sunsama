@@ -33,7 +33,7 @@ ENV VITE_API_URL=$VITE_API_URL
 RUN bun run build --filter=@open-sunsama/types --filter=@open-sunsama/utils --filter=@open-sunsama/api-client --filter=@open-sunsama/web
 
 # Production stage - serve static files
-FROM node:20-slim
+FROM node:22-slim
 
 WORKDIR /app
 

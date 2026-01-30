@@ -29,7 +29,7 @@ COPY apps/api/ ./apps/api/
 RUN bun run build --filter=@open-sunsama/database --filter=@open-sunsama/types --filter=@open-sunsama/utils --filter=@open-sunsama/api
 
 # Production stage
-FROM node:20-slim
+FROM node:22-slim
 
 WORKDIR /app
 

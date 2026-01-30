@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tauri dev",
-    "build": "tsc --noEmit && tauri build",
+    "build": "tsc --noEmit && CI='' tauri build",
     "build:tauri": "tauri build",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
