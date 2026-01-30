@@ -144,11 +144,11 @@ export function TaskCardContent({
 
       {/* Subtasks preview - inline with small checkboxes */}
       {subtasksPreview && subtasksPreview.length > 0 && !isCompleted && (
-        <div className="pl-6 space-y-0.5">
+        <div className="pl-6 space-y-1">
           {subtasksPreview.map((subtask) => (
             <div 
               key={subtask.id} 
-              className="flex items-center gap-1.5 group/subtask cursor-pointer hover:bg-muted/30 rounded -mx-1 px-1"
+              className="flex items-start gap-1.5 group/subtask cursor-pointer hover:bg-muted/30 rounded -mx-1 px-1 py-0.5"
               onClick={(e) => {
                 e.stopPropagation();
                 onToggleSubtask?.(subtask.id);
@@ -158,7 +158,7 @@ export function TaskCardContent({
             >
               <div 
                 className={cn(
-                  "h-3 w-3 rounded-full flex items-center justify-center transition-colors",
+                  "h-3 w-3 shrink-0 mt-0.5 rounded-full flex items-center justify-center transition-colors",
                   subtask.completed 
                     ? "bg-primary/60" 
                     : "border border-muted-foreground/40 group-hover/subtask:border-primary group-hover/subtask:bg-primary/10"
@@ -170,7 +170,7 @@ export function TaskCardContent({
               </div>
               <span
                 className={cn(
-                  "text-xs text-muted-foreground truncate",
+                  "text-xs text-muted-foreground leading-tight break-words min-w-0",
                   subtask.completed && "line-through opacity-60"
                 )}
               >
