@@ -126,6 +126,32 @@ tasksRouter.delete('/:id', requireScopes('tasks:write'), zValidator('param', z.o
   return c.json({ success: true, message: 'Task deleted successfully' });
 });
 
+/** POST /tasks/:id/complete - Mark a task as complete */
+tasksRouter.post('/:id/complete', requireScopes('tasks:write'), zValidator('param', z.object({ id: uuidSchema })), async (c) => {
+  const userId = c.get('userId');
+  const { id } = c.req.valid('param');
+  const db = getDb();
+
+  const [existing] = await db.select().from(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, userId))).limit(1);
+  if (!existing) throw new NotFoundError('Task', id);
+
+  const [updatedTask] = await db.update(tasks).set({ completedAt: new Date(), updatedAt: new Date() }).where(and(eq(tasks.id, id), eq(tasks.userId, userId))).returning();
+  return c.json({ success: true, data: updatedTask });
+});
+
+/** POST /tasks/:id/uncomplete - Mark a task as incomplete */
+tasksRouter.post('/:id/uncomplete', requireScopes('tasks:write'), zValidator('param', z.object({ id: uuidSchema })), async (c) => {
+  const userId = c.get('userId');
+  const { id } = c.req.valid('param');
+  const db = getDb();
+
+  const [existing] = await db.select().from(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, userId))).limit(1);
+  if (!existing) throw new NotFoundError('Task', id);
+
+  const [updatedTask] = await db.update(tasks).set({ completedAt: null, updatedAt: new Date() }).where(and(eq(tasks.id, id), eq(tasks.userId, userId))).returning();
+  return c.json({ success: true, data: updatedTask });
+});
+
 /** POST /tasks/reorder - Reorder tasks for a specific date */
 tasksRouter.post('/reorder', requireScopes('tasks:write'), zValidator('json', reorderTasksSchema), async (c) => {
   const userId = c.get('userId');
