@@ -46,29 +46,31 @@ function highlightJson(json: string): React.ReactNode[] {
   const elements: React.ReactNode[] = [];
   let key = 0;
   
-  // Regex to match JSON tokens
-  const tokenRegex = /("(?:\\.|[^"\\])*")\s*:|("(?:\\.|[^"\\])*")|(-?\d+\.?\d*)|(\btrue\b|\bfalse\b|\bnull\b)|([{}[\],])|(\s+)/g;
+  // Regex to match JSON tokens - capture groups for different token types
+  const tokenRegex = /("(?:\\.|[^"\\])*")(\s*:)?|(-?\d+\.?\d*)|(\btrue\b|\bfalse\b|\bnull\b)|([{}[\],])/g;
   
   let match;
   let lastIndex = 0;
   
   while ((match = tokenRegex.exec(json)) !== null) {
-    // Add any text before the match
+    // Add any whitespace/text before the match
     if (match.index > lastIndex) {
       elements.push(<span key={key++}>{json.slice(lastIndex, match.index)}</span>);
     }
     
-    const [fullMatch, propKey, str, num, bool, punct] = match;
+    const [, str, colon, num, bool, punct] = match;
     
-    if (propKey) {
-      // Property key (includes the colon)
-      elements.push(
-        <span key={key++} className="text-sky-400">{propKey.slice(0, -1)}</span>,
-        <span key={key++} className="text-zinc-400">:</span>
-      );
-    } else if (str) {
-      // String value
-      elements.push(<span key={key++} className="text-amber-300">{str}</span>);
+    if (str) {
+      if (colon) {
+        // Property key (string followed by colon)
+        elements.push(
+          <span key={key++} className="text-sky-400">{str}</span>,
+          <span key={key++} className="text-zinc-400">{colon}</span>
+        );
+      } else {
+        // String value
+        elements.push(<span key={key++} className="text-amber-300">{str}</span>);
+      }
     } else if (num) {
       // Number
       elements.push(<span key={key++} className="text-purple-400">{num}</span>);
@@ -78,12 +80,9 @@ function highlightJson(json: string): React.ReactNode[] {
     } else if (punct) {
       // Punctuation
       elements.push(<span key={key++} className="text-zinc-500">{punct}</span>);
-    } else {
-      // Whitespace or other
-      elements.push(<span key={key++}>{fullMatch}</span>);
     }
     
-    lastIndex = match.index + fullMatch.length;
+    lastIndex = match.index + match[0].length;
   }
   
   // Add any remaining text
