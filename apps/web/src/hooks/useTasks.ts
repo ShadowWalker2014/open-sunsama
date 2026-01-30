@@ -8,6 +8,7 @@ import type {
 } from "@open-sunsama/types";
 import { getApi } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 /**
  * Query key factory for tasks
@@ -25,6 +26,8 @@ export const taskKeys = {
  * Uses a high limit (200) for single-day queries to prevent truncation
  */
 export function useTasks(filters?: TaskFilterInput) {
+  const { isAuthenticated } = useAuth();
+
   return useQuery({
     queryKey: taskKeys.list(filters ?? {}),
     queryFn: async () => {
@@ -36,6 +39,7 @@ export function useTasks(filters?: TaskFilterInput) {
       const response = await api.tasks.list(effectiveFilters);
       return response.data ?? [];
     },
+    enabled: isAuthenticated, // Only fetch when authenticated
   });
 }
 
@@ -43,13 +47,15 @@ export function useTasks(filters?: TaskFilterInput) {
  * Fetch a single task by ID
  */
 export function useTask(id: string) {
+  const { isAuthenticated } = useAuth();
+
   return useQuery({
     queryKey: taskKeys.detail(id),
     queryFn: async () => {
       const api = getApi();
       return await api.tasks.get(id);
     },
-    enabled: !!id,
+    enabled: !!id && isAuthenticated, // Only fetch when authenticated
   });
 }
 
