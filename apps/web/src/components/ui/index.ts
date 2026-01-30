@@ -105,6 +105,12 @@ export {
   PRIORITY_LABELS,
   PRIORITY_SHORT_LABELS,
 } from "./priority-badge";
+export {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverAnchor,
+} from "./popover";
 export { FileIcon, getFileTypeColor } from "./file-icon";
 export { Lightbox } from "./lightbox";
 export { ShortcutsModal, Kbd } from "./shortcuts-modal";

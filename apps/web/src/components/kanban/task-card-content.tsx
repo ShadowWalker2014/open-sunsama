@@ -1,9 +1,9 @@
 import * as React from "react";
 import { Check } from "lucide-react";
-import type { Task, Subtask } from "@open-sunsama/types";
+import type { Task, Subtask, TaskPriority, UpdateTaskInput } from "@open-sunsama/types";
 import { cn, formatDuration } from "@/lib/utils";
 import { useHoveredTask } from "@/hooks/useKeyboardShortcuts";
-import { PriorityLabel } from "@/components/ui/priority-badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface TaskCardContentProps {
   task: Task;
@@ -26,7 +26,37 @@ interface TaskCardContentProps {
   onToggleSubtask?: (subtaskId: string) => void;
   /** Whether subtasks should be hidden */
   subtasksHidden?: boolean;
+  /** Callback to update task properties inline */
+  onUpdateTask?: (data: UpdateTaskInput) => void;
 }
+
+// Priority options for inline editing
+const PRIORITY_OPTIONS: { value: TaskPriority; label: string; color: string }[] = [
+  { value: "P0", label: "P0", color: "bg-red-500/15 text-red-600 dark:text-red-400" },
+  { value: "P1", label: "P1", color: "bg-amber-500/15 text-amber-600 dark:text-amber-400" },
+  { value: "P2", label: "P2", color: "bg-blue-500/10 text-blue-500 dark:text-blue-400" },
+  { value: "P3", label: "P3", color: "bg-slate-500/10 text-slate-500 dark:text-slate-400" },
+];
+
+// Duration presets in minutes
+const DURATION_PRESETS = [
+  { value: 5, label: "5m" },
+  { value: 10, label: "10m" },
+  { value: 15, label: "15m" },
+  { value: 30, label: "30m" },
+  { value: 45, label: "45m" },
+  { value: 60, label: "1h" },
+  { value: 90, label: "1.5h" },
+  { value: 120, label: "2h" },
+];
+
+// Priority style classes
+const PRIORITY_STYLES: Record<TaskPriority, string> = {
+  P0: "bg-red-500/15 text-red-600 dark:text-red-400",
+  P1: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  P2: "bg-blue-500/10 text-blue-500 dark:text-blue-400",
+  P3: "bg-slate-500/10 text-slate-500 dark:text-slate-400",
+};
 
 /**
  * Shared content component for task cards.
@@ -47,8 +77,21 @@ export function TaskCardContent({
   subtasks,
   onToggleSubtask,
   subtasksHidden,
+  onUpdateTask,
 }: TaskCardContentProps) {
   const { setHoveredTask } = useHoveredTask();
+  const [priorityOpen, setPriorityOpen] = React.useState(false);
+  const [durationOpen, setDurationOpen] = React.useState(false);
+
+  const handlePriorityChange = (priority: TaskPriority) => {
+    onUpdateTask?.({ priority });
+    setPriorityOpen(false);
+  };
+
+  const handleDurationChange = (mins: number) => {
+    onUpdateTask?.({ estimatedMins: mins });
+    setDurationOpen(false);
+  };
 
   // Format scheduled time to "2:50 pm" format
   const formattedTime = React.useMemo(() => {
@@ -128,21 +171,104 @@ export function TaskCardContent({
           {task.title}
         </p>
 
-        {/* Duration badge - right aligned with background pill */}
-        {task.estimatedMins != null && task.estimatedMins > 0 && (
-          <span
-            className={cn(
-              "shrink-0 rounded px-1.5 py-0.5 text-[11px] tabular-nums",
-              "bg-muted/50 text-muted-foreground",
-              isCompleted && "opacity-50"
-            )}
+        {/* Duration badge - inline editable */}
+        <Popover open={durationOpen} onOpenChange={setDurationOpen}>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setDurationOpen(true);
+              }}
+              className={cn(
+                "shrink-0 rounded px-1.5 py-0.5 text-[11px] tabular-nums",
+                "bg-muted/50 text-muted-foreground",
+                "transition-all duration-150",
+                "hover:ring-1 hover:ring-primary/30 hover:bg-muted/70",
+                "focus:outline-none focus:ring-1 focus:ring-primary/50",
+                isCompleted && "opacity-50"
+              )}
+            >
+              {task.estimatedMins != null && task.estimatedMins > 0
+                ? formatDuration(task.estimatedMins)
+                : "—"}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            className="w-auto p-1"
+            align="end"
+            onClick={(e) => e.stopPropagation()}
           >
-            {formatDuration(task.estimatedMins)}
-          </span>
-        )}
+            <div className="grid grid-cols-4 gap-0.5">
+              {DURATION_PRESETS.map((preset) => (
+                <button
+                  key={preset.value}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDurationChange(preset.value);
+                  }}
+                  className={cn(
+                    "px-2 py-1 text-xs rounded transition-colors",
+                    "hover:bg-accent hover:text-accent-foreground",
+                    task.estimatedMins === preset.value && "bg-accent text-accent-foreground font-medium"
+                  )}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
 
-        {/* Priority indicator */}
-        <PriorityLabel priority={task.priority} />
+        {/* Priority indicator - inline editable */}
+        <Popover open={priorityOpen} onOpenChange={setPriorityOpen}>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setPriorityOpen(true);
+              }}
+              className={cn(
+                "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium",
+                "transition-all duration-150",
+                "hover:ring-1 hover:ring-primary/30",
+                "focus:outline-none focus:ring-1 focus:ring-primary/50",
+                PRIORITY_STYLES[task.priority]
+              )}
+            >
+              {task.priority}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            className="w-auto p-1"
+            align="end"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-col gap-0.5">
+              {PRIORITY_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePriorityChange(option.value);
+                  }}
+                  className={cn(
+                    "flex items-center gap-2 px-2 py-1 text-xs rounded transition-colors",
+                    "hover:bg-accent hover:text-accent-foreground",
+                    task.priority === option.value && "bg-accent"
+                  )}
+                >
+                  <span className={cn("rounded px-1.5 py-0.5 text-[10px] font-medium", option.color)}>
+                    {option.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Subtasks preview - inline with small checkboxes */}
