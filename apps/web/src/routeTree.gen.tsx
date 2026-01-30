@@ -36,12 +36,19 @@ const indexRoute = createRoute({
   path: "/",
   component: LandingPage,
   beforeLoad: () => {
-    // Redirect authenticated users to the app
     const token = localStorage.getItem("open_sunsama_token");
+
+    // On desktop app, skip landing page entirely
+    const isDesktopApp =
+      typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
+    if (isDesktopApp) {
+      throw redirect({ to: token ? "/app" : "/login" });
+    }
+
+    // On web, redirect authenticated users to app
     if (token) {
       throw redirect({ to: "/app" });
     }
-    // Otherwise, show the landing page (no redirect)
   },
 });
 
