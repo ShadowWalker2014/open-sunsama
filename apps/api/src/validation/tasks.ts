@@ -49,6 +49,7 @@ export const taskFilterSchema = z.object({
   to: dateSchema.optional(),
   completed: z.enum(['true', 'false']).optional(),
   backlog: z.enum(['true', 'false']).optional(),
+  priority: prioritySchema.optional(),
   sortBy: sortBySchema.optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(50),

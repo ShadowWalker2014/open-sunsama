@@ -15,6 +15,11 @@ export {
   taskKeys,
 } from "./useTasks";
 export {
+  useSearchTasks,
+  useAllTasks,
+  type SearchTasksParams,
+} from "./useSearchTasks";
+export {
   useTimeBlocks,
   useTimeBlock,
   useTimeBlocksForDate,

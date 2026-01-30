@@ -27,6 +27,7 @@ tasksRouter.get('/', requireScopes('tasks:read'), zValidator('query', taskFilter
   else if (filters.completed === 'false') conditions.push(isNull(tasks.completedAt));
   if (filters.backlog === 'true') conditions.push(isNull(tasks.scheduledDate));
   else if (filters.backlog === 'false') conditions.push(isNotNull(tasks.scheduledDate));
+  if (filters.priority) conditions.push(eq(tasks.priority, filters.priority));
 
   const offset = (filters.page - 1) * filters.limit;
   const [countResult] = await db.select({ count: sql<number>`count(*)::int` }).from(tasks).where(and(...conditions));

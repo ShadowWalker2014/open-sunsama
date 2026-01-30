@@ -115,7 +115,7 @@ export interface TasksApi {
  * Maps frontend filter names to API query parameter names
  */
 function filtersToSearchParams(
-  filters?: TaskFilterInput
+  filters?: TaskFilterInput & { priority?: string; limit?: number }
 ): Record<string, string | number | boolean | undefined> {
   if (!filters) return {};
 
@@ -129,8 +129,12 @@ function filtersToSearchParams(
     completed: filters.completed !== undefined ? String(filters.completed) : undefined,
     // API uses 'backlog' for unscheduled tasks
     backlog: filters.backlog !== undefined ? String(filters.backlog) : undefined,
+    // Priority filter (P0, P1, P2, P3)
+    priority: filters.priority,
     // Sort by field
     sortBy: filters.sortBy,
+    // Limit results
+    limit: filters.limit,
   };
 }
 
