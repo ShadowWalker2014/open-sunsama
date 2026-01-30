@@ -35,7 +35,7 @@ export function useTaskAttachments(taskId: string) {
   const queryClient = useQueryClient();
 
   // Fetch attachments for this task
-  const { data: attachments = [], isLoading, error } = useQuery({
+  const { data: attachments = [], isLoading, error, isError } = useQuery({
     queryKey: attachmentKeys.list(taskId),
     queryFn: async (): Promise<Attachment[]> => {
       const token = localStorage.getItem("open_sunsama_token");
@@ -50,6 +50,11 @@ export function useTaskAttachments(taskId: string) {
         },
       });
 
+      // For 404 responses, treat as empty attachments (task has no attachments)
+      if (response.status === 404) {
+        return [];
+      }
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
@@ -61,6 +66,14 @@ export function useTaskAttachments(taskId: string) {
       return result.data || [];
     },
     enabled: !!taskId,
+    // Don't retry on 404 errors - they're expected for tasks without attachments
+    retry: (failureCount, error) => {
+      // Don't retry if this looks like a "not found" scenario
+      if (error instanceof Error && error.message.includes("404")) {
+        return false;
+      }
+      return failureCount < 3;
+    },
   });
 
   // Upload mutation
@@ -174,6 +187,7 @@ export function useTaskAttachments(taskId: string) {
     attachments,
     isLoading,
     error,
+    isError,
     upload: uploadMutation.mutateAsync,
     isUploading: uploadMutation.isPending,
     delete: deleteMutation.mutateAsync,

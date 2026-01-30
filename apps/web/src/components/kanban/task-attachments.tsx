@@ -33,6 +33,7 @@ export function TaskAttachments({ taskId }: TaskAttachmentsProps) {
     attachments,
     isLoading,
     error,
+    isError,
     upload,
     isUploading,
     delete: deleteAttachment,
@@ -167,13 +168,28 @@ export function TaskAttachments({ taskId }: TaskAttachmentsProps) {
     );
   }
 
-  if (error) {
-    return (
-      <div className="flex items-center gap-2 text-destructive py-4">
-        <AlertCircle className="h-4 w-4" />
-        <span className="text-sm">Failed to load attachments</span>
-      </div>
-    );
+  // Only show error state for actual network/server errors, not for "no attachments" cases
+  // The hook now handles 404 gracefully by returning an empty array
+  if (isError && error) {
+    // Check if this is a real error we should display (not just empty results)
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const isNetworkOrServerError = 
+      errorMessage.includes("Failed to fetch") ||
+      errorMessage.includes("Network") ||
+      errorMessage.includes("500") ||
+      errorMessage.includes("503") ||
+      errorMessage.includes("Not authenticated");
+    
+    if (isNetworkOrServerError) {
+      return (
+        <div className="flex items-center gap-2 text-destructive py-4">
+          <AlertCircle className="h-4 w-4" />
+          <span className="text-sm">Failed to load attachments</span>
+        </div>
+      );
+    }
+    // For other errors (like unexpected responses), just show empty state
+    // This prevents showing errors for edge cases like race conditions
   }
 
   const hasAttachments = attachments.length > 0 || uploadProgress.size > 0;
