@@ -6,6 +6,7 @@ import {
   useShortcutsModal,
 } from "@/hooks/useKeyboardShortcuts";
 import { useSearch } from "@/hooks/useSearch";
+import { toast } from "@/hooks/use-toast";
 
 interface GlobalShortcutsHandlerProps {
   onAddTask: () => void;
@@ -43,6 +44,14 @@ export function GlobalShortcutsHandler({ onAddTask }: GlobalShortcutsHandlerProp
       if (SHORTCUTS.addTask && matchesShortcut(event, SHORTCUTS.addTask)) {
         event.preventDefault();
         onAddTask();
+        return;
+      }
+
+      // Undo (Cmd+Z)
+      if (SHORTCUTS.undo && matchesShortcut(event, SHORTCUTS.undo)) {
+        event.preventDefault();
+        // TODO: Implement command history for actual undo functionality
+        toast({ title: "No commands to undo" });
         return;
       }
     }

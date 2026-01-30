@@ -109,6 +109,12 @@ export const SHORTCUTS: Record<string, ShortcutDefinition> = {
     description: "Search tasks",
     category: "general",
   },
+  undo: {
+    key: "z",
+    modifiers: { cmd: true },
+    description: "Undo last action",
+    category: "general",
+  },
 };
 
 // Format shortcut for display (e.g., "Shift + Space", "Cmd + Delete")
