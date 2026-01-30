@@ -27,7 +27,7 @@ This means your AI assistant can:
 - **Rich Notes**: Tiptap-powered editor with file attachments (images, videos, documents)
 - **Profile & Settings**: Customizable profile with avatar upload
 - **Dark Mode**: Full dark/light theme support
-- **API Access**: RESTful API with JWT authentication for AI agent integration
+- **API Access**: RESTful API with API Key authentication for AI agent integration
 - **Mobile Responsive**: Works on desktop and mobile devices
 
 ## Tech Stack
@@ -86,9 +86,30 @@ The web app will be available at http://localhost:3000 and the API at http://loc
 Open Sunsama provides a RESTful API for AI agent integration:
 
 ### Authentication
-All API requests require a Bearer token:
+
+The API supports two authentication methods:
+
+#### 1. API Key (Recommended for AI Agents / Integrations)
+
+API keys can be created in **Settings → API Keys** and are the recommended method for programmatic access:
+
 ```
-Authorization: Bearer <your-jwt-token>
+X-API-Key: cf_<your-api-key>
+```
+
+API keys can be scoped to specific permissions:
+- `tasks:read` / `tasks:write` - Task management
+- `time-blocks:read` / `time-blocks:write` - Time block scheduling
+- `user:read` / `user:write` - User profile access
+
+**Note:** API keys are shown only once at creation. The key is stored as a SHA-256 hash and cannot be recovered.
+
+#### 2. JWT Token (Web Sessions)
+
+Used internally by the web app, obtained via login:
+
+```
+Authorization: Bearer <jwt-token>
 ```
 
 ### Key Endpoints
@@ -110,7 +131,7 @@ Authorization: Bearer <your-jwt-token>
 
 ```bash
 curl -X POST http://localhost:3001/tasks \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "X-API-Key: cf_your-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Review PR #123",
@@ -120,6 +141,17 @@ curl -X POST http://localhost:3001/tasks \
     "priority": "P1"
   }'
 ```
+
+### Managing API Keys
+
+1. Navigate to **Settings → API Keys** in the web app
+2. Click **"Generate New Key"**
+3. Configure the key:
+   - **Name**: A descriptive name (e.g., "Claude Assistant")
+   - **Expiration**: Optional expiration date
+   - **Scopes**: Select which permissions the key should have
+4. **Copy the key immediately** - it will only be shown once
+5. Use the key in your API requests with the `X-API-Key` header
 
 ## License
 
