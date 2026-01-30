@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
+  PRIORITY_LABELS,
 } from "@/components/ui";
 
 const PRIORITY_COLORS: Record<TaskPriority, string> = {
@@ -77,7 +78,7 @@ export function TaskRow({ task, style, onSelect, onComplete, onDelete, onMoveToT
 
       {/* Priority */}
       <span className={cn("w-16 text-xs font-medium px-2 py-0.5 rounded", PRIORITY_COLORS[task.priority])}>
-        {task.priority}
+        {PRIORITY_LABELS[task.priority]}
       </span>
 
       {/* Date */}

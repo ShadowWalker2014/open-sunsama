@@ -12,7 +12,7 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from "@/components/ui";
-import { PriorityIcon } from "@/components/ui/priority-badge";
+import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
 import { useUpdateTask, useDeleteTask } from "@/hooks/useTasks";
 import { toast } from "@/hooks/use-toast";
 
@@ -22,12 +22,7 @@ interface TaskContextMenuProps {
   onEdit?: () => void;
 }
 
-const PRIORITIES: { value: TaskPriority; label: string }[] = [
-  { value: "P0", label: "Urgent" },
-  { value: "P1", label: "High" },
-  { value: "P2", label: "Medium" },
-  { value: "P3", label: "Low" },
-];
+const PRIORITIES: TaskPriority[] = ["P0", "P1", "P2", "P3"];
 
 export function TaskContextMenu({
   task,
@@ -47,7 +42,7 @@ export function TaskContextMenu({
     
     toast({
       title: "Priority updated",
-      description: `Task priority set to ${priority}`,
+      description: `Task priority set to ${PRIORITY_LABELS[priority]}`,
     });
   };
 
@@ -124,13 +119,13 @@ export function TaskContextMenu({
           <ContextMenuSubContent className="w-40">
             {PRIORITIES.map((p) => (
               <ContextMenuItem
-                key={p.value}
-                onClick={() => handleSetPriority(p.value)}
-                className={task.priority === p.value ? "bg-accent" : ""}
+                key={p}
+                onClick={() => handleSetPriority(p)}
+                className={task.priority === p ? "bg-accent" : ""}
               >
-                <PriorityIcon priority={p.value} className="mr-2" />
-                {p.label}
-                {task.priority === p.value && (
+                <PriorityIcon priority={p} className="mr-2" />
+                {PRIORITY_LABELS[p]}
+                {task.priority === p && (
                   <span className="ml-auto text-xs text-muted-foreground">
                     Current
                   </span>

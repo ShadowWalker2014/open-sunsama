@@ -8,6 +8,7 @@ import { useCompleteTask, useDeleteTask, useMoveTask } from "@/hooks/useTasks";
 import { TaskModal } from "@/components/kanban/task-modal";
 import { AddTaskModal } from "@/components/kanban/add-task-modal";
 import { TaskRow } from "@/components/tasks/task-row";
+import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
 import {
   Button,
   DropdownMenu,
@@ -140,24 +141,28 @@ export default function TasksListPage() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="gap-1.5">
-              Priority: {priorityFilter === "all" ? "All" : priorityFilter}
+              Priority: {priorityFilter === "all" ? "All" : PRIORITY_LABELS[priorityFilter]}
               <ChevronDown className="h-3.5 w-3.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem onClick={() => setPriorityFilter("all")}>All</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => setPriorityFilter("P0")}>
-              <span className="text-red-500">P0</span> - Critical
+            <DropdownMenuItem onClick={() => setPriorityFilter("P0")} className="flex items-center gap-2">
+              <PriorityIcon priority="P0" />
+              {PRIORITY_LABELS.P0}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setPriorityFilter("P1")}>
-              <span className="text-orange-500">P1</span> - High
+            <DropdownMenuItem onClick={() => setPriorityFilter("P1")} className="flex items-center gap-2">
+              <PriorityIcon priority="P1" />
+              {PRIORITY_LABELS.P1}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setPriorityFilter("P2")}>
-              <span className="text-blue-500">P2</span> - Medium
+            <DropdownMenuItem onClick={() => setPriorityFilter("P2")} className="flex items-center gap-2">
+              <PriorityIcon priority="P2" />
+              {PRIORITY_LABELS.P2}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setPriorityFilter("P3")}>
-              <span className="text-gray-500">P3</span> - Low
+            <DropdownMenuItem onClick={() => setPriorityFilter("P3")} className="flex items-center gap-2">
+              <PriorityIcon priority="P3" />
+              {PRIORITY_LABELS.P3}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

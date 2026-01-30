@@ -135,7 +135,7 @@ export function AddTaskModal({
                     className="h-8 px-2.5 gap-1.5 text-sm font-normal"
                   >
                     <PriorityIcon priority={priority} />
-                    <span>{priority}</span>
+                    <span>{PRIORITY_LABELS[priority]}</span>
                     <ChevronDown className="h-3 w-3 opacity-50" />
                   </Button>
                 </DropdownMenuTrigger>

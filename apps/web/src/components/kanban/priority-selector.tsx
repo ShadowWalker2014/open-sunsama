@@ -65,7 +65,7 @@ export function InlinePrioritySelector({ priority, onChange }: InlinePrioritySel
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="h-7 px-2 gap-1 text-xs font-medium hover:bg-muted">
           <PriorityIcon priority={priority} />
-          <span>{priority}</span>
+          <span>{PRIORITY_LABELS[priority]}</span>
           <ChevronDown className="h-3 w-3 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
