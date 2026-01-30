@@ -124,3 +124,4 @@ export {
   type ShortcutDefinition,
 } from "./useKeyboardShortcuts.tsx";
 export { useTimezoneSync, getDeviceTimezone } from "./useTimezoneSync";
+export { useWebSocket } from "./useWebSocket";
