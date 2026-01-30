@@ -127,3 +127,4 @@ export {
 export { useTimezoneSync, getDeviceTimezone } from "./useTimezoneSync";
 export { useWebSocket } from "./useWebSocket";
 export { useTimer, formatTime, formatMins } from "./useTimer";
+export { useIsMobile } from "./useIsMobile";
