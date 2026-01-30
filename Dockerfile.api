@@ -3,8 +3,8 @@ FROM oven/bun:1 as builder
 
 WORKDIR /app
 
-# Copy root package files and lockfile
-COPY package.json bun.lock turbo.json ./
+# Copy root package files, lockfile, and base tsconfig
+COPY package.json bun.lock turbo.json tsconfig.base.json ./
 
 # Copy ALL package.json files first (needed for workspace resolution)
 COPY apps/api/package.json ./apps/api/
