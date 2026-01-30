@@ -12,7 +12,10 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui";
-import { UnscheduledTaskItem, TaskItemSkeleton } from "./unscheduled-task-item";
+import { TaskItemSkeleton } from "./unscheduled-task-item";
+import { TaskCardContent } from "@/components/kanban/task-card-content";
+import { TaskContextMenu } from "@/components/kanban/task-context-menu";
+import { useCompleteTask } from "@/hooks/useTasks";
 
 interface MobileUnscheduledSheetProps {
   tasks: Task[];
@@ -32,6 +35,7 @@ export function MobileUnscheduledSheet({
 }: MobileUnscheduledSheetProps) {
   const [open, setOpen] = React.useState(false);
   const taskCount = tasks.length;
+  const completeTask = useCompleteTask();
 
   return (
     <div className="md:hidden">
@@ -96,16 +100,24 @@ export function MobileUnscheduledSheet({
                 </div>
               ) : (
                 tasks.map((task) => (
-                  <UnscheduledTaskItem
-                    key={task.id}
-                    task={task}
-                    onDragStart={(e) => onTaskDragStart?.(task, e)}
-                    onClick={() => {
-                      onTaskClick?.(task);
-                      setOpen(false);
-                    }}
-                    isMobile
-                  />
+                  <TaskContextMenu key={task.id} task={task} onEdit={() => onTaskClick?.(task)}>
+                    <div className="cursor-grab active:cursor-grabbing">
+                      <TaskCardContent
+                        task={task}
+                        isCompleted={!!task.completedAt}
+                        isHovered={false}
+                        onToggleComplete={(e) => {
+                          e.stopPropagation();
+                          completeTask.mutate({ id: task.id, completed: !task.completedAt });
+                        }}
+                        onClick={() => {
+                          onTaskClick?.(task);
+                          setOpen(false);
+                        }}
+                        onHoverChange={() => {}}
+                      />
+                    </div>
+                  </TaskContextMenu>
                 ))
               )}
             </div>
