@@ -24,6 +24,7 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
+    --font-family: "Geist", "Geist Sans", system-ui, sans-serif;
   }
 
   .dark {
@@ -138,33 +139,14 @@
     --font-system: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --font-inter: "Inter", system-ui, sans-serif;
     --font-jetbrains: "JetBrains Mono", "Fira Code", monospace;
+    --font-family: var(--font-geist);
   }
 
-  .font-geist { font-family: var(--font-geist); }
-  .font-system { font-family: var(--font-system); }
-  .font-inter { font-family: var(--font-inter); }
-  .font-jetbrains { font-family: var(--font-jetbrains); }
-
-  /* Font family applied to body when class is on html element */
-  .font-geist body,
-  .font-geist {
-    font-family: "Geist", "Geist Sans", system-ui, sans-serif;
-  }
-
-  .font-system body,
-  .font-system {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  }
-
-  .font-inter body,
-  .font-inter {
-    font-family: "Inter", system-ui, sans-serif;
-  }
-
-  .font-jetbrains body,
-  .font-jetbrains {
-    font-family: "JetBrains Mono", "Fira Code", monospace;
-  }
+  /* When font class is on html, update the CSS variable */
+  html.font-geist { --font-family: var(--font-geist); }
+  html.font-system { --font-family: var(--font-system); }
+  html.font-inter { --font-family: var(--font-inter); }
+  html.font-jetbrains { --font-family: var(--font-jetbrains); }
 }
 
 @layer base {
@@ -173,6 +155,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-family);
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 

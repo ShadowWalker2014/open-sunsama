@@ -15,6 +15,13 @@ const config: Config = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['var(--font-family)', 'system-ui', 'sans-serif'],
+        geist: ['"Geist"', '"Geist Sans"', 'system-ui', 'sans-serif'],
+        system: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+        inter: ['"Inter"', 'system-ui', 'sans-serif'],
+        jetbrains: ['"JetBrains Mono"', '"Fira Code"', 'monospace'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
