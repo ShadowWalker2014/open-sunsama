@@ -1,30 +1,34 @@
 import * as React from "react";
-import { Plus, GripVertical, Check, Clock, InboxIcon } from "lucide-react";
-import { useTasks, useCreateTask } from "@/hooks/useTasks";
-import { cn, formatDuration } from "@/lib/utils";
+import { Plus, Check, InboxIcon } from "lucide-react";
+import type { Task } from "@open-sunsama/types";
+import { useTasks, useCreateTask, useCompleteTask } from "@/hooks/useTasks";
+import { cn } from "@/lib/utils";
 import {
   Button,
   Input,
   ScrollArea,
   Skeleton,
-  Badge,
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui";
+import { TaskCardContent } from "@/components/kanban/task-card-content";
+import { TaskContextMenu } from "@/components/kanban/task-context-menu";
 
 interface MobileBacklogSheetProps {
   /** Custom trigger element. If not provided, uses default FAB button */
   trigger?: React.ReactNode;
+  /** Callback when a task is clicked for editing */
+  onTaskClick?: (task: Task) => void;
 }
 
 /**
  * Mobile slide-out sheet for backlog tasks
  * Opens from the left side on mobile devices
  */
-export function MobileBacklogSheet({ trigger }: MobileBacklogSheetProps) {
+export function MobileBacklogSheet({ trigger, onTaskClick }: MobileBacklogSheetProps) {
   const [open, setOpen] = React.useState(false);
   const [newTaskTitle, setNewTaskTitle] = React.useState("");
   const [isAddingTask, setIsAddingTask] = React.useState(false);
@@ -33,6 +37,7 @@ export function MobileBacklogSheet({ trigger }: MobileBacklogSheetProps) {
   // Use high limit to ensure we get all backlog tasks (API default is 50)
   const { data: tasks, isLoading } = useTasks({ scheduledDate: null, limit: 500 });
   const createTask = useCreateTask();
+  const completeTask = useCompleteTask();
 
   const backlogTasks = React.useMemo(() => {
     return tasks?.filter((task) => !task.completedAt) ?? [];
@@ -166,7 +171,14 @@ export function MobileBacklogSheet({ trigger }: MobileBacklogSheetProps) {
             ) : (
               <div className="space-y-2">
                 {backlogTasks.map((task) => (
-                  <MobileBacklogTaskCard key={task.id} task={task} />
+                  <MobileBacklogTaskCard
+                    key={task.id}
+                    task={task}
+                    onTaskClick={onTaskClick}
+                    onToggleComplete={(completed) =>
+                      completeTask.mutate({ id: task.id, completed })
+                    }
+                  />
                 ))}
               </div>
             )}
@@ -187,40 +199,31 @@ export function MobileBacklogSheet({ trigger }: MobileBacklogSheetProps) {
 }
 
 interface MobileBacklogTaskCardProps {
-  task: {
-    id: string;
-    title: string;
-    estimatedMins: number | null;
-    scheduledDate: string | null;
-  };
+  task: Task;
+  onTaskClick?: (task: Task) => void;
+  onToggleComplete: (completed: boolean) => void;
 }
 
-function MobileBacklogTaskCard({ task }: MobileBacklogTaskCardProps) {
+function MobileBacklogTaskCard({
+  task,
+  onTaskClick,
+  onToggleComplete,
+}: MobileBacklogTaskCardProps) {
   return (
-    <div
-      className={cn(
-        "group flex items-start gap-3 rounded-lg border bg-card p-4 transition-colors",
-        "active:bg-accent/50", // Touch feedback
-        "min-h-[60px]" // Touch-friendly height
-      )}
-    >
-      {/* Drag Handle - visible on mobile */}
-      <div className="mt-0.5 text-muted-foreground">
-        <GripVertical className="h-5 w-5" />
+    <TaskContextMenu task={task} onEdit={() => onTaskClick?.(task)}>
+      <div className="cursor-grab active:cursor-grabbing">
+        <TaskCardContent
+          task={task}
+          isCompleted={!!task.completedAt}
+          isHovered={false}
+          onToggleComplete={(e) => {
+            e.stopPropagation();
+            onToggleComplete(!task.completedAt);
+          }}
+          onClick={() => onTaskClick?.(task)}
+          onHoverChange={() => {}}
+        />
       </div>
-
-      {/* Content */}
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium leading-snug">{task.title}</p>
-        <div className="mt-2 flex items-center gap-2">
-          {task.estimatedMins && (
-            <Badge variant="secondary" className="gap-1 text-xs">
-              <Clock className="h-3 w-3" />
-              {formatDuration(task.estimatedMins)}
-            </Badge>
-          )}
-        </div>
-      </div>
-    </div>
+    </TaskContextMenu>
   );
 }
