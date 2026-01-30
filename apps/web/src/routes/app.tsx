@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Outlet, useNavigate } from "@tanstack/react-router";
+import type { Task } from "@open-sunsama/types";
 import { useAuth } from "@/hooks/useAuth";
 import { Header } from "@/components/layout/header";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
@@ -9,7 +10,10 @@ import {
   ShortcutsProvider,
   useShortcutsModal,
 } from "@/hooks/useKeyboardShortcuts";
+import { SearchProvider, useSearch } from "@/hooks/useSearch";
 import { ShortcutsModal } from "@/components/ui/shortcuts-modal";
+import { TaskSearchModal } from "@/components/search/task-search-modal";
+import { TaskModal } from "@/components/kanban/task-modal";
 
 /**
  * Main app layout - requires authentication
@@ -59,7 +63,9 @@ export default function AppLayout() {
   return (
     <HoveredTaskProvider>
       <ShortcutsProvider>
-        <AppLayoutInner />
+        <SearchProvider>
+          <AppLayoutInner />
+        </SearchProvider>
       </ShortcutsProvider>
     </HoveredTaskProvider>
   );
@@ -70,6 +76,8 @@ export default function AppLayout() {
  */
 function AppLayoutInner() {
   const { showShortcutsModal, setShowShortcutsModal } = useShortcutsModal();
+  const { isSearchOpen, closeSearch } = useSearch();
+  const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
 
   return (
     <>
@@ -86,6 +94,27 @@ function AppLayoutInner() {
       <ShortcutsModal
         open={showShortcutsModal}
         onOpenChange={setShowShortcutsModal}
+      />
+
+      {/* Search Modal */}
+      <TaskSearchModal
+        open={isSearchOpen}
+        onOpenChange={(open) => {
+          if (!open) closeSearch();
+        }}
+        onSelectTask={(task) => {
+          closeSearch();
+          setSelectedTask(task);
+        }}
+      />
+
+      {/* Task Modal for viewing selected task from search */}
+      <TaskModal
+        task={selectedTask}
+        open={selectedTask !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedTask(null);
+        }}
       />
     </>
   );

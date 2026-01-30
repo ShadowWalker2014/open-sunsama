@@ -2,6 +2,8 @@ import * as React from "react";
 import {
   Calendar,
   LayoutGrid,
+  List,
+  Search,
   Settings,
   LogOut,
   Moon,
@@ -9,6 +11,7 @@ import {
   User,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useSearch } from "@/hooks/useSearch";
 import { cn } from "@/lib/utils";
 import {
   Button,
@@ -21,6 +24,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  ShortcutHint,
 } from "@/components/ui";
 
 interface HeaderProps {
@@ -54,6 +58,7 @@ function applyTheme(theme: Theme) {
 
 export function Header({ className }: HeaderProps) {
   const { user, logout } = useAuth();
+  const { openSearch } = useSearch();
   const [theme, setTheme] = React.useState<Theme>(getStoredTheme);
 
   // Apply theme on mount and when it changes
@@ -114,6 +119,9 @@ export function Header({ className }: HeaderProps) {
         {/* Navigation - Hidden on mobile (using bottom nav instead) */}
         <nav className="hidden lg:flex items-center gap-1">
           <NavLink href="/app" icon={<LayoutGrid className="h-4 w-4" />}>
+            Board
+          </NavLink>
+          <NavLink href="/app/tasks" icon={<List className="h-4 w-4" />}>
             Tasks
           </NavLink>
           <NavLink href="/app/calendar" icon={<Calendar className="h-4 w-4" />}>
@@ -123,6 +131,16 @@ export function Header({ className }: HeaderProps) {
 
         {/* Spacer */}
         <div className="flex-1" />
+
+        {/* Search Button */}
+        <button
+          onClick={openSearch}
+          className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-md border border-border/50 bg-muted/30 hover:bg-muted transition-colors text-sm text-muted-foreground mr-2"
+        >
+          <Search className="h-4 w-4" />
+          <span className="hidden sm:inline">Search...</span>
+          <ShortcutHint shortcutKey="search" />
+        </button>
 
         {/* Global Shortcut Hint - Hidden on mobile */}
         <div className="hidden lg:flex items-center mr-4 text-xs text-muted-foreground/50">

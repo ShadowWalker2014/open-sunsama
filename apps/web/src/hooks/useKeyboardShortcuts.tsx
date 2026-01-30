@@ -76,6 +76,12 @@ export const SHORTCUTS: Record<string, ShortcutDefinition> = {
     description: "Show keyboard shortcuts",
     category: "general",
   },
+  search: {
+    key: "k",
+    modifiers: { cmd: true },
+    description: "Search tasks",
+    category: "general",
+  },
 };
 
 // Format shortcut for display (e.g., "Shift + Space", "Cmd + Delete")

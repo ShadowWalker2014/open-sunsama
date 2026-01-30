@@ -8,6 +8,7 @@ import {
 } from "@/hooks/useKeyboardShortcuts";
 import { useCompleteTask, useDeleteTask, useMoveTask, useReorderTasks, useTasks } from "@/hooks/useTasks";
 import { useSubtasks, useUpdateSubtask } from "@/hooks/useSubtasks";
+import { useSearch } from "@/hooks/useSearch";
 import { toast } from "@/hooks/use-toast";
 
 interface KeyboardShortcutsHandlerProps {
@@ -31,6 +32,7 @@ export function KeyboardShortcutsHandler({
 }: KeyboardShortcutsHandlerProps) {
   const { hoveredTask, hoveredSubtaskId } = useHoveredTask();
   const { setShowShortcutsModal } = useShortcutsModal();
+  const { openSearch } = useSearch();
   
   const completeTask = useCompleteTask();
   const deleteTask = useDeleteTask();
@@ -60,6 +62,13 @@ export function KeyboardShortcutsHandler({
       if (SHORTCUTS.showShortcuts && matchesShortcut(event, SHORTCUTS.showShortcuts)) {
         event.preventDefault();
         setShowShortcutsModal(true);
+        return;
+      }
+
+      // Search (Cmd+K)
+      if (SHORTCUTS.search && matchesShortcut(event, SHORTCUTS.search)) {
+        event.preventDefault();
+        openSearch();
         return;
       }
 
@@ -241,6 +250,7 @@ export function KeyboardShortcutsHandler({
     onNavigatePrevious,
     onEditEstimate,
     setShowShortcutsModal,
+    openSearch,
     completeTask,
     deleteTask,
     moveTask,
