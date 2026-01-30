@@ -132,3 +132,14 @@ export type {
   AttachmentFilterInput,
   AttachmentWithMeta,
 } from './attachment.js';
+
+// Calendar types
+export type {
+  CalendarProvider,
+  CalendarAccount,
+  Calendar,
+  CalendarEvent,
+  ConnectCalDavRequest,
+  CalendarEventQuery,
+  UpdateCalendarRequest,
+} from './calendar.js';
