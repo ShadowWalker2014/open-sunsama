@@ -1,6 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui";
+import { Input, Label, Textarea } from "@/components/ui";
+import { FileText } from "lucide-react";
 
 interface TitleSectionProps {
   title: string;
@@ -134,7 +135,7 @@ export function TimeBlockNotesSection({
       <Textarea
         id="block-notes"
         value={notes}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onChange(e.target.value)}
         onBlur={onBlur}
         placeholder="Add notes..."
         rows={4}

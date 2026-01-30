@@ -55,6 +55,7 @@ export default function FocusPage() {
     if (!task?.completedAt) {
       setWasCompleted(false);
     }
+    return undefined;
   }, [task?.completedAt, wasCompleted, nextIncompleteTask, navigate]);
 
   // Sync notes with task data
