@@ -2,9 +2,23 @@ import * as React from "react";
 import { format } from "date-fns";
 import { Menu, Plus } from "lucide-react";
 import type { Task } from "@open-sunsama/types";
+import {
+  DndContext,
+  closestCenter,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
 import { cn, formatDuration } from "@/lib/utils";
-import { useTasks } from "@/hooks/useTasks";
+import { useTasks, useReorderTasks } from "@/hooks/useTasks";
 import { MobileTaskCardWithActualTime } from "./mobile-task-card";
+import { SortableMobileTaskCard } from "./sortable-mobile-task-card";
 import { TaskModal } from "@/components/kanban/task-modal";
 import { AddTaskModal } from "@/components/kanban/add-task-modal";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -32,6 +46,18 @@ export function MobileTaskListView({ date, className }: MobileTaskListViewProps)
   
   // Fetch tasks for the current date
   const { data: tasks, isLoading } = useTasks({ scheduledDate: dateString });
+  
+  // DnD setup for reordering
+  const sensors = useSensors(
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 8,
+      },
+    })
+  );
+  
+  const reorderTasks = useReorderTasks();
   
   // Separate pending and completed tasks
   const { pendingTasks, completedTasks } = React.useMemo(() => {
@@ -76,6 +102,23 @@ export function MobileTaskListView({ date, className }: MobileTaskListViewProps)
   
   const handleAddTask = () => {
     setIsAddModalOpen(true);
+  };
+  
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = pendingTasks.findIndex((t) => t.id === active.id);
+    const newIndex = pendingTasks.findIndex((t) => t.id === over.id);
+    
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const newOrder = arrayMove(pendingTasks, oldIndex, newIndex);
+      
+      reorderTasks.mutate({
+        date: dateString,
+        taskIds: newOrder.map((t) => t.id),
+      });
+    }
   };
   
   // Format date for header
@@ -156,15 +199,25 @@ export function MobileTaskListView({ date, className }: MobileTaskListViewProps)
           </div>
         ) : (
           <>
-            {/* Pending tasks */}
-            {pendingTasks.map((task) => (
-              <MobileTaskCardWithActualTime
-                key={task.id}
-                task={task}
-                onTaskClick={handleTaskClick}
-                actualMins={task.actualMins}
-              />
-            ))}
+            {/* Pending tasks with drag-and-drop reordering */}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={pendingTasks.map((t) => t.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {pendingTasks.map((task) => (
+                  <SortableMobileTaskCard
+                    key={task.id}
+                    task={task}
+                    onTaskClick={handleTaskClick}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
             
             {/* Completed tasks section */}
             {completedTasks.length > 0 && (
