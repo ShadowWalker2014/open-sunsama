@@ -17,6 +17,7 @@ import {
 } from '../validation/auth.js';
 import { publishEvent } from '../lib/websocket/index.js';
 import { deleteFromS3ByUrl } from '../lib/s3.js';
+import { sendPasswordResetEmail, getThemeHexColor } from '../lib/email.js';
 
 const authRouter = new Hono<{ Variables: AuthVariables }>();
 
@@ -158,7 +159,15 @@ authRouter.post('/request-password-reset', zValidator('json', requestPasswordRes
     const expires = new Date(Date.now() + 60 * 60 * 1000);
 
     await db.update(users).set({ passwordResetToken: resetTokenHash, passwordResetExpires: expires, updatedAt: new Date() }).where(eq(users.id, user.id));
-    console.log(`[Password Reset] Token for ${email}: ${resetToken}`);
+    
+    // Get user's theme color from preferences
+    const preferences = user.preferences as { colorTheme?: string } | null;
+    const themeColor = getThemeHexColor(preferences?.colorTheme);
+    
+    // Send password reset email (fire and forget to not leak timing info)
+    sendPasswordResetEmail(user.email, resetToken, user.name || undefined, themeColor).catch((err) => {
+      console.error('[Password Reset] Failed to send email:', err);
+    });
   }
 
   return c.json({ success: true, message: 'If an account exists with that email, a password reset link has been sent.' });
