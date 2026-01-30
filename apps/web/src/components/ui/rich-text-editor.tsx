@@ -325,7 +325,7 @@ export function RichTextEditor({
   onChange,
   placeholder = "Add a description...",
   className,
-  minHeight = "120px",
+  minHeight = "80px",
   enableFileUpload = true,
   autoFocus = false,
 }: RichTextEditorProps) {
@@ -389,16 +389,18 @@ export function RichTextEditor({
     editorProps: {
       attributes: {
         class: cn(
-          "prose prose-sm dark:prose-invert max-w-none focus:outline-none px-3 py-2",
-          "prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0",
-          "[&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6",
+          // Compact text like Linear - smaller font, tighter spacing
+          "prose dark:prose-invert max-w-none focus:outline-none px-2 py-1.5",
+          "text-[13px] leading-relaxed",
+          "prose-p:my-0.5 prose-ul:my-0.5 prose-ol:my-0.5 prose-li:my-0",
+          "[&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5",
           // Image styles
-          "[&_.tiptap-image]:max-w-full [&_.tiptap-image]:h-auto [&_.tiptap-image]:rounded-lg",
+          "[&_.tiptap-image]:max-w-full [&_.tiptap-image]:h-auto [&_.tiptap-image]:rounded-md",
           // Video styles
-          "[&_.tiptap-video]:max-w-full [&_.tiptap-video]:rounded-lg",
-          "[&_.tiptap-video-wrapper]:my-2",
+          "[&_.tiptap-video]:max-w-full [&_.tiptap-video]:rounded-md",
+          "[&_.tiptap-video-wrapper]:my-1",
           // File attachment styles
-          "[&_.tiptap-file-attachment-wrapper]:my-2"
+          "[&_.tiptap-file-attachment-wrapper]:my-1"
         ),
         style: `min-height: ${minHeight}`,
       },

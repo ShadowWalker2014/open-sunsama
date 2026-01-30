@@ -36,8 +36,10 @@ export function HtmlContent({ html, className }: HtmlContentProps) {
   return (
     <div
       className={cn(
-        "prose prose-sm dark:prose-invert max-w-none",
-        "prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0",
+        // Compact text like Linear - smaller font, tighter spacing
+        "prose dark:prose-invert max-w-none",
+        "text-[13px] leading-relaxed",
+        "prose-p:my-0.5 prose-ul:my-0.5 prose-ol:my-0.5 prose-li:my-0",
         "[&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5",
         "prose-a:underline prose-a:underline-offset-2",
         className

@@ -21,7 +21,7 @@ export function NotesField({
   onChange, 
   onBlur,
   placeholder = "Add notes...",
-  minHeight = "120px",
+  minHeight = "60px",
 }: NotesFieldProps) {
   const [isEditing, setIsEditing] = React.useState(false);
 
@@ -43,7 +43,7 @@ export function NotesField({
     <div
       onClick={() => setIsEditing(true)}
       className={cn(
-        "rounded-md px-3 py-2 cursor-text transition-colors border border-transparent",
+        "rounded-md px-2 py-1.5 cursor-text transition-colors border border-transparent",
         "hover:border-input hover:bg-muted/30",
         !notes && "text-muted-foreground"
       )}
@@ -52,7 +52,7 @@ export function NotesField({
       {notes ? (
         <HtmlContent html={notes} />
       ) : (
-        <span className="text-sm text-muted-foreground italic">{placeholder}</span>
+        <span className="text-[13px] text-muted-foreground">{placeholder}</span>
       )}
     </div>
   );
