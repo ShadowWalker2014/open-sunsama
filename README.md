@@ -61,7 +61,7 @@ The MCP server provides 23 tools for:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/AquaWolf/open-sunsama.git
+git clone https://github.com/ShadowWalker2014/open-sunsama.git
 cd open-sunsama
 ```
 
@@ -141,7 +141,7 @@ Authorization: Bearer <jwt-token>
 ### Example: Create a Task (for AI agents)
 
 ```bash
-curl -X POST https://api.sunsama.com/tasks \
+curl -X POST https://api.opensunsama.com/tasks \
   -H "X-API-Key: os_your-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -153,7 +153,7 @@ curl -X POST https://api.sunsama.com/tasks \
   }'
 ```
 
-> **Self-hosted/Local**: Replace `https://api.sunsama.com` with your API URL (e.g., `http://localhost:3001`)
+> **Self-hosted/Local**: Replace `https://api.opensunsama.com` with your API URL (e.g., `http://localhost:3001`)
 
 ### Managing API Keys
 

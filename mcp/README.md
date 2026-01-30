@@ -22,7 +22,7 @@ An MCP (Model Context Protocol) server that enables AI agents like Claude, Curso
 
 ```bash
 # Clone the repository (recommended path for MCP config)
-git clone https://github.com/AquaWolf/open-sunsama.git ~/.local/share/open-sunsama
+git clone https://github.com/ShadowWalker2014/open-sunsama.git ~/.local/share/open-sunsama
 cd ~/.local/share/open-sunsama/mcp
 
 # Install dependencies
@@ -50,7 +50,7 @@ bun run build
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `OPENSUNSAMA_API_KEY` | Yes | - | Your API key starting with `os_` |
-| `OPENSUNSAMA_API_URL` | No | `https://api.sunsama.com` | API server URL |
+| `OPENSUNSAMA_API_URL` | No | `https://api.opensunsama.com` | API server URL |
 
 ### Self-Hosted / Local Development
 
@@ -65,7 +65,7 @@ If you're running the API locally or self-hosting, set `OPENSUNSAMA_API_URL` to 
 }
 ```
 
-**Note:** If you're using the official cloud version at [opensunsama.com](https://opensunsama.com), you can omit `OPENSUNSAMA_API_URL` (defaults to `https://api.sunsama.com`).
+**Note:** If you're using the official cloud version at [opensunsama.com](https://opensunsama.com), you can omit `OPENSUNSAMA_API_URL` (defaults to `https://api.opensunsama.com`).
 
 ## Usage with AI Assistants
 
@@ -282,7 +282,7 @@ Make sure you've set the API key in your MCP configuration:
 
 ### "Network request failed" or Connection Errors
 
-1. Verify the API is reachable: `curl https://api.sunsama.com/health`
+1. Verify the API is reachable: `curl https://api.opensunsama.com/health`
 2. If self-hosted/local, check `OPENSUNSAMA_API_URL` is correct
 3. Ensure your API key has the required scopes
 
@@ -352,5 +352,5 @@ This MCP server is part of the Open Sunsama project and follows the same license
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/AquaWolf/open-sunsama/issues)
-- **Documentation**: [Open Sunsama Docs](https://github.com/AquaWolf/open-sunsama)
+- **Issues**: [GitHub Issues](https://github.com/ShadowWalker2014/open-sunsama/issues)
+- **Documentation**: [Open Sunsama Docs](https://github.com/ShadowWalker2014/open-sunsama)

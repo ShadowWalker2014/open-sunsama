@@ -3,7 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import Constants from 'expo-constants';
 
 // API URL from environment or default to production
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.sunsama.com';
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.opensunsama.com';
 
 const AUTH_TOKEN_KEY = 'open_sunsama_token';
 

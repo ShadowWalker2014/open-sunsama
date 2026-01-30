@@ -53,7 +53,7 @@ export function McpSettings() {
   const createMutation = useCreateApiKey();
 
   // Get the API URL from environment
-  const apiUrl = import.meta.env.VITE_API_URL || "https://api.sunsama.com";
+  const apiUrl = import.meta.env.VITE_API_URL || "https://api.opensunsama.com";
 
   // Load key from localStorage on mount
   React.useEffect(() => {
@@ -141,13 +141,13 @@ export function McpSettings() {
     const keyValue = forDisplay && hasKey ? blurKey(actualKey) : actualKey;
     
     // Path where you cloned and built the MCP server
-    // See: https://github.com/AquaWolf/open-sunsama/tree/main/mcp
+    // See: https://github.com/ShadowWalker2014/open-sunsama/tree/main/mcp
     const baseConfig = {
       command: "node",
       args: ["~/.local/share/open-sunsama/mcp/build/index.js"],
       env: {
         OPENSUNSAMA_API_KEY: keyValue,
-        ...(apiUrl !== "https://api.sunsama.com" && { OPENSUNSAMA_API_URL: apiUrl }),
+        ...(apiUrl !== "https://api.opensunsama.com" && { OPENSUNSAMA_API_URL: apiUrl }),
       },
     };
 
@@ -330,19 +330,19 @@ export function McpSettings() {
           <div className="space-y-2 text-xs text-muted-foreground">
             <p className="font-medium text-foreground">Setup Instructions:</p>
             <ol className="list-inside list-decimal space-y-1 pl-1">
-              <li>Clone the repo: <code className="rounded bg-muted px-1">git clone https://github.com/AquaWolf/open-sunsama.git ~/.local/share/open-sunsama</code></li>
+              <li>Clone the repo: <code className="rounded bg-muted px-1">git clone https://github.com/ShadowWalker2014/open-sunsama.git ~/.local/share/open-sunsama</code></li>
               <li>Build MCP server: <code className="rounded bg-muted px-1">cd ~/.local/share/open-sunsama/mcp && bun install && bun run build</code></li>
               <li>Update the path in the config above if you cloned to a different location</li>
               <li>Copy the configuration to your MCP client's config file</li>
               <li>Restart your AI assistant to load the MCP server</li>
             </ol>
             <p className="mt-2 text-muted-foreground/80">
-              Full documentation: <a href="https://github.com/AquaWolf/open-sunsama/tree/main/mcp" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">github.com/AquaWolf/open-sunsama/tree/main/mcp</a>
+              Full documentation: <a href="https://github.com/ShadowWalker2014/open-sunsama/tree/main/mcp" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">github.com/ShadowWalker2014/open-sunsama/tree/main/mcp</a>
             </p>
           </div>
 
           {/* Note about API URL */}
-          {apiUrl !== "https://api.sunsama.com" && (
+          {apiUrl !== "https://api.opensunsama.com" && (
             <div className="rounded-md border border-blue-500/20 bg-blue-500/10 px-3 py-2">
               <p className="text-xs text-blue-600 dark:text-blue-400">
                 <strong>Note:</strong> Your configuration includes a custom API URL ({apiUrl}) since you're not using the default cloud API.

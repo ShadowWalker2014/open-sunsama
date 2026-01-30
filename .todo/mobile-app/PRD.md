@@ -401,7 +401,7 @@ module.exports = config;
 
 ### API & CORS Configuration
 
-The production API at `https://api.sunsama.com` needs CORS updates:
+The production API at `https://api.opensunsama.com` needs CORS updates:
 
 ```javascript
 // apps/api/src/index.ts - update CORS
