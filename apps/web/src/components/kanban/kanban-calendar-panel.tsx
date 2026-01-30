@@ -1,5 +1,5 @@
 import * as React from "react";
-import { format, isSameDay, setHours } from "date-fns";
+import { format, isSameDay, setHours, addMinutes } from "date-fns";
 import type { TimeBlock as TimeBlockType } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { useTimeBlocks } from "@/hooks/useTimeBlocks";
@@ -14,13 +14,22 @@ import {
 interface KanbanCalendarPanelProps {
   date: Date;
   className?: string;
+  onBlockClick?: (block: TimeBlockType) => void;
+  onTimeSlotClick?: (date: Date, startTime: Date, endTime: Date) => void;
+  onViewTask?: (taskId: string) => void;
 }
 
 /**
  * Compact calendar panel for the kanban board right side.
  * Shows time blocks for the active day with current time marker.
  */
-export function KanbanCalendarPanel({ date, className }: KanbanCalendarPanelProps) {
+export function KanbanCalendarPanel({ 
+  date, 
+  className,
+  onBlockClick,
+  onTimeSlotClick,
+  onViewTask,
+}: KanbanCalendarPanelProps) {
   const dateString = format(date, "yyyy-MM-dd");
   const { data: timeBlocks = [] } = useTimeBlocks({ date: dateString });
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
@@ -106,12 +115,37 @@ export function KanbanCalendarPanel({ date, className }: KanbanCalendarPanelProp
           </div>
 
           {/* Timeline Content */}
-          <div className={cn("relative flex-1", isToday && "bg-primary/[0.02]")}>
+          <div 
+            className={cn("relative flex-1", isToday && "bg-primary/[0.02]")}
+            onClick={(e) => {
+              // Handle click on empty space to create time block
+              if (!onTimeSlotClick) return;
+              
+              // Don't trigger if clicking on a time block
+              const target = e.target as HTMLElement;
+              if (target.closest('[data-time-block]')) return;
+              
+              // Calculate clicked time from position
+              const rect = e.currentTarget.getBoundingClientRect();
+              const y = e.clientY - rect.top + (scrollContainerRef.current?.scrollTop || 0);
+              const hourOffset = y / HOUR_HEIGHT;
+              const hour = Math.floor(TIMELINE_START_HOUR + hourOffset);
+              const minutes = Math.floor((hourOffset % 1) * 60);
+              
+              // Snap to 15-minute intervals
+              const snappedMinutes = Math.floor(minutes / 15) * 15;
+              const startTime = setHours(date, hour);
+              startTime.setMinutes(snappedMinutes, 0, 0);
+              const endTime = addMinutes(startTime, 30);
+              
+              onTimeSlotClick(date, startTime, endTime);
+            }}
+          >
             {/* Hour grid lines */}
             {hours.map((hour) => (
               <div
                 key={hour}
-                className="border-b border-border/20"
+                className="border-b border-border/20 cursor-pointer"
                 style={{ height: HOUR_HEIGHT }}
               />
             ))}
@@ -140,7 +174,8 @@ export function KanbanCalendarPanel({ date, className }: KanbanCalendarPanelProp
               <TimeBlock
                 key={block.id}
                 block={block}
-                onClick={() => {}}
+                onClick={() => onBlockClick?.(block)}
+                onViewTask={onViewTask}
                 isDragging={false}
               />
             ))}
