@@ -45,7 +45,7 @@ export default function TasksListPage() {
     query: debouncedQuery,
     status: statusFilter,
     priority: priorityFilter === "all" ? undefined : priorityFilter,
-    limit: 500,
+    limit: 100,
   });
 
   const sortedTasks = React.useMemo(() => {

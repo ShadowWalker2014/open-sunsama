@@ -88,16 +88,29 @@ export function DayColumn({
   );
 
   // Separate pending and completed tasks
-  const pendingTasks = React.useMemo(
-    () => sortTasks(tasks?.filter((t) => !t.completedAt) ?? []),
-    [tasks, sortTasks]
-  );
+  // CRITICAL: Preserve the actively dragged task to prevent removeChild DOM errors
+  // when React Query refetches or optimistic updates change the data mid-drag
+  const pendingTasks = React.useMemo(() => {
+    let filtered = sortTasks(tasks?.filter((t) => !t.completedAt) ?? []);
+    
+    // If dragging a task that belongs to this column, ensure it stays in the list
+    if (isDragging && activeTask?.scheduledDate === dateString) {
+      const isIncluded = filtered.some((t) => t.id === activeTask.id);
+      if (!isIncluded) {
+        // Task was filtered out during drag - keep it at the end
+        filtered = [...filtered, activeTask];
+      }
+    }
+    
+    return filtered;
+  }, [tasks, sortTasks, isDragging, activeTask, dateString]);
+  
   const completedTasks = React.useMemo(
     () => tasks?.filter((t) => t.completedAt) ?? [],
     [tasks]
   );
 
-  // Task IDs for sortable context
+  // Task IDs for sortable context - must include dragged task
   const taskIds = React.useMemo(
     () => pendingTasks.map((t) => t.id),
     [pendingTasks]

@@ -26,6 +26,7 @@ import { CSS } from "@dnd-kit/utilities";
 import type { Task } from "@open-sunsama/types";
 import { useTasks } from "@/hooks/useTasks";
 import { useHoveredTask } from "@/hooks/useKeyboardShortcuts";
+import { useTasksDnd } from "@/lib/dnd/tasks-dnd-context";
 import { cn, formatDuration } from "@/lib/utils";
 import {
   Button,
@@ -55,6 +56,7 @@ export function Sidebar({ className }: SidebarProps) {
   });
 
   const { data: tasks, isLoading } = useTasks({ backlog: true });
+  const { activeTask, isDragging } = useTasksDnd();
 
   // Make backlog a drop target for unscheduling tasks
   const { setNodeRef: setDroppableRef, isOver } = useDroppable({
@@ -66,12 +68,22 @@ export function Sidebar({ className }: SidebarProps) {
   });
 
   // Separate pending and completed tasks
+  // CRITICAL: Preserve the actively dragged task to prevent removeChild DOM errors
   const { pendingTasks, completedTasks } = React.useMemo(() => {
     const all = tasks ?? [];
-    const pending = all.filter((task) => !task.completedAt).sort((a, b) => a.position - b.position);
+    let pending = all.filter((task) => !task.completedAt).sort((a, b) => a.position - b.position);
     const completed = all.filter((task) => task.completedAt);
+    
+    // If dragging a backlog task, ensure it stays in the list
+    if (isDragging && activeTask && activeTask.scheduledDate === null) {
+      const isIncluded = pending.some((t) => t.id === activeTask.id);
+      if (!isIncluded) {
+        pending = [...pending, activeTask];
+      }
+    }
+    
     return { pendingTasks: pending, completedTasks: completed };
-  }, [tasks]);
+  }, [tasks, isDragging, activeTask]);
 
   // For backwards compatibility with collapsed view count
   const backlogTasks = pendingTasks;
