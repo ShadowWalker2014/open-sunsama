@@ -69,25 +69,31 @@ export function MobileBacklogSheet({ trigger, onTaskClick }: MobileBacklogSheetP
   }, [isAddingTask]);
 
   const defaultTrigger = (
-    <Button
-      variant="default"
-      size="lg"
+    <button
       className={cn(
-        "fixed bottom-20 left-4 z-40 h-14 w-14 rounded-full shadow-lg",
+        // Position - bottom left, above the nav
+        "fixed bottom-20 left-4 z-40",
         "lg:hidden", // Only show on mobile
-        "active:scale-95 transition-transform"
+        // Linear-style: subtle pill with glassmorphism
+        "flex items-center gap-2 px-3 py-2 rounded-full",
+        "bg-background/80 backdrop-blur-sm border border-border/50",
+        "shadow-sm hover:shadow-md",
+        "text-sm font-medium text-foreground/80",
+        "active:scale-[0.98] transition-all duration-150",
+        // Hover state
+        "hover:bg-background hover:text-foreground hover:border-border"
       )}
       style={{ marginBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
-      <InboxIcon className="h-6 w-6" />
-      <span className="sr-only">Open Backlog</span>
-      {/* Badge for task count */}
+      <InboxIcon className="h-4 w-4" />
+      <span>Backlog</span>
+      {/* Badge - subtle inline style */}
       {backlogTasks.length > 0 && (
-        <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
-          {backlogTasks.length > 9 ? "9+" : backlogTasks.length}
+        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 text-xs font-medium text-muted-foreground">
+          {backlogTasks.length > 99 ? "99+" : backlogTasks.length}
         </span>
       )}
-    </Button>
+    </button>
   );
 
   return (
