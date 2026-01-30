@@ -54,6 +54,8 @@ drizzle/*.sql
 .expo
 expo-env.d.ts
 
-# Tauri (desktop)
+# Tauri (desktop & mobile)
 apps/desktop/src-tauri/target
 apps/desktop/src-tauri/gen
+apps/mobile/src-tauri/target
+apps/mobile/src-tauri/gen

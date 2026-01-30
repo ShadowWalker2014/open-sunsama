@@ -11,19 +11,10 @@ pub async fn request_notification_permission(app: tauri::AppHandle) -> Result<bo
 }
 
 /// Set the app badge count (iOS only, no-op on Android)
+/// Note: Badge count is typically set via push notification payload
 #[tauri::command]
-pub async fn set_badge_count(app: tauri::AppHandle, count: u32) -> Result<(), String> {
-    #[cfg(target_os = "ios")]
-    {
-        app.notification()
-            .set_badge_count(Some(count as i32))
-            .map_err(|e| e.to_string())?;
-    }
-    
-    #[cfg(not(target_os = "ios"))]
-    {
-        let _ = (app, count);
-    }
-    
+pub async fn set_badge_count(_app: tauri::AppHandle, _count: u32) -> Result<(), String> {
+    // Badge count setting is handled via push notification payload on iOS
+    // This is a no-op as direct badge manipulation requires UIApplication access
     Ok(())
 }

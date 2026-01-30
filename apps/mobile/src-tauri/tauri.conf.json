@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "identifier": "app.opensunsama.mobile",
   "build": {
-    "beforeDevCommand": "cd ../web && bun run dev",
-    "devUrl": "http://localhost:3000",
+    "beforeDevCommand": "",
+    "devUrl": "http://192.168.4.159:3000",
     "beforeBuildCommand": "cd ../web && bun run build",
     "frontendDist": "../../web/dist"
   },
