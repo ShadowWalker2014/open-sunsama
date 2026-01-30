@@ -118,6 +118,28 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   const [customDurationValue, setCustomDurationValue] = React.useState("");
 
   const updateTask = useUpdateTask();
+
+  // Handle save on close
+  const handleOpenChange = async (newOpen: boolean) => {
+    if (!newOpen && task) {
+      // Save pending changes before closing
+      const hasChanges =
+        title !== task.title ||
+        description !== (task.notes || "") ||
+        plannedMins !== task.estimatedMins;
+      if (hasChanges && title.trim()) {
+        await updateTask.mutateAsync({
+          id: task.id,
+          data: {
+            title: title.trim(),
+            notes: description || null,
+            estimatedMins: plannedMins,
+          },
+        });
+      }
+    }
+    onOpenChange(newOpen);
+  };
   const deleteTask = useDeleteTask();
   const completeTask = useCompleteTask();
   const updateTimeBlock = useUpdateTimeBlock();
@@ -310,7 +332,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     : null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md p-0 gap-0 overflow-hidden">
         {/* Header - Title with checkbox and date */}
         <div className="px-4 pt-4 pb-3 border-b">

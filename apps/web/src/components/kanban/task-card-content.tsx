@@ -3,7 +3,7 @@ import { Check, Circle } from "lucide-react";
 import type { Task, Subtask } from "@open-sunsama/types";
 import { cn, formatDuration } from "@/lib/utils";
 import { useHoveredTask } from "@/hooks/useKeyboardShortcuts";
-import { PriorityTag } from "@/components/ui/priority-badge";
+import { PriorityLabel } from "@/components/ui/priority-badge";
 
 interface TaskCardContentProps {
   task: Task;
@@ -136,7 +136,7 @@ export function TaskCardContent({
         )}
 
         {/* Priority indicator */}
-        <PriorityTag priority={task.priority} />
+        <PriorityLabel priority={task.priority} />
       </div>
 
       {/* Subtasks preview - inline with small checkboxes */}

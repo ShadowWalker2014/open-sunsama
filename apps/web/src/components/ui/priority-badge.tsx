@@ -243,4 +243,36 @@ export function PriorityTag({
   );
 }
 
+/**
+ * Compact priority label (P0, P1, P2, P3) for task cards
+ * Shows for all priority levels, uses minimal space
+ */
+export function PriorityLabel({
+  priority,
+  className,
+}: {
+  priority: TaskPriority;
+  className?: string;
+}) {
+  const colorClasses: Record<TaskPriority, string> = {
+    P0: "text-red-500",
+    P1: "text-amber-500",
+    P2: "text-slate-400",
+    P3: "text-slate-300 dark:text-slate-500",
+  };
+
+  return (
+    <span
+      className={cn(
+        "shrink-0 text-[11px] font-medium tabular-nums",
+        colorClasses[priority],
+        className
+      )}
+      title={PRIORITY_LABELS[priority]}
+    >
+      {priority}
+    </span>
+  );
+}
+
 export { PRIORITY_LABELS, PRIORITY_SHORT_LABELS, priorityBadgeVariants, priorityTagVariants };
