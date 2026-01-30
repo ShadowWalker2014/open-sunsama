@@ -130,3 +130,10 @@ export function minutesToTime(minutes: number): string {
   const mins = minutes % 60;
   return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
 }
+
+/**
+ * Schema for auto-scheduling a task as a time block
+ */
+export const autoScheduleSchema = z.object({
+  taskId: uuidSchema,
+});

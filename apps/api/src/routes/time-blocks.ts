@@ -10,9 +10,81 @@ import { NotFoundError, uuidSchema } from '@open-sunsama/utils';
 import { auth, requireScopes, type AuthVariables } from '../middleware/auth.js';
 import {
   createTimeBlockSchema, updateTimeBlockSchema, timeBlockFilterSchema, calculateDuration,
-  quickScheduleSchema, calculateEndTime, cascadeResizeSchema, timeToMinutes, minutesToTime,
+  quickScheduleSchema, calculateEndTime, cascadeResizeSchema, autoScheduleSchema,
+  timeToMinutes, minutesToTime,
 } from '../validation/time-blocks.js';
+
+// Working hours constants for auto-scheduling
+const WORK_START_HOUR = 9;  // 9:00 AM
+const WORK_END_HOUR = 18;   // 6:00 PM
+
+/**
+ * Find the next available time slot within working hours
+ * @param existingBlocks - Existing time blocks for the date, sorted by startTime
+ * @param durationMins - Duration needed for the new block
+ * @param date - The date to schedule on (YYYY-MM-DD format)
+ * @returns The available slot or null if no slot available
+ */
+function findNextAvailableSlot(
+  existingBlocks: Array<{ startTime: string; endTime: string }>,
+  durationMins: number,
+  _date: string
+): { startTime: string; endTime: string } | null {
+  const workStartMinutes = WORK_START_HOUR * 60; // 540 (9:00 AM)
+  const workEndMinutes = WORK_END_HOUR * 60;     // 1080 (6:00 PM)
+
+  // If no existing blocks, start at work start time
+  if (existingBlocks.length === 0) {
+    const endMinutes = workStartMinutes + durationMins;
+    if (endMinutes <= workEndMinutes) {
+      return {
+        startTime: minutesToTime(workStartMinutes),
+        endTime: minutesToTime(endMinutes),
+      };
+    }
+    return null; // Duration exceeds working hours
+  }
+
+  // Find the first available gap
+  let currentStart = workStartMinutes;
+
+  for (const block of existingBlocks) {
+    const blockStartMinutes = timeToMinutes(block.startTime);
+    const blockEndMinutes = timeToMinutes(block.endTime);
+
+    // Check if there's a gap before this block
+    if (blockStartMinutes > currentStart) {
+      const gapSize = blockStartMinutes - currentStart;
+      if (gapSize >= durationMins) {
+        const endMinutes = currentStart + durationMins;
+        if (endMinutes <= workEndMinutes) {
+          return {
+            startTime: minutesToTime(currentStart),
+            endTime: minutesToTime(endMinutes),
+          };
+        }
+      }
+    }
+
+    // Move current start to the end of this block
+    currentStart = Math.max(currentStart, blockEndMinutes);
+  }
+
+  // Check if there's space after the last block
+  if (currentStart < workEndMinutes) {
+    const endMinutes = currentStart + durationMins;
+    if (endMinutes <= workEndMinutes) {
+      return {
+        startTime: minutesToTime(currentStart),
+        endTime: minutesToTime(endMinutes),
+      };
+    }
+  }
+
+  return null; // No available slot
+}
 import { publishEvent } from '../lib/websocket/index.js';
+import { calculateCascadeShifts } from '../services/time-block-cascade.js';
 
 const timeBlocksRouter = new Hono<{ Variables: AuthVariables }>();
 timeBlocksRouter.use('*', auth);
@@ -123,6 +195,74 @@ timeBlocksRouter.post('/quick-schedule', requireScopes('time-blocks:write'), zVa
     endTime,
     durationMins,
     color: data.color ?? '#3B82F6',
+    position,
+  }).returning();
+
+  // Publish realtime event (fire and forget)
+  if (newTimeBlock) {
+    publishEvent(userId, 'timeblock:created', {
+      timeBlockId: newTimeBlock.id,
+      date: newTimeBlock.date,
+    });
+  }
+
+  return c.json({ success: true, data: { ...newTimeBlock, task } }, 201);
+});
+
+/** POST /time-blocks/auto-schedule - Intelligently schedule a task to the next available time slot */
+timeBlocksRouter.post('/auto-schedule', requireScopes('time-blocks:write'), zValidator('json', autoScheduleSchema), async (c) => {
+  const userId = c.get('userId');
+  const { taskId } = c.req.valid('json');
+  const db = getDb();
+
+  // Look up the task
+  const [task] = await db.select().from(tasks).where(and(eq(tasks.id, taskId), eq(tasks.userId, userId))).limit(1);
+  if (!task) throw new NotFoundError('Task', taskId);
+
+  // Determine the date to schedule on (task's scheduledDate or today)
+  const scheduleDate = task.scheduledDate ?? new Date().toISOString().split('T')[0]!;
+
+  // Get duration from task or use default of 30 minutes
+  const durationMins = task.estimatedMins ?? 30;
+
+  // Get existing time blocks for this date, ordered by start time
+  const existingBlocks = await db
+    .select({ startTime: timeBlocks.startTime, endTime: timeBlocks.endTime })
+    .from(timeBlocks)
+    .where(and(eq(timeBlocks.userId, userId), eq(timeBlocks.date, scheduleDate)))
+    .orderBy(asc(timeBlocks.startTime));
+
+  // Find the next available slot
+  const slot = findNextAvailableSlot(existingBlocks, durationMins, scheduleDate);
+  if (!slot) {
+    return c.json({
+      success: false,
+      error: {
+        code: 'NO_AVAILABLE_SLOT',
+        message: `No available time slot found for ${durationMins} minutes on ${scheduleDate}. Working hours are ${WORK_START_HOUR}:00 to ${WORK_END_HOUR}:00.`,
+        statusCode: 409,
+      },
+    }, 409);
+  }
+
+  // Get next position for this date
+  const [maxPos] = await db
+    .select({ max: sql<number>`COALESCE(MAX(${timeBlocks.position}), -1)` })
+    .from(timeBlocks)
+    .where(and(eq(timeBlocks.userId, userId), eq(timeBlocks.date, scheduleDate)));
+  const position = (maxPos?.max ?? -1) + 1;
+
+  // Create the time block
+  const [newTimeBlock] = await db.insert(timeBlocks).values({
+    userId,
+    taskId,
+    title: task.title,
+    description: task.notes ?? null,
+    date: scheduleDate,
+    startTime: slot.startTime,
+    endTime: slot.endTime,
+    durationMins,
+    color: '#3B82F6',
     position,
   }).returning();
 

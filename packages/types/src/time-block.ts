@@ -155,6 +155,15 @@ export interface QuickScheduleInput {
 }
 
 /**
+ * Input for auto-scheduling a task to the next available time slot.
+ * The API automatically determines the best time based on existing blocks and working hours.
+ */
+export interface AutoScheduleInput {
+  /** ID of the task to schedule */
+  taskId: string;
+}
+
+/**
  * Summary of time blocks for a specific period.
  * Useful for daily/weekly overviews.
  */
