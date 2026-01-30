@@ -8,8 +8,15 @@ import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { getDb, eq, notificationPreferences } from '@open-sunsama/database';
 import type { NotificationPreferences, UpdateNotificationPreferencesInput, RolloverDestination, RolloverPosition } from '@open-sunsama/types';
-import { InternalError } from '@open-sunsama/utils';
+import { InternalError, AuthenticationError } from '@open-sunsama/utils';
 import { auth, type AuthVariables } from '../middleware/auth.js';
+
+/**
+ * Check if an error is a PostgreSQL error with a specific code
+ */
+function isPgError(error: unknown, code: string): boolean {
+  return error instanceof Error && 'code' in error && (error as { code: string }).code === code;
+}
 
 const notificationsRouter = new Hono<{ Variables: AuthVariables }>();
 
@@ -88,10 +95,41 @@ notificationsRouter.get('/preferences', async (c) => {
   // Create default preferences lazily on first access
   // This ensures we always return a valid record with a real ID
   const defaults = getDefaultPreferences(userId);
-  const [createdPrefs] = await db
-    .insert(notificationPreferences)
-    .values(defaults)
-    .returning();
+  
+  // Handle potential database errors
+  let createdPrefs;
+  try {
+    [createdPrefs] = await db
+      .insert(notificationPreferences)
+      .values(defaults)
+      .returning();
+  } catch (error) {
+    // Handle unique constraint violation (race condition - another request created it)
+    // PostgreSQL error code 23505 = unique_violation
+    if (isPgError(error, '23505')) {
+      const [existingPrefs] = await db
+        .select()
+        .from(notificationPreferences)
+        .where(eq(notificationPreferences.userId, userId))
+        .limit(1);
+      
+      if (existingPrefs) {
+        return c.json({
+          success: true,
+          data: formatPreferences(existingPrefs),
+        });
+      }
+    }
+    
+    // Handle foreign key violation (user doesn't exist in users table)
+    // PostgreSQL error code 23503 = foreign_key_violation
+    if (isPgError(error, '23503')) {
+      throw new AuthenticationError('User account not found. Please log out and log in again.');
+    }
+    
+    // Re-throw other errors
+    throw error;
+  }
 
   if (!createdPrefs) {
     throw new InternalError('Failed to create default notification preferences');
@@ -170,13 +208,48 @@ notificationsRouter.put('/preferences', zValidator('json', updatePreferencesSche
     ...updates,
   };
 
-  const [createdPrefs] = await db
-    .insert(notificationPreferences)
-    .values(newPrefs)
-    .returning();
+  let createdPrefs;
+  try {
+    [createdPrefs] = await db
+      .insert(notificationPreferences)
+      .values(newPrefs)
+      .returning();
+  } catch (error) {
+    // Handle unique constraint violation (race condition - another request created it)
+    if (isPgError(error, '23505')) {
+      // Fetch the existing preferences and update them instead
+      const [existingPrefs] = await db
+        .select()
+        .from(notificationPreferences)
+        .where(eq(notificationPreferences.userId, userId))
+        .limit(1);
+      
+      if (existingPrefs) {
+        const [updatedPrefs] = await db
+          .update(notificationPreferences)
+          .set({ ...updates, updatedAt: new Date() })
+          .where(eq(notificationPreferences.userId, userId))
+          .returning();
+        
+        if (updatedPrefs) {
+          return c.json({
+            success: true,
+            data: formatPreferences(updatedPrefs),
+          });
+        }
+      }
+    }
+    
+    // Handle foreign key violation (user doesn't exist)
+    if (isPgError(error, '23503')) {
+      throw new AuthenticationError('User account not found. Please log out and log in again.');
+    }
+    
+    throw error;
+  }
 
   if (!createdPrefs) {
-    throw new Error('Failed to create notification preferences');
+    throw new InternalError('Failed to create notification preferences');
   }
 
   return c.json({
