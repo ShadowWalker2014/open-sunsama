@@ -20,6 +20,7 @@ import { apiKeysRouter } from './routes/api-keys.js';
 import { notificationsRouter } from './routes/notifications.js';
 import { uploadsRouter } from './routes/uploads.js';
 import { attachmentsRouter } from './routes/attachments.js';
+import { pushRouter } from './routes/push.js';
 import { registerAllWorkers } from './workers/index.js';
 import { stopPgBoss, isPgBossRunning, getPgBoss, JOBS } from './lib/pgboss.js';
 import { initWebSocket, initRedisSubscriber } from './lib/websocket/index.js';
@@ -87,6 +88,7 @@ app.get('/', (c) => {
       notifications: '/notifications',
       uploads: '/uploads',
       attachments: '/attachments',
+      push: '/push',
     },
   });
 });
@@ -100,6 +102,7 @@ app.route('/api-keys', apiKeysRouter);
 app.route('/notifications', notificationsRouter);
 app.route('/uploads', uploadsRouter);
 app.route('/attachments', attachmentsRouter);
+app.route('/push', pushRouter);
 
 // Error handling
 app.onError(errorHandler);
@@ -201,6 +204,7 @@ async function startServer(): Promise<void> {
   ║   - *    /notifications/* Notification settings           ║
   ║   - *    /uploads/*  File uploads                         ║
   ║   - *    /attachments/* Attachment management             ║
+  ║   - *    /push/*    Push notifications                    ║
   ║                                                           ║
   ║   Background Jobs:                                        ║
   ║   - Task Rollover (${process.env.ROLLOVER_ENABLED !== 'false' ? 'enabled' : 'disabled'})                           ║

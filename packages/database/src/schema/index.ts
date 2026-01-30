@@ -73,5 +73,13 @@ export {
 } from './rollover-log';
 export type { RolloverLog, NewRolloverLog } from './rollover-log';
 
+export {
+  pushSubscriptions,
+  pushSubscriptionsRelations,
+  insertPushSubscriptionSchema,
+  selectPushSubscriptionSchema,
+} from './push-subscriptions';
+export type { PushSubscription, NewPushSubscription } from './push-subscriptions';
+
 // Re-export relation helpers for query building
 export { relations } from 'drizzle-orm';
