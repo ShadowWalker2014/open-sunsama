@@ -1,5 +1,25 @@
 import * as React from "react";
-import { Plus, Inbox, Clock, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { 
+  Plus, 
+  Inbox, 
+  Clock, 
+  ChevronLeft, 
+  ChevronRight, 
+  ChevronDown,
+  ChevronUp,
+  Check, 
+  Home, 
+  Calendar, 
+  Target,
+  Sunrise,
+  Sunset,
+  Sparkles,
+  LayoutList,
+  ClipboardCheck,
+  FolderPlus,
+  UserPlus,
+} from "lucide-react";
+import { useDroppable } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -16,6 +36,7 @@ import { AddTaskModal } from "@/components/kanban/add-task-modal";
 import { TaskModal } from "@/components/kanban/task-modal";
 
 const SIDEBAR_COLLAPSED_KEY = "open-sunsama-sidebar-collapsed";
+const BACKLOG_EXPANDED_KEY = "open-sunsama-backlog-expanded";
 
 interface SidebarProps {
   className?: string;
@@ -34,6 +55,15 @@ export function Sidebar({ className }: SidebarProps) {
   });
 
   const { data: tasks, isLoading } = useTasks({ backlog: true });
+
+  // Make backlog a drop target for unscheduling tasks
+  const { setNodeRef: setDroppableRef, isOver } = useDroppable({
+    id: "backlog",
+    data: {
+      type: "column",
+      date: null, // null = unscheduled/backlog
+    },
+  });
 
   // Separate pending and completed tasks
   const { pendingTasks, completedTasks } = React.useMemo(() => {
@@ -58,8 +88,10 @@ export function Sidebar({ className }: SidebarProps) {
   if (isCollapsed) {
     return (
       <aside
+        ref={setDroppableRef}
         className={cn(
           "flex h-full w-10 flex-col items-center border-r border-border/40 bg-background/50 py-3 transition-all duration-300 ease-in-out",
+          isOver && "bg-primary/5 border-primary/30", // Visual feedback when dragging over
           className
         )}
       >
@@ -86,8 +118,10 @@ export function Sidebar({ className }: SidebarProps) {
 
   return (
     <aside
+      ref={setDroppableRef}
       className={cn(
         "flex h-full w-72 flex-col border-r border-border/40 bg-background/50 transition-all duration-300 ease-in-out",
+        isOver && "bg-primary/5 border-primary/30", // Visual feedback when dragging over
         className
       )}
     >

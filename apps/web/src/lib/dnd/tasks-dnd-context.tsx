@@ -67,9 +67,14 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
 
   // Find target column from over ID
   const findTargetColumnDate = React.useCallback(
-    (overId: string | number | undefined): string | null => {
+    (overId: string | number | undefined): string | null | "backlog" => {
       if (!overId) return null;
       const overIdStr = String(overId);
+
+      // Check if it's the backlog drop target
+      if (overIdStr === "backlog") {
+        return "backlog";
+      }
 
       // Check if it's a column ID (day-YYYY-MM-DD)
       if (overIdStr.startsWith("day-")) {
@@ -82,12 +87,12 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
     []
   );
 
-  // Check if an ID is a task (not a column)
+  // Check if an ID is a task (not a column or backlog)
   const isTaskId = React.useCallback(
     (id: string | number | undefined): boolean => {
       if (!id) return false;
       const idStr = String(id);
-      return !idStr.startsWith("day-");
+      return !idStr.startsWith("day-") && idStr !== "backlog";
     },
     []
   );
@@ -134,6 +139,18 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
       const targetDate = findTargetColumnDate(over.id);
 
       if (targetDate) {
+        // Handle backlog - unschedule the task
+        if (targetDate === "backlog") {
+          // Only unschedule if task is currently scheduled
+          if (task.scheduledDate !== null) {
+            moveTask.mutate({
+              id: taskId,
+              targetDate: null, // null = unscheduled
+            });
+          }
+          return;
+        }
+
         // Moving to a different column/date
         if (task.scheduledDate !== targetDate) {
           moveTask.mutate({
