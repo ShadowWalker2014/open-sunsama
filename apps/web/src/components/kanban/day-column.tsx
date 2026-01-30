@@ -2,7 +2,7 @@ import * as React from "react";
 import { format, isToday, isTomorrow, isPast, isYesterday } from "date-fns";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { ArrowUpDown } from "lucide-react";
+import { Clock } from "lucide-react";
 import type { Task } from "@open-sunsama/types";
 import { useTasks } from "@/hooks/useTasks";
 import { cn, formatDuration } from "@/lib/utils";
@@ -145,18 +145,30 @@ export function DayColumn({
       {/* Day Header - Sunsama style */}
       <div
         className={cn(
-          "sticky top-0 z-10 border-b border-border/40 bg-background/95 px-3 pt-3 pb-2 backdrop-blur-sm",
-          today && "bg-primary/[0.02]"
+          "sticky top-0 z-10 border-b border-border/40 bg-background px-3 pt-3 pb-2",
+          today && "bg-primary/[0.03]"
         )}
       >
-        {/* Day name - large text */}
-        <div
-          className={cn(
-            "text-base font-semibold",
-            today ? "text-primary" : "text-foreground"
+        {/* Top row: Day name and task count */}
+        <div className="flex items-center gap-2">
+          <span
+            className={cn(
+              "text-base font-semibold",
+              today ? "text-foreground" : "text-foreground"
+            )}
+          >
+            {getDayLabel()}
+          </span>
+          {totalTasks > 0 && (
+            <span className={cn(
+              "text-xs px-1.5 py-0.5 rounded",
+              today 
+                ? "bg-primary/20 text-primary" 
+                : "bg-muted text-muted-foreground"
+            )}>
+              {totalTasks}
+            </span>
           )}
-        >
-          {getDayLabel()}
         </div>
         
         {/* Date - smaller text below */}
@@ -164,24 +176,25 @@ export function DayColumn({
           {getFormattedDate()}
         </div>
 
-        {/* Progress bar - only show on Today column */}
+        {/* Progress bar - only show on Today column when there are tasks */}
         {today && totalTasks > 0 && (
-          <div className="mt-2 h-1 w-full rounded-full bg-muted overflow-hidden">
+          <div className="mt-2 h-1.5 w-full rounded-full bg-muted overflow-hidden">
             <div
-              className="h-full bg-green-500 transition-all duration-300 ease-out"
+              className="h-full bg-primary transition-all duration-300 ease-out"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
         )}
 
-        {/* Add task row with total time */}
+        {/* Add task row with total time - Sunsama style */}
         <div className="flex items-center justify-between mt-3">
+          {/* Add task button */}
           <AddTaskInline scheduledDate={dateString} compact />
           
-          {/* Sort icon and total time */}
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <ArrowUpDown className="h-3.5 w-3.5" />
-            <span className="font-medium">
+          {/* Total time estimate with clock icon */}
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Clock className="h-3 w-3" />
+            <span className="tabular-nums">
               {formatDuration(totalEstimatedMins)}
             </span>
           </div>

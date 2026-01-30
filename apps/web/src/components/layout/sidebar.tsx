@@ -303,34 +303,35 @@ function SortableBacklogTaskCard({ task, onSelect }: SortableBacklogTaskCardProp
     >
       {/* Drop indicator line - above */}
       {showDropIndicatorAbove && (
-        <div className="absolute -top-1 left-0 right-0 h-0.5 bg-primary rounded-full z-10 shadow-[0_0_4px_rgba(var(--primary),0.5)]" />
+        <div className="absolute -top-0.5 left-0 right-0 h-0.5 bg-primary rounded-full z-10" />
       )}
       
       <div
         className={cn(
-          "group flex items-start gap-3 rounded-lg px-3 py-2 transition-all duration-150",
-          "bg-card/50 hover:bg-card",
-          "border border-transparent hover:border-border/50",
+          "group flex items-center justify-between gap-2 rounded px-2 py-1.5 transition-all duration-150",
+          "hover:bg-muted/50",
           "cursor-grab active:cursor-grabbing touch-none select-none"
         )}
       >
-        {/* Content */}
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium leading-snug truncate">
+        {/* Content - compact */}
+        <div className="min-w-0 flex-1 flex items-center gap-2">
+          <div className="h-3.5 w-3.5 rounded-full border border-muted-foreground/40 shrink-0" />
+          <p className="text-xs leading-snug truncate text-foreground/90">
             {task.title}
           </p>
-          {task.estimatedMins && (
-            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground mt-1">
-              <Clock className="h-3 w-3" />
-              {formatDuration(task.estimatedMins)}
-            </span>
-          )}
         </div>
+        
+        {/* Duration - compact */}
+        {task.estimatedMins && task.estimatedMins > 0 && (
+          <span className="shrink-0 text-[10px] text-muted-foreground/60 tabular-nums">
+            {formatDuration(task.estimatedMins)}
+          </span>
+        )}
       </div>
       
       {/* Drop indicator line - below */}
       {showDropIndicatorBelow && (
-        <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full z-10 shadow-[0_0_4px_rgba(var(--primary),0.5)]" />
+        <div className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-primary rounded-full z-10" />
       )}
     </div>
   );
@@ -355,38 +356,36 @@ function BacklogTaskCard({ task, onSelect }: BacklogTaskCardProps) {
       onMouseEnter={() => setHoveredTask(task)}
       onMouseLeave={() => setHoveredTask(null)}
       className={cn(
-        "group flex items-start gap-2.5 rounded-lg px-3 py-2 transition-all duration-200",
-        "bg-card/30 hover:bg-card/50",
-        "border border-transparent hover:border-border/30",
+        "group flex items-center justify-between gap-2 rounded px-2 py-1.5 transition-all duration-150",
+        "hover:bg-muted/30",
         "cursor-pointer select-none",
-        // Completed state - muted styling
-        isCompleted && "opacity-60 hover:opacity-70"
+        isCompleted && "opacity-50 hover:opacity-60"
       )}
     >
-      {/* Completion indicator */}
-      {isCompleted && (
-        <div className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/80 text-primary-foreground">
-          <Check className="h-2.5 w-2.5" strokeWidth={3} />
-        </div>
-      )}
-
-      {/* Content */}
-      <div className="min-w-0 flex-1">
+      {/* Content - compact */}
+      <div className="min-w-0 flex-1 flex items-center gap-2">
+        {/* Completion indicator */}
+        {isCompleted && (
+          <div className="h-3.5 w-3.5 rounded-full bg-primary/60 flex items-center justify-center shrink-0">
+            <Check className="h-2 w-2 text-primary-foreground" strokeWidth={3} />
+          </div>
+        )}
         <p
           className={cn(
-            "text-sm font-medium leading-snug truncate",
+            "text-xs leading-snug truncate",
             isCompleted && "line-through text-muted-foreground"
           )}
         >
           {task.title}
         </p>
-        {task.estimatedMins && (
-          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground/70 mt-1">
-            <Clock className="h-3 w-3" />
-            {formatDuration(task.estimatedMins)}
-          </span>
-        )}
       </div>
+      
+      {/* Duration - compact */}
+      {task.estimatedMins && task.estimatedMins > 0 && (
+        <span className="shrink-0 text-[10px] text-muted-foreground/50 tabular-nums">
+          {formatDuration(task.estimatedMins)}
+        </span>
+      )}
     </div>
   );
 }
