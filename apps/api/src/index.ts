@@ -21,6 +21,11 @@ import { notificationsRouter } from './routes/notifications.js';
 import { uploadsRouter } from './routes/uploads.js';
 import { attachmentsRouter } from './routes/attachments.js';
 import { pushRouter } from './routes/push.js';
+import { calendarOAuthRouter } from './routes/calendar-oauth.js';
+import { calendarCaldavRouter } from './routes/calendar-caldav.js';
+import { calendarAccountsRouter } from './routes/calendar-accounts.js';
+import { calendarsRouter } from './routes/calendars.js';
+import { calendarEventsRouter } from './routes/calendar-events.js';
 import { registerAllWorkers } from './workers/index.js';
 import { stopPgBoss, isPgBossRunning, getPgBoss, JOBS } from './lib/pgboss.js';
 import { initWebSocket, initRedisSubscriber } from './lib/websocket/index.js';
@@ -89,6 +94,11 @@ app.get('/', (c) => {
       uploads: '/uploads',
       attachments: '/attachments',
       push: '/push',
+      calendarOAuth: '/calendar/oauth',
+      calendarCaldav: '/calendar/caldav',
+      calendarAccounts: '/calendar/accounts',
+      calendars: '/calendars',
+      calendarEvents: '/calendar-events',
     },
   });
 });
@@ -103,6 +113,11 @@ app.route('/notifications', notificationsRouter);
 app.route('/uploads', uploadsRouter);
 app.route('/attachments', attachmentsRouter);
 app.route('/push', pushRouter);
+app.route('/calendar/oauth', calendarOAuthRouter);
+app.route('/calendar/caldav', calendarCaldavRouter);
+app.route('/calendar/accounts', calendarAccountsRouter);
+app.route('/calendars', calendarsRouter);
+app.route('/calendar-events', calendarEventsRouter);
 
 // Error handling
 app.onError(errorHandler);
@@ -195,16 +210,19 @@ async function startServer(): Promise<void> {
   ║   Server running at http://localhost:${port}                 ║
   ║                                                           ║
   ║   Endpoints:                                              ║
-  ║   - GET  /           API info                             ║
-  ║   - GET  /health     Health check                         ║
-  ║   - POST /auth/*     Authentication                       ║
-  ║   - *    /tasks/*    Task management                      ║
-  ║   - *    /time-blocks/*  Time block management            ║
-  ║   - *    /api-keys/* API key management                   ║
-  ║   - *    /notifications/* Notification settings           ║
-  ║   - *    /uploads/*  File uploads                         ║
-  ║   - *    /attachments/* Attachment management             ║
-  ║   - *    /push/*    Push notifications                    ║
+   ║   - GET  /           API info                             ║
+   ║   - GET  /health     Health check                         ║
+   ║   - POST /auth/*     Authentication                       ║
+   ║   - *    /tasks/*    Task management                      ║
+   ║   - *    /time-blocks/*  Time block management            ║
+   ║   - *    /api-keys/* API key management                   ║
+   ║   - *    /notifications/* Notification settings           ║
+   ║   - *    /uploads/*  File uploads                         ║
+   ║   - *    /attachments/* Attachment management             ║
+   ║   - *    /push/*    Push notifications                    ║
+   ║   - *    /calendar/* Calendar integration                 ║
+   ║   - *    /calendars  Calendar settings                    ║
+   ║   - *    /calendar-events Calendar events                 ║
   ║                                                           ║
   ║   Background Jobs:                                        ║
   ║   - Task Rollover (${process.env.ROLLOVER_ENABLED !== 'false' ? 'enabled' : 'disabled'})                           ║

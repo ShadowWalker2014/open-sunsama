@@ -17,6 +17,10 @@ export type WebSocketEventType =
   | 'timeblock:created'
   | 'timeblock:updated'
   | 'timeblock:deleted'
+  // Calendar events
+  | 'calendar:account-disconnected'
+  | 'calendar:synced'
+  | 'calendar:updated'
   // User events
   | 'user:updated'
   // Connection events
