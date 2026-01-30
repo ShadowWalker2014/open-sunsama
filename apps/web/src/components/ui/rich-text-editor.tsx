@@ -27,6 +27,7 @@ interface RichTextEditorProps {
   className?: string;
   minHeight?: string;
   enableFileUpload?: boolean;
+  autoFocus?: boolean;
 }
 
 /**
@@ -326,6 +327,7 @@ export function RichTextEditor({
   className,
   minHeight = "120px",
   enableFileUpload = true,
+  autoFocus = false,
 }: RichTextEditorProps) {
   const uploadAttachment = useUploadAttachment();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -383,6 +385,7 @@ export function RichTextEditor({
     extensions,
     content: value,
     immediatelyRender: false,
+    autofocus: autoFocus ? "end" : false,
     editorProps: {
       attributes: {
         class: cn(

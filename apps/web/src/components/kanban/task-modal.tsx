@@ -15,7 +15,8 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Plus, Clock, Trash2, Check, Calendar } from "lucide-react";
+import { Plus, Clock, Trash2, Check, Calendar, Expand } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import type { Task, Subtask, TaskPriority } from "@open-sunsama/types";
 import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
 import { useUpdateTask, useDeleteTask, useCompleteTask } from "@/hooks/useTasks";
@@ -41,14 +42,6 @@ interface TaskModalProps {
   task: Task | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}
-
-// Helper to format time display (e.g., "0:30" for 30 minutes)
-function formatTimeDisplay(mins: number | null | undefined): string {
-  if (!mins) return "0:00";
-  const hours = Math.floor(mins / 60);
-  const minutes = mins % 60;
-  return `${hours}:${minutes.toString().padStart(2, "0")}`;
 }
 
 // Helper to format duration for display
@@ -112,6 +105,7 @@ function parseTimeInput(input: string): number | null {
 }
 
 export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
+  const navigate = useNavigate();
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [plannedMins, setPlannedMins] = React.useState<number | null>(null);
@@ -348,12 +342,18 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     ? format(new Date(task.scheduledDate), "EEEE, MMMM d")
     : null;
 
+  const handleExpandToFocus = () => {
+    if (!task) return;
+    onOpenChange(false);
+    navigate({ to: "/app/focus/$taskId", params: { taskId: task.id } });
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md p-0 gap-0 overflow-hidden">
+      <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden">
         {/* Header - Title with checkbox and date */}
-        <div className="px-4 pt-4 pb-3 border-b">
-          <div className="flex items-start gap-3 pr-6">
+        <div className="px-5 pt-4 pb-3 border-b">
+          <div className="flex items-start gap-3 pr-8">
             {/* Checkbox */}
             <button
               type="button"
@@ -373,7 +373,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 onBlur={() => title !== task.title && handleSave()}
-                className={`border-none p-0 text-base font-medium shadow-none focus-visible:ring-0 h-auto ${
+                className={`border-none p-0 text-lg font-medium shadow-none focus-visible:ring-0 h-auto ${
                   isCompleted ? "line-through text-muted-foreground" : ""
                 }`}
                 placeholder="Task title"
@@ -384,22 +384,32 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                 </p>
               )}
             </div>
+
+            {/* Expand to focus button */}
+            <button
+              type="button"
+              onClick={handleExpandToFocus}
+              className="shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              title="Open in focus mode"
+            >
+              <Expand className="h-4 w-4" />
+            </button>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="px-4 py-4 space-y-4 max-h-[50vh] overflow-y-auto">
-          {/* Priority Section */}
-          <div className="flex items-center justify-between py-2">
-            <span className="text-sm text-muted-foreground">Priority</span>
+        <div className="px-5 py-4 space-y-5 max-h-[60vh] overflow-y-auto">
+          {/* Top row: Priority + Duration inline */}
+          <div className="flex items-center gap-4 flex-wrap">
+            {/* Priority */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-7 gap-2 px-2">
+                <Button variant="outline" size="sm" className="h-8 gap-2 px-3">
                   <PriorityIcon priority={priority} />
                   <span className="text-sm">{PRIORITY_LABELS[priority]}</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuContent align="start" className="w-40">
                 {PRIORITIES.map((p) => (
                   <DropdownMenuItem
                     key={p}
@@ -415,12 +425,91 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Duration */}
+            {isCustomDuration ? (
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  value={customDurationValue}
+                  onChange={(e) => setCustomDurationValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleCustomDurationSubmit();
+                    }
+                    if (e.key === "Escape") {
+                      setIsCustomDuration(false);
+                      setCustomDurationValue("");
+                    }
+                  }}
+                  onBlur={handleCustomDurationSubmit}
+                  placeholder="30m, 1.5h"
+                  className="h-8 w-20 text-sm"
+                  autoFocus
+                />
+              </div>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-8 gap-2 px-3">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{formatDurationDisplay(plannedMins)}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-36">
+                  {DURATION_PRESETS.map((preset) => (
+                    <DropdownMenuItem
+                      key={preset.value}
+                      onClick={() => handleDurationChange(preset.value)}
+                      className={plannedMins === preset.value ? "bg-accent" : ""}
+                    >
+                      {preset.label}
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setIsCustomDuration(true)}>
+                    Custom...
+                  </DropdownMenuItem>
+                  {plannedMins && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => handleDurationChange(null)}
+                        className="text-muted-foreground"
+                      >
+                        Clear
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
+            {/* Start Time - Only show if task has a time block */}
+            {activeTimeBlock && (
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => handleStartTimeChange(e.target.value)}
+                  className="h-8 w-28 text-sm"
+                />
+              </div>
+            )}
           </div>
+
+          {/* Time block info - compact */}
+          {activeTimeBlock && (
+            <p className="text-xs text-muted-foreground -mt-2">
+              Scheduled {format(new Date(activeTimeBlock.startTime), "h:mm a")} - {format(new Date(activeTimeBlock.endTime), "h:mm a")}
+            </p>
+          )}
 
           {/* Subtasks Section */}
           <div className="space-y-2">
-            <h4 className="text-sm font-medium text-muted-foreground">Subtasks</h4>
-            
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSubtaskDragEnd}>
               <SortableContext items={subtaskIds} strategy={verticalListSortingStrategy}>
                 <div className="space-y-0">
@@ -476,146 +565,26 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
 
           {/* Notes Section */}
           <div className="space-y-2">
-            <h4 className="text-sm font-medium text-muted-foreground">Notes</h4>
             <NotesField
               notes={description}
               onChange={setDescription}
               onBlur={() => {
                 if (description !== (task.notes || "")) handleSave();
               }}
+              minHeight="120px"
             />
           </div>
 
           {/* Attachments - minimal */}
           <TaskAttachments taskId={task.id} />
-
-          {/* Time & Duration Section */}
-          <div className="space-y-3">
-            <h4 className="text-sm font-medium text-muted-foreground">Time & Duration</h4>
-            
-            <div className="flex items-center gap-4">
-              {/* Start Time - Only show if task has a time block */}
-              {activeTimeBlock && (
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="time"
-                    value={startTime}
-                    onChange={(e) => handleStartTimeChange(e.target.value)}
-                    className="h-8 w-28 text-sm"
-                  />
-                </div>
-              )}
-              
-              {/* Duration */}
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                {isCustomDuration ? (
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="text"
-                        value={customDurationValue}
-                        onChange={(e) => setCustomDurationValue(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            handleCustomDurationSubmit();
-                          }
-                          if (e.key === "Escape") {
-                            setIsCustomDuration(false);
-                            setCustomDurationValue("");
-                          }
-                        }}
-                        onBlur={handleCustomDurationSubmit}
-                        placeholder="e.g. 30m, 1.5h"
-                        className="h-8 w-24 text-sm"
-                        autoFocus
-                      />
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 px-2 text-xs"
-                        onClick={() => {
-                          setIsCustomDuration(false);
-                          setCustomDurationValue("");
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      Formats: 30, 30m, 1h, 1.5h, 1h30m
-                    </span>
-                  </div>
-                ) : (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 gap-1.5 text-sm font-normal"
-                      >
-                        {formatDurationDisplay(plannedMins)}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-36">
-                      {DURATION_PRESETS.map((preset) => (
-                        <DropdownMenuItem
-                          key={preset.value}
-                          onClick={() => handleDurationChange(preset.value)}
-                          className={plannedMins === preset.value ? "bg-accent" : ""}
-                        >
-                          {preset.label}
-                        </DropdownMenuItem>
-                      ))}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => setIsCustomDuration(true)}>
-                        Custom...
-                      </DropdownMenuItem>
-                      {plannedMins && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => handleDurationChange(null)}
-                            className="text-muted-foreground"
-                          >
-                            Clear
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-              </div>
-            </div>
-
-            {/* Time block info */}
-            {activeTimeBlock && (
-              <p className="text-xs text-muted-foreground">
-                Scheduled: {format(new Date(activeTimeBlock.startTime), "h:mm a")} - {format(new Date(activeTimeBlock.endTime), "h:mm a")}
-              </p>
-            )}
-            {!activeTimeBlock && task.scheduledDate && (
-              <p className="text-xs text-muted-foreground">
-                Not scheduled on calendar. Drag task to timeline to add a time block.
-              </p>
-            )}
-          </div>
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-3 border-t bg-muted/20 flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <Clock className="h-4 w-4" />
-            <span>{formatTimeDisplay(plannedMins)}</span>
-          </div>
-          
+        <div className="px-5 py-2.5 border-t flex items-center justify-end">
           <button
             type="button"
             onClick={handleDelete}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-destructive transition-colors"
+            className="flex items-center gap-1.5 px-2 py-1 rounded text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
           >
             <Trash2 className="h-4 w-4" />
             <span>Delete</span>
