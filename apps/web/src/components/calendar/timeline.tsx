@@ -111,38 +111,35 @@ export function Timeline({
     }
 
     // Don't trigger if we just ended a drag/resize operation
-    // (mouseup fires before click, so dragState is already cleared)
     if (justEndedDrag) {
       return;
     }
 
     if (!onTimeSlotClick) return;
 
-    // Get the timeline content container for accurate positioning
     const container = e.currentTarget;
     const rect = container.getBoundingClientRect();
     
-    // Get scroll position from the ScrollArea viewport
-    const viewport = container.querySelector('[data-radix-scroll-area-viewport]');
-    const scrollTop = viewport?.scrollTop ?? 0;
-    
-    // Calculate Y relative to the timeline content (accounting for scroll)
-    const relativeY = e.clientY - rect.top + scrollTop;
+    // Calculate Y relative to the timeline content (no scroll offset needed - click is relative to visible area)
+    const relativeY = e.clientY - rect.top;
     
     // Calculate time from Y position
     const clickedTime = calculateTimeFromY(relativeY, date);
     const snappedStartTime = snapToInterval(clickedTime, SNAP_INTERVAL);
-    const snappedEndTime = addMinutes(snappedStartTime, 60); // Default 1 hour duration
+    const snappedEndTime = addMinutes(snappedStartTime, 60);
 
     onTimeSlotClick(snappedStartTime, snappedEndTime);
   };
 
   return (
-    <div className={cn("flex flex-1 overflow-hidden", className)}>
-      {/* Time Labels Column - Narrower on mobile */}
-      <div className="w-12 sm:w-16 flex-shrink-0 border-r bg-muted/30">
-        <ScrollArea className="h-full" ref={scrollAreaRef}>
-          <div className="relative">
+    <div className={cn("flex-1 overflow-hidden", className)}>
+      <ScrollArea className="h-full" ref={scrollAreaRef}>
+        <div
+          className="flex"
+          style={{ minHeight: hours.length * HOUR_HEIGHT }}
+        >
+          {/* Time Labels Column */}
+          <div className="w-12 sm:w-16 flex-shrink-0 border-r bg-muted/30">
             {hours.map((hour) => (
               <div
                 key={hour}
@@ -155,24 +152,20 @@ export function Timeline({
               </div>
             ))}
           </div>
-        </ScrollArea>
-      </div>
 
-      {/* Timeline Content - Touch-friendly */}
-      <div
-        ref={timelineRef}
-        className={cn(
-          "relative flex-1 overflow-hidden cursor-pointer",
-          "touch-pan-y", // Enable smooth touch scrolling
-          isToday && "bg-accent/5"
-        )}
-        onMouseMove={onTimelineMouseMove}
-        onMouseUp={onTimelineMouseUp}
-        onMouseLeave={onTimelineMouseLeave}
-        onClick={handleTimeSlotClick}
-      >
-        <ScrollArea className="h-full">
-          <div className="relative" style={{ minHeight: hours.length * HOUR_HEIGHT }}>
+          {/* Timeline Content */}
+          <div
+            ref={timelineRef}
+            className={cn(
+              "relative flex-1 cursor-pointer",
+              "touch-pan-y",
+              isToday && "bg-accent/5"
+            )}
+            onMouseMove={onTimelineMouseMove}
+            onMouseUp={onTimelineMouseUp}
+            onMouseLeave={onTimelineMouseLeave}
+            onClick={handleTimeSlotClick}
+          >
             {/* Hour grid lines */}
             {hours.map((hour) => (
               <div
@@ -244,8 +237,8 @@ export function Timeline({
               />
             )}
           </div>
-        </ScrollArea>
-      </div>
+        </div>
+      </ScrollArea>
     </div>
   );
 }
