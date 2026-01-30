@@ -27,8 +27,8 @@
   "plugins": {
     "deep-link": {
       "mobile": [
-        { "host": "opensunsama.app", "pathPrefix": ["/"] },
-        { "host": "*.opensunsama.app", "pathPrefix": ["/"] }
+        { "host": "opensunsama.com", "pathPrefix": ["/"] },
+        { "host": "*.opensunsama.com", "pathPrefix": ["/"] }
       ]
     }
   }

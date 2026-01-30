@@ -21,9 +21,9 @@ An MCP (Model Context Protocol) server that enables AI agents like Claude, Curso
 ### From Source (Development)
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-org/open-sunsama.git
-cd open-sunsama/mcp
+# Clone the repository (recommended path for MCP config)
+git clone https://github.com/AquaWolf/open-sunsama.git ~/.local/share/open-sunsama
+cd ~/.local/share/open-sunsama/mcp
 
 # Install dependencies
 bun install
@@ -50,7 +50,7 @@ bun run build
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `OPENSUNSAMA_API_KEY` | Yes | - | Your API key starting with `os_` |
-| `OPENSUNSAMA_API_URL` | No | `https://api.opensunsama.com` | API server URL |
+| `OPENSUNSAMA_API_URL` | No | `https://api.sunsama.com` | API server URL |
 
 ### Self-Hosted / Local Development
 
@@ -65,7 +65,7 @@ If you're running the API locally or self-hosting, set `OPENSUNSAMA_API_URL` to 
 }
 ```
 
-**Note:** If you're using the official cloud version at [opensunsama.com](https://opensunsama.com), you can omit `OPENSUNSAMA_API_URL` (defaults to `https://api.opensunsama.com`).
+**Note:** If you're using the official cloud version at [opensunsama.com](https://opensunsama.com), you can omit `OPENSUNSAMA_API_URL` (defaults to `https://api.sunsama.com`).
 
 ## Usage with AI Assistants
 
@@ -81,7 +81,7 @@ Add to your Claude Desktop configuration file:
   "mcpServers": {
     "open-sunsama": {
       "command": "node",
-      "args": ["/path/to/open-sunsama/mcp/build/index.js"],
+      "args": ["~/.local/share/open-sunsama/mcp/build/index.js"],
       "env": {
         "OPENSUNSAMA_API_KEY": "os_your-api-key-here"
       }
@@ -101,7 +101,7 @@ Create `.cursor/mcp.json` in your project root or configure in **Cursor Settings
   "mcpServers": {
     "open-sunsama": {
       "command": "node",
-      "args": ["/path/to/open-sunsama/mcp/build/index.js"],
+      "args": ["~/.local/share/open-sunsama/mcp/build/index.js"],
       "env": {
         "OPENSUNSAMA_API_KEY": "os_your-api-key-here"
       }
@@ -122,7 +122,7 @@ Add to `~/.continue/config.json`:
     {
       "name": "open-sunsama",
       "command": "node",
-      "args": ["/path/to/open-sunsama/mcp/build/index.js"],
+      "args": ["~/.local/share/open-sunsama/mcp/build/index.js"],
       "env": {
         "OPENSUNSAMA_API_KEY": "os_your-api-key-here"
       }
@@ -140,7 +140,7 @@ Most tools use a similar configuration format:
   "mcpServers": {
     "open-sunsama": {
       "command": "node",
-      "args": ["/path/to/open-sunsama/mcp/build/index.js"],
+      "args": ["~/.local/share/open-sunsama/mcp/build/index.js"],
       "env": {
         "OPENSUNSAMA_API_KEY": "os_your-api-key-here"
       }
@@ -158,7 +158,7 @@ If you prefer Bun over Node.js:
   "mcpServers": {
     "open-sunsama": {
       "command": "bun",
-      "args": ["run", "/path/to/open-sunsama/mcp/build/index.js"],
+      "args": ["run", "~/.local/share/open-sunsama/mcp/build/index.js"],
       "env": {
         "OPENSUNSAMA_API_KEY": "os_your-api-key-here"
       }
@@ -282,7 +282,7 @@ Make sure you've set the API key in your MCP configuration:
 
 ### "Network request failed" or Connection Errors
 
-1. Verify the API is reachable: `curl https://api.opensunsama.com/health`
+1. Verify the API is reachable: `curl https://api.sunsama.com/health`
 2. If self-hosted/local, check `OPENSUNSAMA_API_URL` is correct
 3. Ensure your API key has the required scopes
 

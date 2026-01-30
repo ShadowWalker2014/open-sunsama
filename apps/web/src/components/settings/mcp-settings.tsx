@@ -140,9 +140,11 @@ export function McpSettings() {
   const generateConfig = (client: ClientTab, forDisplay: boolean = false): string => {
     const keyValue = forDisplay && hasKey ? blurKey(actualKey) : actualKey;
     
+    // Path where you cloned and built the MCP server
+    // See: https://github.com/AquaWolf/open-sunsama/tree/main/mcp
     const baseConfig = {
       command: "node",
-      args: ["/path/to/open-sunsama/mcp/build/index.js"],
+      args: ["~/.local/share/open-sunsama/mcp/build/index.js"],
       env: {
         OPENSUNSAMA_API_KEY: keyValue,
         ...(apiUrl !== "https://api.sunsama.com" && { OPENSUNSAMA_API_URL: apiUrl }),
@@ -328,12 +330,15 @@ export function McpSettings() {
           <div className="space-y-2 text-xs text-muted-foreground">
             <p className="font-medium text-foreground">Setup Instructions:</p>
             <ol className="list-inside list-decimal space-y-1 pl-1">
-              <li>Clone the Open Sunsama repository to your machine</li>
-              <li>Run <code className="rounded bg-muted px-1">cd mcp && bun install && bun run build</code></li>
-              <li>Update the path in the config above to point to your local clone</li>
+              <li>Clone the repo: <code className="rounded bg-muted px-1">git clone https://github.com/AquaWolf/open-sunsama.git ~/.local/share/open-sunsama</code></li>
+              <li>Build MCP server: <code className="rounded bg-muted px-1">cd ~/.local/share/open-sunsama/mcp && bun install && bun run build</code></li>
+              <li>Update the path in the config above if you cloned to a different location</li>
               <li>Copy the configuration to your MCP client's config file</li>
               <li>Restart your AI assistant to load the MCP server</li>
             </ol>
+            <p className="mt-2 text-muted-foreground/80">
+              Full documentation: <a href="https://github.com/AquaWolf/open-sunsama/tree/main/mcp" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">github.com/AquaWolf/open-sunsama/tree/main/mcp</a>
+            </p>
           </div>
 
           {/* Note about API URL */}
