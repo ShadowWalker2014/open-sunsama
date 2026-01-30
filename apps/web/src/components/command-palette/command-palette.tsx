@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Search, Loader2, Sparkles } from "lucide-react";
+import { format } from "date-fns";
 import type { Task } from "@open-sunsama/types";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useSearchTasks } from "@/hooks/useSearchTasks";
@@ -80,7 +81,11 @@ export function CommandPalette({ open, onOpenChange, onSelectTask, onAddTask }: 
     if (isCreating || !debouncedQuery.trim()) return;
     setIsCreating(true);
     try {
-      const newTask = await createTask.mutateAsync({ title: debouncedQuery.trim(), priority: "P2" });
+      const newTask = await createTask.mutateAsync({ 
+        title: debouncedQuery.trim(), 
+        priority: "P2",
+        scheduledDate: format(new Date(), "yyyy-MM-dd"),
+      });
       onSelectTask(newTask);
       onOpenChange(false);
     } finally {

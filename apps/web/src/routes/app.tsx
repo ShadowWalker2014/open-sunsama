@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Outlet, useNavigate } from "@tanstack/react-router";
+import { format } from "date-fns";
 import type { Task } from "@open-sunsama/types";
 import { useAuth } from "@/hooks/useAuth";
 import { Header } from "@/components/layout/header";
@@ -127,7 +128,7 @@ function AppLayoutInner() {
       <AddTaskModal
         open={isAddTaskModalOpen}
         onOpenChange={setIsAddTaskModalOpen}
-        scheduledDate={null}
+        scheduledDate={format(new Date(), "yyyy-MM-dd")}
       />
 
       {/* Task Modal for viewing selected task from search */}
