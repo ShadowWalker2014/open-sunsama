@@ -215,6 +215,7 @@ export function CalendarView({
         <UnscheduledTasksPanel
           tasks={unscheduledTasks}
           isLoading={isLoading}
+          scheduledDate={dateString}
           onTaskDragStart={handleTaskDragStart}
           {...(onTaskClick ? { onTaskClick } : {})}
         />

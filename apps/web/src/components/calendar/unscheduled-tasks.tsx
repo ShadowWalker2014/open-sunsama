@@ -5,10 +5,12 @@ import { cn } from "@/lib/utils";
 import { Badge, ScrollArea } from "@/components/ui";
 import { UnscheduledTaskItem, TaskItemSkeleton } from "./unscheduled-task-item";
 import { MobileUnscheduledSheet } from "./mobile-unscheduled-sheet";
+import { AddTaskInline } from "@/components/kanban/add-task-inline";
 
 interface UnscheduledTasksProps {
   tasks: Task[];
   isLoading?: boolean;
+  scheduledDate: string;
   onTaskDragStart?: (task: Task, e: React.MouseEvent) => void;
   onTaskClick?: (task: Task) => void;
   className?: string;
@@ -21,6 +23,7 @@ interface UnscheduledTasksProps {
 export function UnscheduledTasksPanel({
   tasks,
   isLoading = false,
+  scheduledDate,
   onTaskDragStart,
   onTaskClick,
   className,
@@ -35,12 +38,13 @@ export function UnscheduledTasksPanel({
         <div className="flex items-center gap-2">
           <ListTodo className="h-4 w-4 text-muted-foreground" />
           <h3 className="text-sm font-semibold">Unscheduled</h3>
+          {taskCount > 0 && (
+            <Badge variant="secondary" className="h-5 min-w-[20px] justify-center">
+              {taskCount}
+            </Badge>
+          )}
         </div>
-        {taskCount > 0 && (
-          <Badge variant="secondary" className="h-5 min-w-[20px] justify-center">
-            {taskCount}
-          </Badge>
-        )}
+        <AddTaskInline scheduledDate={scheduledDate} compact />
       </div>
 
       {/* Task List */}
