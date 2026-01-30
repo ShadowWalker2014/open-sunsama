@@ -16,8 +16,8 @@ COPY packages/types/package.json ./packages/types/
 COPY packages/utils/package.json ./packages/utils/
 COPY packages/api-client/package.json ./packages/api-client/
 
-# Install dependencies
-RUN bun install --frozen-lockfile
+# Install dependencies (allow lockfile updates for cross-platform compatibility)
+RUN bun install
 
 # Copy source code for packages we need to build
 COPY packages/database/ ./packages/database/
