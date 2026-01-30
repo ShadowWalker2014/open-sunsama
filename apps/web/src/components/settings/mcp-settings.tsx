@@ -21,10 +21,9 @@ const ALL_SCOPES: ApiKeyScope[] = [
   "time-blocks:write",
 ];
 
-type ClientTab = "general" | "cursor" | "claude" | "vscode" | "windsurf";
+type ClientTab = "cursor" | "claude" | "vscode" | "windsurf";
 
 const CLIENT_TABS: { id: ClientTab; label: string }[] = [
-  { id: "general", label: "General" },
   { id: "cursor", label: "Cursor" },
   { id: "claude", label: "Claude" },
   { id: "vscode", label: "VS Code" },
@@ -151,52 +150,42 @@ export function McpSettings() {
       },
     };
 
-    switch (client) {
-      case "general":
-      case "cursor":
-      case "claude":
-      case "windsurf":
-        return JSON.stringify(
-          {
-            mcpServers: {
-              "open-sunsama": baseConfig,
+    if (client === "vscode") {
+      return JSON.stringify(
+        {
+          mcpServers: [
+            {
+              name: "open-sunsama",
+              ...baseConfig,
             },
-          },
-          null,
-          2
-        );
-
-      case "vscode":
-        return JSON.stringify(
-          {
-            mcpServers: [
-              {
-                name: "open-sunsama",
-                ...baseConfig,
-              },
-            ],
-          },
-          null,
-          2
-        );
-
-      default:
-        return "";
+          ],
+        },
+        null,
+        2
+      );
     }
+
+    return JSON.stringify(
+      {
+        mcpServers: {
+          "open-sunsama": baseConfig,
+        },
+      },
+      null,
+      2
+    );
   };
 
   const getConfigPath = (client: ClientTab): string => {
     switch (client) {
       case "cursor":
-        return ".cursor/mcp.json (project) or Cursor Settings → MCP";
+        return ".cursor/mcp.json or Cursor Settings → MCP";
       case "claude":
-        return "~/Library/Application Support/Claude/claude_desktop_config.json (macOS)\n%APPDATA%\\Claude\\claude_desktop_config.json (Windows)";
+        return "~/Library/Application Support/Claude/claude_desktop_config.json";
       case "vscode":
         return "~/.continue/config.json";
       case "windsurf":
-        return "Windsurf MCP settings";
-      default:
-        return "Your MCP client configuration file";
+        return "Windsurf Settings → MCP";
     }
   };
 
@@ -240,9 +229,7 @@ export function McpSettings() {
                   </Button>
                 </div>
                 {hasKey && (
-                  <p className="text-xs text-muted-foreground">
-                    Hover to reveal • Click to select • Copy button copies full key
-                  </p>
+                  <p className="text-xs text-muted-foreground">Hover to reveal</p>
                 )}
               </div>
             </div>
@@ -320,24 +307,21 @@ export function McpSettings() {
               </code>
             </pre>
             {hasKey && (
-              <p className="mt-1.5 text-xs text-muted-foreground">
-                Hover to reveal • Copy button copies config with full API key
-              </p>
+              <p className="mt-1.5 text-xs text-muted-foreground">Hover to reveal</p>
             )}
           </div>
 
-          {/* Instructions */}
-          <div className="space-y-2 text-xs text-muted-foreground">
-            <p className="font-medium text-foreground">Setup Instructions:</p>
-            <ol className="list-inside list-decimal space-y-1 pl-1">
-              <li>Clone the repo: <code className="rounded bg-muted px-1">git clone https://github.com/ShadowWalker2014/open-sunsama.git ~/.local/share/open-sunsama</code></li>
-              <li>Build MCP server: <code className="rounded bg-muted px-1">cd ~/.local/share/open-sunsama/mcp && bun install && bun run build</code></li>
-              <li>Update the path in the config above if you cloned to a different location</li>
-              <li>Copy the configuration to your MCP client's config file</li>
-              <li>Restart your AI assistant to load the MCP server</li>
-            </ol>
-            <p className="mt-2 text-muted-foreground/80">
-              Full documentation: <a href="https://github.com/ShadowWalker2014/open-sunsama/tree/main/mcp" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">github.com/ShadowWalker2014/open-sunsama/tree/main/mcp</a>
+          {/* Quick Setup */}
+          <div className="text-xs text-muted-foreground">
+            <p>
+              <a 
+                href="https://github.com/ShadowWalker2014/open-sunsama/tree/main/mcp#installation" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-primary hover:underline"
+              >
+                View setup guide →
+              </a>
             </p>
           </div>
 
