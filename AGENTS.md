@@ -150,37 +150,59 @@ bun run --filter=@open-sunsama/web dev
 
 ---
 
-## Versioning
+## Versioning (MANDATORY)
 
-**Semantic Versioning (SemVer):** `MAJOR.MINOR.PATCH`
+**ALL apps share the SAME version.** One version for the entire monorepo.
 
-| Component | When to Increment |
-|-----------|-------------------|
-| **MAJOR** | Breaking changes (API, data format, major UI overhaul) |
-| **MINOR** | New features, backwards compatible |
-| **PATCH** | Bug fixes, small improvements |
+### Rules (MUST FOLLOW)
 
-### Version Sources
+1. **NEVER manually edit version in any file except `package.json` (root)**
+2. **ALWAYS run `bun run version:sync` after changing the root version**
+3. **ALWAYS commit version changes with a release tag**
 
-| File | Purpose |
-|------|---------|
-| `package.json` (root) | **Source of truth** for monorepo version |
-| `apps/desktop/package.json` | Desktop app version (synced) |
-| `apps/desktop/src-tauri/tauri.conf.json` | Tauri bundle version (synced) |
+### Semantic Versioning: `MAJOR.MINOR.PATCH`
 
-### Release Process
+| Increment | When |
+|-----------|------|
+| **MAJOR** (1.0.0 → 2.0.0) | Breaking API changes, database migrations, major UI redesign |
+| **MINOR** (1.0.0 → 1.1.0) | New features (backwards compatible) |
+| **PATCH** (1.0.0 → 1.0.1) | Bug fixes, small improvements |
+
+### Files (Auto-Synced)
+
+**Source of truth:** `package.json` (root)
+
+| File | App |
+|------|-----|
+| `apps/api/package.json` | API |
+| `apps/web/package.json` | Web |
+| `apps/desktop/package.json` | Desktop |
+| `apps/desktop/src-tauri/tauri.conf.json` | Desktop (Tauri) |
+| `apps/mobile/package.json` | Mobile (Tauri) |
+| `apps/mobile/src-tauri/tauri.conf.json` | Mobile (Tauri) |
+| `apps/expo-mobile/package.json` | Mobile (Expo) |
+
+### Release Checklist
 
 ```bash
-# 1. Update version in root package.json
-# 2. Sync versions across all apps
+# Step 1: Update version in ROOT package.json only
+# Example: change "version": "1.0.0" to "version": "1.1.0"
+
+# Step 2: Sync ALL apps (MANDATORY - DO NOT SKIP)
 bun run version:sync
 
-# 3. Build desktop app
-cd apps/desktop && bun run build
+# Step 3: Verify sync worked
+grep -r '"version":' apps/*/package.json apps/*/src-tauri/tauri.conf.json 2>/dev/null | head -10
 
-# 4. Commit with version tag
-git add -A && git commit -m "release: v1.2.3"
-git tag -a v1.2.3 -m "Release v1.2.3"
+# Step 4: Build apps as needed
+cd apps/desktop && unset CI && bunx tauri build  # Desktop
+cd apps/mobile && bunx tauri ios build           # Mobile iOS
+cd apps/mobile && bunx tauri android build       # Mobile Android
+
+# Step 5: Commit and tag (EXACT format required)
+git add -A
+git commit -m "release: v1.1.0"
+git tag -a v1.1.0 -m "Release v1.1.0"
 git push && git push --tags
 ```
 

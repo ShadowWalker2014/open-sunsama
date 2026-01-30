@@ -1,11 +1,13 @@
 {
   "name": "@open-sunsama/expo-mobile",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "main": "expo-router/entry",
   "expo": {
     "install": {
-      "exclude": ["@types/react"]
+      "exclude": [
+        "@types/react"
+      ]
     }
   },
   "scripts": {
@@ -52,7 +54,11 @@
       "react-dom": "19.1.0"
     },
     "install": {
-      "local": ["react", "react-native", "scheduler"]
+      "local": [
+        "react",
+        "react-native",
+        "scheduler"
+      ]
     }
   }
 }

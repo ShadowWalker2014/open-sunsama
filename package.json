@@ -42,7 +42,7 @@
     "db:migrate": "turbo run db:migrate --filter=@open-sunsama/database",
     "db:push": "turbo run db:push --filter=@open-sunsama/database",
     "db:studio": "turbo run db:studio --filter=@open-sunsama/database",
-    "version:sync": "node -e \"const v=require('./package.json').version; const fs=require('fs'); ['apps/desktop/package.json','apps/desktop/src-tauri/tauri.conf.json'].forEach(f=>{const j=JSON.parse(fs.readFileSync(f));j.version=v;fs.writeFileSync(f,JSON.stringify(j,null,2)+'\\n');console.log('Updated',f,'to',v)});\""
+    "version:sync": "node -e \"const v=require('./package.json').version; const fs=require('fs'); ['apps/api/package.json','apps/web/package.json','apps/desktop/package.json','apps/desktop/src-tauri/tauri.conf.json','apps/mobile/package.json','apps/mobile/src-tauri/tauri.conf.json','apps/expo-mobile/package.json'].forEach(f=>{const j=JSON.parse(fs.readFileSync(f));j.version=v;fs.writeFileSync(f,JSON.stringify(j,null,2)+'\\n');console.log('✓',f,'→',v)});\""
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.10",
