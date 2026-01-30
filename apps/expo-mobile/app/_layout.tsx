@@ -3,7 +3,7 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, useColorScheme } from 'react-native';
 import { AuthProvider, useAuth } from '@/lib/auth';
 
 // Create a query client for React Query
@@ -45,8 +45,11 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
  * Root layout - wraps the entire app with providers
  */
 export default function RootLayout() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+
   return (
-    <GestureHandlerRootView style={styles.container}>
+    <GestureHandlerRootView style={[styles.container, isDark && styles.containerDark]}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <AuthGuard>
@@ -55,7 +58,7 @@ export default function RootLayout() {
               <Stack.Screen name="(app)" options={{ headerShown: false }} />
             </Stack>
           </AuthGuard>
-          <StatusBar style="auto" />
+          <StatusBar style={isDark ? 'light' : 'dark'} />
         </AuthProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
@@ -65,5 +68,9 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#ffffff',
+  },
+  containerDark: {
+    backgroundColor: '#111827',
   },
 });
