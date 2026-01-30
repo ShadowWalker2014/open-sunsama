@@ -17,7 +17,7 @@ export function useSearchTasks(params: SearchTasksParams) {
   const { query = "", status = "all", priority, limit = 100 } = params;
   
   return useQuery({
-    queryKey: ["tasks", "search", { status, priority, limit }],
+    queryKey: ["tasks", "search", { query, status, priority, limit }],
     queryFn: async (): Promise<Task[]> => {
       const api = getApi();
       
