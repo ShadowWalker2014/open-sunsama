@@ -1,11 +1,18 @@
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import type { TaskPriority } from '@open-sunsama/types';
 
+export const PRIORITY_LABELS: Record<TaskPriority, string> = {
+  P0: "Urgent",
+  P1: "High",
+  P2: "Medium",
+  P3: "Low",
+};
+
 const PRIORITIES: { value: TaskPriority; label: string; color: string }[] = [
-  { value: 'P0', label: 'Critical', color: '#ef4444' },
-  { value: 'P1', label: 'High', color: '#f97316' },
-  { value: 'P2', label: 'Medium', color: '#6366f1' },
-  { value: 'P3', label: 'Low', color: '#6b7280' },
+  { value: 'P0', label: PRIORITY_LABELS.P0, color: '#ef4444' },
+  { value: 'P1', label: PRIORITY_LABELS.P1, color: '#f97316' },
+  { value: 'P2', label: PRIORITY_LABELS.P2, color: '#6366f1' },
+  { value: 'P3', label: PRIORITY_LABELS.P3, color: '#6b7280' },
 ];
 
 interface PrioritySelectorProps {

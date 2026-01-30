@@ -2,7 +2,6 @@ import { View, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-nativ
 import type { Task } from '@open-sunsama/types';
 import { useCompleteTask } from '@/hooks/useTasks';
 import { PRIORITY_LABELS } from './PrioritySelector';
-import { PRIORITY_LABELS } from './PrioritySelector';
 
 interface TaskCardProps {
   task: Task;
