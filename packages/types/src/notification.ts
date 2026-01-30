@@ -4,6 +4,16 @@
  */
 
 /**
+ * Where incomplete tasks should be moved during rollover
+ */
+export type RolloverDestination = 'next_day' | 'backlog';
+
+/**
+ * Position where rolled-over tasks should be placed in the destination
+ */
+export type RolloverPosition = 'top' | 'bottom';
+
+/**
  * Represents a user's notification preferences
  */
 export interface NotificationPreferences {
@@ -27,6 +37,12 @@ export interface NotificationPreferences {
 
   /** Whether browser push notifications are enabled */
   pushNotificationsEnabled: boolean;
+
+  /** Where incomplete tasks should be moved during rollover */
+  rolloverDestination: RolloverDestination;
+
+  /** Position where rolled-over tasks should be placed */
+  rolloverPosition: RolloverPosition;
 
   /** Timestamp when the preferences were created */
   createdAt: Date;
@@ -54,6 +70,12 @@ export interface UpdateNotificationPreferencesInput {
 
   /** Enable/disable browser push notifications */
   pushNotificationsEnabled?: boolean;
+
+  /** Where incomplete tasks should be moved during rollover */
+  rolloverDestination?: RolloverDestination;
+
+  /** Position where rolled-over tasks should be placed */
+  rolloverPosition?: RolloverPosition;
 }
 
 /**

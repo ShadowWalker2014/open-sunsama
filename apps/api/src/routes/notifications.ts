@@ -22,6 +22,8 @@ const updatePreferencesSchema = z.object({
   emailNotificationsEnabled: z.boolean().optional(),
   dailySummaryEnabled: z.boolean().optional(),
   pushNotificationsEnabled: z.boolean().optional(),
+  rolloverDestination: z.enum(['next_day', 'backlog']).optional(),
+  rolloverPosition: z.enum(['top', 'bottom']).optional(),
 });
 
 /**
@@ -36,6 +38,8 @@ function formatPreferences(prefs: typeof notificationPreferences.$inferSelect): 
     emailNotificationsEnabled: prefs.emailNotificationsEnabled,
     dailySummaryEnabled: prefs.dailySummaryEnabled,
     pushNotificationsEnabled: prefs.pushNotificationsEnabled,
+    rolloverDestination: prefs.rolloverDestination,
+    rolloverPosition: prefs.rolloverPosition,
     createdAt: prefs.createdAt,
     updatedAt: prefs.updatedAt,
   };
@@ -52,6 +56,8 @@ function getDefaultPreferences(userId: string): Omit<NotificationPreferences, 'i
     emailNotificationsEnabled: false,
     dailySummaryEnabled: false,
     pushNotificationsEnabled: false,
+    rolloverDestination: 'next_day',
+    rolloverPosition: 'top',
   };
 }
 
@@ -127,6 +133,12 @@ notificationsRouter.put('/preferences', zValidator('json', updatePreferencesSche
     }
     if (updates.pushNotificationsEnabled !== undefined) {
       updateData.pushNotificationsEnabled = updates.pushNotificationsEnabled;
+    }
+    if (updates.rolloverDestination !== undefined) {
+      updateData.rolloverDestination = updates.rolloverDestination;
+    }
+    if (updates.rolloverPosition !== undefined) {
+      updateData.rolloverPosition = updates.rolloverPosition;
     }
 
     const [updatedPrefs] = await db

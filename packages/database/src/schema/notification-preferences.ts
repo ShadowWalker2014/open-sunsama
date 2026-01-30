@@ -23,6 +23,10 @@ export const notificationPreferences = pgTable('notification_preferences', {
   // Browser push notification settings
   pushNotificationsEnabled: boolean('push_notifications_enabled').default(false).notNull(),
   
+  // Task rollover settings
+  rolloverDestination: varchar('rollover_destination', { length: 20 }).default('backlog').notNull(),
+  rolloverPosition: varchar('rollover_position', { length: 20 }).default('top').notNull(),
+  
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -34,9 +38,15 @@ export const notificationPreferencesRelations = relations(notificationPreference
   }),
 }));
 
+// Rollover setting enums
+export const rolloverDestinationEnum = z.enum(['next_day', 'backlog']);
+export const rolloverPositionEnum = z.enum(['top', 'bottom']);
+
 // Zod schemas for validation
 export const insertNotificationPreferencesSchema = createInsertSchema(notificationPreferences, {
   reminderTiming: z.number().int().min(5).max(120),
+  rolloverDestination: rolloverDestinationEnum,
+  rolloverPosition: rolloverPositionEnum,
 });
 
 export const selectNotificationPreferencesSchema = createSelectSchema(notificationPreferences);
@@ -47,12 +57,16 @@ export const updateNotificationPreferencesSchema = z.object({
   emailNotificationsEnabled: z.boolean().optional(),
   dailySummaryEnabled: z.boolean().optional(),
   pushNotificationsEnabled: z.boolean().optional(),
+  rolloverDestination: rolloverDestinationEnum.optional(),
+  rolloverPosition: rolloverPositionEnum.optional(),
 });
 
 // Type exports
 export type NotificationPreferences = typeof notificationPreferences.$inferSelect;
 export type NewNotificationPreferences = typeof notificationPreferences.$inferInsert;
 export type UpdateNotificationPreferences = z.infer<typeof updateNotificationPreferencesSchema>;
+export type RolloverDestination = z.infer<typeof rolloverDestinationEnum>;
+export type RolloverPosition = z.infer<typeof rolloverPositionEnum>;
 
 // Reminder timing options
 export const REMINDER_TIMING_OPTIONS = [
@@ -61,4 +75,16 @@ export const REMINDER_TIMING_OPTIONS = [
   { value: 30, label: '30 minutes before' },
   { value: 60, label: '1 hour before' },
   { value: 120, label: '2 hours before' },
+] as const;
+
+// Rollover destination options
+export const ROLLOVER_DESTINATION_OPTIONS = [
+  { value: 'next_day', label: 'Next day' },
+  { value: 'backlog', label: 'Backlog' },
+] as const;
+
+// Rollover position options
+export const ROLLOVER_POSITION_OPTIONS = [
+  { value: 'top', label: 'Top of list' },
+  { value: 'bottom', label: 'Bottom of list' },
 ] as const;

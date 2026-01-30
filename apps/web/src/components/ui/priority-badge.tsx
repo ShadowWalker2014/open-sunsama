@@ -244,8 +244,9 @@ export function PriorityTag({
 }
 
 /**
- * Compact priority label (P0, P1, P2, P3) for task cards
- * Shows for all priority levels, uses minimal space
+ * Linear-style priority label (P0, P1, P2, P3) for task cards
+ * Clean pill tags with background and text color
+ * Shows for all priority levels
  */
 export function PriorityLabel({
   priority,
@@ -254,18 +255,18 @@ export function PriorityLabel({
   priority: TaskPriority;
   className?: string;
 }) {
-  const colorClasses: Record<TaskPriority, string> = {
-    P0: "text-red-500",
-    P1: "text-amber-500",
-    P2: "text-slate-400",
-    P3: "text-slate-300 dark:text-slate-500",
+  const styleClasses: Record<TaskPriority, string> = {
+    P0: "bg-red-500/15 text-red-600 dark:text-red-400",
+    P1: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+    P2: "bg-blue-500/10 text-blue-500 dark:text-blue-400",
+    P3: "bg-slate-500/10 text-slate-500 dark:text-slate-400",
   };
 
   return (
     <span
       className={cn(
-        "shrink-0 text-[11px] font-medium tabular-nums",
-        colorClasses[priority],
+        "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium",
+        styleClasses[priority],
         className
       )}
       title={PRIORITY_LABELS[priority]}
