@@ -99,3 +99,34 @@ export function calculateEndTime(startTime: string, durationMins: number): strin
   const minutes = endMinutes % 60;
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 }
+
+/**
+ * Schema for cascade resize - resize a block and shift subsequent blocks
+ */
+export const cascadeResizeSchema = z.object({
+  startTime: timeSchema,
+  endTime: timeSchema,
+}).refine(
+  (data) => {
+    const startMinutes = parseTimeToMinutes(data.startTime);
+    const endMinutes = parseTimeToMinutes(data.endTime);
+    return endMinutes > startMinutes;
+  },
+  { message: 'End time must be after start time', path: ['endTime'] }
+);
+
+/**
+ * Convert time string (HH:MM) to minutes since midnight
+ */
+export function timeToMinutes(time: string): number {
+  return parseTimeToMinutes(time);
+}
+
+/**
+ * Convert minutes since midnight to time string (HH:MM)
+ */
+export function minutesToTime(minutes: number): string {
+  const hours = Math.floor(minutes / 60) % 24;
+  const mins = minutes % 60;
+  return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+}

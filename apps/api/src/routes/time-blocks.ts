@@ -10,7 +10,7 @@ import { NotFoundError, uuidSchema } from '@open-sunsama/utils';
 import { auth, requireScopes, type AuthVariables } from '../middleware/auth.js';
 import {
   createTimeBlockSchema, updateTimeBlockSchema, timeBlockFilterSchema, calculateDuration,
-  quickScheduleSchema, calculateEndTime,
+  quickScheduleSchema, calculateEndTime, cascadeResizeSchema, timeToMinutes, minutesToTime,
 } from '../validation/time-blocks.js';
 import { publishEvent } from '../lib/websocket/index.js';
 
@@ -199,6 +199,136 @@ timeBlocksRouter.patch('/:id', requireScopes('time-blocks:write'), zValidator('p
   }
 
   return c.json({ success: true, data: { ...updatedTimeBlock, task } });
+});
+
+/** PATCH /time-blocks/:id/cascade-resize - Resize a block and cascade shift subsequent blocks */
+timeBlocksRouter.patch('/:id/cascade-resize', requireScopes('time-blocks:write'), zValidator('param', z.object({ id: uuidSchema })), zValidator('json', cascadeResizeSchema), async (c) => {
+  const userId = c.get('userId');
+  const { id } = c.req.valid('param');
+  const { startTime: newStartTime, endTime: newEndTime } = c.req.valid('json');
+  const db = getDb();
+
+  // Fetch the target block
+  const [targetBlock] = await db.select().from(timeBlocks).where(and(eq(timeBlocks.id, id), eq(timeBlocks.userId, userId))).limit(1);
+  if (!targetBlock) throw new NotFoundError('Time block', id);
+
+  const originalStartTime = targetBlock.startTime;
+  const targetDate = targetBlock.date;
+
+  // Fetch all blocks for the same date, ordered by start time
+  const allBlocks = await db
+    .select()
+    .from(timeBlocks)
+    .where(and(eq(timeBlocks.userId, userId), eq(timeBlocks.date, targetDate)))
+    .orderBy(asc(timeBlocks.startTime));
+
+  // Filter to blocks that start AFTER the resized block's original start time (excluding the target)
+  const subsequentBlocks = allBlocks.filter(
+    (block) => block.id !== id && block.startTime > originalStartTime
+  );
+
+  // Calculate the updates needed
+  type BlockUpdate = { id: string; startTime: string; endTime: string; durationMins: number };
+  const updates: BlockUpdate[] = [];
+
+  // First, add the resized block's update
+  const newDuration = calculateDuration(newStartTime, newEndTime);
+  updates.push({
+    id: targetBlock.id,
+    startTime: newStartTime,
+    endTime: newEndTime,
+    durationMins: newDuration,
+  });
+
+  // Track the current "end boundary" - blocks need to shift if they start before this
+  let currentEndMinutes = timeToMinutes(newEndTime);
+
+  // Process subsequent blocks in order
+  for (let i = 0; i < subsequentBlocks.length; i++) {
+    const block = subsequentBlocks[i]!;
+    const blockStartMinutes = timeToMinutes(block.startTime);
+    const blockEndMinutes = timeToMinutes(block.endTime);
+    const blockDuration = blockEndMinutes - blockStartMinutes;
+
+    // Calculate the original gap between this block and the previous one
+    let originalGap = 0;
+    if (i === 0) {
+      // Gap from the target block's original end to this block's start
+      const targetOriginalEndMinutes = timeToMinutes(targetBlock.endTime);
+      originalGap = Math.max(0, blockStartMinutes - targetOriginalEndMinutes);
+    } else {
+      // Gap from the previous subsequent block's original end to this block's start
+      const prevBlock = subsequentBlocks[i - 1]!;
+      const prevEndMinutes = timeToMinutes(prevBlock.endTime);
+      originalGap = Math.max(0, blockStartMinutes - prevEndMinutes);
+    }
+
+    // Check if this block needs to shift
+    if (blockStartMinutes < currentEndMinutes + originalGap) {
+      // Shift this block: new start = current end boundary + original gap
+      const newBlockStartMinutes = currentEndMinutes + originalGap;
+      const newBlockEndMinutes = newBlockStartMinutes + blockDuration;
+
+      updates.push({
+        id: block.id,
+        startTime: minutesToTime(newBlockStartMinutes),
+        endTime: minutesToTime(newBlockEndMinutes),
+        durationMins: blockDuration,
+      });
+
+      // Update the end boundary for the next block
+      currentEndMinutes = newBlockEndMinutes;
+    } else {
+      // This block doesn't need to shift, but we still need to update the boundary
+      // for cascade detection of following blocks
+      currentEndMinutes = blockEndMinutes;
+    }
+  }
+
+  // Execute all updates in a single transaction
+  const updatedBlocks = await db.transaction(async (tx) => {
+    const results: typeof timeBlocks.$inferSelect[] = [];
+
+    for (const update of updates) {
+      const [updated] = await tx
+        .update(timeBlocks)
+        .set({
+          startTime: update.startTime,
+          endTime: update.endTime,
+          durationMins: update.durationMins,
+          updatedAt: new Date(),
+        })
+        .where(and(eq(timeBlocks.id, update.id), eq(timeBlocks.userId, userId)))
+        .returning();
+
+      if (updated) {
+        results.push(updated);
+      }
+    }
+
+    return results;
+  });
+
+  // Fetch tasks for all updated blocks
+  const updatedBlocksWithTasks = await Promise.all(
+    updatedBlocks.map(async (block) => {
+      let task = null;
+      if (block.taskId) {
+        [task] = await db.select().from(tasks).where(eq(tasks.id, block.taskId)).limit(1);
+      }
+      return { ...block, task };
+    })
+  );
+
+  // Publish realtime events for all updated blocks
+  for (const block of updatedBlocks) {
+    publishEvent(userId, 'timeblock:updated', {
+      timeBlockId: block.id,
+      date: block.date,
+    });
+  }
+
+  return c.json({ success: true, data: updatedBlocksWithTasks });
 });
 
 /** DELETE /time-blocks/:id - Delete a time block */
