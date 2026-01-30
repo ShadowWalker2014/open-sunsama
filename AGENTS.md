@@ -150,6 +150,48 @@ bun run --filter=@open-sunsama/web dev
 
 ---
 
+## Versioning
+
+**Semantic Versioning (SemVer):** `MAJOR.MINOR.PATCH`
+
+| Component | When to Increment |
+|-----------|-------------------|
+| **MAJOR** | Breaking changes (API, data format, major UI overhaul) |
+| **MINOR** | New features, backwards compatible |
+| **PATCH** | Bug fixes, small improvements |
+
+### Version Sources
+
+| File | Purpose |
+|------|---------|
+| `package.json` (root) | **Source of truth** for monorepo version |
+| `apps/desktop/package.json` | Desktop app version (synced) |
+| `apps/desktop/src-tauri/tauri.conf.json` | Tauri bundle version (synced) |
+
+### Release Process
+
+```bash
+# 1. Update version in root package.json
+# 2. Sync versions across all apps
+bun run version:sync
+
+# 3. Build desktop app
+cd apps/desktop && bun run build
+
+# 4. Commit with version tag
+git add -A && git commit -m "release: v1.2.3"
+git tag -a v1.2.3 -m "Release v1.2.3"
+git push && git push --tags
+```
+
+### Version History
+
+| Version | Date | Highlights |
+|---------|------|------------|
+| v1.0.0 | 2026-01-30 | Initial release - Kanban, time blocking, desktop app, focus mode |
+
+---
+
 ## License
 
 Non-Commercial License. Commercial use requires enterprise license.
