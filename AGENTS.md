@@ -150,67 +150,14 @@ bun run --filter=@open-sunsama/web dev
 
 ---
 
-## Versioning (MANDATORY)
+## Versioning
 
-**ALL apps share the SAME version.** One version for the entire monorepo.
+**See [`.skills/versioning/SKILL.md`](.skills/versioning/SKILL.md) for complete versioning guide.**
 
-### Rules (MUST FOLLOW)
-
-1. **NEVER manually edit version in any file except `package.json` (root)**
-2. **ALWAYS run `bun run version:sync` after changing the root version**
-3. **ALWAYS commit version changes with a release tag**
-
-### Semantic Versioning: `MAJOR.MINOR.PATCH`
-
-| Increment | When |
-|-----------|------|
-| **MAJOR** (1.0.0 → 2.0.0) | Breaking API changes, database migrations, major UI redesign |
-| **MINOR** (1.0.0 → 1.1.0) | New features (backwards compatible) |
-| **PATCH** (1.0.0 → 1.0.1) | Bug fixes, small improvements |
-
-### Files (Auto-Synced)
-
-**Source of truth:** `package.json` (root)
-
-| File | App |
-|------|-----|
-| `apps/api/package.json` | API |
-| `apps/web/package.json` | Web |
-| `apps/desktop/package.json` | Desktop |
-| `apps/desktop/src-tauri/tauri.conf.json` | Desktop (Tauri) |
-| `apps/mobile/package.json` | Mobile (Tauri) |
-| `apps/mobile/src-tauri/tauri.conf.json` | Mobile (Tauri) |
-| `apps/expo-mobile/package.json` | Mobile (Expo) |
-
-### Release Checklist
-
-```bash
-# Step 1: Update version in ROOT package.json only
-# Example: change "version": "1.0.0" to "version": "1.1.0"
-
-# Step 2: Sync ALL apps (MANDATORY - DO NOT SKIP)
-bun run version:sync
-
-# Step 3: Verify sync worked
-grep -r '"version":' apps/*/package.json apps/*/src-tauri/tauri.conf.json 2>/dev/null | head -10
-
-# Step 4: Build apps as needed
-cd apps/desktop && unset CI && bunx tauri build  # Desktop
-cd apps/mobile && bunx tauri ios build           # Mobile iOS
-cd apps/mobile && bunx tauri android build       # Mobile Android
-
-# Step 5: Commit and tag (EXACT format required)
-git add -A
-git commit -m "release: v1.1.0"
-git tag -a v1.1.0 -m "Release v1.1.0"
-git push && git push --tags
-```
-
-### Version History
-
-| Version | Date | Highlights |
-|---------|------|------------|
-| v1.0.0 | 2026-01-30 | Initial release - Kanban, time blocking, desktop app, focus mode |
+Quick reference:
+- **Source of truth:** `package.json` (root)
+- **Sync command:** `bun run version:sync`
+- **Current version:** v1.0.0
 
 ---
 
