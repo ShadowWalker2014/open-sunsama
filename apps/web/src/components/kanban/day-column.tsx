@@ -24,6 +24,7 @@ interface DayColumnProps {
   date: Date;
   dateString: string;
   onSelectTask: (task: Task) => void;
+  onDateClick?: (date: Date) => void;
   sortBy?: SortOption;
 }
 
@@ -34,6 +35,7 @@ export function DayColumn({
   date,
   dateString,
   onSelectTask,
+  onDateClick,
   sortBy = "position",
 }: DayColumnProps) {
   // Use explicit limit to prevent accidental truncation (API default is 50)
@@ -164,8 +166,11 @@ export function DayColumn({
           today && "bg-primary/[0.03]"
         )}
       >
-        {/* Top row: Day name and task count */}
-        <div className="flex items-center gap-2">
+        {/* Top row: Day name and task count - clickable */}
+        <button
+          onClick={() => onDateClick?.(date)}
+          className="flex items-center gap-2 hover:opacity-70 transition-opacity cursor-pointer text-left"
+        >
           <span
             className={cn(
               "text-base font-semibold",
@@ -184,7 +189,7 @@ export function DayColumn({
               {totalTasks}
             </span>
           )}
-        </div>
+        </button>
         
         {/* Date - smaller text below */}
         <div className="text-sm text-muted-foreground mt-0.5">

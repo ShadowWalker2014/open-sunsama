@@ -5,6 +5,7 @@ export interface KanbanNavigationContextValue {
   navigatePrevious: () => void;
   navigateNext: () => void;
   navigateToToday: () => void;
+  navigateToDate: (date: Date) => void;
   selectTask: (task: Task) => void;
 }
 

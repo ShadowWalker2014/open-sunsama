@@ -13,13 +13,21 @@ interface KanbanBoardProps {
    * Useful for components that need access to kanban navigation context.
    */
   children?: React.ReactNode;
+  /**
+   * Callback when the first visible date changes (for syncing calendar panel)
+   */
+  onFirstVisibleDateChange?: (date: Date | null) => void;
+  /**
+   * Callback to navigate to a specific date
+   */
+  onDateSelect?: (date: Date) => void;
 }
 
 /**
  * Linear-style infinite horizontal kanban board with day columns.
  * DnD is handled by the parent TasksDndProvider context.
  */
-export function KanbanBoard({ children }: KanbanBoardProps) {
+export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [sortBy, onSortChange] = useSortPreference();
@@ -34,7 +42,26 @@ export function KanbanBoard({ children }: KanbanBoardProps) {
     navigateNext,
     navigateToToday,
     handleScroll,
+    firstVisibleDate,
   } = useKanbanDates({ containerRef, isDragging });
+
+  // Notify parent of first visible date changes
+  React.useEffect(() => {
+    onFirstVisibleDateChange?.(firstVisibleDate);
+  }, [firstVisibleDate, onFirstVisibleDateChange]);
+
+  // Navigate to a specific date
+  const navigateToDate = React.useCallback((targetDate: Date) => {
+    const targetIndex = dates.findIndex((d) => 
+      d.dateString === targetDate.toISOString().split('T')[0]
+    );
+    if (targetIndex >= 0) {
+      virtualizer.scrollToIndex(targetIndex, {
+        align: "start",
+        behavior: "smooth",
+      });
+    }
+  }, [dates, virtualizer]);
 
   // Memoize navigation context value
   const navigationContextValue = React.useMemo(
@@ -42,9 +69,10 @@ export function KanbanBoard({ children }: KanbanBoardProps) {
       navigatePrevious,
       navigateNext,
       navigateToToday,
+      navigateToDate,
       selectTask: setSelectedTask,
     }),
-    [navigatePrevious, navigateNext, navigateToToday]
+    [navigatePrevious, navigateNext, navigateToToday, navigateToDate]
   );
 
   return (
@@ -88,6 +116,7 @@ export function KanbanBoard({ children }: KanbanBoardProps) {
                     date={dateInfo.date}
                     dateString={dateInfo.dateString}
                     onSelectTask={setSelectedTask}
+                    onDateClick={navigateToDate}
                     sortBy={sortBy}
                   />
                 </div>

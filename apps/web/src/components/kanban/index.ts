@@ -23,3 +23,4 @@ export {
   useKanbanNavigation,
   useKanbanNavigationOptional,
 } from "./kanban-navigation-context";
+export { KanbanCalendarPanel } from "./kanban-calendar-panel";
