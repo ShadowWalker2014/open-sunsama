@@ -7,7 +7,7 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { getDb, eq, notificationPreferences } from '@open-sunsama/database';
-import type { NotificationPreferences, UpdateNotificationPreferencesInput } from '@open-sunsama/types';
+import type { NotificationPreferences, UpdateNotificationPreferencesInput, RolloverDestination, RolloverPosition } from '@open-sunsama/types';
 import { auth, type AuthVariables } from '../middleware/auth.js';
 
 const notificationsRouter = new Hono<{ Variables: AuthVariables }>();
@@ -38,8 +38,8 @@ function formatPreferences(prefs: typeof notificationPreferences.$inferSelect): 
     emailNotificationsEnabled: prefs.emailNotificationsEnabled,
     dailySummaryEnabled: prefs.dailySummaryEnabled,
     pushNotificationsEnabled: prefs.pushNotificationsEnabled,
-    rolloverDestination: prefs.rolloverDestination,
-    rolloverPosition: prefs.rolloverPosition,
+    rolloverDestination: prefs.rolloverDestination as RolloverDestination,
+    rolloverPosition: prefs.rolloverPosition as RolloverPosition,
     createdAt: prefs.createdAt,
     updatedAt: prefs.updatedAt,
   };
