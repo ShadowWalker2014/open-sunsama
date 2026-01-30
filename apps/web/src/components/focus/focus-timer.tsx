@@ -42,20 +42,20 @@ export function FocusTimer({
   const isSignificantlyOver = totalSeconds > plannedSeconds * 1.5 && plannedSeconds > 0;
 
   return (
-    <div className="flex flex-col items-center gap-6 py-8">
+    <div className="flex flex-col items-center gap-5 py-6">
       {/* Time display */}
-      <div className="flex items-baseline gap-8 text-center">
+      <div className="flex items-baseline gap-6 text-center">
         {/* Actual time */}
-        <div className="flex flex-col items-center">
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+        <div className="flex flex-col items-center gap-1">
+          <span className="text-[11px] font-medium text-muted-foreground/70">
             Actual
           </span>
           <span
             className={cn(
-              "text-5xl font-mono font-semibold tabular-nums",
-              isSignificantlyOver && "text-red-500",
-              isOverPlanned && !isSignificantlyOver && "text-amber-500",
-              isRunning && !isOverPlanned && "text-green-500"
+              "text-3xl font-mono font-normal tabular-nums tracking-tight",
+              isSignificantlyOver && "text-red-400",
+              isOverPlanned && !isSignificantlyOver && "text-amber-400",
+              isRunning && !isOverPlanned && "text-foreground"
             )}
           >
             {formatTime(totalSeconds)}
@@ -63,14 +63,14 @@ export function FocusTimer({
         </div>
 
         {/* Separator */}
-        <span className="text-2xl text-muted-foreground/50 font-light">/</span>
+        <span className="text-xl text-muted-foreground/30 font-light">/</span>
 
         {/* Planned time */}
-        <div className="flex flex-col items-center">
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+        <div className="flex flex-col items-center gap-1">
+          <span className="text-[11px] font-medium text-muted-foreground/70">
             Planned
           </span>
-          <span className="text-5xl font-mono font-semibold tabular-nums text-muted-foreground">
+          <span className="text-3xl font-mono font-normal tabular-nums tracking-tight text-muted-foreground/60">
             {plannedMins ? formatTime(plannedSeconds) : "--:--"}
           </span>
         </div>
@@ -78,55 +78,55 @@ export function FocusTimer({
 
       {/* Estimated time badge */}
       {plannedMins && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs text-muted-foreground/60">
           Estimated: {formatMins(plannedMins)}
         </p>
       )}
 
       {/* Timer controls */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 mt-1">
         {isRunning ? (
           <Button
-            size="lg"
-            variant="destructive"
+            size="sm"
+            variant="outline"
             onClick={stop}
-            className="gap-2 px-8"
+            className="gap-1.5 px-4 h-8 border-red-500/50 text-red-500 hover:bg-red-500/10 hover:border-red-500"
           >
-            <Pause className="h-5 w-5" />
+            <Pause className="h-3.5 w-3.5" />
             Stop
           </Button>
         ) : (
           <Button
-            size="lg"
+            size="sm"
+            variant="outline"
             onClick={start}
-            className="gap-2 px-8"
+            className="gap-1.5 px-4 h-8"
           >
-            <Play className="h-5 w-5" />
+            <Play className="h-3.5 w-3.5" />
             Start
           </Button>
         )}
 
         {totalSeconds > 0 && !isRunning && (
           <Button
-            size="lg"
-            variant="outline"
+            size="sm"
+            variant="ghost"
             onClick={reset}
-            className="gap-2"
+            className="gap-1.5 h-8 text-muted-foreground"
           >
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw className="h-3.5 w-3.5" />
             Reset
           </Button>
         )}
       </div>
 
-      {/* Running indicator */}
+      {/* Running indicator - subtle dot only */}
       {isRunning && (
-        <div className="flex items-center gap-2 text-sm text-green-500">
-          <span className="relative flex h-2 w-2">
+        <div className="flex items-center justify-center">
+          <span className="relative flex h-1.5 w-1.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
           </span>
-          Timer running
         </div>
       )}
     </div>

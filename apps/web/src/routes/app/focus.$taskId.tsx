@@ -163,7 +163,7 @@ export default function FocusPage() {
 
   return (
     <div className="fixed inset-0 z-50 bg-background overflow-auto">
-      <div className="mx-auto max-w-3xl px-6 py-4">
+      <div className="mx-auto max-w-4xl px-8 py-6">
         {/* Header with title and close */}
         <FocusHeader
           title={task.title}
