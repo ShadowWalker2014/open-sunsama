@@ -1,17 +1,18 @@
 import * as React from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, Sparkles } from "lucide-react";
 import type { Task } from "@open-sunsama/types";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useSearchTasks } from "@/hooks/useSearchTasks";
 import { useCreateTask } from "@/hooks/useTasks";
-import { useTheme } from "@/hooks/useTheme";
-import { useShortcutsModal } from "@/hooks/useKeyboardShortcuts";
 import { Kbd } from "@/components/ui/shortcuts-modal";
-import { COMMANDS, filterCommands, type CommandContext } from "./commands";
+import { COMMANDS } from "./commands";
+import { TASK_COMMANDS } from "./task-commands";
+import { MCP_COMMANDS } from "./mcp-commands";
+import { getContextualCommands, isMcpQuery } from "./get-contextual-commands";
 import { CommandItem } from "./command-item";
 import { TaskItem } from "./task-item";
 import { CreateTaskItem } from "./create-task-item";
+import { useCommandContext } from "./use-command-context";
 
 interface CommandPaletteProps {
   open: boolean;
@@ -28,17 +29,30 @@ export function CommandPalette({ open, onOpenChange, onSelectTask, onAddTask }: 
   const inputRef = React.useRef<HTMLInputElement>(null);
   const listRef = React.useRef<HTMLDivElement>(null);
 
-  const navigate = useNavigate();
-  const { themeMode, setThemeMode } = useTheme();
-  const { setShowShortcutsModal } = useShortcutsModal();
   const createTask = useCreateTask();
+  const commandContext = useCommandContext({ 
+    onAddTask, 
+    closeSearch: () => onOpenChange(false) 
+  });
 
   React.useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(query), 150);
     return () => clearTimeout(timer);
   }, [query]);
 
-  const filteredCommands = React.useMemo(() => filterCommands(COMMANDS, query), [query]);
+  // Combine all commands
+  const allCommands = React.useMemo(() => [
+    ...TASK_COMMANDS,
+    ...MCP_COMMANDS,
+    ...COMMANDS,
+  ], []);
+
+  // Use contextual filtering instead of simple filterCommands
+  const filteredCommands = React.useMemo(
+    () => getContextualCommands(allCommands, commandContext, query),
+    [allCommands, commandContext, query]
+  );
+
   const SEARCH_LIMIT = 100;
   const { data: tasks = [], isLoading: isSearchingTasks } = useSearchTasks({
     query: debouncedQuery,
@@ -61,15 +75,6 @@ export function CommandPalette({ open, onOpenChange, onSelectTask, onAddTask }: 
       setTimeout(() => inputRef.current?.focus(), 0);
     }
   }, [open]);
-
-  const commandContext: CommandContext = React.useMemo(() => ({
-    navigate,
-    setThemeMode,
-    currentThemeMode: themeMode,
-    openAddTask: onAddTask,
-    openShortcuts: () => setShowShortcutsModal(true),
-    closeSearch: () => onOpenChange(false),
-  }), [navigate, setThemeMode, themeMode, onAddTask, setShowShortcutsModal, onOpenChange]);
 
   const handleCreateTask = async () => {
     if (isCreating || !debouncedQuery.trim()) return;
@@ -123,6 +128,8 @@ export function CommandPalette({ open, onOpenChange, onSelectTask, onAddTask }: 
     el?.scrollIntoView({ block: "nearest" });
   }, [selectedIndex]);
 
+  const { hoveredTask } = commandContext;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl p-0 gap-0 overflow-hidden">
@@ -150,8 +157,27 @@ export function CommandPalette({ open, onOpenChange, onSelectTask, onAddTask }: 
             <div className="py-1">
               {commandItems.length > 0 && (
                 <>
-                  <div className="px-3 py-1.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wider">
-                    Commands
+                  {/* Task context indicator */}
+                  {hoveredTask && !query.trim() && (
+                    <div className="px-3 py-1.5 text-[11px] text-muted-foreground border-b bg-muted/30 flex items-center gap-1.5">
+                      <span className="text-foreground/80 truncate max-w-[300px]">
+                        "{hoveredTask.title}"
+                      </span>
+                    </div>
+                  )}
+                  
+                  {/* Section header */}
+                  <div className="px-3 py-1.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wider flex items-center gap-1.5">
+                    {!query.trim() ? (
+                      <>
+                        <Sparkles className="h-3 w-3" />
+                        Suggested
+                      </>
+                    ) : isMcpQuery(query) ? (
+                      "AI Setup"
+                    ) : (
+                      "Commands"
+                    )}
                   </div>
                   {commandItems.map((cmd, index) => (
                     <CommandItem
