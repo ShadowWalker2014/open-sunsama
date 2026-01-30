@@ -76,7 +76,8 @@ export function TaskCardContent({
         <div
           className={cn(
             "relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-all duration-150",
-            // Always visible circle outline
+            // Cursor and always visible circle outline
+            "cursor-pointer",
             isCompleted
               ? "border-primary bg-primary text-primary-foreground"
               : "border-muted-foreground/50 hover:border-primary hover:bg-primary/10"

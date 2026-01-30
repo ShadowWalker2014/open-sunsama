@@ -61,9 +61,10 @@ export function SortableSubtaskItem({
         onClick={onToggle}
         className={cn(
           "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors",
+          "cursor-pointer",
           subtask.completed
             ? "border-primary bg-primary text-primary-foreground"
-            : "border-muted-foreground/40 hover:border-primary"
+            : "border-muted-foreground/40 hover:border-primary hover:bg-primary/10"
         )}
       >
         {subtask.completed && (

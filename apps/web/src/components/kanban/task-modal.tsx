@@ -317,10 +317,10 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
           <div className="flex items-start gap-3 pr-6">
             {/* Checkbox */}
             <button
-              className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+              className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors cursor-pointer ${
                 isCompleted
                   ? "border-primary bg-primary text-primary-foreground"
-                  : "border-muted-foreground/40 hover:border-primary"
+                  : "border-muted-foreground/40 hover:border-primary hover:bg-primary/10"
               }`}
               onClick={handleToggleComplete}
             >
