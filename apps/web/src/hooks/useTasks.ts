@@ -136,8 +136,11 @@ export function useDeleteTask() {
       // Remove from cache
       queryClient.removeQueries({ queryKey: taskKeys.detail(deletedId) });
       
-      // Invalidate lists
+      // Invalidate all task lists
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      
+      // Also invalidate infinite search queries (used by "All Tasks" page)
+      queryClient.invalidateQueries({ queryKey: ["tasks", "search", "infinite"] });
       
       toast({
         title: "Task deleted",

@@ -67,6 +67,9 @@ function handleWebSocketEvent(
     case "task:reordered":
       // Invalidate all task lists to refetch
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      
+      // Also invalidate infinite search queries (used by "All Tasks" page)
+      queryClient.invalidateQueries({ queryKey: ["tasks", "search", "infinite"] });
 
       // For individual task changes, also invalidate the specific task
       if (event.payload && typeof event.payload === "object" && "taskId" in event.payload) {
