@@ -4,6 +4,7 @@ import { CSS } from "@dnd-kit/utilities";
 import type { Task } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { useCompleteTask } from "@/hooks/useTasks";
+import { useSubtasks, useUpdateSubtask } from "@/hooks/useSubtasks";
 import { TaskContextMenu } from "./task-context-menu";
 import { TaskCardContent } from "./task-card-content";
 
@@ -21,6 +22,21 @@ export function SortableTaskCard({ task, onSelect, isDragging: externalDragging 
   const [isHovered, setIsHovered] = React.useState(false);
   const completeTask = useCompleteTask();
   const isCompleted = !!task.completedAt;
+
+  // Fetch subtasks for this task
+  const { data: subtasks } = useSubtasks(task.id);
+  const updateSubtask = useUpdateSubtask();
+
+  const handleToggleSubtask = async (subtaskId: string) => {
+    const subtask = subtasks?.find(s => s.id === subtaskId);
+    if (subtask) {
+      await updateSubtask.mutateAsync({
+        taskId: task.id,
+        subtaskId,
+        data: { completed: !subtask.completed },
+      });
+    }
+  };
 
   const {
     attributes,
@@ -92,6 +108,8 @@ export function SortableTaskCard({ task, onSelect, isDragging: externalDragging 
           onToggleComplete={handleToggleComplete}
           onClick={handleClick}
           onHoverChange={setIsHovered}
+          subtasks={subtasks}
+          onToggleSubtask={handleToggleSubtask}
         />
         
         {/* Drop indicator line - below */}
@@ -110,6 +128,21 @@ export function TaskCard({ task, onSelect, isDragging: externalDragging }: TaskC
   const [isHovered, setIsHovered] = React.useState(false);
   const completeTask = useCompleteTask();
   const isCompleted = !!task.completedAt;
+
+  // Fetch subtasks for this task
+  const { data: subtasks } = useSubtasks(task.id);
+  const updateSubtask = useUpdateSubtask();
+
+  const handleToggleSubtask = async (subtaskId: string) => {
+    const subtask = subtasks?.find(s => s.id === subtaskId);
+    if (subtask) {
+      await updateSubtask.mutateAsync({
+        taskId: task.id,
+        subtaskId,
+        data: { completed: !subtask.completed },
+      });
+    }
+  };
 
   const handleToggleComplete = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -132,6 +165,8 @@ export function TaskCard({ task, onSelect, isDragging: externalDragging }: TaskC
       onToggleComplete={handleToggleComplete}
       onClick={handleClick}
       onHoverChange={setIsHovered}
+      subtasks={subtasks}
+      onToggleSubtask={handleToggleSubtask}
     />
   );
 }
