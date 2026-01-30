@@ -92,6 +92,10 @@ export const JOBS = {
   DAILY_SUMMARY_CHECK: 'daily-summary-check',
   /** Sends daily summary email to individual user */
   SEND_DAILY_SUMMARY: 'send-daily-summary',
+  /** Runs every minute to check for upcoming time blocks needing reminders */
+  TASK_REMINDER_CHECK: 'task-reminder-check',
+  /** Sends task reminder email for a specific time block */
+  SEND_TASK_REMINDER: 'send-task-reminder',
 } as const;
 
 export type JobName = typeof JOBS[keyof typeof JOBS];
