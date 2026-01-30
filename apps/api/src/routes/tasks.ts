@@ -117,6 +117,7 @@ tasksRouter.patch('/:id', requireScopes('tasks:write'), zValidator('param', z.ob
   if (updates.priority !== undefined) updateData.priority = updates.priority;
   if (updates.completedAt !== undefined) updateData.completedAt = updates.completedAt ? new Date(updates.completedAt) : null;
   if (updates.position !== undefined) updateData.position = updates.position;
+  if (updates.subtasksHidden !== undefined) updateData.subtasksHidden = updates.subtasksHidden;
 
   const [updatedTask] = await db.update(tasks).set(updateData).where(and(eq(tasks.id, id), eq(tasks.userId, userId))).returning();
 
