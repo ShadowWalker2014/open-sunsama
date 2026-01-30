@@ -20,9 +20,6 @@ import {
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuShortcut,
-  ContextMenuSub,
-  ContextMenuSubContent,
-  ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from "@/components/ui";
 import {
@@ -252,21 +249,13 @@ export function TaskContextMenu({
           <ContextMenuShortcut>{SHORTCUTS.deferToNextWeek && formatShortcut(SHORTCUTS.deferToNextWeek)}</ContextMenuShortcut>
         </ContextMenuItem>
 
-        {/* Defer to backlog - with submenu indicator */}
-        <ContextMenuSub>
-          <ContextMenuSubTrigger>
-            <Archive className="mr-2 h-4 w-4" />
-            Defer to backlog
-            <ContextMenuShortcut className="ml-auto mr-2">
-              {SHORTCUTS.moveToBacklog && formatShortcut(SHORTCUTS.moveToBacklog)}
-            </ContextMenuShortcut>
-          </ContextMenuSubTrigger>
-          <ContextMenuSubContent className="w-48">
-            <ContextMenuItem onClick={handleDeferToBacklog}>
-              Move to backlog now
-            </ContextMenuItem>
-          </ContextMenuSubContent>
-        </ContextMenuSub>
+        <ContextMenuItem onClick={handleDeferToBacklog}>
+          <Archive className="mr-2 h-4 w-4" />
+          Defer to backlog
+          <ContextMenuShortcut>
+            {SHORTCUTS.moveToBacklog && formatShortcut(SHORTCUTS.moveToBacklog)}
+          </ContextMenuShortcut>
+        </ContextMenuItem>
 
         <ContextMenuSeparator />
 
