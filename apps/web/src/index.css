@@ -47,6 +47,103 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
   }
+
+  /* Ocean Theme */
+  .theme-ocean {
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
+    --ring: 221 83% 53%;
+  }
+  .dark.theme-ocean {
+    --primary: 217 91% 60%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --ring: 217 91% 60%;
+  }
+
+  /* Forest Theme */
+  .theme-forest {
+    --primary: 142 76% 36%;
+    --primary-foreground: 210 40% 98%;
+    --ring: 142 76% 36%;
+  }
+  .dark.theme-forest {
+    --primary: 142 71% 45%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --ring: 142 71% 45%;
+  }
+
+  /* Sunset Theme */
+  .theme-sunset {
+    --primary: 24 95% 53%;
+    --primary-foreground: 210 40% 98%;
+    --ring: 24 95% 53%;
+  }
+  .dark.theme-sunset {
+    --primary: 20 90% 48%;
+    --primary-foreground: 210 40% 98%;
+    --ring: 20 90% 48%;
+  }
+
+  /* Lavender Theme */
+  .theme-lavender {
+    --primary: 262 83% 58%;
+    --primary-foreground: 210 40% 98%;
+    --ring: 262 83% 58%;
+  }
+  .dark.theme-lavender {
+    --primary: 263 70% 50%;
+    --primary-foreground: 210 40% 98%;
+    --ring: 263 70% 50%;
+  }
+
+  /* Rose Theme */
+  .theme-rose {
+    --primary: 330 81% 60%;
+    --primary-foreground: 210 40% 98%;
+    --ring: 330 81% 60%;
+  }
+  .dark.theme-rose {
+    --primary: 330 90% 66%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --ring: 330 90% 66%;
+  }
+
+  /* Amber Theme */
+  .theme-amber {
+    --primary: 45 93% 47%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --ring: 45 93% 47%;
+  }
+  .dark.theme-amber {
+    --primary: 43 96% 56%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --ring: 43 96% 56%;
+  }
+
+  /* Slate Theme */
+  .theme-slate {
+    --primary: 215 20% 40%;
+    --primary-foreground: 210 40% 98%;
+    --ring: 215 20% 40%;
+  }
+  .dark.theme-slate {
+    --primary: 215 20% 65%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --ring: 215 20% 65%;
+  }
+
+  /* Font Variables */
+  :root {
+    --font-geist: "Geist", "Geist Sans", system-ui, sans-serif;
+    --font-system: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-inter: "Inter", system-ui, sans-serif;
+    --font-jetbrains: "JetBrains Mono", "Fira Code", monospace;
+  }
+
+  .font-geist { font-family: var(--font-geist); }
+  .font-system { font-family: var(--font-system); }
+  .font-inter { font-family: var(--font-inter); }
+  .font-jetbrains { font-family: var(--font-jetbrains); }
 }
 
 @layer base {
