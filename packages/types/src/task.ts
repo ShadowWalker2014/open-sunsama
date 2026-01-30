@@ -191,6 +191,15 @@ export interface TaskFilterInput {
 
   /** Sort by field (default: position) */
   sortBy?: TaskSortBy;
+
+  /** Page number for pagination (1-based) */
+  page?: number;
+
+  /** Number of items per page */
+  limit?: number;
+
+  /** Filter by priority level */
+  priority?: TaskPriority;
 }
 
 /**

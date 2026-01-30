@@ -14,6 +14,19 @@ import type {
 import type { OpenSunsamaClient, RequestOptions } from "./client.js";
 
 /**
+ * Paginated response from tasks list
+ */
+export interface TasksListResponse {
+  data: Task[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+/**
  * Tasks API interface
  */
 export interface TasksApi {
@@ -22,7 +35,7 @@ export interface TasksApi {
    * @param filters Optional filter criteria
    * @returns Array of tasks matching the filters
    */
-  list(filters?: TaskFilterInput, options?: RequestOptions): Promise<Task[]>;
+  list(filters?: TaskFilterInput, options?: RequestOptions): Promise<TasksListResponse>;
 
   /**
    * Create a new task
@@ -115,7 +128,7 @@ export interface TasksApi {
  * Maps frontend filter names to API query parameter names
  */
 function filtersToSearchParams(
-  filters?: TaskFilterInput & { priority?: string; limit?: number }
+  filters?: TaskFilterInput & { priority?: string; limit?: number; page?: number }
 ): Record<string, string | number | boolean | undefined> {
   if (!filters) return {};
 
@@ -135,6 +148,8 @@ function filtersToSearchParams(
     sortBy: filters.sortBy,
     // Limit results
     limit: filters.limit,
+    // Page number for pagination
+    page: filters.page,
   };
 }
 
@@ -142,6 +157,18 @@ function filtersToSearchParams(
 interface ApiResponseWrapper<T> {
   success: boolean;
   data: T;
+}
+
+// Paginated API response with meta
+interface PaginatedApiResponse<T> {
+  success: boolean;
+  data: T[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 /**
@@ -154,13 +181,16 @@ export function createTasksApi(client: OpenSunsamaClient): TasksApi {
     async list(
       filters?: TaskFilterInput,
       options?: RequestOptions
-    ): Promise<Task[]> {
+    ): Promise<TasksListResponse> {
       const searchParams = filtersToSearchParams(filters);
-      const response = await client.get<ApiResponseWrapper<Task[]>>("tasks", {
+      const response = await client.get<PaginatedApiResponse<Task>>("tasks", {
         ...options,
         searchParams: { ...options?.searchParams, ...searchParams },
       });
-      return response.data;
+      return {
+        data: response.data,
+        meta: response.meta,
+      };
     },
 
     async create(

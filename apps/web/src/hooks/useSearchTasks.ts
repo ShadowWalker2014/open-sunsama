@@ -39,7 +39,7 @@ export function useSearchTasks(params: SearchTasksParams) {
       }
       
       const response = await api.tasks.list(filters as Parameters<typeof api.tasks.list>[0]);
-      const tasks = response || [];
+      const tasks = response.data || [];
       
       return tasks;
     },
@@ -74,7 +74,7 @@ export function useAllTasks() {
     queryFn: async (): Promise<Task[]> => {
       const api = getApi();
       const response = await api.tasks.list({ limit: 1000 } as Parameters<typeof api.tasks.list>[0]);
-      return response || [];
+      return response.data || [];
     },
     staleTime: 60000, // Cache for 1 minute
   });

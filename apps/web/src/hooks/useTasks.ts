@@ -28,7 +28,8 @@ export function useTasks(filters?: TaskFilterInput) {
     queryKey: taskKeys.list(filters ?? {}),
     queryFn: async () => {
       const api = getApi();
-      return await api.tasks.list(filters);
+      const response = await api.tasks.list(filters);
+      return response.data;
     },
   });
 }

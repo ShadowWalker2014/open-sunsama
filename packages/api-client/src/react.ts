@@ -339,7 +339,10 @@ export function createReactHooks(client: OpenSunsamaClient): OpenSunsamaHooks {
     useTasks: (filters, options) => {
       return useQuery({
         queryKey: queryKeys.tasks.list(filters),
-        queryFn: () => tasksApi.list(filters),
+        queryFn: async () => {
+          const response = await tasksApi.list(filters);
+          return response.data;
+        },
         ...options,
       });
     },

@@ -56,8 +56,8 @@ import { createAuthApi, type AuthApi } from "./auth.js";
 export { createAuthApi, type AuthApi };
 
 // Tasks API
-import { createTasksApi, type TasksApi } from "./tasks.js";
-export { createTasksApi, type TasksApi };
+import { createTasksApi, type TasksApi, type TasksListResponse } from "./tasks.js";
+export { createTasksApi, type TasksApi, type TasksListResponse };
 
 // Subtasks API
 import { createSubtasksApi, type SubtasksApi } from "./subtasks.js";

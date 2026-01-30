@@ -1,9 +1,10 @@
 import * as React from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Search, Filter, SortAsc, SortDesc, ChevronDown, Plus, AlertCircle } from "lucide-react";
+import { Search, Filter, SortAsc, SortDesc, ChevronDown, Plus, AlertCircle, Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import { useInView } from "react-intersection-observer";
 import type { Task, TaskPriority } from "@open-sunsama/types";
-import { useSearchTasks } from "@/hooks/useSearchTasks";
+import { useInfiniteSearchTasks } from "@/hooks/useInfiniteSearchTasks";
 import { useCompleteTask, useDeleteTask, useMoveTask } from "@/hooks/useTasks";
 import { TaskModal } from "@/components/kanban/task-modal";
 import { AddTaskModal } from "@/components/kanban/add-task-modal";
@@ -36,17 +37,42 @@ export default function TasksListPage() {
   const deleteTask = useDeleteTask();
   const moveTask = useMoveTask();
 
+  // Intersection observer for infinite scroll
+  const { ref: loadMoreRef, inView } = useInView({ threshold: 0 });
+
   React.useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(query), 200);
     return () => clearTimeout(timer);
   }, [query]);
 
-  const { data: tasks = [], isLoading, isError, error, refetch } = useSearchTasks({
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteSearchTasks({
     query: debouncedQuery,
-    status: statusFilter,
+    status: statusFilter === "active" ? "active" : statusFilter === "completed" ? "completed" : "all",
     priority: priorityFilter === "all" ? undefined : priorityFilter,
-    limit: 100,
+    limit: 50,
   });
+
+  // Flatten all pages into a single array of tasks
+  const tasks = React.useMemo(() => {
+    if (!data?.pages) return [];
+    return data.pages.flatMap((page) => page.data);
+  }, [data?.pages]);
+
+  // Trigger fetch when scrolling near the bottom
+  React.useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const sortedTasks = React.useMemo(() => {
     const sorted = [...tasks];
@@ -219,30 +245,45 @@ export default function TasksListPage() {
             <p className="text-sm text-muted-foreground">No tasks found</p>
           </div>
         ) : (
-          <div style={{ height: `${virtualizer.getTotalSize()}px`, position: "relative" }}>
-            {virtualizer.getVirtualItems().map((virtualItem) => {
-              const task = sortedTasks[virtualItem.index];
-              if (!task) return null;
-              return (
-                <TaskRow
-                  key={task.id}
-                  task={task}
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: `${virtualItem.size}px`,
-                    transform: `translateY(${virtualItem.start}px)`,
-                  }}
-                  onSelect={() => setSelectedTask(task)}
-                  onComplete={() => handleComplete(task)}
-                  onDelete={() => handleDelete(task)}
-                  onMoveToToday={() => handleMoveToToday(task)}
-                />
-              );
-            })}
-          </div>
+          <>
+            <div style={{ height: `${virtualizer.getTotalSize()}px`, position: "relative" }}>
+              {virtualizer.getVirtualItems().map((virtualItem) => {
+                const task = sortedTasks[virtualItem.index];
+                if (!task) return null;
+                return (
+                  <TaskRow
+                    key={task.id}
+                    task={task}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: `${virtualItem.size}px`,
+                      transform: `translateY(${virtualItem.start}px)`,
+                    }}
+                    onSelect={() => setSelectedTask(task)}
+                    onComplete={() => handleComplete(task)}
+                    onDelete={() => handleDelete(task)}
+                    onMoveToToday={() => handleMoveToToday(task)}
+                  />
+                );
+              })}
+            </div>
+            {/* Infinite scroll sentinel */}
+            <div
+              ref={loadMoreRef}
+              className="flex items-center justify-center py-4"
+            >
+              {isFetchingNextPage ? (
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              ) : hasNextPage ? (
+                <span className="text-xs text-muted-foreground">Scroll for more</span>
+              ) : sortedTasks.length > 0 ? (
+                <span className="text-xs text-muted-foreground">All tasks loaded</span>
+              ) : null}
+            </div>
+          </>
         )}
       </div>
       
