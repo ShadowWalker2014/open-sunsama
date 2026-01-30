@@ -72,6 +72,41 @@ const DURATION_PRESETS = [
   { label: "2 hours", value: 120 },
 ];
 
+/**
+ * Parse flexible time input formats into minutes.
+ * Supports: "30", "30m", "1h", "1.5h", "1h30m", "2 hours", etc.
+ */
+function parseTimeInput(input: string): number | null {
+  if (!input) return null;
+  const trimmed = input.trim().toLowerCase();
+  
+  // Match patterns like "1h30m", "1.5h", "30m", "30", etc.
+  const hourMinMatch = trimmed.match(/^(\d+(?:\.\d+)?)\s*h(?:ours?)?\s*(?:(\d+)\s*m(?:ins?)?)?$/);
+  if (hourMinMatch && hourMinMatch[1]) {
+    const hours = parseFloat(hourMinMatch[1]);
+    const mins = parseInt(hourMinMatch[2] ?? "0", 10);
+    return Math.round(hours * 60) + mins;
+  }
+  
+  const minMatch = trimmed.match(/^(\d+)\s*m(?:ins?)?$/);
+  if (minMatch && minMatch[1]) {
+    return parseInt(minMatch[1], 10);
+  }
+  
+  const hourOnly = trimmed.match(/^(\d+(?:\.\d+)?)\s*h(?:ours?)?$/);
+  if (hourOnly && hourOnly[1]) {
+    return Math.round(parseFloat(hourOnly[1]) * 60);
+  }
+  
+  // Plain number = minutes
+  const num = parseInt(trimmed, 10);
+  if (!isNaN(num) && num > 0) {
+    return num;
+  }
+  
+  return null;
+}
+
 export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
@@ -203,10 +238,10 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     }
   };
 
-  // Handle custom duration submit
+  // Handle custom duration submit with flexible time parsing
   const handleCustomDurationSubmit = () => {
-    const mins = parseInt(customDurationValue, 10);
-    if (!isNaN(mins) && mins > 0) {
+    const mins = parseTimeInput(customDurationValue);
+    if (mins !== null && mins > 0) {
       handleDurationChange(mins);
     }
     setIsCustomDuration(false);
@@ -414,29 +449,43 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 {isCustomDuration ? (
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      value={customDurationValue}
-                      onChange={(e) => setCustomDurationValue(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          handleCustomDurationSubmit();
-                        }
-                        if (e.key === "Escape") {
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="text"
+                        value={customDurationValue}
+                        onChange={(e) => setCustomDurationValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleCustomDurationSubmit();
+                          }
+                          if (e.key === "Escape") {
+                            setIsCustomDuration(false);
+                            setCustomDurationValue("");
+                          }
+                        }}
+                        onBlur={handleCustomDurationSubmit}
+                        placeholder="e.g. 30m, 1.5h"
+                        className="h-8 w-24 text-sm"
+                        autoFocus
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => {
                           setIsCustomDuration(false);
                           setCustomDurationValue("");
-                        }
-                      }}
-                      onBlur={handleCustomDurationSubmit}
-                      placeholder="Minutes"
-                      className="h-8 w-20 text-sm"
-                      min={1}
-                      max={480}
-                      autoFocus
-                    />
-                    <span className="text-xs text-muted-foreground">min</span>
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      Formats: 30, 30m, 1h, 1.5h, 1h30m
+                    </span>
                   </div>
                 ) : (
                   <DropdownMenu>
