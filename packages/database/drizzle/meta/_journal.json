@@ -15,6 +15,13 @@
       "when": 1769768273087,
       "tag": "0001_flat_nightshade",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1769770000000,
+      "tag": "0002_add_actual_mins",
+      "breakpoints": true
     }
   ]
 }
