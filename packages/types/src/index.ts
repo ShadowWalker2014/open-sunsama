@@ -28,6 +28,7 @@ export type {
 // User types
 export type {
   User,
+  UserPreferences,
   CreateUserInput,
   LoginInput,
   AuthResponse,

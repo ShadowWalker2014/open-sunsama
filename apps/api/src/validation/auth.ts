@@ -23,12 +23,22 @@ export const loginSchema = z.object({
 });
 
 /**
+ * Schema for user preferences
+ */
+export const userPreferencesSchema = z.object({
+  themeMode: z.enum(["light", "dark", "system"]),
+  colorTheme: z.string().min(1).max(50),
+  fontFamily: z.string().min(1).max(50),
+});
+
+/**
  * Schema for updating user profile
  */
 export const updateProfileSchema = z.object({
   name: z.string().min(1).max(255).optional().nullable(),
   avatarUrl: z.string().url().max(500).optional().nullable(),
   timezone: z.string().max(50).optional(),
+  preferences: userPreferencesSchema.optional(),
 });
 
 /**

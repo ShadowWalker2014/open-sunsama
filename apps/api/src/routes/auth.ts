@@ -23,6 +23,7 @@ function formatUser(user: typeof users.$inferSelect): Omit<User, 'passwordHash'>
   return {
     id: user.id, email: user.email, name: user.name, avatarUrl: user.avatarUrl,
     timezone: user.timezone || 'UTC', createdAt: user.createdAt, updatedAt: user.updatedAt,
+    preferences: user.preferences || null,
   };
 }
 
@@ -83,6 +84,7 @@ authRouter.patch('/me', auth, zValidator('json', updateProfileSchema), async (c)
   if (updates.name !== undefined) updateData.name = updates.name;
   if (updates.avatarUrl !== undefined) updateData.avatarUrl = updates.avatarUrl;
   if (updates.timezone !== undefined) updateData.timezone = updates.timezone;
+  if (updates.preferences !== undefined) updateData.preferences = updates.preferences;
 
   const [updatedUser] = await db.update(users).set(updateData).where(eq(users.id, userId)).returning();
   if (!updatedUser) throw new AuthenticationError('User not found');

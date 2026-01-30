@@ -1,7 +1,14 @@
-import { pgTable, uuid, varchar, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, timestamp, jsonb } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
+
+/** User's display preferences for theme and font settings */
+export interface UserPreferences {
+  themeMode: "light" | "dark" | "system";
+  colorTheme: string;
+  fontFamily: string;
+}
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -12,6 +19,7 @@ export const users = pgTable('users', {
   timezone: varchar('timezone', { length: 50 }).default('UTC'),
   passwordResetToken: varchar('password_reset_token', { length: 255 }),
   passwordResetExpires: timestamp('password_reset_expires'),
+  preferences: jsonb('preferences').$type<UserPreferences>(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

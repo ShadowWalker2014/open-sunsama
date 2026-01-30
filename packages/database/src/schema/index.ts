@@ -1,6 +1,6 @@
 // Schema exports
 export { users, usersRelations, insertUserSchema, selectUserSchema } from './users';
-export type { User, NewUser } from './users';
+export type { User, NewUser, UserPreferences } from './users';
 
 export {
   tasks,

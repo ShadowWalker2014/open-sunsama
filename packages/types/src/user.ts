@@ -4,6 +4,21 @@
  */
 
 /**
+ * User's display preferences for theme and font settings.
+ * Stored as JSON in the database and synced across devices.
+ */
+export interface UserPreferences {
+  /** Theme mode: light, dark, or follow system preference */
+  themeMode: "light" | "dark" | "system";
+
+  /** Color theme identifier (e.g., "default", "ocean", "forest") */
+  colorTheme: string;
+
+  /** Font family identifier (e.g., "geist", "system", "inter") */
+  fontFamily: string;
+}
+
+/**
  * Represents a user in the Open Sunsama system.
  * Users are the primary entities that own tasks, time blocks, and API keys.
  */
@@ -28,6 +43,9 @@ export interface User {
 
   /** Timestamp when the user account was last updated */
   updatedAt: Date;
+
+  /** User's display preferences (theme, font, etc.) */
+  preferences: UserPreferences | null;
 }
 
 /**
@@ -82,6 +100,9 @@ export interface UpdateUserInput {
 
   /** Updated timezone preference */
   timezone?: string;
+
+  /** Update user preferences */
+  preferences?: UserPreferences;
 }
 
 /**

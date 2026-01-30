@@ -7,6 +7,8 @@ import {
   COLOR_THEMES,
   FONT_OPTIONS,
 } from "@/lib/themes";
+import { useAuth } from "@/hooks/useAuth";
+import { useSavePreferences } from "@/hooks/useUserPreferences";
 
 const STORAGE_KEY = "open_sunsama_preferences";
 
@@ -98,12 +100,29 @@ function applyTheme(mode: ThemeMode, colorTheme: string, fontFamily: FontFamily)
   return resolvedMode;
 }
 
+// Debounce utility
+function debounce<T extends (...args: Parameters<T>) => void>(
+  fn: T,
+  delay: number
+): (...args: Parameters<T>) => void {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  return (...args: Parameters<T>) => {
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
+  };
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = React.useState(true);
   const [preferences, setPreferences] = React.useState<UserPreferences>(DEFAULT_PREFERENCES);
   const [resolvedTheme, setResolvedTheme] = React.useState<"light" | "dark">("dark");
+  const [hasLoadedFromUser, setHasLoadedFromUser] = React.useState(false);
+  
+  // Get user and save mutation for DB sync
+  const { user } = useAuth();
+  const savePreferencesMutation = useSavePreferences();
 
-  // Initialize on mount
+  // Initialize on mount from localStorage
   React.useEffect(() => {
     const stored = getStoredPreferences();
     setPreferences(stored);
@@ -111,6 +130,36 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setResolvedTheme(resolved);
     setIsLoading(false);
   }, []);
+
+  // Load preferences from user when they log in
+  React.useEffect(() => {
+    if (user?.preferences && !hasLoadedFromUser) {
+      const prefs = user.preferences as UserPreferences;
+      setPreferences(prefs);
+      savePreferences(prefs); // Cache to localStorage
+      const resolved = applyTheme(prefs.themeMode, prefs.colorTheme, prefs.fontFamily as FontFamily);
+      setResolvedTheme(resolved);
+      setHasLoadedFromUser(true);
+    }
+  }, [user?.preferences, hasLoadedFromUser]);
+
+  // Reset hasLoadedFromUser when user logs out
+  React.useEffect(() => {
+    if (!user) {
+      setHasLoadedFromUser(false);
+    }
+  }, [user]);
+
+  // Debounced save to database
+  const debouncedSaveToDb = React.useMemo(
+    () =>
+      debounce((prefs: UserPreferences) => {
+        if (user) {
+          savePreferencesMutation.mutate(prefs);
+        }
+      }, 500),
+    [user, savePreferencesMutation]
+  );
 
   // Listen for system theme changes
   React.useEffect(() => {
@@ -130,29 +179,32 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setPreferences(prev => {
       const newPrefs = { ...prev, themeMode: mode };
       savePreferences(newPrefs);
+      debouncedSaveToDb(newPrefs);
       const resolved = applyTheme(mode, prev.colorTheme, prev.fontFamily);
       setResolvedTheme(resolved);
       return newPrefs;
     });
-  }, []);
+  }, [debouncedSaveToDb]);
 
   const setColorTheme = React.useCallback((theme: string) => {
     setPreferences(prev => {
       const newPrefs = { ...prev, colorTheme: theme };
       savePreferences(newPrefs);
+      debouncedSaveToDb(newPrefs);
       applyTheme(prev.themeMode, theme, prev.fontFamily);
       return newPrefs;
     });
-  }, []);
+  }, [debouncedSaveToDb]);
 
   const setFontFamily = React.useCallback((font: FontFamily) => {
     setPreferences(prev => {
       const newPrefs = { ...prev, fontFamily: font };
       savePreferences(newPrefs);
+      debouncedSaveToDb(newPrefs);
       applyTheme(prev.themeMode, prev.colorTheme, font);
       return newPrefs;
     });
-  }, []);
+  }, [debouncedSaveToDb]);
 
   const value = React.useMemo(
     () => ({
