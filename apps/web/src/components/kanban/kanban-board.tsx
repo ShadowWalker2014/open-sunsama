@@ -62,7 +62,7 @@ export function KanbanBoard({ children }: KanbanBoardProps) {
         {/* Kanban Board - DndContext is provided by TasksDndProvider */}
         <div
           ref={containerRef}
-          className="flex-1 overflow-x-auto overflow-y-hidden snap-x snap-mandatory sm:snap-none scroll-smooth"
+          className="flex-1 overflow-x-auto overflow-y-hidden snap-x snap-mandatory sm:snap-none"
           onScroll={handleScroll}
         >
           <div
