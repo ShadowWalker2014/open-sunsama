@@ -2,22 +2,9 @@ import * as React from "react";
 import { 
   Plus, 
   Inbox, 
-  Clock, 
   ChevronLeft, 
   ChevronRight, 
-  ChevronDown,
-  ChevronUp,
   Check, 
-  Home, 
-  Calendar, 
-  Target,
-  Sunrise,
-  Sunset,
-  Sparkles,
-  LayoutList,
-  ClipboardCheck,
-  FolderPlus,
-  UserPlus,
 } from "lucide-react";
 import { useDroppable } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
@@ -37,7 +24,6 @@ import { AddTaskModal } from "@/components/kanban/add-task-modal";
 import { TaskModal } from "@/components/kanban/task-modal";
 
 const SIDEBAR_COLLAPSED_KEY = "open-sunsama-sidebar-collapsed";
-const BACKLOG_EXPANDED_KEY = "open-sunsama-backlog-expanded";
 
 interface SidebarProps {
   className?: string;
