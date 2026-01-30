@@ -10,6 +10,7 @@ import type {
   TimeBlockFilterInput,
   TimeBlockWithTask,
   QuickScheduleInput,
+  AutoScheduleInput,
   TimeBlockSummary,
   TimeBlockConflict,
 } from "@open-sunsama/types";
@@ -109,6 +110,7 @@ export interface TimeBlocksApi {
   update(id: string, input: UpdateTimeBlockInput, options?: RequestOptions): Promise<TimeBlock>;
   delete(id: string, options?: RequestOptions): Promise<void>;
   quickSchedule(input: QuickScheduleInput, options?: RequestOptions): Promise<TimeBlock>;
+  autoSchedule(input: AutoScheduleInput, options?: RequestOptions): Promise<TimeBlock>;
   getSummary(startDate: string, endDate: string, options?: RequestOptions): Promise<TimeBlockSummary>;
   checkConflicts(startTime: Date | string, endTime: Date | string, excludeId?: string, options?: RequestOptions): Promise<TimeBlockConflict[]>;
   batchCreate(inputs: CreateTimeBlockInput[], options?: RequestOptions): Promise<TimeBlock[]>;
@@ -212,6 +214,12 @@ export function createTimeBlocksApi(client: OpenSunsamaClient): TimeBlocksApi {
         startTime: formatTimeForApi(input.startTime),
       };
       const response = await client.post<ApiResponseWrapper<RawTimeBlock>>("time-blocks/quick-schedule", payload, options);
+      return transformTimeBlock(response.data);
+    },
+
+    async autoSchedule(input: AutoScheduleInput, options?: RequestOptions): Promise<TimeBlock> {
+      // Backend automatically determines the best time slot
+      const response = await client.post<ApiResponseWrapper<RawTimeBlock>>("time-blocks/auto-schedule", input, options);
       return transformTimeBlock(response.data);
     },
 

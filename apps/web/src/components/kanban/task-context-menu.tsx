@@ -29,7 +29,7 @@ import {
   useReorderTasks,
   useTasks,
 } from "@/hooks/useTasks";
-import { useQuickSchedule } from "@/hooks";
+import { useAutoSchedule } from "@/hooks";
 import { useSubtasks } from "@/hooks/useSubtasks";
 import { formatShortcut, SHORTCUTS } from "@/hooks/useKeyboardShortcuts";
 import { toast } from "@/hooks/use-toast";
@@ -52,7 +52,7 @@ export function TaskContextMenu({
   const deleteTask = useDeleteTask();
   const createTask = useCreateTask();
   const reorderTasks = useReorderTasks();
-  const quickSchedule = useQuickSchedule();
+  const autoSchedule = useAutoSchedule();
 
   // Fetch tasks for the same date/backlog to support reordering
   const { data: tasksInSameList } = useTasks(
@@ -71,12 +71,7 @@ export function TaskContextMenu({
   };
 
   const handleAddToCalendar = async () => {
-    const date = task.scheduledDate || format(new Date(), "yyyy-MM-dd");
-    await quickSchedule.mutateAsync({
-      taskId: task.id,
-      startTime: `${date}T09:00:00`,
-      durationMins: task.estimatedMins ?? undefined,
-    });
+    await autoSchedule.mutateAsync({ taskId: task.id });
   };
 
   const handleMoveToTop = async () => {

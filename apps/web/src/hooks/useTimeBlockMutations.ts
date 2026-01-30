@@ -4,6 +4,7 @@ import type {
   CreateTimeBlockInput,
   UpdateTimeBlockInput,
   QuickScheduleInput,
+  AutoScheduleInput,
 } from "@open-sunsama/types";
 import { getApi } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
@@ -126,6 +127,40 @@ export function useQuickSchedule() {
     mutationFn: async (data: QuickScheduleInput): Promise<TimeBlock> => {
       const api = getApi();
       return await api.timeBlocks.quickSchedule(data);
+    },
+    onSuccess: (newTimeBlock) => {
+      queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
+      queryClient.setQueryData(
+        timeBlockKeys.detail(newTimeBlock.id),
+        newTimeBlock
+      );
+
+      toast({
+        title: "Task scheduled",
+        description: `"${newTimeBlock.title}" has been added to your calendar.`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Failed to schedule task",
+        description: error instanceof Error ? error.message : "Unknown error",
+      });
+    },
+  });
+}
+
+/**
+ * Auto schedule - create a time block from a task at the next available slot
+ * The API automatically finds the best time within working hours (9 AM - 6 PM)
+ */
+export function useAutoSchedule() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: AutoScheduleInput): Promise<TimeBlock> => {
+      const api = getApi();
+      return await api.timeBlocks.autoSchedule(data);
     },
     onSuccess: (newTimeBlock) => {
       queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });

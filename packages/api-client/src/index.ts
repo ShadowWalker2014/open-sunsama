@@ -113,6 +113,7 @@ export type {
   TimeBlockFilterInput,
   TimeBlockWithTask,
   QuickScheduleInput,
+  AutoScheduleInput,
   TimeBlockSummary,
   // API key types
   ApiKey,

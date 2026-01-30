@@ -8,7 +8,7 @@ import {
 } from "@/hooks/useKeyboardShortcuts";
 import { useCompleteTask, useCreateTask, useDeleteTask, useMoveTask, useReorderTasks, useTasks, useUpdateTask } from "@/hooks/useTasks";
 import { useSubtasks, useUpdateSubtask } from "@/hooks/useSubtasks";
-import { useQuickSchedule } from "@/hooks";
+import { useAutoSchedule } from "@/hooks";
 import { toast } from "@/hooks/use-toast";
 import { addDays, startOfWeek, format } from "date-fns";
 import type { Task } from "@open-sunsama/types";
@@ -42,7 +42,7 @@ export function TaskShortcutsHandler({
   const moveTask = useMoveTask();
   const updateTask = useUpdateTask();
   const updateSubtask = useUpdateSubtask();
-  const quickSchedule = useQuickSchedule();
+  const autoSchedule = useAutoSchedule();
   
   // Fetch tasks for the hovered task's column to enable move to top/bottom
   // Query is disabled when no task is hovered (passes undefined)
@@ -192,12 +192,7 @@ export function TaskShortcutsHandler({
       if (SHORTCUTS.addToCalendar && matchesShortcut(event, SHORTCUTS.addToCalendar)) {
         if (hoveredTask) {
           event.preventDefault();
-          const date = hoveredTask.scheduledDate || format(new Date(), "yyyy-MM-dd");
-          quickSchedule.mutate({
-            taskId: hoveredTask.id,
-            startTime: `${date}T09:00:00`,
-            durationMins: hoveredTask.estimatedMins ?? undefined,
-          });
+          autoSchedule.mutate({ taskId: hoveredTask.id });
           toast({
             title: "Added to calendar",
             description: `"${hoveredTask.title}"`,
@@ -324,7 +319,7 @@ export function TaskShortcutsHandler({
     updateTask,
     updateSubtask,
     reorderTasks,
-    quickSchedule,
+    autoSchedule,
   ]);
 
   return null; // This component renders nothing

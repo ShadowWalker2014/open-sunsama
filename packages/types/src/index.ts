@@ -67,6 +67,7 @@ export type {
   TimeBlockFilterInput,
   TimeBlockWithTask,
   QuickScheduleInput,
+  AutoScheduleInput,
   TimeBlockSummary,
   TimeBlockConflict,
   TimeBlockValidation,

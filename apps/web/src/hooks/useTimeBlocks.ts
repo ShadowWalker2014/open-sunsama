@@ -64,6 +64,7 @@ export {
   useUpdateTimeBlock,
   useDeleteTimeBlock,
   useQuickSchedule,
+  useAutoSchedule,
   useStartTimeBlock,
   useStopTimeBlock,
   useResizeTimeBlock,
