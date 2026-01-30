@@ -6,12 +6,14 @@ import {
   Search,
   Settings,
   LogOut,
+  Monitor,
   Moon,
   Sun,
   User,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSearch } from "@/hooks/useSearch";
+import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
 import {
   Button,
@@ -31,62 +33,10 @@ interface HeaderProps {
   className?: string;
 }
 
-const THEME_STORAGE_KEY = "open_sunsama_theme";
-
-type Theme = "light" | "dark" | "system";
-
-function getStoredTheme(): Theme {
-  if (typeof window === "undefined") return "dark";
-  const stored = localStorage.getItem(THEME_STORAGE_KEY);
-  if (stored === "light" || stored === "dark" || stored === "system") {
-    return stored;
-  }
-  return "dark";
-}
-
-function applyTheme(theme: Theme) {
-  const isDark =
-    theme === "dark" ||
-    (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-  
-  if (isDark) {
-    document.documentElement.classList.add("dark");
-  } else {
-    document.documentElement.classList.remove("dark");
-  }
-}
-
 export function Header({ className }: HeaderProps) {
   const { user, logout } = useAuth();
   const { openSearch } = useSearch();
-  const [theme, setTheme] = React.useState<Theme>(getStoredTheme);
-
-  // Apply theme on mount and when it changes
-  React.useEffect(() => {
-    applyTheme(theme);
-    localStorage.setItem(THEME_STORAGE_KEY, theme);
-  }, [theme]);
-
-  // Listen for system theme changes when in "system" mode
-  React.useEffect(() => {
-    if (theme !== "system") return;
-    
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = () => applyTheme("system");
-    mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme]);
-
-  const isDark = React.useMemo(() => {
-    if (theme === "system") {
-      return typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches;
-    }
-    return theme === "dark";
-  }, [theme]);
-
-  const toggleTheme = React.useCallback(() => {
-    setTheme((prev) => (prev === "dark" || prev === "system" ? "light" : "dark"));
-  }, []);
+  const { themeMode, setThemeMode } = useTheme();
 
   const userInitials = React.useMemo(() => {
     if (!user?.name) return user?.email?.charAt(0).toUpperCase() ?? "U";
@@ -149,20 +99,45 @@ export function Header({ className }: HeaderProps) {
 
         {/* Actions */}
         <div className="flex items-center gap-1 sm:gap-2">
-          {/* Theme Toggle - Touch-friendly */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            className="h-10 w-10 sm:h-9 sm:w-9"
-          >
-            {isDark ? (
-              <Sun className="h-5 w-5 sm:h-4 sm:w-4" />
-            ) : (
-              <Moon className="h-5 w-5 sm:h-4 sm:w-4" />
-            )}
-            <span className="sr-only">Toggle theme</span>
-          </Button>
+          {/* Theme Toggle - Icon-only segmented control */}
+          <div className="inline-flex items-center rounded-lg border border-border/50 bg-muted/30 p-0.5">
+            <button
+              onClick={() => setThemeMode("system")}
+              className={cn(
+                "inline-flex h-8 w-8 sm:h-7 sm:w-7 items-center justify-center rounded-md transition-all",
+                themeMode === "system"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+              title="System theme"
+            >
+              <Monitor className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+            </button>
+            <button
+              onClick={() => setThemeMode("light")}
+              className={cn(
+                "inline-flex h-8 w-8 sm:h-7 sm:w-7 items-center justify-center rounded-md transition-all",
+                themeMode === "light"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+              title="Light theme"
+            >
+              <Sun className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+            </button>
+            <button
+              onClick={() => setThemeMode("dark")}
+              className={cn(
+                "inline-flex h-8 w-8 sm:h-7 sm:w-7 items-center justify-center rounded-md transition-all",
+                themeMode === "dark"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+              title="Dark theme"
+            >
+              <Moon className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+            </button>
+          </div>
 
           {/* User Menu - Touch-friendly */}
           <DropdownMenu>
