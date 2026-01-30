@@ -23,7 +23,7 @@ interface TimelineProps {
   dragState: DragState | null;
   dropPreview: DropPreview | null;
   justEndedDrag?: boolean;
-  timelineRef: React.RefObject<HTMLDivElement>;
+  timelineRef: React.RefObject<HTMLDivElement | null>;
   onBlockClick?: (block: TimeBlockType) => void;
   onBlockDragStart?: (block: TimeBlockType, e: React.MouseEvent) => void;
   onBlockResizeStart?: (block: TimeBlockType, edge: "top" | "bottom", e: React.MouseEvent) => void;

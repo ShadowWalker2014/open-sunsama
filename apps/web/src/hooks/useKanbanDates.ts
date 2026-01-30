@@ -15,7 +15,7 @@ export interface DateInfo {
 }
 
 export interface UseKanbanDatesOptions {
-  containerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
   /** When true, disables infinite scroll navigation (e.g., during drag) */
   isDragging?: boolean;
 }

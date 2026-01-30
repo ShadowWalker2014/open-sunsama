@@ -229,7 +229,7 @@ export function CalendarView({
           dragState={dragState}
           dropPreview={dropPreview}
           justEndedDrag={justEndedDrag}
-          timelineRef={timelineRef as React.RefObject<HTMLDivElement>}
+          timelineRef={timelineRef}
           onBlockDragStart={handleBlockDragStart}
           onBlockResizeStart={handleBlockResizeStart}
           onTimelineMouseMove={handleTimelineMouseMove}
