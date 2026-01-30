@@ -351,6 +351,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
           <div className="flex items-start gap-3 pr-6">
             {/* Checkbox */}
             <button
+              type="button"
               className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors cursor-pointer ${
                 isCompleted
                   ? "border-primary bg-primary text-primary-foreground"
@@ -607,6 +608,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
           </div>
           
           <button
+            type="button"
             onClick={handleDelete}
             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-destructive transition-colors"
           >
