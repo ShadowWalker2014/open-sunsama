@@ -52,6 +52,21 @@ bun run build
 | `OPENSUNSAMA_API_KEY` | Yes | - | Your API key starting with `cf_` |
 | `OPENSUNSAMA_API_URL` | No | `http://localhost:3001` | API server URL |
 
+### Production API URL
+
+If you're hosting Open Sunsama on a cloud provider (e.g., Railway, Render, Fly.io), update `OPENSUNSAMA_API_URL` to point to your production API:
+
+```json
+{
+  "env": {
+    "OPENSUNSAMA_API_KEY": "cf_your-api-key",
+    "OPENSUNSAMA_API_URL": "https://your-api.up.railway.app"
+  }
+}
+```
+
+**Note:** The default `http://localhost:3001` only works when running the API locally.
+
 ## Usage with AI Assistants
 
 ### Claude Desktop
@@ -76,9 +91,11 @@ Add to your Claude Desktop configuration file:
 }
 ```
 
+> **Production**: Replace `http://localhost:3001` with your hosted API URL (e.g., `https://your-api.up.railway.app`)
+
 ### Cursor
 
-Create `.cursor/mcp.json` in your project root or configure in Cursor Settings:
+Create `.cursor/mcp.json` in your project root or configure in **Cursor Settings → MCP**:
 
 ```json
 {
@@ -94,6 +111,8 @@ Create `.cursor/mcp.json` in your project root or configure in Cursor Settings:
   }
 }
 ```
+
+> **Production**: Replace `http://localhost:3001` with your hosted API URL (e.g., `https://your-api.up.railway.app`)
 
 ### VS Code with Continue Extension
 

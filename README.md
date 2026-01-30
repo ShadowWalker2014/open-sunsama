@@ -9,15 +9,26 @@ Open Sunsama is a free and open-source time blocking and task management applica
 ### AI Agent Compatible
 
 Open Sunsama is designed to work seamlessly with AI assistants including:
-- Clawdbot / Moltbot
-- Claude Code / Claude Cowork / OpenWork
-- And other AI agents that can interact with APIs
+- Claude Desktop, Cursor, Windsurf, and other MCP-compatible tools
+- Any AI agent that can interact with REST APIs
 
 This means your AI assistant can:
 - Create, update, and complete tasks on your behalf
 - Schedule time blocks for focused work
 - Help you plan your day
 - Track your progress
+
+### MCP Server (Model Context Protocol)
+
+Open Sunsama includes a built-in MCP server that enables AI assistants like Claude Desktop and Cursor to manage your tasks and calendar directly.
+
+**[→ See MCP Setup Instructions](./mcp/README.md)**
+
+The MCP server provides 23 tools for:
+- **Task Management**: Create, update, complete, delete, and schedule tasks
+- **Subtasks**: Break down tasks into smaller actionable items
+- **Time Blocking**: Schedule focused work sessions on your calendar
+- **User Profile**: Access and update preferences
 
 ## Features
 
