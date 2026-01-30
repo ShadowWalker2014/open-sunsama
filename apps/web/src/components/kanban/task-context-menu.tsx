@@ -39,11 +39,6 @@ export function TaskContextMenu({
       id: task.id,
       data: { priority },
     });
-    
-    toast({
-      title: "Priority updated",
-      description: `Task priority set to ${PRIORITY_LABELS[priority]}`,
-    });
   };
 
   const handleMoveToToday = async () => {
@@ -54,11 +49,6 @@ export function TaskContextMenu({
       id: task.id,
       data: { scheduledDate: today },
     });
-
-    toast({
-      title: "Moved to Today",
-      description: `"${task.title}" has been moved to today.`,
-    });
   };
 
   const handleMoveToBacklog = async () => {
@@ -67,11 +57,6 @@ export function TaskContextMenu({
     await updateTask.mutateAsync({
       id: task.id,
       data: { scheduledDate: null },
-    });
-
-    toast({
-      title: "Moved to Backlog",
-      description: `"${task.title}" has been moved to backlog.`,
     });
   };
 
