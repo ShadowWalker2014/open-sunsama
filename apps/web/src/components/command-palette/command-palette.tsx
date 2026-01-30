@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   Search,
   Loader2,
@@ -26,7 +25,6 @@ import { Kbd } from "@/components/ui/shortcuts-modal";
 import {
   COMMANDS,
   filterCommands,
-  type Command,
   type CommandContext,
 } from "./commands";
 
@@ -142,12 +140,18 @@ export function CommandPalette({
   const executeItem = (index: number) => {
     if (index < commandItems.length) {
       // It's a command
-      commandItems[index].action(commandContext);
+      const cmd = commandItems[index];
+      if (cmd) {
+        cmd.action(commandContext);
+      }
     } else if (index < commandItems.length + taskItems.length) {
       // It's a task
       const taskIndex = index - commandItems.length;
-      onSelectTask(taskItems[taskIndex]);
-      onOpenChange(false);
+      const task = taskItems[taskIndex];
+      if (task) {
+        onSelectTask(task);
+        onOpenChange(false);
+      }
     } else if (showCreateOption) {
       // It's the create option
       handleCreateTask();
@@ -176,101 +180,14 @@ export function CommandPalette({
     }
   };
 
-  // Virtualizer
-  const virtualizer = useVirtualizer({
-    count: totalItems,
-    getScrollElement: () => listRef.current,
-    estimateSize: () => 44,
-    overscan: 5,
-  });
-
+  // Scroll selected item into view
   React.useEffect(() => {
-    virtualizer.scrollToIndex(selectedIndex, { align: "auto" });
-  }, [selectedIndex, virtualizer]);
-
-  // Render item function
-  const renderItem = (
-    index: number,
-    isSelected: boolean,
-    style: React.CSSProperties
-  ) => {
-    if (index < commandItems.length) {
-      const cmd = commandItems[index];
-      const Icon = ICON_MAP[cmd.icon] || Settings;
-      return (
-        <div key={cmd.id} style={style}>
-          <button
-            onClick={() => executeItem(index)}
-            className={cn(
-              "flex items-center gap-3 px-3 h-[44px] w-full text-left transition-colors cursor-pointer",
-              isSelected ? "bg-accent" : "hover:bg-accent/50"
-            )}
-          >
-            <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="text-[13px] flex-1 truncate">{cmd.title}</span>
-            {cmd.shortcut && <Kbd className="text-[10px]">{cmd.shortcut}</Kbd>}
-          </button>
-        </div>
-      );
-    } else if (index < commandItems.length + taskItems.length) {
-      const taskIndex = index - commandItems.length;
-      const task = taskItems[taskIndex];
-      const isCompleted = !!task.completedAt;
-      return (
-        <div key={task.id} style={style}>
-          <button
-            onClick={() => {
-              onSelectTask(task);
-              onOpenChange(false);
-            }}
-            className={cn(
-              "flex items-center gap-3 px-3 h-[44px] w-full text-left transition-colors cursor-pointer",
-              isSelected ? "bg-accent" : "hover:bg-accent/50"
-            )}
-          >
-            <CheckSquare
-              className={cn(
-                "h-4 w-4 shrink-0",
-                isCompleted ? "text-green-500" : "text-muted-foreground"
-              )}
-            />
-            <span
-              className={cn(
-                "text-[13px] flex-1 truncate",
-                isCompleted && "line-through text-muted-foreground"
-              )}
-            >
-              {task.title}
-            </span>
-          </button>
-        </div>
-      );
-    } else if (showCreateOption) {
-      return (
-        <div key="create" style={style}>
-          <button
-            onClick={handleCreateTask}
-            disabled={isCreating}
-            className={cn(
-              "flex items-center gap-3 px-3 h-[44px] w-full text-left transition-colors cursor-pointer",
-              isSelected ? "bg-accent" : "hover:bg-accent/50"
-            )}
-          >
-            <Plus className="h-4 w-4 text-primary shrink-0" />
-            <span className="text-[13px] text-primary flex-1">
-              Create "{debouncedQuery.trim()}"
-            </span>
-            {isCreating && <Loader2 className="h-3 w-3 animate-spin" />}
-          </button>
-        </div>
-      );
+    if (!listRef.current) return;
+    const selectedElement = listRef.current.querySelector('[data-selected="true"]');
+    if (selectedElement) {
+      selectedElement.scrollIntoView({ block: "nearest" });
     }
-    return null;
-  };
-
-  // Calculate section positions for headers
-  const commandsEndIndex = commandItems.length;
-  const tasksEndIndex = commandItems.length + taskItems.length;
+  }, [selectedIndex]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -296,7 +213,6 @@ export function CommandPalette({
         <div
           ref={listRef}
           className="max-h-[360px] overflow-y-auto"
-          style={{ contain: "strict" }}
         >
           {totalItems === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-center">
@@ -319,6 +235,7 @@ export function CommandPalette({
                     return (
                       <button
                         key={cmd.id}
+                        data-selected={isSelected}
                         onClick={() => executeItem(index)}
                         className={cn(
                           "flex items-center gap-3 px-3 h-[40px] w-full text-left transition-colors cursor-pointer",
@@ -351,6 +268,7 @@ export function CommandPalette({
                     return (
                       <button
                         key={task.id}
+                        data-selected={isSelected}
                         onClick={() => {
                           onSelectTask(task);
                           onOpenChange(false);
@@ -385,6 +303,7 @@ export function CommandPalette({
               {/* Create option */}
               {showCreateOption && (
                 <button
+                  data-selected={selectedIndex === totalItems - 1}
                   onClick={handleCreateTask}
                   disabled={isCreating}
                   className={cn(

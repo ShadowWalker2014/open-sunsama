@@ -1,4 +1,3 @@
-import type { NavigateFunction } from "@tanstack/react-router";
 import type { ThemeMode } from "@/lib/themes";
 
 export interface Command {
@@ -11,8 +10,11 @@ export interface Command {
   action: (ctx: CommandContext) => void;
 }
 
+// Navigate function type from TanStack Router
+type NavigateFn = (options: { to: string; search?: Record<string, string> }) => void;
+
 export interface CommandContext {
-  navigate: NavigateFunction;
+  navigate: NavigateFn;
   setThemeMode: (mode: ThemeMode) => void;
   currentThemeMode: ThemeMode;
   openAddTask: () => void;
