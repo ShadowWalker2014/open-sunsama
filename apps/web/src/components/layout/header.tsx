@@ -99,8 +99,8 @@ export function Header({ className }: HeaderProps) {
 
         {/* Actions */}
         <div className="flex items-center gap-1">
-          {/* Theme Toggle - Icon-only segmented control */}
-          <div className="inline-flex items-center rounded border border-border/40 bg-muted/30 p-0.5">
+          {/* Theme Toggle - Icon-only segmented control (hidden on mobile) */}
+          <div className="hidden lg:inline-flex items-center rounded border border-border/40 bg-muted/30 p-0.5">
             <button
               onClick={() => setThemeMode("system")}
               className={cn(

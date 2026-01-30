@@ -146,7 +146,7 @@ export function DayColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex h-full min-w-[280px] max-w-[280px] flex-col border-r border-border/40 transition-colors duration-150",
+        "flex h-full w-[calc(100vw-1rem)] sm:w-[280px] sm:min-w-[280px] sm:max-w-[280px] flex-shrink-0 flex-col border-r border-border/40 transition-colors duration-150",
         // Today highlight
         today && "bg-primary/[0.02]",
         // Subtle highlight during any drag operation

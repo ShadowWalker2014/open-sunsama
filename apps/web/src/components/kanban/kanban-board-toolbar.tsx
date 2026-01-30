@@ -87,36 +87,42 @@ export function KanbanBoardToolbar({
   const currentSortLabel = SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? "Manual";
 
   return (
-    <div className="flex items-center justify-between border-b px-4 py-3">
-      <div className="flex items-center gap-4">
+    <div className="flex items-center justify-between border-b px-3 sm:px-4 py-2 sm:py-3">
+      <div className="flex items-center gap-2 sm:gap-4">
         {/* Navigation Arrows */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5 sm:gap-1">
           <Button
             variant="outline"
             size="icon"
             onClick={onNavigatePrevious}
             title="Previous day"
+            className="h-9 w-9 sm:h-10 sm:w-10"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" onClick={onNavigateToday} className="group">
-            <CalendarDays className="mr-2 h-4 w-4" />
-            Today
-            <ShortcutHint shortcutKey="goToToday" className="ml-2" showOnHover />
+          <Button 
+            variant="outline" 
+            onClick={onNavigateToday} 
+            className="group h-9 sm:h-10 px-2 sm:px-3"
+          >
+            <CalendarDays className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Today</span>
+            <ShortcutHint shortcutKey="goToToday" className="ml-2 hidden sm:flex" showOnHover />
           </Button>
           <Button
             variant="outline"
             size="icon"
             onClick={onNavigateNext}
             title="Next day"
+            className="h-9 w-9 sm:h-10 sm:w-10"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
 
-        {/* Current Date Range */}
+        {/* Current Date Range - Hidden on mobile */}
         {firstVisibleDate && lastVisibleDate && (
-          <h2 className="text-lg font-semibold">
+          <h2 className="hidden sm:block text-base sm:text-lg font-semibold">
             {format(firstVisibleDate, "MMM d")} -{" "}
             {format(lastVisibleDate, "MMM d, yyyy")}
           </h2>
@@ -127,10 +133,10 @@ export function KanbanBoardToolbar({
       <div className="flex items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-1 sm:gap-2 h-9 sm:h-10 px-2 sm:px-3">
               <ArrowUpDown className="h-4 w-4" />
               <span className="hidden sm:inline">Sort:</span>
-              <span>{currentSortLabel}</span>
+              <span className="text-xs sm:text-sm">{currentSortLabel}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
