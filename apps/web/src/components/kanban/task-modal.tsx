@@ -15,8 +15,9 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Plus, Clock, Trash2, Check, Calendar, Paperclip } from "lucide-react";
-import type { Task, Subtask } from "@open-sunsama/types";
+import { Plus, Clock, Trash2, Check, Calendar } from "lucide-react";
+import type { Task, Subtask, TaskPriority } from "@open-sunsama/types";
+import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
 import { useUpdateTask, useDeleteTask, useCompleteTask } from "@/hooks/useTasks";
 import { useSubtasks, useCreateSubtask, useUpdateSubtask, useDeleteSubtask, useReorderSubtasks } from "@/hooks/useSubtasks";
 import { useTimeBlocks, useUpdateTimeBlock } from "@/hooks/useTimeBlocks";
@@ -71,6 +72,9 @@ const DURATION_PRESETS = [
   { label: "1.5 hours", value: 90 },
   { label: "2 hours", value: 120 },
 ];
+
+// Priority options
+const PRIORITIES: TaskPriority[] = ["P0", "P1", "P2", "P3"];
 
 /**
  * Parse flexible time input formats into minutes.
@@ -283,6 +287,14 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     await completeTask.mutateAsync({ id: task.id, completed: !isCompleted });
   };
 
+  const handleSetPriority = async (priority: TaskPriority) => {
+    if (!task || task.priority === priority) return;
+    await updateTask.mutateAsync({
+      id: task.id,
+      data: { priority },
+    });
+  };
+
   const addSubtask = async () => {
     if (!newSubtaskTitle.trim() || !task) return;
     await createSubtask.mutateAsync({
@@ -440,13 +452,35 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
             />
           </div>
 
-          {/* Attachments Section */}
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
-              <Paperclip className="h-4 w-4" />
-              Attachments
-            </h4>
-            <TaskAttachments taskId={task.id} />
+          {/* Attachments - minimal */}
+          <TaskAttachments taskId={task.id} />
+
+          {/* Priority Section */}
+          <div className="flex items-center justify-between py-2">
+            <span className="text-sm text-muted-foreground">Priority</span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-7 gap-2 px-2">
+                  <PriorityIcon priority={task.priority} />
+                  <span className="text-sm">{PRIORITY_LABELS[task.priority]}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                {PRIORITIES.map((p) => (
+                  <DropdownMenuItem
+                    key={p}
+                    onClick={() => handleSetPriority(p)}
+                    className={task.priority === p ? "bg-accent" : ""}
+                  >
+                    <PriorityIcon priority={p} className="mr-2" />
+                    {PRIORITY_LABELS[p]}
+                    {task.priority === p && (
+                      <span className="ml-auto text-xs text-muted-foreground">✓</span>
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Time & Duration Section */}
