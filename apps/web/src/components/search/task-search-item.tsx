@@ -1,8 +1,9 @@
 import * as React from "react";
-import { Check, Clock, Calendar, ChevronRight } from "lucide-react";
+import { Check, Calendar } from "lucide-react";
 import { format, isToday, isTomorrow, isPast } from "date-fns";
 import type { Task } from "@open-sunsama/types";
-import { cn, formatDuration, stripHtmlTags } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { PRIORITY_LABELS } from "@/components/ui/priority-badge";
 
 export interface TaskSearchItemProps {
   task: Task;
@@ -12,76 +13,68 @@ export interface TaskSearchItemProps {
   onComplete: (e: React.MouseEvent) => void;
 }
 
+const priorityColors: Record<string, string> = {
+  P0: "bg-red-500/15 text-red-600 dark:text-red-400",
+  P1: "bg-orange-500/15 text-orange-600 dark:text-orange-400",
+  P2: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+  P3: "bg-gray-500/10 text-gray-500",
+};
+
 export function TaskSearchItem({ task, isSelected, isCompleted, onClick, onComplete }: TaskSearchItemProps) {
   const scheduleText = React.useMemo(() => {
-    if (!task.scheduledDate) return "Backlog";
+    if (!task.scheduledDate) return null;
     const date = new Date(task.scheduledDate);
     if (isToday(date)) return "Today";
     if (isTomorrow(date)) return "Tomorrow";
-    if (isPast(date)) return format(date, "MMM d") + " (overdue)";
+    if (isPast(date)) return format(date, "MMM d");
     return format(date, "MMM d");
   }, [task.scheduledDate]);
-
-  const priorityColor = {
-    P0: "text-red-500",
-    P1: "text-orange-500",
-    P2: "text-blue-500",
-    P3: "text-gray-400",
-  }[task.priority];
 
   return (
     <div
       onClick={onClick}
       className={cn(
-        "flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors",
+        "flex items-center gap-2.5 px-3 h-[44px] cursor-pointer transition-colors",
         isSelected ? "bg-accent" : "hover:bg-accent/50",
-        isCompleted && "opacity-60"
+        isCompleted && "opacity-50"
       )}
     >
       {/* Checkbox */}
       <button
         onClick={onComplete}
         className={cn(
-          "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-colors cursor-pointer",
+          "flex h-[14px] w-[14px] shrink-0 items-center justify-center rounded-[4px] border transition-colors",
           isCompleted
             ? "border-primary bg-primary text-primary-foreground"
-            : "border-muted-foreground/50 hover:border-primary hover:bg-primary/10"
+            : "border-muted-foreground/30 hover:border-muted-foreground/50"
         )}
       >
-        {isCompleted && <Check className="h-2.5 w-2.5" strokeWidth={3} />}
+        {isCompleted && <Check className="h-2.5 w-2.5" strokeWidth={2.5} />}
       </button>
 
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className={cn("text-sm font-medium truncate", isCompleted && "line-through")}>
-            {task.title}
-          </span>
-          <span className={cn("text-xs font-medium", priorityColor)}>
-            {task.priority}
-          </span>
-        </div>
-        {task.notes && (
-          <p className="text-xs text-muted-foreground truncate mt-0.5">
-            {stripHtmlTags(task.notes)}
-          </p>
-        )}
-      </div>
+      {/* Priority badge */}
+      <span className={cn(
+        "text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0",
+        priorityColors[task.priority]
+      )}>
+        {PRIORITY_LABELS[task.priority]}
+      </span>
 
-      {/* Meta */}
-      <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
-        {task.estimatedMins && (
-          <span className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            {formatDuration(task.estimatedMins)}
-          </span>
-        )}
-        <span className="flex items-center gap-1">
+      {/* Title */}
+      <span className={cn(
+        "text-[13px] truncate flex-1",
+        isCompleted && "line-through text-muted-foreground"
+      )}>
+        {task.title}
+      </span>
+
+      {/* Schedule date */}
+      {scheduleText && (
+        <span className="flex items-center gap-1 text-[11px] text-muted-foreground shrink-0">
           <Calendar className="h-3 w-3" />
           {scheduleText}
         </span>
-        <ChevronRight className="h-4 w-4 opacity-50" />
-      </div>
+      )}
     </div>
   );
 }
