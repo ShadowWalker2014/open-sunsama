@@ -9,29 +9,32 @@ const config = getDefaultConfig(projectRoot);
 // Watch workspace packages (append to defaults)
 config.watchFolders = [...(config.watchFolders || []), workspaceRoot];
 
-// Resolve modules from workspace root
+// Block root node_modules/react from being resolved - force local version only
+config.resolver.blockList = [
+  // Block root's react to prevent version mismatch
+  new RegExp(`^${escapeRegex(path.resolve(workspaceRoot, 'node_modules/react'))}(/.*)?$`),
+  new RegExp(`^${escapeRegex(path.resolve(workspaceRoot, 'node_modules/scheduler'))}(/.*)?$`),
+];
+
+// Helper to escape regex special characters
+function escapeRegex(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Resolve modules - local first, then workspace
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
   path.resolve(workspaceRoot, 'node_modules'),
 ];
 
-// Force React and React Native core packages to resolve from mobile's node_modules
-// This prevents version mismatch when root has a different React version
+// Support workspace package resolution
 config.resolver.extraNodeModules = {
-  // Workspace packages
   '@open-sunsama/api-client': path.resolve(workspaceRoot, 'packages/api-client/src'),
   '@open-sunsama/types': path.resolve(workspaceRoot, 'packages/types/src'),
-  // Force local React resolution to avoid version mismatch
-  'react': path.resolve(projectRoot, 'node_modules/react'),
-  'react-native': path.resolve(projectRoot, 'node_modules/react-native'),
-  'react/jsx-runtime': path.resolve(projectRoot, 'node_modules/react/jsx-runtime'),
-  'react/jsx-dev-runtime': path.resolve(projectRoot, 'node_modules/react/jsx-dev-runtime'),
 };
 
 // Resolve .js imports to .ts files (ESM imports in workspace packages)
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  // Only transform .js to .ts for files in workspace packages
-  // This prevents breaking node_modules imports (e.g., React's CJS files)
   const isFromWorkspacePackage = context.originModulePath && 
     context.originModulePath.includes('/packages/');
   

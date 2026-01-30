@@ -16,6 +16,8 @@ export interface DateInfo {
 
 export interface UseKanbanDatesOptions {
   containerRef: React.RefObject<HTMLDivElement>;
+  /** When true, disables infinite scroll navigation (e.g., during drag) */
+  isDragging?: boolean;
 }
 
 export interface UseKanbanDatesReturn {
@@ -35,6 +37,7 @@ export interface UseKanbanDatesReturn {
  */
 export function useKanbanDates({
   containerRef,
+  isDragging = false,
 }: UseKanbanDatesOptions): UseKanbanDatesReturn {
   const [centerDate, setCenterDate] = React.useState(() =>
     startOfDay(new Date())
@@ -100,17 +103,29 @@ export function useKanbanDates({
   }, [virtualizer.scrollOffset, containerRef]);
 
   const navigateToToday = React.useCallback(() => {
+    const today = startOfDay(new Date());
     const todayIndex = dates.findIndex((d) => isToday(d.date));
+    
     if (todayIndex >= 0) {
+      // Today is in current date range, just scroll to it
       virtualizer.scrollToIndex(todayIndex, {
         align: "start",
         behavior: "smooth",
       });
+    } else {
+      // Today is NOT in current date range (e.g., stuck far in past/future)
+      // Reset centerDate to today - this regenerates the dates array
+      setCenterDate(today);
+      // The useEffect will scroll to today after dates regenerate
+      hasScrolledToTodayRef.current = false;
     }
   }, [dates, virtualizer]);
 
   // Load more days when scrolling near edges
+  // Skip during drag to prevent rapid navigation when dragging toward edges
   const handleScroll = React.useCallback(() => {
+    if (isDragging) return; // Don't navigate during drag operations
+    
     const container = containerRef.current;
     if (!container) return;
 
@@ -124,7 +139,7 @@ export function useKanbanDates({
     if (scrollRight < COLUMN_WIDTH * 3) {
       setCenterDate((prev) => addDays(prev, 7));
     }
-  }, [containerRef]);
+  }, [containerRef, isDragging]);
 
   // Calculate visible date range for header
   const visibleItems = virtualizer.getVirtualItems();
