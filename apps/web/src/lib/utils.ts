@@ -62,3 +62,13 @@ export function debounce<T extends (...args: Parameters<T>) => ReturnType<T>>(
     timeoutId = setTimeout(() => fn(...args), delay);
   };
 }
+
+/**
+ * Strip HTML tags from a string for plain text preview.
+ * Uses regex for SSR compatibility.
+ */
+export function stripHtmlTags(html: string): string {
+  if (!html) return "";
+  // Use regex to remove HTML tags (works in SSR)
+  return html.replace(/<[^>]*>/g, "").trim();
+}

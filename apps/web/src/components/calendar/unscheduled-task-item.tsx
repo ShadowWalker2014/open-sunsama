@@ -1,8 +1,7 @@
 import * as React from "react";
 import { Clock, GripVertical } from "lucide-react";
 import type { Task } from "@open-sunsama/types";
-import { cn } from "@/lib/utils";
-import { formatDuration } from "@/lib/utils";
+import { cn, formatDuration, stripHtmlTags } from "@/lib/utils";
 
 interface UnscheduledTaskItemProps {
   task: Task;
@@ -86,10 +85,10 @@ export function UnscheduledTaskItem({
           </div>
         )}
 
-        {/* Notes preview */}
+        {/* Notes preview - strip HTML tags */}
         {task.notes && (
           <p className="mt-1.5 text-xs text-muted-foreground truncate">
-            {task.notes}
+            {stripHtmlTags(task.notes)}
           </p>
         )}
       </div>
