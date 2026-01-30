@@ -143,8 +143,8 @@ export function TaskCardContent({
         </span>
       )}
 
-      {/* Main row: Checkbox, Title, Duration */}
-      <div className="flex items-start gap-2.5">
+      {/* Main row: Checkbox + Title */}
+      <div className="flex items-start gap-2">
         {/* Circle Checkbox */}
         <div
           className={cn(
@@ -161,16 +161,19 @@ export function TaskCardContent({
           {isCompleted && <Check className="h-2.5 w-2.5" strokeWidth={3} />}
         </div>
 
-        {/* Title */}
+        {/* Title - wraps to multiple lines, clamps at 3 lines max */}
         <p
           className={cn(
-            "min-w-0 flex-1 text-sm leading-snug text-foreground",
+            "min-w-0 flex-1 text-sm leading-snug text-foreground break-words line-clamp-3",
             isCompleted && "line-through text-muted-foreground"
           )}
         >
           {task.title}
         </p>
+      </div>
 
+      {/* Metadata row: Duration + Priority badges */}
+      <div className="flex items-center gap-1.5 pl-6">
         {/* Duration badge - inline editable */}
         <Popover open={durationOpen} onOpenChange={setDurationOpen}>
           <PopoverTrigger asChild>
@@ -196,7 +199,7 @@ export function TaskCardContent({
           </PopoverTrigger>
           <PopoverContent
             className="w-auto p-1"
-            align="end"
+            align="start"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="grid grid-cols-4 gap-0.5">
@@ -243,7 +246,7 @@ export function TaskCardContent({
           </PopoverTrigger>
           <PopoverContent
             className="w-auto p-1"
-            align="end"
+            align="start"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex flex-col gap-0.5">
@@ -273,7 +276,7 @@ export function TaskCardContent({
 
       {/* Subtasks preview - inline with small checkboxes */}
       {subtasksPreview && subtasksPreview.length > 0 && !isCompleted && !subtasksHidden && (
-        <div className="pl-6 space-y-1">
+        <div className="pl-6 space-y-1 mt-0.5">
           {subtasksPreview.map((subtask) => (
             <div 
               key={subtask.id} 

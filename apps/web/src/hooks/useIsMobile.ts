@@ -1,20 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
+
+const MOBILE_BREAKPOINT = 1023;
 
 /**
  * Hook to detect if the viewport is mobile-sized (< 1024px / lg breakpoint)
- * Uses matchMedia for efficient, reactive viewport detection
+ * Uses useSyncExternalStore for correct SSR hydration
  */
 export function useIsMobile(): boolean {
-  const [isMobile, setIsMobile] = useState(false);
-  
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 1023px)');
-    setIsMobile(mq.matches);
-    
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-  
-  return isMobile;
+  const subscribe = (callback: () => void) => {
+    const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
+    mq.addEventListener('change', callback);
+    return () => mq.removeEventListener('change', callback);
+  };
+
+  const getSnapshot = () => {
+    return window.innerWidth <= MOBILE_BREAKPOINT;
+  };
+
+  const getServerSnapshot = () => {
+    // Default to desktop on server
+    return false;
+  };
+
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }

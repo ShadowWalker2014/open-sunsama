@@ -5,12 +5,16 @@ import { TaskModal } from "@/components/kanban/task-modal";
 import { TimeBlockDetailSheet } from "@/components/calendar/time-block-detail-sheet";
 import { CreateTimeBlockDialog } from "@/components/calendar/create-time-block-dialog";
 import { useTask } from "@/hooks";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { MobileCalendarView } from "@/components/mobile";
 
 /**
  * Calendar page with time blocking functionality
  * Displays a day view with unscheduled tasks panel and timeline
  */
 export default function CalendarPage() {
+  const isMobile = useIsMobile();
+  
   // Task detail panel state
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [selectedTaskId, setSelectedTaskId] = React.useState<string | null>(null);
@@ -72,6 +76,10 @@ export default function CalendarPage() {
     setCreateDialogEndTime(endTime);
     setCreateDialogOpen(true);
   };
+
+  if (isMobile) {
+    return <MobileCalendarView />;
+  }
 
   return (
     <div className="h-[calc(100vh-3.5rem)]">

@@ -4,12 +4,13 @@ import { KanbanBoard, useKanbanNavigation } from "@/components/kanban";
 import { KanbanCalendarPanel } from "@/components/kanban/kanban-calendar-panel";
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileBacklogSheet } from "@/components/layout/mobile-backlog-sheet";
+import { MobileTaskListView } from "@/components/mobile";
 import { TasksDndProvider } from "@/lib/dnd/tasks-dnd-context";
 import { TaskShortcutsHandler } from "@/components/task-shortcuts-handler";
 import { TaskModal } from "@/components/kanban/task-modal";
 import { TimeBlockDetailSheet } from "@/components/calendar/time-block-detail-sheet";
 import { CreateTimeBlockDialog } from "@/components/calendar/create-time-block-dialog";
-import { useTask } from "@/hooks";
+import { useTask, useIsMobile } from "@/hooks";
 
 /**
  * Main tasks/kanban view
@@ -17,6 +18,7 @@ import { useTask } from "@/hooks";
  * Right side shows a compact calendar for the active (leftmost) day
  */
 export default function TasksPage() {
+  const isMobile = useIsMobile();
   const [activeDate, setActiveDate] = React.useState<Date | null>(null);
 
   // Task detail panel state
@@ -45,6 +47,11 @@ export default function TasksPage() {
       setSelectedTaskId(null); // Clear the ID after fetching
     }
   }, [fetchedTask, selectedTaskId]);
+
+  // Render mobile task list view on mobile devices
+  if (isMobile) {
+    return <MobileTaskListView />;
+  }
 
   const handleTaskClick = (task: Task) => {
     setSelectedTask(task);

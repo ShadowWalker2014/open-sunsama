@@ -123,7 +123,7 @@ export function Sidebar({ className }: SidebarProps) {
     <aside
       ref={setDroppableRef}
       className={cn(
-        "flex h-full w-56 flex-col border-r border-border/40 bg-background/50 transition-all duration-300 ease-in-out",
+        "flex h-full w-60 flex-col border-r border-border/40 bg-background/50 transition-all duration-300 ease-in-out",
         isOver && "bg-primary/5 border-primary/30", // Visual feedback when dragging over
         className
       )}
