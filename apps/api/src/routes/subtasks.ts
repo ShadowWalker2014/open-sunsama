@@ -14,6 +14,7 @@ import {
   taskIdParamSchema,
   subtaskIdParamSchema,
 } from '../validation/subtasks.js';
+import { publishEvent } from '../lib/websocket/index.js';
 
 const subtasksRouter = new Hono<{ Variables: AuthVariables }>();
 subtasksRouter.use('*', auth);
@@ -84,6 +85,16 @@ subtasksRouter.post(
       })
       .returning();
 
+    // Publish realtime event (fire and forget) - subtask change affects parent task
+    if (process.env.REDIS_URL) {
+      // Get parent task's scheduledDate for the event payload
+      const [parentTask] = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
+      publishEvent(userId, 'task:updated', {
+        taskId,
+        scheduledDate: parentTask?.scheduledDate ?? null,
+      });
+    }
+
     return c.json({ success: true, data: newSubtask }, 201);
   }
 );
@@ -122,6 +133,16 @@ subtasksRouter.patch(
       .where(and(eq(subtasks.id, id), eq(subtasks.taskId, taskId)))
       .returning();
 
+    // Publish realtime event (fire and forget) - subtask change affects parent task
+    if (process.env.REDIS_URL) {
+      // Get parent task's scheduledDate for the event payload
+      const [parentTask] = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
+      publishEvent(userId, 'task:updated', {
+        taskId,
+        scheduledDate: parentTask?.scheduledDate ?? null,
+      });
+    }
+
     return c.json({ success: true, data: updatedSubtask });
   }
 );
@@ -148,6 +169,16 @@ subtasksRouter.delete(
     if (!existing) throw new NotFoundError('Subtask', id);
 
     await db.delete(subtasks).where(and(eq(subtasks.id, id), eq(subtasks.taskId, taskId)));
+
+    // Publish realtime event (fire and forget) - subtask change affects parent task
+    if (process.env.REDIS_URL) {
+      // Get parent task's scheduledDate for the event payload
+      const [parentTask] = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
+      publishEvent(userId, 'task:updated', {
+        taskId,
+        scheduledDate: parentTask?.scheduledDate ?? null,
+      });
+    }
 
     return c.json({ success: true, message: 'Subtask deleted successfully' });
   }

@@ -15,6 +15,7 @@ import {
   registerSchema, loginSchema, updateProfileSchema, changePasswordSchema,
   requestPasswordResetSchema, resetPasswordSchema,
 } from '../validation/auth.js';
+import { publishEvent } from '../lib/websocket/index.js';
 
 const authRouter = new Hono<{ Variables: AuthVariables }>();
 
@@ -81,13 +82,33 @@ authRouter.patch('/me', auth, zValidator('json', updateProfileSchema), async (c)
   const db = getDb();
 
   const updateData: Record<string, unknown> = { updatedAt: new Date() };
-  if (updates.name !== undefined) updateData.name = updates.name;
-  if (updates.avatarUrl !== undefined) updateData.avatarUrl = updates.avatarUrl;
-  if (updates.timezone !== undefined) updateData.timezone = updates.timezone;
-  if (updates.preferences !== undefined) updateData.preferences = updates.preferences;
+  const changedFields: string[] = [];
+  if (updates.name !== undefined) {
+    updateData.name = updates.name;
+    changedFields.push('name');
+  }
+  if (updates.avatarUrl !== undefined) {
+    updateData.avatarUrl = updates.avatarUrl;
+    changedFields.push('avatarUrl');
+  }
+  if (updates.timezone !== undefined) {
+    updateData.timezone = updates.timezone;
+    changedFields.push('timezone');
+  }
+  if (updates.preferences !== undefined) {
+    updateData.preferences = updates.preferences;
+    changedFields.push('preferences');
+  }
 
   const [updatedUser] = await db.update(users).set(updateData).where(eq(users.id, userId)).returning();
   if (!updatedUser) throw new AuthenticationError('User not found');
+
+  // Publish realtime event (fire and forget)
+  if (process.env.REDIS_URL && changedFields.length > 0) {
+    publishEvent(userId, 'user:updated', {
+      fields: changedFields,
+    });
+  }
 
   return c.json({ success: true, data: formatUser(updatedUser) });
 });

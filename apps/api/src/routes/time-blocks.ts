@@ -11,6 +11,7 @@ import { auth, requireScopes, type AuthVariables } from '../middleware/auth.js';
 import {
   createTimeBlockSchema, updateTimeBlockSchema, timeBlockFilterSchema, calculateDuration,
 } from '../validation/time-blocks.js';
+import { publishEvent } from '../lib/websocket/index.js';
 
 const timeBlocksRouter = new Hono<{ Variables: AuthVariables }>();
 timeBlocksRouter.use('*', auth);
@@ -77,6 +78,15 @@ timeBlocksRouter.post('/', requireScopes('time-blocks:write'), zValidator('json'
   if (newTimeBlock?.taskId) {
     [task] = await db.select().from(tasks).where(eq(tasks.id, newTimeBlock.taskId)).limit(1);
   }
+
+  // Publish realtime event (fire and forget)
+  if (process.env.REDIS_URL && newTimeBlock) {
+    publishEvent(userId, 'timeblock:created', {
+      timeBlockId: newTimeBlock.id,
+      date: newTimeBlock.date,
+    });
+  }
+
   return c.json({ success: true, data: { ...newTimeBlock, task } }, 201);
 });
 
@@ -132,6 +142,15 @@ timeBlocksRouter.patch('/:id', requireScopes('time-blocks:write'), zValidator('p
   if (updatedTimeBlock?.taskId) {
     [task] = await db.select().from(tasks).where(eq(tasks.id, updatedTimeBlock.taskId)).limit(1);
   }
+
+  // Publish realtime event (fire and forget)
+  if (process.env.REDIS_URL && updatedTimeBlock) {
+    publishEvent(userId, 'timeblock:updated', {
+      timeBlockId: updatedTimeBlock.id,
+      date: updatedTimeBlock.date,
+    });
+  }
+
   return c.json({ success: true, data: { ...updatedTimeBlock, task } });
 });
 
@@ -145,6 +164,15 @@ timeBlocksRouter.delete('/:id', requireScopes('time-blocks:write'), zValidator('
   if (!existing) throw new NotFoundError('Time block', id);
 
   await db.delete(timeBlocks).where(and(eq(timeBlocks.id, id), eq(timeBlocks.userId, userId)));
+
+  // Publish realtime event (fire and forget)
+  if (process.env.REDIS_URL) {
+    publishEvent(userId, 'timeblock:deleted', {
+      timeBlockId: id,
+      date: existing.date,
+    });
+  }
+
   return c.json({ success: true, message: 'Time block deleted successfully' });
 });
 

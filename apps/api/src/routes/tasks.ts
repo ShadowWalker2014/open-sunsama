@@ -9,6 +9,7 @@ import { getDb, eq, and, isNull, isNotNull, desc, asc, tasks, sql } from '@open-
 import { NotFoundError, uuidSchema } from '@open-sunsama/utils';
 import { auth, requireScopes, type AuthVariables } from '../middleware/auth.js';
 import { createTaskSchema, updateTaskSchema, taskFilterSchema, reorderTasksSchema } from '../validation/tasks.js';
+import { publishEvent } from '../lib/websocket/index.js';
 
 const tasksRouter = new Hono<{ Variables: AuthVariables }>();
 tasksRouter.use('*', auth);
@@ -75,6 +76,14 @@ tasksRouter.post('/', requireScopes('tasks:write'), zValidator('json', createTas
     priority: data.priority ?? 'P2', position,
   }).returning();
 
+  // Publish realtime event (fire and forget)
+  if (process.env.REDIS_URL && newTask) {
+    publishEvent(userId, 'task:created', {
+      taskId: newTask.id,
+      scheduledDate: newTask.scheduledDate,
+    });
+  }
+
   return c.json({ success: true, data: newTask }, 201);
 });
 
@@ -110,6 +119,17 @@ tasksRouter.patch('/:id', requireScopes('tasks:write'), zValidator('param', z.ob
   if (updates.position !== undefined) updateData.position = updates.position;
 
   const [updatedTask] = await db.update(tasks).set(updateData).where(and(eq(tasks.id, id), eq(tasks.userId, userId))).returning();
+
+  // Publish realtime event (fire and forget)
+  // Use 'task:completed' if completedAt changed to a truthy value, otherwise 'task:updated'
+  if (process.env.REDIS_URL && updatedTask) {
+    const eventType = updates.completedAt ? 'task:completed' : 'task:updated';
+    publishEvent(userId, eventType, {
+      taskId: updatedTask.id,
+      scheduledDate: updatedTask.scheduledDate,
+    });
+  }
+
   return c.json({ success: true, data: updatedTask });
 });
 
@@ -123,6 +143,15 @@ tasksRouter.delete('/:id', requireScopes('tasks:write'), zValidator('param', z.o
   if (!existing) throw new NotFoundError('Task', id);
 
   await db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
+
+  // Publish realtime event (fire and forget)
+  if (process.env.REDIS_URL) {
+    publishEvent(userId, 'task:deleted', {
+      taskId: id,
+      scheduledDate: existing.scheduledDate,
+    });
+  }
+
   return c.json({ success: true, message: 'Task deleted successfully' });
 });
 
@@ -136,6 +165,15 @@ tasksRouter.post('/:id/complete', requireScopes('tasks:write'), zValidator('para
   if (!existing) throw new NotFoundError('Task', id);
 
   const [updatedTask] = await db.update(tasks).set({ completedAt: new Date(), updatedAt: new Date() }).where(and(eq(tasks.id, id), eq(tasks.userId, userId))).returning();
+
+  // Publish realtime event (fire and forget)
+  if (process.env.REDIS_URL && updatedTask) {
+    publishEvent(userId, 'task:completed', {
+      taskId: updatedTask.id,
+      scheduledDate: updatedTask.scheduledDate,
+    });
+  }
+
   return c.json({ success: true, data: updatedTask });
 });
 
@@ -149,6 +187,15 @@ tasksRouter.post('/:id/uncomplete', requireScopes('tasks:write'), zValidator('pa
   if (!existing) throw new NotFoundError('Task', id);
 
   const [updatedTask] = await db.update(tasks).set({ completedAt: null, updatedAt: new Date() }).where(and(eq(tasks.id, id), eq(tasks.userId, userId))).returning();
+
+  // Publish realtime event (fire and forget)
+  if (process.env.REDIS_URL && updatedTask) {
+    publishEvent(userId, 'task:updated', {
+      taskId: updatedTask.id,
+      scheduledDate: updatedTask.scheduledDate,
+    });
+  }
+
   return c.json({ success: true, data: updatedTask });
 });
 
@@ -178,6 +225,14 @@ tasksRouter.post('/reorder', requireScopes('tasks:write'), zValidator('json', re
   const updatedTasks = await db.select().from(tasks)
     .where(and(eq(tasks.userId, userId), dateCondition))
     .orderBy(asc(tasks.position));
+
+  // Publish realtime event (fire and forget)
+  if (process.env.REDIS_URL) {
+    publishEvent(userId, 'task:reordered', {
+      date,
+      taskIds,
+    });
+  }
 
   return c.json({ success: true, data: updatedTasks, message: 'Tasks reordered successfully' });
 });
