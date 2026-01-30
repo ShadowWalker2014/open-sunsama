@@ -145,16 +145,15 @@ export function useKanbanDates({
     }
   }, [containerRef, isDragging]);
 
-  // Calculate visible date range for header
-  const visibleItems = virtualizer.getVirtualItems();
-  const firstVisibleItem = visibleItems[0];
-  const lastVisibleItem = visibleItems[visibleItems.length - 1];
-  const firstVisibleDate = firstVisibleItem
-    ? dates[firstVisibleItem.index]?.date ?? null
-    : null;
-  const lastVisibleDate = lastVisibleItem
-    ? dates[lastVisibleItem.index]?.date ?? null
-    : null;
+  // Calculate visible date range based on scroll position
+  // Use scroll offset to determine the actual first visible column, not the first virtual item
+  const scrollOffset = virtualizer.scrollOffset ?? 0;
+  const firstVisibleIndex = Math.floor(scrollOffset / COLUMN_WIDTH);
+  const containerWidth = containerRef.current?.clientWidth ?? COLUMN_WIDTH * VISIBLE_DAYS;
+  const lastVisibleIndex = Math.floor((scrollOffset + containerWidth) / COLUMN_WIDTH);
+  
+  const firstVisibleDate = dates[firstVisibleIndex]?.date ?? null;
+  const lastVisibleDate = dates[lastVisibleIndex]?.date ?? null;
 
   return {
     dates,
