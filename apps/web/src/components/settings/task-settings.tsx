@@ -40,15 +40,23 @@ export function TaskSettings() {
   const updatePreferences = useUpdateNotificationPreferences();
 
   const handleRolloverDestinationChange = async (value: string) => {
-    await updatePreferences.mutateAsync({ rolloverDestination: value as RolloverDestination });
-    const label = ROLLOVER_DESTINATION_OPTIONS.find((o) => o.value === value)?.label ?? value;
-    toast({ title: "Rollover destination updated", description: `Tasks will now rollover to: ${label}` });
+    try {
+      await updatePreferences.mutateAsync({ rolloverDestination: value as RolloverDestination });
+      const label = ROLLOVER_DESTINATION_OPTIONS.find((o) => o.value === value)?.label ?? value;
+      toast({ title: "Rollover destination updated", description: `Tasks will now rollover to: ${label}` });
+    } catch {
+      // Error toast is handled by the mutation's onError callback
+    }
   };
 
   const handleRolloverPositionChange = async (value: string) => {
-    await updatePreferences.mutateAsync({ rolloverPosition: value as RolloverPosition });
-    const label = ROLLOVER_POSITION_OPTIONS.find((o) => o.value === value)?.label ?? value;
-    toast({ title: "Rollover position updated", description: `Rolled-over tasks will appear at the ${label.toLowerCase()} of the list` });
+    try {
+      await updatePreferences.mutateAsync({ rolloverPosition: value as RolloverPosition });
+      const label = ROLLOVER_POSITION_OPTIONS.find((o) => o.value === value)?.label ?? value;
+      toast({ title: "Rollover position updated", description: `Rolled-over tasks will appear at the ${label.toLowerCase()} of the list` });
+    } catch {
+      // Error toast is handled by the mutation's onError callback
+    }
   };
 
   if (error) {

@@ -32,8 +32,10 @@ export async function registerRolloverWorkers(): Promise<void> {
   await boss.createQueue(JOBS.USER_BATCH_ROLLOVER);
 
   // Schedule the timezone check to run every minute
+  // singletonKey prevents duplicate schedules on server restarts
   await boss.schedule(JOBS.TIMEZONE_ROLLOVER_CHECK, '* * * * *', {}, {
     tz: 'UTC',
+    singletonKey: 'timezone-rollover-check-schedule',
   });
 
   // Register the timezone check handler

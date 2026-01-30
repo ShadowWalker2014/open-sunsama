@@ -16,6 +16,7 @@ export const notificationPreferencesKeys = {
 
 /**
  * Fetch notification preferences for the current user
+ * Preferences rarely change, so we use a longer staleTime to reduce refetches
  */
 export function useNotificationPreferences() {
   return useQuery({
@@ -24,6 +25,7 @@ export function useNotificationPreferences() {
       const api = getApi();
       return await api.notifications.getPreferences();
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes - preferences don't change often
   });
 }
 

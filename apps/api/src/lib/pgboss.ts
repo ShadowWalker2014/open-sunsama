@@ -8,20 +8,33 @@ import * as PgBossModule from 'pg-boss';
 const PgBoss = (PgBossModule as any).default || PgBossModule;
 type PgBossInstance = InstanceType<typeof PgBoss>;
 
+let bossPromise: Promise<PgBossInstance> | null = null;
 let boss: PgBossInstance | null = null;
 
 /**
  * Get or create the PG Boss instance
  * Lazily initializes and starts PG Boss on first call
+ * Uses promise caching to prevent race conditions on concurrent calls
  */
 export async function getPgBoss(): Promise<PgBossInstance> {
-  if (!boss) {
+  // Return cached instance if already started
+  if (boss) {
+    return boss;
+  }
+
+  // Return pending initialization if in progress (prevents race condition)
+  if (bossPromise) {
+    return bossPromise;
+  }
+
+  // Start initialization
+  bossPromise = (async () => {
     const databaseUrl = process.env.DATABASE_URL;
     if (!databaseUrl) {
       throw new Error('DATABASE_URL environment variable is required for PG Boss');
     }
 
-    boss = new PgBoss({
+    const instance = new PgBoss({
       connectionString: databaseUrl,
       schema: 'pgboss', // Separate schema for PG Boss tables
       retryLimit: 3,
@@ -32,14 +45,18 @@ export async function getPgBoss(): Promise<PgBossInstance> {
       deleteAfterDays: 7, // Delete archived jobs after 7 days
     });
 
-    boss.on('error', (error: Error) => {
+    instance.on('error', (error: Error) => {
       console.error('[PG Boss Error]', error);
     });
 
-    await boss.start();
+    await instance.start();
     console.log('[PG Boss] Started successfully');
-  }
-  return boss;
+    
+    boss = instance;
+    return instance;
+  })();
+
+  return bossPromise;
 }
 
 /**
@@ -51,6 +68,7 @@ export async function stopPgBoss(): Promise<void> {
     console.log('[PG Boss] Stopping...');
     await boss.stop({ graceful: true, timeout: 30000 });
     boss = null;
+    bossPromise = null;
     console.log('[PG Boss] Stopped');
   }
 }

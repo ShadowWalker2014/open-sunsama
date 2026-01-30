@@ -8,6 +8,7 @@ import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { getDb, eq, notificationPreferences } from '@open-sunsama/database';
 import type { NotificationPreferences, UpdateNotificationPreferencesInput, RolloverDestination, RolloverPosition } from '@open-sunsama/types';
+import { InternalError } from '@open-sunsama/utils';
 import { auth, type AuthVariables } from '../middleware/auth.js';
 
 const notificationsRouter = new Hono<{ Variables: AuthVariables }>();
@@ -64,6 +65,7 @@ function getDefaultPreferences(userId: string): Omit<NotificationPreferences, 'i
 /**
  * GET /notifications/preferences
  * Get the current user's notification preferences
+ * Creates default preferences lazily on first access
  */
 notificationsRouter.get('/preferences', async (c) => {
   const userId = c.get('userId');
@@ -83,17 +85,21 @@ notificationsRouter.get('/preferences', async (c) => {
     });
   }
 
-  // Return default preferences if none exist
-  // Note: We create the record on first update, not on first read
+  // Create default preferences lazily on first access
+  // This ensures we always return a valid record with a real ID
   const defaults = getDefaultPreferences(userId);
+  const [createdPrefs] = await db
+    .insert(notificationPreferences)
+    .values(defaults)
+    .returning();
+
+  if (!createdPrefs) {
+    throw new InternalError('Failed to create default notification preferences');
+  }
+
   return c.json({
     success: true,
-    data: {
-      id: '',
-      ...defaults,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    } as NotificationPreferences,
+    data: formatPreferences(createdPrefs),
   });
 });
 
@@ -148,7 +154,7 @@ notificationsRouter.put('/preferences', zValidator('json', updatePreferencesSche
       .returning();
 
     if (!updatedPrefs) {
-      throw new Error('Failed to update notification preferences');
+      throw new InternalError('Failed to update notification preferences');
     }
 
     return c.json({

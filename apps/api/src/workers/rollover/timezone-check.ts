@@ -47,11 +47,11 @@ export async function processTimezoneRolloverCheck(
       // Check if this is a DST transition day (expand the window)
       const isDSTTransition = checkDSTTransition(timezone, now);
       
-      // Normally trigger at midnight (00:00 - 00:01)
-      // On DST days, use a wider window (23:00 - 01:00)
+      // Normally trigger at midnight (00:00 - 00:10) - 10 minute window for reliability
+      // On DST days, use a wider window (23:00 - 01:30) to catch edge cases
       const isMidnightWindow = isDSTTransition
         ? (currentHour === 23 || currentHour === 0 || currentHour === 1) && currentMinute <= 30
-        : currentHour === 0 && currentMinute <= 1;
+        : currentHour === 0 && currentMinute <= 10;
 
       if (!isMidnightWindow) continue;
 

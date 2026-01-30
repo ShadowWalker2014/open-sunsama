@@ -2,10 +2,10 @@ import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import type { TaskPriority } from '@open-sunsama/types';
 
 export const PRIORITY_LABELS: Record<TaskPriority, string> = {
-  P0: "Urgent",
-  P1: "High",
-  P2: "Medium",
-  P3: "Low",
+  P0: "P0",
+  P1: "P1",
+  P2: "P2",
+  P3: "P3",
 };
 
 const PRIORITIES: { value: TaskPriority; label: string; color: string }[] = [

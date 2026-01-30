@@ -33,8 +33,8 @@ export function parseSortOption(sort: SortOption): { field: TaskSortBy; directio
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: "position", label: "Manual" },
-  { value: "priority-desc", label: "Priority (High → Low)" },
-  { value: "priority-asc", label: "Priority (Low → High)" },
+  { value: "priority-desc", label: "Priority (P0 → P3)" },
+  { value: "priority-asc", label: "Priority (P3 → P0)" },
   { value: "createdAt-desc", label: "Date (Newest first)" },
   { value: "createdAt-asc", label: "Date (Oldest first)" },
 ];
