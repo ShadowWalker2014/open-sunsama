@@ -3,9 +3,12 @@ import { ListTodo } from "lucide-react";
 import type { Task } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { Badge, ScrollArea } from "@/components/ui";
-import { UnscheduledTaskItem, TaskItemSkeleton } from "./unscheduled-task-item";
+import { TaskItemSkeleton } from "./unscheduled-task-item";
 import { MobileUnscheduledSheet } from "./mobile-unscheduled-sheet";
 import { AddTaskInline } from "@/components/kanban/add-task-inline";
+import { TaskCardContent } from "@/components/kanban/task-card-content";
+import { TaskContextMenu } from "@/components/kanban/task-context-menu";
+import { useCompleteTask } from "@/hooks/useTasks";
 
 interface UnscheduledTasksProps {
   tasks: Task[];
@@ -29,6 +32,7 @@ export function UnscheduledTasksPanel({
   className,
 }: UnscheduledTasksProps) {
   const taskCount = tasks.length;
+  const completeTask = useCompleteTask();
 
   // Desktop panel content
   const panelContent = (
@@ -73,12 +77,28 @@ export function UnscheduledTasksPanel({
           ) : (
             // Task items
             tasks.map((task) => (
-              <UnscheduledTaskItem
+              <TaskContextMenu
                 key={task.id}
                 task={task}
-                onDragStart={(e) => onTaskDragStart?.(task, e)}
-                onClick={() => onTaskClick?.(task)}
-              />
+                onEdit={() => onTaskClick?.(task)}
+              >
+                <div
+                  className="cursor-grab active:cursor-grabbing"
+                  onMouseDown={(e) => onTaskDragStart?.(task, e)}
+                >
+                  <TaskCardContent
+                    task={task}
+                    isCompleted={!!task.completedAt}
+                    isHovered={false}
+                    onToggleComplete={(e) => {
+                      e.stopPropagation();
+                      completeTask.mutate({ id: task.id, completed: !task.completedAt });
+                    }}
+                    onClick={() => onTaskClick?.(task)}
+                    onHoverChange={() => {}}
+                  />
+                </div>
+              </TaskContextMenu>
             ))
           )}
         </div>
