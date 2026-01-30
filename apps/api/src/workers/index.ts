@@ -2,7 +2,7 @@
  * Worker registration entry point
  * Registers all background job handlers with PG Boss
  */
-import { registerRolloverWorkers } from './rollover.js';
+import { registerRolloverWorkers } from './rollover/index.js';
 
 /**
  * Register all workers
