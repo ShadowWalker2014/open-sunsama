@@ -123,6 +123,8 @@ authRouter.patch('/me', auth, zValidator('json', updateProfileSchema), async (c)
   if (changedFields.length > 0) {
     publishEvent(userId, 'user:updated', {
       fields: changedFields,
+      // Include preferences when they changed for realtime sync across devices
+      preferences: changedFields.includes('preferences') ? updates.preferences : undefined,
     });
   }
 

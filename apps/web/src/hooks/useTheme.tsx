@@ -9,6 +9,7 @@ import {
 } from "@/lib/themes";
 import { useAuth } from "@/hooks/useAuth";
 import { useSavePreferences } from "@/hooks/useUserPreferences";
+import { subscribeToPreferencesUpdates } from "@/lib/websocket";
 
 const STORAGE_KEY = "open_sunsama_preferences";
 
@@ -171,6 +172,27 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setHasLoadedFromUser(false);
     }
   }, [user]);
+
+  // Subscribe to realtime preference updates from WebSocket
+  // This syncs theme/settings across all connected devices/tabs
+  React.useEffect(() => {
+    const unsubscribe = subscribeToPreferencesUpdates((wsPreferences) => {
+      // Apply preferences from WebSocket event
+      const newPrefs: UserPreferences = {
+        themeMode: (wsPreferences.themeMode as ThemeMode) || preferences.themeMode,
+        colorTheme: wsPreferences.colorTheme || preferences.colorTheme,
+        fontFamily: (wsPreferences.fontFamily as FontFamily) || preferences.fontFamily,
+      };
+      
+      // Update state and apply theme
+      setPreferences(newPrefs);
+      savePreferences(newPrefs); // Cache to localStorage
+      const resolved = applyTheme(newPrefs.themeMode, newPrefs.colorTheme, newPrefs.fontFamily);
+      setResolvedTheme(resolved);
+    });
+
+    return unsubscribe;
+  }, [preferences]); // Include preferences to get latest values for fallback
 
   // Debounced save to database - stable function that calls the latest mutate via ref
   const debouncedSaveToDb = React.useMemo(

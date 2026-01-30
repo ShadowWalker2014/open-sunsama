@@ -40,6 +40,11 @@ export interface TimeBlockEvent {
 
 export interface UserEvent {
   fields: string[];
+  preferences?: {
+    themeMode?: string;
+    colorTheme?: string;
+    fontFamily?: string;
+  } | null;
 }
 
 export interface ConnectedEvent {
@@ -185,3 +190,19 @@ class WebSocketClient {
 
 // Export singleton instance
 export const wsClient = new WebSocketClient();
+
+/**
+ * Simple event emitter for preferences updates from WebSocket
+ * This allows the ThemeProvider to sync preferences in realtime
+ */
+type PreferencesHandler = (preferences: NonNullable<UserEvent['preferences']>) => void;
+const preferencesHandlers = new Set<PreferencesHandler>();
+
+export function subscribeToPreferencesUpdates(handler: PreferencesHandler): () => void {
+  preferencesHandlers.add(handler);
+  return () => preferencesHandlers.delete(handler);
+}
+
+export function emitPreferencesUpdate(preferences: NonNullable<UserEvent['preferences']>): void {
+  preferencesHandlers.forEach(handler => handler(preferences));
+}

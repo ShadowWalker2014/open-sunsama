@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { wsClient, type WebSocketEvent } from "@/lib/websocket";
+import { wsClient, emitPreferencesUpdate, type WebSocketEvent, type UserEvent } from "@/lib/websocket";
 import { useAuth } from "@/hooks/useAuth";
 import { taskKeys } from "@/hooks/useTasks";
 import { timeBlockKeys } from "@/hooks/useTimeBlocks";
@@ -101,9 +101,15 @@ function handleWebSocketEvent(
       break;
 
     // User events
-    case "user:updated":
+    case "user:updated": {
       queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      // Emit preferences update for realtime theme sync across devices
+      const userPayload = event.payload as UserEvent;
+      if (userPayload.preferences) {
+        emitPreferencesUpdate(userPayload.preferences);
+      }
       break;
+    }
 
     case "connected":
       console.log("[WS] Connection confirmed");

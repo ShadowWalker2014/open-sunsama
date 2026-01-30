@@ -59,7 +59,12 @@ export interface TimeBlockEvent {
  * Event payload for user profile updates
  */
 export interface UserEvent {
-  fields: string[]; // Which fields changed: ['name', 'timezone', 'avatarUrl']
+  fields: string[]; // Which fields changed: ['name', 'timezone', 'avatarUrl', 'preferences']
+  preferences?: {
+    themeMode?: string;
+    colorTheme?: string;
+    fontFamily?: string;
+  } | null; // Include actual preference values when preferences changed
 }
 
 /**
