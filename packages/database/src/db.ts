@@ -53,4 +53,4 @@ export function resetDbInstance(): void {
 }
 
 // Re-export drizzle-orm utilities
-export { sql, eq, and, or, desc, asc, isNull, isNotNull, inArray, notInArray } from 'drizzle-orm';
+export { sql, eq, and, or, desc, asc, isNull, isNotNull, inArray, notInArray, lt, gt, lte, gte, ne, like, ilike } from 'drizzle-orm';
