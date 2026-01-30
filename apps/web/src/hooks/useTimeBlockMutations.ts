@@ -154,5 +154,6 @@ export {
   useStartTimeBlock,
   useStopTimeBlock,
   useResizeTimeBlock,
+  useCascadeResizeTimeBlock,
   useMoveTimeBlock,
 } from "./useTimeBlockTimer";

@@ -12,7 +12,7 @@ import {
   useTimeBlocksForDate,
   useCreateTimeBlock,
   useMoveTimeBlock,
-  useResizeTimeBlock,
+  useCascadeResizeTimeBlock,
 } from "@/hooks";
 import { useCalendarDnd } from "@/hooks/useCalendarDnd";
 import { Timeline } from "./timeline";
@@ -61,7 +61,7 @@ export function CalendarView({
   // Mutations
   const createTimeBlock = useCreateTimeBlock();
   const moveTimeBlock = useMoveTimeBlock();
-  const resizeTimeBlock = useResizeTimeBlock();
+  const cascadeResizeTimeBlock = useCascadeResizeTimeBlock();
 
   // Filter tasks that don't have a time block on this day
   const unscheduledTasks = React.useMemo(() => {
@@ -102,7 +102,13 @@ export function CalendarView({
       moveTimeBlock.mutate({ id: blockId, startTime, endTime });
     },
     onBlockResize: (blockId, startTime, endTime) => {
-      resizeTimeBlock.mutate({ id: blockId, startTime, endTime });
+      // Use cascade resize to automatically shift blocks below
+      cascadeResizeTimeBlock.mutate({ 
+        id: blockId, 
+        startTime, 
+        endTime,
+        allBlocks: timeBlocks,
+      });
     },
   });
 

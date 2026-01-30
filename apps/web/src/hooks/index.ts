@@ -31,6 +31,7 @@ export {
   useStartTimeBlock,
   useStopTimeBlock,
   useResizeTimeBlock,
+  useCascadeResizeTimeBlock,
   useMoveTimeBlock,
   timeBlockKeys,
 } from "./useTimeBlocks";
