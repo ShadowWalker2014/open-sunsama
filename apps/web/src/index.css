@@ -144,12 +144,19 @@
     --font-family: var(--font-geist);
   }
 
-  /* When font class is on html, update the CSS variable */
-  html.font-geist { --font-family: var(--font-geist); }
-  html.font-system { --font-family: var(--font-system); }
-  html.font-inter { --font-family: var(--font-inter); }
-  html.font-jetbrains { --font-family: var(--font-jetbrains); }
 }
+
+/* Font classes - outside @layer for higher specificity */
+html.font-geist { --font-family: var(--font-geist); }
+html.font-system { --font-family: var(--font-system); }
+html.font-inter { --font-family: var(--font-inter); }
+html.font-jetbrains { --font-family: var(--font-jetbrains); }
+
+/* Font class also directly sets on body for immediate updates */
+html.font-geist body { font-family: var(--font-geist) !important; }
+html.font-system body { font-family: var(--font-system) !important; }
+html.font-inter body { font-family: var(--font-inter) !important; }
+html.font-jetbrains body { font-family: var(--font-jetbrains) !important; }
 
 @layer base {
   * {

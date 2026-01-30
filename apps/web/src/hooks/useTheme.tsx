@@ -106,6 +106,13 @@ function applyTheme(mode: ThemeMode, colorTheme: string, fontFamily: FontFamily)
   // Apply font family
   root.classList.add(`font-${fontFamily}`);
   
+  // Force browser to recalculate styles immediately
+  // This ensures CSS variables are updated before React re-renders
+  void root.offsetHeight;
+  
+  // Also update body's font-family directly for immediate visual feedback
+  document.body.style.fontFamily = `var(--font-family)`;
+  
   return resolvedMode;
 }
 
