@@ -10,7 +10,7 @@ import {
 } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { useApiKeys, useCreateApiKey } from "@/hooks/useApiKeys";
-import type { ApiKey, ApiKeyScope } from "@open-sunsama/types";
+import type { ApiKeyScope } from "@open-sunsama/types";
 
 const MCP_KEY_NAME = "MCP Integration";
 const MCP_KEY_STORAGE_KEY = "opensunsama_mcp_key";
@@ -103,7 +103,7 @@ export function McpSettings() {
   const [mcpKey, setMcpKey] = React.useState<string | null>(null);
   const [isCreatingKey, setIsCreatingKey] = React.useState(false);
 
-  const { data: apiKeys, isLoading: isLoadingKeys } = useApiKeys();
+  const { isLoading: isLoadingKeys } = useApiKeys();
   const createMutation = useCreateApiKey();
 
   // Get the API URL from environment
@@ -117,19 +117,16 @@ export function McpSettings() {
     }
   }, []);
 
-  // Find existing MCP key in the API keys list
-  const existingMcpKey = React.useMemo(() => {
-    return apiKeys?.find((key: ApiKey) => key.name === MCP_KEY_NAME);
-  }, [apiKeys]);
-
-  // Auto-create MCP key if it doesn't exist (and we don't have one stored)
+  // Auto-create MCP key if we don't have one in localStorage
+  // Note: Even if a key exists in the API, we can't retrieve its value (only shown once)
+  // So we always need a key in localStorage to display it
   React.useEffect(() => {
     const createMcpKeyIfNeeded = async () => {
       // Don't create if still loading, already creating, or we have a key
       if (isLoadingKeys || isCreatingKey) return;
       if (mcpKey) return; // Already have key from localStorage
-      if (existingMcpKey) return; // Key exists in API but not in localStorage (old key)
 
+      // Create a new key (even if one exists in API, we can't retrieve its value)
       setIsCreatingKey(true);
       const response = await createMutation.mutateAsync({
         name: MCP_KEY_NAME,
@@ -143,7 +140,7 @@ export function McpSettings() {
     };
 
     createMcpKeyIfNeeded();
-  }, [isLoadingKeys, existingMcpKey, isCreatingKey, mcpKey, createMutation]);
+  }, [isLoadingKeys, isCreatingKey, mcpKey, createMutation]);
 
   const handleCopy = async (text: string, field: string) => {
     await navigator.clipboard.writeText(text);
