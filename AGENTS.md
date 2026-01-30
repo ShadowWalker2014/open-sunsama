@@ -1,434 +1,155 @@
-# AGENTS.md - Open Sunsama Codebase Guide
+# AGENTS.md - Open Sunsama
 
-This document provides a comprehensive overview of the Open Sunsama codebase for AI agents and developers.
+AI-agent-friendly task management + time blocking app. TypeScript monorepo with Bun, Turborepo, PostgreSQL, Drizzle ORM.
 
-## Project Overview
+## Testing
 
-Open Sunsama is an **open-source, AI-agent-friendly Sunsama alternative** - a task management and time blocking application. It's designed with direct API access so AI assistants (Claude, etc.) can create tasks, schedule time blocks, and help plan your day programmatically.
+**Use Cursor browser tool for UI testing.**
 
-**Tech Stack:** TypeScript, Bun workspaces, Turborepo, PostgreSQL, Drizzle ORM
+| Environment | Web | API | Prerequisites |
+|-------------|-----|-----|---------------|
+| Local | http://localhost:3000 | http://localhost:3001 | `bun dev` running for both web and api |
+| Production | https://opensunsama.com | https://api.opensunsama.com | None |
+
+**Login credentials:** `.env.local` in project root (gitignored, real user account - NEVER commit).
+
+**MCP Tool:** Use `open-sunsama` MCP server to create/update tasks, time blocks, subtasks programmatically.
 
 ---
 
-## Monorepo Structure
+## Structure
 
 ```
 opensunsama/
 ├── apps/
-│   ├── api/          # Hono REST API (Node.js)
-│   ├── web/          # React + Vite SPA
-│   ├── desktop/      # Tauri v2 desktop wrapper
-│   └── mobile/       # Expo React Native app
+│   ├── api/        # Hono REST API (port 3001)
+│   ├── web/        # React + Vite SPA (port 3000)
+│   ├── desktop/    # Tauri v2 wrapper
+│   └── mobile/     # Expo React Native
 ├── packages/
-│   ├── database/     # Drizzle ORM + PostgreSQL schema
-│   ├── types/        # Shared TypeScript types
-│   ├── api-client/   # HTTP client with React Query hooks
-│   └── utils/        # Shared utilities (date, validation, errors)
-├── .todo/            # PRD documents for planned features
-├── docs/             # Deployment documentation
-└── turbo.json        # Turborepo configuration
+│   ├── database/   # Drizzle ORM + PostgreSQL
+│   ├── types/      # Shared TypeScript types
+│   ├── api-client/ # HTTP client + React Query hooks
+│   └── utils/      # Date, validation, errors
+├── mcp/            # MCP server for AI agents
+└── .todo/          # PRD documents
 ```
 
 ---
 
 ## Apps
 
-### 1. API (`apps/api`)
+### API (`apps/api`)
+**Hono v4** | Port 3001 | tsup build
 
-**Framework:** Hono v4 + @hono/node-server  
-**Port:** 3001  
-**Build:** tsup
+| Route | Auth | Description |
+|-------|------|-------------|
+| `/auth/*` | Mixed | Login, register, profile |
+| `/tasks/*` | Yes | Task CRUD + reorder |
+| `/tasks/:id/subtasks/*` | Yes | Subtask CRUD |
+| `/time-blocks/*` | Yes | Time block CRUD + cascade resize |
+| `/api-keys/*` | JWT | API key management |
+| `/uploads/*` | Yes | S3 file uploads |
 
-#### Key Files
-| Path | Purpose |
-|------|---------|
-| `src/index.ts` | Main entry point, route mounting |
-| `src/routes/*.ts` | API route handlers |
-| `src/middleware/auth.ts` | JWT + API Key authentication |
-| `src/middleware/error.ts` | Global error handling |
-| `src/lib/jwt.ts` | JWT sign/verify utilities |
-| `src/lib/s3.ts` | S3 file upload utilities |
-| `src/validation/*.ts` | Zod request validation schemas |
+**Auth:** JWT (`Bearer <token>`) or API Key (`X-API-Key: os_<key>`)  
+**Scopes:** `tasks:read`, `tasks:write`, `time-blocks:read`, `time-blocks:write`, `user:read`, `user:write`
 
-#### API Routes
+### Web (`apps/web`)
+**React 19 + Vite** | TanStack Router + Query | Radix UI + Tailwind | Port 3000
 
-| Route | Methods | Auth | Description |
-|-------|---------|------|-------------|
-| `/auth/*` | POST, GET, PATCH | Mixed | Authentication & user profile |
-| `/tasks/*` | GET, POST, PATCH, DELETE | Yes | Task CRUD + reordering |
-| `/tasks/:taskId/subtasks/*` | GET, POST, PATCH, DELETE | Yes | Subtask management |
-| `/time-blocks/*` | GET, POST, PATCH, DELETE | Yes | Time block CRUD |
-| `/api-keys/*` | GET, POST, PATCH, DELETE | JWT only | API key management |
-| `/notifications/preferences` | GET, PUT | Yes | Notification settings |
-| `/uploads/*` | POST, GET, DELETE | Yes | File uploads (S3) |
-| `/attachments/*` | GET, DELETE | Yes | Attachment management |
+| Route | Description |
+|-------|-------------|
+| `/app` | Main kanban board |
+| `/app/calendar` | Timeline view |
+| `/app/focus/$taskId` | Focus mode |
+| `/app/settings` | User settings |
 
-#### Authentication Methods
-1. **JWT Token:** `Authorization: Bearer <token>` - For web/mobile sessions
-2. **API Key:** `X-API-Key: os_<key>` - For AI agents with scoped permissions
+**Features:** Kanban drag-drop (@dnd-kit), time blocking, focus mode with timer, command palette (Cmd+K), rich text (Tiptap), file attachments, WebSocket sync.
 
-#### API Key Scopes
-- `tasks:read`, `tasks:write`
-- `time-blocks:read`, `time-blocks:write`
-- `user:read`, `user:write`
+### Desktop (`apps/desktop`)
+**Tauri v2** | System tray, global hotkeys (Cmd+Shift+T), notifications, auto-launch.
+
+### Mobile (`apps/mobile`)
+**Expo 52** | Expo Router | Tab navigation (Tasks, Calendar, Settings).
 
 ---
 
-### 2. Web (`apps/web`)
+## Database
 
-**Framework:** React 18 + Vite  
-**Router:** TanStack Router  
-**State:** TanStack Query (React Query)  
-**UI:** Radix UI + Tailwind CSS + shadcn/ui  
-**Port:** 3000
+**PostgreSQL + Drizzle ORM**
 
-#### Key Directories
-| Path | Purpose |
-|------|---------|
-| `src/routes/` | File-based routing (TanStack Router) |
-| `src/components/` | UI components (shadcn-style) |
-| `src/hooks/` | Custom React hooks (data fetching) |
-| `src/lib/` | Utilities, API client setup |
-| `src/features/` | Feature-specific components |
-
-#### Features
-- Kanban board with drag-and-drop (@dnd-kit)
-- Rich text editor (Tiptap)
-- Calendar/timeline view
-- Dark/light theme
-- Desktop integration via Tauri APIs
-
----
-
-### 3. Desktop (`apps/desktop`)
-
-**Framework:** Tauri v2 (Rust + WebView)  
-**Frontend:** Loads web app's dist folder
-
-#### Features
-- System tray with quick actions
-- Global hotkeys (Cmd+Shift+T for quick task)
-- Native notifications
-- Auto-launch on login
-- Close-to-tray behavior
-
-#### Key Files
-| Path | Purpose |
-|------|---------|
-| `src-tauri/tauri.conf.json` | Tauri configuration |
-| `src-tauri/src/main.rs` | Rust backend entry |
-| `src/index.tsx` | Desktop-specific React entry |
-
----
-
-### 4. Mobile (`apps/mobile`)
-
-**Framework:** Expo 52 + React Native 0.76  
-**Router:** Expo Router 4 (file-based)  
-**Auth Storage:** expo-secure-store
-
-#### Key Directories
-| Path | Purpose |
-|------|---------|
-| `app/` | Expo Router file-based routes |
-| `app/(auth)/` | Auth screens (login, register) |
-| `app/(app)/` | Protected app screens (tabs) |
-| `src/components/` | Reusable UI components |
-| `src/hooks/` | Data fetching hooks |
-| `src/lib/` | API client, auth context |
-
-#### Navigation Structure
-```
-Root Layout (providers)
-├── (auth) Stack
-│   ├── login
-│   └── register
-└── (app) Tabs
-    ├── index (Tasks)
-    ├── calendar (Timeline)
-    └── settings
-```
-
----
-
-## Packages
-
-### 1. `@open-sunsama/database`
-
-**ORM:** Drizzle ORM with PostgreSQL
-
-#### Schema Tables
 | Table | Purpose |
 |-------|---------|
-| `users` | User accounts |
-| `tasks` | Task items with priority (P0-P3) |
-| `subtasks` | Checklist items within tasks |
-| `time_blocks` | Scheduled time slots |
-| `api_keys` | API key credentials |
-| `notification_preferences` | User notification settings |
-| `attachments` | File attachments (S3) |
+| `users` | Accounts with preferences (JSONB) |
+| `tasks` | Title, notes, scheduledDate, priority (P0-P3), position |
+| `subtasks` | Checklist items per task |
+| `time_blocks` | Scheduled blocks linked to tasks |
+| `api_keys` | Hashed keys with scopes |
+| `attachments` | S3 file metadata |
+| `notification_preferences` | Reminders, rollover settings |
 
-#### Key Exports
-```typescript
-import { getDb, eq, and, tasks, users } from '@open-sunsama/database';
-
-const db = getDb();
-const userTasks = await db.query.tasks.findMany({
-  where: eq(tasks.userId, userId),
-});
-```
+**Relations:** Users → Tasks → Subtasks (CASCADE), Tasks ↔ TimeBlocks (SET NULL), Tasks → Attachments (CASCADE)
 
 ---
 
-### 2. `@open-sunsama/types`
+## MCP Tools (24)
 
-Pure TypeScript type definitions shared across all apps.
+Configure in Cursor/Claude with `OPENSUNSAMA_API_KEY` env var.
 
-#### Key Types
-```typescript
-import type { 
-  Task, TaskPriority, CreateTaskInput,
-  TimeBlock, CreateTimeBlockInput,
-  User, AuthResponse,
-  ApiKey, ApiKeyScope,
-  ApiError, PaginatedResponse,
-} from '@open-sunsama/types';
-```
-
-#### Task Priority
-`TaskPriority = 'P0' | 'P1' | 'P2' | 'P3'`
-
----
-
-### 3. `@open-sunsama/api-client`
-
-HTTP client with React Query hooks.
-
-#### Usage
-```typescript
-import { createApi } from '@open-sunsama/api-client';
-
-const api = createApi({
-  baseUrl: 'https://api.example.com',
-  token: 'jwt-token', // or apiKey: 'os_...'
-});
-
-// API methods
-const tasks = await api.tasks.list({ completed: false });
-const task = await api.tasks.create({ title: 'New Task' });
-await api.tasks.complete(taskId);
-```
-
-#### React Query Hooks
-```typescript
-import { createReactHooks } from '@open-sunsama/api-client/react';
-
-const hooks = createReactHooks(client);
-
-// In components
-const { data: tasks } = hooks.useTasks({ completed: false });
-const createTask = hooks.useCreateTask();
-```
-
----
-
-### 4. `@open-sunsama/utils`
-
-Shared utilities and error handling.
-
-#### Key Exports
-```typescript
-import {
-  // Date utilities
-  formatDate, parseDate, isToday, addMinutes,
-  // Validation schemas
-  emailSchema, passwordSchema, taskSchema,
-  // Error classes
-  AppError, ValidationError, NotFoundError, AuthenticationError,
-  // API key utilities
-  generateApiKey, hashApiKey, verifyApiKey,
-  // Constants
-  API_KEY_PREFIX, TASK_PRIORITIES, DATE_FORMAT,
-} from '@open-sunsama/utils';
-```
-
----
-
-## Database Schema (ERD)
-
-```
-users (1) ─────────────────┬──────────────────────┬─────────────────┐
-                           │                      │                 │
-                           ▼ (N)                  ▼ (N)             ▼ (N)
-                        tasks (1) ────────► time_blocks       api_keys
-                           │                      │
-                           ▼ (N)                  │
-                       subtasks                   │
-                           │                      │
-                           └──────────────────────┘
-                                      │
-                                      ▼ (N)
-                                attachments
-
-notification_preferences (1:1 with users)
-```
+| Category | Tools |
+|----------|-------|
+| Tasks | `list_tasks`, `get_task`, `create_task`, `update_task`, `complete_task`, `uncomplete_task`, `delete_task`, `schedule_task`, `reorder_tasks` |
+| Time Blocks | `list_time_blocks`, `get_time_block`, `create_time_block`, `update_time_block`, `delete_time_block`, `link_task_to_time_block`, `get_schedule_for_day` |
+| Subtasks | `list_subtasks`, `create_subtask`, `toggle_subtask`, `update_subtask`, `delete_subtask` |
+| User | `get_user_profile`, `update_user_profile` |
 
 ---
 
 ## Commands
 
-### Development
 ```bash
-bun install          # Install dependencies
-bun run dev          # Start all dev servers
-bun run build        # Build all packages/apps
-bun run typecheck    # TypeScript type checking
-bun run lint         # Lint all code
-bun run test         # Run tests
-```
+bun install          # Install deps
+bun dev              # Start all dev servers
+bun run build        # Build all
+bun run typecheck    # Type check
+bun run lint         # Lint
+bun run test         # Tests
 
-### Database
-```bash
-bun run db:generate  # Generate Drizzle migrations
+# Database
+bun run db:generate  # Generate migrations
 bun run db:migrate   # Run migrations
-bun run db:push      # Push schema to database
-bun run db:studio    # Open Drizzle Studio
-```
+bun run db:push      # Push schema
+bun run db:studio    # Drizzle Studio
 
-### Per-App Commands
-```bash
-# API
+# Per-app
 bun run --filter=@open-sunsama/api dev
-
-# Web
 bun run --filter=@open-sunsama/web dev
-
-# Mobile
-bun run --filter=@open-sunsama/mobile start
-```
-
----
-
-## Environment Variables
-
-### API (`apps/api/.env`)
-```env
-DATABASE_URL=postgresql://...
-JWT_SECRET=your-secret-min-32-chars
-JWT_EXPIRES_IN=7d
-API_PORT=3001
-CORS_ORIGIN=http://localhost:3000
-
-# S3 (optional)
-AWS_ENDPOINT_URL=...
-AWS_DEFAULT_REGION=...
-AWS_ACCESS_KEY_ID=...
-AWS_SECRET_ACCESS_KEY=...
-AWS_S3_BUCKET_NAME=...
 ```
 
 ---
 
 ## API Response Format
 
-### Success
 ```json
-{
-  "success": true,
-  "data": { ... },
-  "meta": { "page": 1, "limit": 50, "total": 100 }
-}
-```
+// Success
+{ "success": true, "data": {...}, "meta": { "page": 1, "total": 100 } }
 
-### Error
-```json
-{
-  "success": false,
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Validation failed",
-    "statusCode": 400,
-    "errors": { "email": ["Invalid email"] }
-  }
-}
+// Error
+{ "success": false, "error": { "code": "VALIDATION_ERROR", "message": "...", "statusCode": 400 } }
 ```
 
 ---
 
-## Architecture Flow
+## Environment
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         PACKAGES                                │
-├─────────────────────────────────────────────────────────────────┤
-│  @open-sunsama/types      Pure TypeScript types                 │
-│  @open-sunsama/utils      Date, validation, errors              │
-│  @open-sunsama/database   Drizzle ORM + schemas                 │
-│  @open-sunsama/api-client HTTP client + React Query hooks       │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-        ┌─────────────────────┼─────────────────────┐
-        ▼                     ▼                     ▼
-┌───────────────┐    ┌───────────────┐    ┌───────────────┐
-│   apps/web    │    │  apps/mobile  │    │   apps/api    │
-│   (Vite)      │    │   (Expo)      │    │   (Hono)      │
-│               │    │               │    │               │
-│ api-client ◄──┴────┴── api-client │    │ database      │
-│ types         │    │ types         │    │ types, utils  │
-└───────────────┘    └───────────────┘    └───────────────┘
-        │
-        ▼
-┌───────────────┐
-│ apps/desktop  │
-│  (Tauri v2)   │
-│               │
-│ Wraps web app │
-└───────────────┘
-```
+**API** (`apps/api/.env`): `DATABASE_URL`, `JWT_SECRET`, `PORT`, `CORS_ORIGIN`, S3 vars, VAPID keys, `RESEND_API_KEY`
 
----
+**Web** (`apps/web/.env`): `VITE_API_URL`
 
-## For AI Agents
-
-### Getting an API Key
-1. Log in to the web app
-2. Go to Settings > API Keys
-3. Create a new key with required scopes
-4. Use `X-API-Key: os_<your-key>` header
-
-### Common Operations
-```bash
-# List today's tasks
-curl -H "X-API-Key: os_..." https://api.example.com/tasks?date=2024-01-15
-
-# Create a task
-curl -X POST -H "X-API-Key: os_..." -H "Content-Type: application/json" \
- -d '{"title":"Meeting prep","priority":"P1","scheduledDate":"2024-01-15"}' \
- https://api.example.com/tasks
-
-# Complete a task
-curl -X PATCH -H "X-API-Key: os_..." -H "Content-Type: application/json" \
- -d '{"completedAt":"2024-01-15T10:00:00Z"}' \
- https://api.example.com/tasks/{id}
-
-# Create a time block
-curl -X POST -H "X-API-Key: os_..." -H "Content-Type: application/json" \
- -d '{"title":"Deep work","date":"2024-01-15","startTime":"09:00","endTime":"11:00"}' \
- https://api.example.com/time-blocks
-```
-
----
-
-## Planned Features (`.todo/`)
-
-| PRD | Status | Description |
-|-----|--------|-------------|
-| `desktop-app/PRD.md` | Implemented | Tauri v2 desktop wrapper |
-| `mobile-app/PRD.md` | In Progress | Expo mobile app |
-| `landing-page/PRD.md` | Planned | Public landing page |
+**Root** (`.env.local`): Test credentials (gitignored)
 
 ---
 
 ## License
 
-Non-Commercial License - Personal, educational, and non-profit use allowed. Commercial use requires enterprise license.
+Non-Commercial License. Commercial use requires enterprise license.
