@@ -4,7 +4,7 @@
  */
 
 // Notes field
-export { NotesField } from "./notes-field";
+export { NotesField } from "@/components/ui/notes-field";
 
 // Priority selectors
 export { PrioritySelector, InlinePrioritySelector } from "./priority-selector";

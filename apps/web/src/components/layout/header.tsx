@@ -55,26 +55,26 @@ export function Header({ className }: HeaderProps) {
         className
       )}
     >
-      <div className="flex h-14 w-full items-center px-4 sm:px-6">
+      <div className="flex h-11 w-full items-center px-3 sm:px-4">
         {/* Logo */}
-        <div className="mr-4 flex">
-          <a href="/app" className="mr-6 flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Calendar className="h-4 w-4 text-primary-foreground" />
+        <div className="mr-3 flex">
+          <a href="/app" className="mr-4 flex items-center space-x-2">
+            <div className="flex h-6 w-6 items-center justify-center rounded bg-primary">
+              <Calendar className="h-3.5 w-3.5 text-primary-foreground" />
             </div>
-            <span className="hidden font-bold sm:inline-block">Open Sunsama</span>
+            <span className="hidden text-[13px] font-semibold sm:inline-block">Open Sunsama</span>
           </a>
         </div>
 
         {/* Navigation - Hidden on mobile (using bottom nav instead) */}
-        <nav className="hidden lg:flex items-center gap-1">
-          <NavLink href="/app" icon={<LayoutGrid className="h-4 w-4" />}>
+        <nav className="hidden lg:flex items-center gap-0.5">
+          <NavLink href="/app" icon={<LayoutGrid className="h-3.5 w-3.5" />}>
             Board
           </NavLink>
-          <NavLink href="/app/tasks" icon={<List className="h-4 w-4" />}>
+          <NavLink href="/app/tasks" icon={<List className="h-3.5 w-3.5" />}>
             Tasks
           </NavLink>
-          <NavLink href="/app/calendar" icon={<Calendar className="h-4 w-4" />}>
+          <NavLink href="/app/calendar" icon={<Calendar className="h-3.5 w-3.5" />}>
             Calendar
           </NavLink>
         </nav>
@@ -85,103 +85,103 @@ export function Header({ className }: HeaderProps) {
         {/* Search Button */}
         <button
           onClick={openSearch}
-          className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-md border border-border/50 bg-muted/30 hover:bg-muted transition-colors text-sm text-muted-foreground mr-2"
+          className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded border border-border/40 bg-muted/30 hover:bg-muted transition-colors text-xs text-muted-foreground mr-2"
         >
-          <Search className="h-4 w-4" />
+          <Search className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">Search...</span>
           <ShortcutHint shortcutKey="search" />
         </button>
 
         {/* Global Shortcut Hint - Hidden on mobile */}
-        <div className="hidden lg:flex items-center mr-4 text-xs text-muted-foreground/50">
-          Press <kbd className="mx-1 rounded border border-border/50 bg-muted/50 px-1.5 py-0.5 text-[10px] font-medium">?</kbd> for shortcuts
+        <div className="hidden lg:flex items-center mr-3 text-[10px] text-muted-foreground/50">
+          Press <kbd className="mx-1 rounded border border-border/40 bg-muted/50 px-1 py-0.5 text-[9px] font-medium">?</kbd> for shortcuts
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-1">
           {/* Theme Toggle - Icon-only segmented control */}
-          <div className="inline-flex items-center rounded-lg border border-border/50 bg-muted/30 p-0.5">
+          <div className="inline-flex items-center rounded border border-border/40 bg-muted/30 p-0.5">
             <button
               onClick={() => setThemeMode("system")}
               className={cn(
-                "inline-flex h-8 w-8 sm:h-7 sm:w-7 items-center justify-center rounded-md transition-all",
+                "inline-flex h-6 w-6 items-center justify-center rounded transition-all",
                 themeMode === "system"
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               )}
               title="System theme"
             >
-              <Monitor className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+              <Monitor className="h-3 w-3" />
             </button>
             <button
               onClick={() => setThemeMode("light")}
               className={cn(
-                "inline-flex h-8 w-8 sm:h-7 sm:w-7 items-center justify-center rounded-md transition-all",
+                "inline-flex h-6 w-6 items-center justify-center rounded transition-all",
                 themeMode === "light"
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               )}
               title="Light theme"
             >
-              <Sun className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+              <Sun className="h-3 w-3" />
             </button>
             <button
               onClick={() => setThemeMode("dark")}
               className={cn(
-                "inline-flex h-8 w-8 sm:h-7 sm:w-7 items-center justify-center rounded-md transition-all",
+                "inline-flex h-6 w-6 items-center justify-center rounded transition-all",
                 themeMode === "dark"
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               )}
               title="Dark theme"
             >
-              <Moon className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+              <Moon className="h-3 w-3" />
             </button>
           </div>
 
-          {/* User Menu - Touch-friendly */}
+          {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="relative h-10 w-10 sm:h-9 sm:w-9 rounded-full"
+                className="relative h-7 w-7 rounded-full p-0"
               >
-                <Avatar className="h-9 w-9 sm:h-8 sm:w-8">
+                <Avatar className="h-6 w-6">
                   <AvatarImage src={getAvatarUrl(user?.avatarUrl)} alt={user?.name ?? "User"} />
-                  <AvatarFallback>{userInitials}</AvatarFallback>
+                  <AvatarFallback className="text-[10px]">{userInitials}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">
+            <DropdownMenuContent className="w-48" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal py-1.5">
+                <div className="flex flex-col space-y-0.5">
+                  <p className="text-[13px] font-medium leading-none">
                     {user?.name ?? "User"}
                   </p>
-                  <p className="text-xs leading-none text-muted-foreground">
+                  <p className="text-[11px] leading-none text-muted-foreground">
                     {user?.email}
                   </p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem asChild className="text-[13px] py-1.5">
                 <a href="/app/settings" className="w-full cursor-pointer">
-                  <User className="mr-2 h-4 w-4" />
+                  <User className="mr-2 h-3.5 w-3.5" />
                   Profile
                 </a>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem asChild className="text-[13px] py-1.5">
                 <a href="/app/settings" className="w-full cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
+                  <Settings className="mr-2 h-3.5 w-3.5" />
                   Settings
                 </a>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                className="cursor-pointer text-destructive focus:text-destructive"
+                className="cursor-pointer text-destructive focus:text-destructive text-[13px] py-1.5"
                 onClick={logout}
               >
-                <LogOut className="mr-2 h-4 w-4" />
+                <LogOut className="mr-2 h-3.5 w-3.5" />
                 Log out
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -209,7 +209,7 @@ function NavLink({ href, icon, children }: NavLinkProps) {
     <a
       href={href}
       className={cn(
-        "inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
+        "inline-flex items-center gap-1.5 rounded px-2 py-1 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
         isActive && "bg-accent text-accent-foreground"
       )}
     >

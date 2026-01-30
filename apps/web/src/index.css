@@ -4,49 +4,51 @@
 
 @layer base {
   :root {
+    /* Linear-style light mode - clean, subtle, professional */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 220 13% 18%;       /* Soft dark gray, not pure black */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 220 13% 18%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
+    --popover-foreground: 220 13% 18%;
+    --primary: 238 75% 59%;          /* Linear-style indigo/violet */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;        /* Very subtle gray */
+    --secondary-foreground: 220 13% 18%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;  /* Muted text */
+    --accent: 220 14% 96%;
+    --accent-foreground: 220 13% 18%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 91%;           /* Very subtle borders */
+    --input: 220 13% 91%;
+    --ring: 238 75% 59%;
+    --radius: 0.375rem;              /* Tighter radius: 6px */
     --font-family: "Geist", "Geist Sans", system-ui, sans-serif;
   }
 
   .dark {
-    --background: 0 0% 6%;           /* #0f0f0f - very dark like Sunsama */
-    --foreground: 0 0% 90%;          /* off-white text */
-    --card: 0 0% 8%;                 /* slightly lighter for cards */
-    --card-foreground: 0 0% 90%;
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 90%;
-    --primary: 142 71% 45%;          /* green for progress/primary actions */
+    /* Linear-style dark mode - deep, refined, not pure black */
+    --background: 225 15% 8%;        /* Deep blue-gray */
+    --foreground: 220 13% 91%;       /* Off-white */
+    --card: 225 15% 10%;             /* Slightly lighter for cards */
+    --card-foreground: 220 13% 91%;
+    --popover: 225 15% 12%;
+    --popover-foreground: 220 13% 91%;
+    --primary: 238 75% 62%;          /* Linear-style violet */
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 90%;
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 55%;
-    --accent: 0 0% 15%;
-    --accent-foreground: 0 0% 90%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 90%;
-    --border: 0 0% 18%;              /* subtle borders */
-    --input: 0 0% 15%;
-    --ring: 142 71% 45%;             /* green ring to match primary */
+    --secondary: 225 15% 14%;
+    --secondary-foreground: 220 13% 91%;
+    --muted: 225 15% 14%;
+    --muted-foreground: 220 9% 55%;
+    --accent: 225 15% 14%;
+    --accent-foreground: 220 13% 91%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 225 15% 16%;           /* Subtle borders */
+    --input: 225 15% 14%;
+    --ring: 238 75% 62%;
   }
 
   /* Ocean Theme */

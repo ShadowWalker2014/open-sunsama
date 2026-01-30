@@ -93,24 +93,24 @@ export function Sidebar({ className }: SidebarProps) {
       <aside
         ref={setDroppableRef}
         className={cn(
-          "flex h-full w-10 flex-col items-center border-r border-border/40 bg-background/50 py-3 transition-all duration-300 ease-in-out",
+          "flex h-full w-9 flex-col items-center border-r border-border/40 bg-background/50 py-2 transition-all duration-300 ease-in-out",
           isOver && "bg-primary/5 border-primary/30", // Visual feedback when dragging over
           className
         )}
       >
         <Button
           variant="ghost"
-          size="icon"
-          className="h-7 w-7"
+          size="icon-xs"
+          className="h-6 w-6"
           onClick={toggleCollapsed}
           title="Expand backlog"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-3.5 w-3.5" />
         </Button>
         <div className="mt-2 flex flex-col items-center gap-1">
-          <Inbox className="h-4 w-4 text-muted-foreground" />
+          <Inbox className="h-3.5 w-3.5 text-muted-foreground" />
           {backlogTasks.length > 0 && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-[10px] text-muted-foreground">
               {backlogTasks.length}
             </span>
           )}
@@ -123,51 +123,51 @@ export function Sidebar({ className }: SidebarProps) {
     <aside
       ref={setDroppableRef}
       className={cn(
-        "flex h-full w-72 flex-col border-r border-border/40 bg-background/50 transition-all duration-300 ease-in-out",
+        "flex h-full w-56 flex-col border-r border-border/40 bg-background/50 transition-all duration-300 ease-in-out",
         isOver && "bg-primary/5 border-primary/30", // Visual feedback when dragging over
         className
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border/40 px-4 py-3">
-        <div className="flex items-center gap-2">
-          <Inbox className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Backlog</span>
+      <div className="flex items-center justify-between border-b border-border/40 px-3 py-2">
+        <div className="flex items-center gap-1.5">
+          <Inbox className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-[13px] font-medium">Backlog</span>
           {backlogTasks.length > 0 && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-[11px] text-muted-foreground">
               {backlogTasks.length}
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           <Button
             variant="ghost"
-            size="icon"
-            className="h-7 w-7"
+            size="icon-xs"
+            className="h-6 w-6"
             onClick={() => setIsAddModalOpen(true)}
             title="Add task"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3.5 w-3.5" />
           </Button>
           <Button
             variant="ghost"
-            size="icon"
-            className="h-7 w-7"
+            size="icon-xs"
+            className="h-6 w-6"
             onClick={toggleCollapsed}
             title="Collapse backlog"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
 
       {/* Task List */}
       <ScrollArea className="flex-1">
-        <div className="p-2 space-y-1">
+        <div className="p-1.5 space-y-0.5">
           {isLoading ? (
-            <div className="space-y-2 p-1">
+            <div className="space-y-1 p-1">
               {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full rounded-lg" />
+                <Skeleton key={i} className="h-8 w-full rounded" />
               ))}
             </div>
           ) : pendingTasks.length === 0 && completedTasks.length === 0 ? (
