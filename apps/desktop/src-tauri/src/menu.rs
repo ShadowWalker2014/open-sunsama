@@ -1,6 +1,6 @@
 use tauri::{
-    menu::{Menu, MenuItemBuilder, PredefinedMenuItem, Submenu},
-    Manager,
+    menu::{Menu, MenuItem, MenuItemBuilder, PredefinedMenuItem, Submenu},
+    Emitter, Manager,
 };
 
 pub fn create_menu(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
@@ -93,8 +93,7 @@ pub fn create_menu(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let minimize = PredefinedMenuItem::minimize(app, Some("Minimize"))?;
     let zoom = PredefinedMenuItem::maximize(app, Some("Zoom"))?;
     let window_sep = PredefinedMenuItem::separator(app)?;
-    let bring_all_to_front =
-        PredefinedMenuItem::bring_all_to_front(app, Some("Bring All to Front"))?;
+    let bring_all_to_front = MenuItem::with_id(app, "bring_all_to_front", "Bring All to Front", true, None::<&str>)?;
 
     let window_menu = Submenu::with_items(
         app,
