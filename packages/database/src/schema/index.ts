@@ -81,5 +81,48 @@ export {
 } from './push-subscriptions';
 export type { PushSubscription, NewPushSubscription } from './push-subscriptions';
 
+export {
+  calendarAccounts,
+  calendarAccountsRelations,
+  insertCalendarAccountSchema,
+  selectCalendarAccountSchema,
+  updateCalendarAccountSchema,
+  CALENDAR_PROVIDERS,
+  SYNC_STATUS_OPTIONS,
+} from './calendar-accounts';
+export type {
+  CalendarAccount,
+  NewCalendarAccount,
+  UpdateCalendarAccount,
+  CalendarProvider,
+  SyncStatus,
+} from './calendar-accounts';
+
+export {
+  calendars,
+  calendarsRelations,
+  insertCalendarSchema,
+  selectCalendarSchema,
+  updateCalendarSchema,
+} from './calendars';
+export type { Calendar, NewCalendar, UpdateCalendar } from './calendars';
+
+export {
+  calendarEvents,
+  calendarEventsRelations,
+  insertCalendarEventSchema,
+  selectCalendarEventSchema,
+  updateCalendarEventSchema,
+  EVENT_STATUS_OPTIONS,
+  RESPONSE_STATUS_OPTIONS,
+} from './calendar-events';
+export type {
+  CalendarEvent,
+  NewCalendarEvent,
+  UpdateCalendarEvent,
+  EventStatus,
+  ResponseStatus,
+} from './calendar-events';
+
 // Re-export relation helpers for query building
 export { relations } from 'drizzle-orm';

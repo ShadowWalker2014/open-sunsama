@@ -31,6 +31,9 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   notificationPreferences: one(notificationPreferences),
   attachments: many(attachments),
   pushSubscriptions: many(pushSubscriptions),
+  calendarAccounts: many(calendarAccounts),
+  calendars: many(calendars),
+  calendarEvents: many(calendarEvents),
 }));
 
 // Import types for relations (will be defined in their respective files)
@@ -40,6 +43,9 @@ import { apiKeys } from './api-keys';
 import { notificationPreferences } from './notification-preferences';
 import { attachments } from './attachments';
 import { pushSubscriptions } from './push-subscriptions';
+import { calendarAccounts } from './calendar-accounts';
+import { calendars } from './calendars';
+import { calendarEvents } from './calendar-events';
 
 // Zod schemas for validation
 export const insertUserSchema = createInsertSchema(users, {
