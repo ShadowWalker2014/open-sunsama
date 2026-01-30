@@ -28,11 +28,6 @@
       },
       "package": "app.opensunsama.mobile"
     },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/favicon.png"
-    },
     "plugins": [
       "expo-router",
       "expo-secure-store"

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
@@ -14,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
 import { useAuth } from '@/lib/auth';
+import { FormInput } from '@/components/FormInput';
 
 /**
  * Register screen
@@ -63,10 +63,7 @@ export default function RegisterScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
+        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           <View style={styles.content}>
             {/* Header */}
             <View style={styles.header}>
@@ -76,66 +73,50 @@ export default function RegisterScreen() {
 
             {/* Form */}
             <View style={styles.form}>
-              <View style={styles.inputContainer}>
-                <Text style={styles.label}>Name (optional)</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Your name"
-                  placeholderTextColor="#9ca3af"
-                  value={name}
-                  onChangeText={setName}
-                  autoCapitalize="words"
-                  autoComplete="name"
-                  textContentType="name"
-                  editable={!isLoading}
-                />
-              </View>
+              <FormInput
+                label="Name (optional)"
+                placeholder="Your name"
+                value={name}
+                onChangeText={setName}
+                autoCapitalize="words"
+                autoComplete="name"
+                textContentType="name"
+                editable={!isLoading}
+              />
 
-              <View style={styles.inputContainer}>
-                <Text style={styles.label}>Email *</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="you@example.com"
-                  placeholderTextColor="#9ca3af"
-                  value={email}
-                  onChangeText={setEmail}
-                  autoCapitalize="none"
-                  autoComplete="email"
-                  keyboardType="email-address"
-                  textContentType="emailAddress"
-                  editable={!isLoading}
-                />
-              </View>
+              <FormInput
+                label="Email *"
+                placeholder="you@example.com"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                autoComplete="email"
+                keyboardType="email-address"
+                textContentType="emailAddress"
+                editable={!isLoading}
+              />
 
-              <View style={styles.inputContainer}>
-                <Text style={styles.label}>Password *</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="At least 8 characters"
-                  placeholderTextColor="#9ca3af"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  textContentType="newPassword"
-                  editable={!isLoading}
-                />
-              </View>
+              <FormInput
+                label="Password *"
+                placeholder="At least 8 characters"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                autoCapitalize="none"
+                textContentType="newPassword"
+                editable={!isLoading}
+              />
 
-              <View style={styles.inputContainer}>
-                <Text style={styles.label}>Confirm Password *</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Repeat your password"
-                  placeholderTextColor="#9ca3af"
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  secureTextEntry
-                  autoCapitalize="none"
-                  textContentType="newPassword"
-                  editable={!isLoading}
-                />
-              </View>
+              <FormInput
+                label="Confirm Password *"
+                placeholder="Repeat your password"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry
+                autoCapitalize="none"
+                textContentType="newPassword"
+                editable={!isLoading}
+              />
 
               <TouchableOpacity
                 style={[styles.button, isLoading && styles.buttonDisabled]}
@@ -167,57 +148,14 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 32,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#1f2937',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#6b7280',
-  },
-  form: {
-    gap: 20,
-  },
-  inputContainer: {
-    gap: 8,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
-  },
-  input: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    color: '#1f2937',
-    backgroundColor: '#fff',
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
+  keyboardView: { flex: 1 },
+  scrollContent: { flexGrow: 1 },
+  content: { flex: 1, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 32 },
+  header: { alignItems: 'center', marginBottom: 32 },
+  title: { fontSize: 28, fontWeight: '700', color: '#1f2937', marginBottom: 8 },
+  subtitle: { fontSize: 16, color: '#6b7280' },
+  form: { gap: 20 },
   button: {
     height: 48,
     backgroundColor: '#6366f1',
@@ -226,14 +164,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 8,
   },
-  buttonDisabled: {
-    backgroundColor: '#a5b4fc',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
-  },
+  buttonDisabled: { backgroundColor: '#a5b4fc' },
+  buttonText: { fontSize: 16, fontWeight: '600', color: '#fff' },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -241,13 +173,6 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 32,
   },
-  footerText: {
-    fontSize: 14,
-    color: '#6b7280',
-  },
-  linkText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6366f1',
-  },
+  footerText: { fontSize: 14, color: '#6b7280' },
+  linkText: { fontSize: 14, fontWeight: '600', color: '#6366f1' },
 });

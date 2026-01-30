@@ -14,18 +14,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { TaskPriority } from '@open-sunsama/types';
 import { useCreateTask } from '@/hooks/useTasks';
+import { PrioritySelector } from './PrioritySelector';
 
 interface CreateTaskModalProps {
   onClose: () => void;
   defaultDate?: string;
 }
-
-const PRIORITIES: { value: TaskPriority; label: string; color: string }[] = [
-  { value: 'P0', label: 'Critical', color: '#ef4444' },
-  { value: 'P1', label: 'High', color: '#f97316' },
-  { value: 'P2', label: 'Medium', color: '#6366f1' },
-  { value: 'P3', label: 'Low', color: '#6b7280' },
-];
 
 /**
  * Create task modal component
@@ -119,29 +113,7 @@ export function CreateTaskModal({ onClose, defaultDate }: CreateTaskModalProps) 
           {/* Priority */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Priority</Text>
-            <View style={styles.priorityContainer}>
-              {PRIORITIES.map((p) => (
-                <TouchableOpacity
-                  key={p.value}
-                  style={[
-                    styles.priorityButton,
-                    priority === p.value && styles.priorityButtonActive,
-                    priority === p.value && { borderColor: p.color },
-                  ]}
-                  onPress={() => setPriority(p.value)}
-                >
-                  <View style={[styles.priorityDot, { backgroundColor: p.color }]} />
-                  <Text
-                    style={[
-                      styles.priorityLabel,
-                      priority === p.value && { color: p.color },
-                    ]}
-                  >
-                    {p.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <PrioritySelector value={priority} onChange={setPriority} />
           </View>
 
           {/* Estimated time */}
@@ -164,13 +136,8 @@ export function CreateTaskModal({ onClose, defaultDate }: CreateTaskModalProps) 
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  keyboardView: {
-    flex: 1,
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
+  keyboardView: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -180,47 +147,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
   },
-  cancelButton: {
-    padding: 8,
-  },
-  cancelText: {
-    fontSize: 16,
-    color: '#6b7280',
-  },
-  headerTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#1f2937',
-  },
-  saveButton: {
-    padding: 8,
-    minWidth: 60,
-    alignItems: 'center',
-  },
-  saveButtonDisabled: {
-    opacity: 0.5,
-  },
-  saveText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#6366f1',
-  },
-  saveTextDisabled: {
-    color: '#9ca3af',
-  },
-  form: {
-    flex: 1,
-    padding: 16,
-  },
-  inputGroup: {
-    marginBottom: 24,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
-    marginBottom: 8,
-  },
+  cancelButton: { padding: 8 },
+  cancelText: { fontSize: 16, color: '#6b7280' },
+  headerTitle: { fontSize: 17, fontWeight: '600', color: '#1f2937' },
+  saveButton: { padding: 8, minWidth: 60, alignItems: 'center' },
+  saveButtonDisabled: { opacity: 0.5 },
+  saveText: { fontSize: 16, fontWeight: '600', color: '#6366f1' },
+  saveTextDisabled: { color: '#9ca3af' },
+  form: { flex: 1, padding: 16 },
+  inputGroup: { marginBottom: 24 },
+  label: { fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 8 },
   titleInput: {
     fontSize: 18,
     color: '#1f2937',
@@ -247,35 +183,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#1f2937',
     backgroundColor: '#fff',
-  },
-  priorityContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  priorityButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    backgroundColor: '#fff',
-  },
-  priorityButtonActive: {
-    backgroundColor: '#f9fafb',
-    borderWidth: 2,
-  },
-  priorityDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 8,
-  },
-  priorityLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#6b7280',
   },
 });
