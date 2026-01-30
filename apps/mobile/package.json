@@ -45,5 +45,11 @@
     "@babel/core": "^7.25.2",
     "@types/react": "~19.1.10",
     "typescript": "~5.9.2"
+  },
+  "bun": {
+    "overrides": {
+      "react": "19.1.0",
+      "react-dom": "19.1.0"
+    }
   }
 }
