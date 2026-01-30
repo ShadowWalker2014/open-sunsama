@@ -1,7 +1,6 @@
 import * as React from "react";
-import { Clock, FileText, Palette } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Input, Label, Textarea } from "@/components/ui";
+import { Input } from "@/components/ui";
 
 interface TitleSectionProps {
   title: string;
@@ -15,17 +14,13 @@ export function TimeBlockTitleSection({
   onBlur,
 }: TitleSectionProps) {
   return (
-    <div className="space-y-2">
-      <Label htmlFor="block-title">Title</Label>
-      <Input
-        id="block-title"
-        value={title}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={onBlur}
-        className="text-lg font-semibold"
-        placeholder="Time block title"
-      />
-    </div>
+    <Input
+      value={title}
+      onChange={(e) => onChange(e.target.value)}
+      onBlur={onBlur}
+      className="border-none shadow-none text-base font-medium p-0 h-auto focus-visible:ring-0 bg-transparent"
+      placeholder="Time block title"
+    />
   );
 }
 
@@ -46,32 +41,34 @@ export function TimeRangeSection({
   onEndTimeChange,
   onBlur,
 }: TimeRangeSectionProps) {
+  const formatDuration = () => {
+    const h = Math.floor(durationMins / 60);
+    const m = durationMins % 60;
+    if (h === 0) return `${m}m`;
+    if (m === 0) return `${h}h`;
+    return `${h}h ${m}m`;
+  };
+
   return (
-    <div className="space-y-2">
-      <Label className="flex items-center gap-2">
-        <Clock className="h-4 w-4" />
-        Time Range
-      </Label>
-      <div className="flex items-center gap-2">
-        <Input
-          type="time"
-          value={startTime}
-          onChange={(e) => onStartTimeChange(e.target.value)}
-          onBlur={onBlur}
-          className="flex-1"
-        />
-        <span className="text-muted-foreground">to</span>
-        <Input
-          type="time"
-          value={endTime}
-          onChange={(e) => onEndTimeChange(e.target.value)}
-          onBlur={onBlur}
-          className="flex-1"
-        />
-      </div>
-      <p className="text-xs text-muted-foreground">
-        Duration: {Math.floor(durationMins / 60)}h {durationMins % 60}m
-      </p>
+    <div className="flex items-center gap-2 text-sm">
+      <Input
+        type="time"
+        value={startTime}
+        onChange={(e) => onStartTimeChange(e.target.value)}
+        onBlur={onBlur}
+        className="h-8 w-24 text-sm"
+      />
+      <span className="text-muted-foreground/60">–</span>
+      <Input
+        type="time"
+        value={endTime}
+        onChange={(e) => onEndTimeChange(e.target.value)}
+        onBlur={onBlur}
+        className="h-8 w-24 text-sm"
+      />
+      <span className="text-xs text-muted-foreground ml-1">
+        {formatDuration()}
+      </span>
     </div>
   );
 }
@@ -94,28 +91,22 @@ interface ColorSectionProps {
 
 export function ColorSection({ color, onChange }: ColorSectionProps) {
   return (
-    <div className="space-y-2">
-      <Label className="flex items-center gap-2">
-        <Palette className="h-4 w-4" />
-        Color
-      </Label>
-      <div className="flex flex-wrap gap-2">
-        {COLOR_OPTIONS.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            className={cn(
-              "h-8 w-8 rounded-full border-2 transition-all",
-              color === option.value
-                ? "ring-2 ring-offset-1 ring-primary/60 border-primary"
-                : "border-transparent hover:border-muted-foreground/30"
-            )}
-            style={{ backgroundColor: option.value }}
-            onClick={() => onChange(option.value)}
-            title={option.label}
-          />
-        ))}
-      </div>
+    <div className="flex items-center gap-1.5">
+      {COLOR_OPTIONS.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          className={cn(
+            "h-6 w-6 rounded-full transition-all",
+            color === option.value
+              ? "ring-2 ring-offset-1 ring-primary/60"
+              : "hover:scale-110"
+          )}
+          style={{ backgroundColor: option.value }}
+          onClick={() => onChange(option.value)}
+          title={option.label}
+        />
+      ))}
     </div>
   );
 }

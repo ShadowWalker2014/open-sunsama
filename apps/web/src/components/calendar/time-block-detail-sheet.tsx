@@ -1,17 +1,17 @@
 import * as React from "react";
 import { format } from "date-fns";
-import { Trash2 } from "lucide-react";
+import { Trash2, Check } from "lucide-react";
 import type { TimeBlock } from "@open-sunsama/types";
-import { useUpdateTimeBlock, useDeleteTimeBlock } from "@/hooks";
+import { useUpdateTimeBlock, useDeleteTimeBlock, useTask, useSubtasks, useUpdateSubtask } from "@/hooks";
+import { cn } from "@/lib/utils";
 import {
   Button,
-  Label,
-  Separator,
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui";
+import { PriorityBadge } from "@/components/ui/priority-badge";
 import {
   TimeBlockTitleSection,
   TimeRangeSection,
@@ -43,6 +43,11 @@ export function TimeBlockDetailSheet({
 
   const updateTimeBlock = useUpdateTimeBlock();
   const deleteTimeBlock = useDeleteTimeBlock();
+  
+  // Fetch associated task and subtasks if linked
+  const { data: linkedTask } = useTask(timeBlock?.taskId ?? "");
+  const { data: subtasks = [] } = useSubtasks(timeBlock?.taskId ?? "");
+  const updateSubtask = useUpdateSubtask();
 
   // Initialize form when time block changes
   React.useEffect(() => {
@@ -139,31 +144,39 @@ export function TimeBlockDetailSheet({
     (blockEndTime.getTime() - blockStartTime.getTime()) / 60000
   );
 
+  const toggleSubtask = async (subtaskId: string, completed: boolean) => {
+    if (!timeBlock?.taskId) return;
+    await updateSubtask.mutateAsync({
+      taskId: timeBlock.taskId,
+      subtaskId,
+      data: { completed: !completed },
+    });
+  };
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="flex w-full flex-col sm:max-w-lg">
-        <SheetHeader className="space-y-0">
-          <div className="flex items-center justify-between">
-            <SheetTitle className="sr-only">Time Block Details</SheetTitle>
-            <div className="flex items-center gap-2">
-              <div
-                className="h-4 w-4 rounded-full border"
-                style={{ backgroundColor: color || "#3B82F6" }}
-              />
-              <span className="text-sm text-muted-foreground">
-                {format(blockStartTime, "EEE, MMM d")}
-              </span>
-            </div>
+      <SheetContent className="flex w-full flex-col sm:max-w-sm p-4">
+        <SheetHeader className="space-y-0 pb-3">
+          <SheetTitle className="sr-only">Time Block Details</SheetTitle>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div
+              className="h-3 w-3 rounded-full"
+              style={{ backgroundColor: color || "#3B82F6" }}
+            />
+            <span>{format(blockStartTime, "EEE, MMM d")}</span>
+            {linkedTask && <PriorityBadge priority={linkedTask.priority} />}
           </div>
         </SheetHeader>
 
-        <div className="flex-1 space-y-6 overflow-y-auto py-4">
+        <div className="flex-1 space-y-4 overflow-y-auto">
+          {/* Title */}
           <TimeBlockTitleSection
             title={title}
             onChange={setTitle}
             onBlur={handleTitleBlur}
           />
 
+          {/* Time */}
           <TimeRangeSection
             startTime={startTime}
             endTime={endTime}
@@ -173,64 +186,88 @@ export function TimeBlockDetailSheet({
             onBlur={handleTimeBlur}
           />
 
+          {/* Color */}
           <ColorSection color={color} onChange={handleColorChange} />
 
-          {/* Notes Section */}
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium text-muted-foreground">Notes</h4>
+          {/* Subtasks - only show if task has subtasks */}
+          {subtasks.length > 0 && (
+            <div className="space-y-1.5">
+              <span className="text-xs text-muted-foreground">Subtasks</span>
+              <div className="space-y-0.5">
+                {subtasks.map((subtask) => (
+                  <button
+                    key={subtask.id}
+                    onClick={() => toggleSubtask(subtask.id, subtask.completed)}
+                    className="flex items-center gap-2 w-full py-1 text-left hover:bg-muted/50 rounded px-1 -mx-1 transition-colors"
+                  >
+                    <div
+                      className={cn(
+                        "h-3.5 w-3.5 shrink-0 rounded-full border flex items-center justify-center transition-colors",
+                        subtask.completed
+                          ? "bg-primary border-primary text-primary-foreground"
+                          : "border-muted-foreground/30"
+                      )}
+                    >
+                      {subtask.completed && <Check className="h-2 w-2" strokeWidth={3} />}
+                    </div>
+                    <span
+                      className={cn(
+                        "text-sm truncate",
+                        subtask.completed && "line-through text-muted-foreground"
+                      )}
+                    >
+                      {subtask.title}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Notes */}
+          <div className="space-y-1.5">
+            <span className="text-xs text-muted-foreground">Notes</span>
             <NotesField
               notes={notes}
               onChange={setNotes}
               onBlur={handleNotesBlur}
               placeholder="Add notes..."
+              minHeight="60px"
             />
           </div>
-
-          <Separator />
-
-          {/* Associated Task Info */}
-          {timeBlock.taskId && (
-            <div className="space-y-2">
-              <Label className="text-muted-foreground">Associated Task</Label>
-              <p className="text-sm text-muted-foreground">
-                This time block is linked to a task. Click on the task in the
-                unscheduled panel to view its details.
-              </p>
-            </div>
-          )}
         </div>
 
-        {/* Footer Actions */}
-        <div className="flex items-center justify-end border-t pt-4">
-          {/* Delete Button */}
+        {/* Footer */}
+        <div className="flex items-center justify-end pt-3 border-t">
           {showDeleteConfirm ? (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Delete this time block?</span>
+              <span className="text-xs text-muted-foreground">Delete?</span>
               <Button
                 variant="destructive"
                 size="sm"
+                className="h-7 text-xs"
                 onClick={handleDelete}
                 disabled={deleteTimeBlock.isPending}
               >
-                {deleteTimeBlock.isPending ? "Deleting..." : "Yes, Delete"}
+                Yes
               </Button>
               <Button
                 variant="outline"
                 size="sm"
+                className="h-7 text-xs"
                 onClick={() => setShowDeleteConfirm(false)}
               >
-                Cancel
+                No
               </Button>
             </div>
           ) : (
-            <Button
-              variant="ghost"
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive gap-2"
+            <button
               onClick={() => setShowDeleteConfirm(true)}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive transition-colors"
             >
-              <Trash2 className="h-4 w-4" />
-              Delete Time Block
-            </Button>
+              <Trash2 className="h-3.5 w-3.5" />
+              Delete
+            </button>
           )}
         </div>
       </SheetContent>
