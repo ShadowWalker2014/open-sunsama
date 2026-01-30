@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useNavigate } from "@tanstack/react-router";
 import {
   SHORTCUTS,
   matchesShortcut,
@@ -32,6 +33,7 @@ export function TaskShortcutsHandler({
   onEditEstimate,
   onSelect,
 }: TaskShortcutsHandlerProps) {
+  const navigate = useNavigate();
   const { hoveredTask, hoveredSubtaskId } = useHoveredTask();
   
   const completeTask = useCompleteTask();
@@ -175,11 +177,11 @@ export function TaskShortcutsHandler({
         return;
       }
 
-      // Focus (F)
+      // Focus (F) - Go directly to focus mode
       if (SHORTCUTS.focus && matchesShortcut(event, SHORTCUTS.focus)) {
-        if (hoveredTask && onSelect) {
+        if (hoveredTask) {
           event.preventDefault();
-          onSelect(hoveredTask);
+          navigate({ to: "/app/focus/$taskId", params: { taskId: hoveredTask.id } });
         }
         return;
       }
