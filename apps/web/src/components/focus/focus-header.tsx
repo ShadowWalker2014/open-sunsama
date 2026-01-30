@@ -1,7 +1,7 @@
 import * as React from "react";
 import { X, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button, Input } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { PriorityBadge } from "@/components/ui/priority-badge";
 import type { TaskPriority } from "@open-sunsama/types";
 
@@ -26,12 +26,21 @@ export function FocusHeader({
   onClose,
 }: FocusHeaderProps) {
   const [editedTitle, setEditedTitle] = React.useState(title);
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   // Sync with external title changes
   React.useEffect(() => {
     setEditedTitle(title);
   }, [title]);
+
+  // Auto-resize textarea based on content
+  React.useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+  }, [editedTitle]);
 
   const handleBlur = () => {
     const trimmed = editedTitle.trim();
@@ -43,9 +52,9 @@ export function FocusHeader({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      inputRef.current?.blur();
+      textareaRef.current?.blur();
     }
   };
 
@@ -83,15 +92,16 @@ export function FocusHeader({
           {isCompleted && <Check className="h-3 w-3" strokeWidth={2.5} />}
         </button>
 
-        {/* Title input */}
-        <Input
-          ref={inputRef}
+        {/* Title textarea - auto-resizes and wraps */}
+        <textarea
+          ref={textareaRef}
           value={editedTitle}
           onChange={(e) => setEditedTitle(e.target.value)}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
+          rows={1}
           className={cn(
-            "border-none shadow-none text-xl font-medium p-0 h-auto focus-visible:ring-0 bg-transparent",
+            "flex-1 resize-none overflow-hidden border-none bg-transparent text-xl font-medium leading-tight outline-none placeholder:text-muted-foreground/50",
             isCompleted && "line-through text-muted-foreground"
           )}
           placeholder="Task title..."
