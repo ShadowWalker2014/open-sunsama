@@ -9,6 +9,7 @@ import type {
 import { getApi } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { timeBlockKeys } from "./useTimeBlocks";
 
 /**
  * Query key factory for tasks
@@ -160,6 +161,8 @@ export function useUpdateTask() {
     onSettled: () => {
       // Always refetch to ensure server state
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      // Also invalidate time blocks since task data may have changed
+      queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
     },
   });
 }
@@ -185,6 +188,9 @@ export function useDeleteTask() {
       
       // Also invalidate infinite search queries (used by "All Tasks" page)
       queryClient.invalidateQueries({ queryKey: ["tasks", "search", "infinite"] });
+      
+      // Also invalidate time blocks since they may reference this task
+      queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
       
       toast({
         title: "Task deleted",
@@ -219,6 +225,8 @@ export function useCompleteTask() {
     onSuccess: (updatedTask) => {
       queryClient.setQueryData(taskKeys.detail(updatedTask.id), updatedTask);
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      // Also invalidate time blocks since task completion status changed
+      queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
     },
     onError: (error) => {
       toast({
@@ -303,6 +311,8 @@ export function useMoveTask() {
     onSettled: () => {
       // Invalidate all task lists to ensure server state
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      // Also invalidate time blocks since task schedule changed
+      queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
     },
   });
 }
