@@ -23,8 +23,8 @@ export async function getPgBoss(): Promise<PgBoss> {
       retryLimit: 3,
       retryDelay: 60, // 1 minute between retries
       retryBackoff: true,
-      expireInHours: 24,
-      archiveCompletedAfterSeconds: 86400, // Archive after 24 hours
+      expireInSeconds: 3600, // 1 hour max job expiration
+      archiveCompletedAfterSeconds: 43200, // Archive after 12 hours
       deleteAfterDays: 7, // Delete archived jobs after 7 days
     });
 
