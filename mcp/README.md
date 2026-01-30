@@ -308,7 +308,7 @@ Make sure you've set the API key in your MCP configuration:
 
 1. Restart your AI assistant after changing the configuration
 2. Check the configuration file path is correct
-3. Verify the path to `build/index.js` is absolute
+3. Verify `npx` is available in your PATH (try running `npx -v` in terminal)
 
 ### "Authentication required" or 401 Errors
 
