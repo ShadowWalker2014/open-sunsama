@@ -53,5 +53,6 @@ drizzle/*.sql
 .expo
 expo-env.d.ts
 
-# Electron (desktop)
-release
+# Tauri (desktop)
+apps/desktop/src-tauri/target
+apps/desktop/src-tauri/gen
