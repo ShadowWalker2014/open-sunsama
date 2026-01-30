@@ -3,6 +3,7 @@ import type { TimeBlock } from "@open-sunsama/types";
 import { toast } from "@/hooks/use-toast";
 import { timeBlockKeys } from "./useTimeBlocks";
 import { useUpdateTimeBlock } from "./useTimeBlockMutations";
+import { useApiClient } from "@/lib/api";
 
 /**
  * Start a time block (for time tracking)
@@ -110,9 +111,10 @@ export function useResizeTimeBlock() {
 
 /**
  * Resize a time block with cascade effect - shifts all overlapping blocks below
+ * Uses the server-side cascade resize endpoint for atomic updates
  */
 export function useCascadeResizeTimeBlock() {
-  const updateTimeBlock = useUpdateTimeBlock();
+  const api = useApiClient();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -120,81 +122,25 @@ export function useCascadeResizeTimeBlock() {
       id,
       startTime,
       endTime,
-      allBlocks,
     }: {
       id: string;
       startTime: Date;
       endTime: Date;
-      allBlocks: TimeBlock[];
     }) => {
-      // Calculate which blocks need to shift (only blocks starting after the resized block)
-      const blocksToUpdate = calculateCascadeShifts(id, startTime, endTime, allBlocks);
-      
-      // Update the resized block first
-      await updateTimeBlock.mutateAsync({
-        id,
-        data: { startTime, endTime },
-      });
-      
-      // Update all shifted blocks
-      for (const update of blocksToUpdate) {
-        await updateTimeBlock.mutateAsync({
-          id: update.id,
-          data: { startTime: update.startTime, endTime: update.endTime },
-        });
-      }
+      // Use the server-side cascade resize endpoint
+      return api.timeBlocks.cascadeResize(id, { startTime, endTime });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
     },
-  });
-}
-
-/**
- * Calculate which blocks need to shift due to cascade effect
- * Only affects blocks that start at or after the resized block's original start time
- */
-function calculateCascadeShifts(
-  resizedBlockId: string,
-  resizedBlockStartTime: Date,
-  newEndTime: Date,
-  allBlocks: TimeBlock[]
-): Array<{ id: string; startTime: Date; endTime: Date }> {
-  const updates: Array<{ id: string; startTime: Date; endTime: Date }> = [];
-  
-  // Only consider blocks that:
-  // 1. Are not the resized block itself
-  // 2. Start at or after the resized block's start time (blocks below it)
-  const sortedBlocks = [...allBlocks]
-    .filter(b => b.id !== resizedBlockId)
-    .filter(b => new Date(b.startTime) >= resizedBlockStartTime)
-    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-  
-  // Track the current "push" boundary - blocks starting before this time need to shift
-  let pushBoundary = newEndTime;
-  
-  for (const block of sortedBlocks) {
-    const blockStart = new Date(block.startTime);
-    const blockEnd = new Date(block.endTime);
-    
-    // If this block starts before the push boundary, it overlaps and needs to shift
-    if (blockStart < pushBoundary) {
-      const duration = blockEnd.getTime() - blockStart.getTime();
-      const newStart = new Date(pushBoundary);
-      const newEnd = new Date(newStart.getTime() + duration);
-      
-      updates.push({
-        id: block.id,
-        startTime: newStart,
-        endTime: newEnd,
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Failed to resize time block",
+        description: error instanceof Error ? error.message : "Unknown error",
       });
-      
-      // Update push boundary for next blocks (cascade effect)
-      pushBoundary = newEnd;
-    }
-  }
-  
-  return updates;
+    },
+  });
 }
 
 /**

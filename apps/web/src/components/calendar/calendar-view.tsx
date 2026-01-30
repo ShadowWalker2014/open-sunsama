@@ -102,12 +102,11 @@ export function CalendarView({
       moveTimeBlock.mutate({ id: blockId, startTime, endTime });
     },
     onBlockResize: (blockId, startTime, endTime) => {
-      // Use cascade resize to automatically shift blocks below
+      // Use cascade resize to automatically shift blocks below (server-side)
       cascadeResizeTimeBlock.mutate({ 
         id: blockId, 
         startTime, 
         endTime,
-        allBlocks: timeBlocks,
       });
     },
   });

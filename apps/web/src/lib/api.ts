@@ -50,6 +50,14 @@ export function getApiClient() {
 }
 
 /**
+ * React hook to get the API instance
+ * Returns the typed API wrapper for use in React components/hooks
+ */
+export function useApiClient() {
+  return getApi();
+}
+
+/**
  * Clear the API client (useful for logout)
  */
 export function clearApiClient(): void {

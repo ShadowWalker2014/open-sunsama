@@ -114,6 +114,7 @@ export interface TimeBlocksApi {
   batchCreate(inputs: CreateTimeBlockInput[], options?: RequestOptions): Promise<TimeBlock[]>;
   batchUpdate(updates: Array<{ id: string; input: UpdateTimeBlockInput }>, options?: RequestOptions): Promise<TimeBlock[]>;
   batchDelete(ids: string[], options?: RequestOptions): Promise<void>;
+  cascadeResize(id: string, data: { startTime: Date | string; endTime: Date | string }, options?: RequestOptions): Promise<TimeBlock[]>;
 }
 
 /**
@@ -274,6 +275,16 @@ export function createTimeBlocksApi(client: OpenSunsamaClient): TimeBlocksApi {
         ...options,
         searchParams: { ...options?.searchParams, ids: ids.join(",") },
       });
+    },
+
+    async cascadeResize(id: string, data: { startTime: Date | string; endTime: Date | string }, options?: RequestOptions): Promise<TimeBlock[]> {
+      // Backend expects times in HH:mm format
+      const payload = {
+        startTime: formatTimeForApi(data.startTime),
+        endTime: formatTimeForApi(data.endTime),
+      };
+      const response = await client.patch<ApiResponseWrapper<RawTimeBlock[]>>(`time-blocks/${id}/cascade-resize`, payload, options);
+      return response.data.map(transformTimeBlock);
     },
   };
 }
