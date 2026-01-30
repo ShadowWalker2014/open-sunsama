@@ -119,7 +119,7 @@ export function useUpdateTask() {
         queryClient.setQueryData<Task>(taskKeys.detail(id), {
           ...previousTask,
           ...data,
-          updatedAt: new Date().toISOString(),
+          updatedAt: new Date(),
         });
       }
 
@@ -130,7 +130,7 @@ export function useUpdateTask() {
           if (!old) return old;
           return old.map((task) => {
             if (task.id === id) {
-              return { ...task, ...data, updatedAt: new Date().toISOString() };
+              return { ...task, ...data, updatedAt: new Date() };
             }
             return task;
           });

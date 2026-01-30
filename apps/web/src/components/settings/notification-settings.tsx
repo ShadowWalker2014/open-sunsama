@@ -91,9 +91,9 @@ export function NotificationSettings() {
           <CardDescription>Configure how you receive notifications</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-6">
-            <p className="text-destructive">Failed to load notification preferences</p>
-            <p className="text-sm text-muted-foreground mt-1">
+          <div className="text-center py-4">
+            <p className="text-destructive text-[13px]">Failed to load notification preferences</p>
+            <p className="text-xs text-muted-foreground mt-1">
               {error instanceof Error ? error.message : "Unknown error"}
             </p>
           </div>
@@ -110,16 +110,16 @@ export function NotificationSettings() {
           <CardDescription>Configure how you receive notifications</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* Task Reminders */}
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="font-medium">Task Reminders</p>
-                <p className="text-sm text-muted-foreground">Get notified before scheduled tasks</p>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-medium">Task Reminders</p>
+                <p className="text-xs text-muted-foreground">Get notified before scheduled tasks</p>
                 {isLoading ? (
-                  <Skeleton className="h-4 w-24 mt-1" />
+                  <Skeleton className="h-3 w-20 mt-1" />
                 ) : (
-                  <p className="text-xs text-muted-foreground mt-1">Status: {getTaskReminderStatus(preferences)}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Status: {getTaskReminderStatus(preferences)}</p>
                 )}
               </div>
               <Button variant="outline" size="sm" onClick={() => setTaskReminderDialogOpen(true)} disabled={isLoading}>
@@ -128,14 +128,14 @@ export function NotificationSettings() {
             </div>
             <Separator />
             {/* Email Notifications */}
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="font-medium">Email Notifications</p>
-                <p className="text-sm text-muted-foreground">Receive daily summary emails</p>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-medium">Email Notifications</p>
+                <p className="text-xs text-muted-foreground">Receive daily summary emails</p>
                 {isLoading ? (
-                  <Skeleton className="h-4 w-20 mt-1" />
+                  <Skeleton className="h-3 w-16 mt-1" />
                 ) : (
-                  <p className="text-xs text-muted-foreground mt-1">Status: {getEmailStatus(preferences)}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Status: {getEmailStatus(preferences)}</p>
                 )}
               </div>
               <Button variant="outline" size="sm" onClick={() => setEmailDialogOpen(true)} disabled={isLoading}>
@@ -144,19 +144,19 @@ export function NotificationSettings() {
             </div>
             <Separator />
             {/* Browser Notifications */}
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="font-medium">Browser Notifications</p>
-                <p className="text-sm text-muted-foreground">Get notifications in your browser</p>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-medium">Browser Notifications</p>
+                <p className="text-xs text-muted-foreground">Get notifications in your browser</p>
                 {!permissionStatus.supported && (
-                  <p className="text-xs text-yellow-600 dark:text-yellow-500 mt-1">Your browser doesn't support notifications</p>
+                  <p className="text-[10px] text-yellow-600 dark:text-yellow-500 mt-0.5">Your browser doesn't support notifications</p>
                 )}
                 {permissionStatus.supported && permissionStatus.permission === "denied" && (
-                  <p className="text-xs text-yellow-600 dark:text-yellow-500 mt-1">Notifications are blocked in browser settings</p>
+                  <p className="text-[10px] text-yellow-600 dark:text-yellow-500 mt-0.5">Notifications are blocked in browser settings</p>
                 )}
               </div>
               {isLoading ? (
-                <Skeleton className="h-6 w-11" />
+                <Skeleton className="h-5 w-9" />
               ) : (
                 <Switch
                   checked={preferences?.pushNotificationsEnabled ?? false}
