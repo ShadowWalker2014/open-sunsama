@@ -259,12 +259,21 @@ curl -X POST https://api.opensunsama.com/tasks/rollover \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
+### Automatic Recovery
+
+PG Boss has built-in recovery mechanisms:
+
+1. **Watchdog** - Checks every 60 seconds if PG Boss died and attempts recovery (up to 5 attempts)
+2. **Health check** - Returns `503` if PG Boss is dead, triggering Railway to restart the container
+3. **Event listener** - Detects when PG Boss stops unexpectedly and marks for recovery
+
 ### Common Issues
 
 | Issue | Cause | Fix |
 |-------|-------|-----|
 | `pgBossRunning: false` | PG Boss failed to start | Check logs for initialization error, verify DATABASE_URL is set |
-| Jobs not running | Worker crashed/stopped | Redeploy API service to restart workers |
+| Jobs not running | Worker crashed/stopped | Watchdog should auto-recover; if not, redeploy |
+| Health returns 503 | PG Boss dead | Railway will auto-restart; check logs for root cause |
 | Rollover not happening | Check rollover_logs for errors | Fix error, delete failed log entry, redeploy |
 
 ---

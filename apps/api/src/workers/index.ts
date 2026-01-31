@@ -4,6 +4,7 @@
  */
 import { registerRolloverWorkers } from './rollover/index.js';
 import { registerEmailWorkers } from './email/index.js';
+import { setWorkerRegistrationFn } from '../lib/pgboss.js';
 
 /**
  * Register all workers
@@ -11,6 +12,9 @@ import { registerEmailWorkers } from './email/index.js';
  */
 export async function registerAllWorkers(): Promise<void> {
   console.log('[Workers] Registering all workers...');
+  
+  // Set the registration function for automatic recovery
+  setWorkerRegistrationFn(registerAllWorkers);
   
   await registerRolloverWorkers();
   await registerEmailWorkers();

@@ -1,6 +1,7 @@
 /**
  * PG Boss client singleton for job queue management
  * Uses PostgreSQL for reliable, persistent job scheduling
+ * Includes automatic recovery and health monitoring
  */
 import * as PgBossModule from 'pg-boss';
 
@@ -14,11 +15,62 @@ let boss: PgBossInstance | null = null;
 // Store initialization error for debugging
 let initializationError: Error | null = null;
 
+// Track if workers have been registered (to re-register on recovery)
+let workersRegistered = false;
+let workerRegistrationFn: (() => Promise<void>) | null = null;
+
+// Watchdog interval
+let watchdogInterval: ReturnType<typeof setInterval> | null = null;
+const WATCHDOG_INTERVAL_MS = 60000; // Check every minute
+const MAX_RECOVERY_ATTEMPTS = 5;
+let recoveryAttempts = 0;
+
 /**
  * Get the initialization error if PG Boss failed to start
  */
 export function getPgBossInitError(): Error | null {
   return initializationError;
+}
+
+/**
+ * Set the worker registration function for automatic recovery
+ */
+export function setWorkerRegistrationFn(fn: () => Promise<void>): void {
+  workerRegistrationFn = fn;
+}
+
+/**
+ * Start the watchdog that monitors PG Boss health and attempts recovery
+ */
+function startWatchdog(): void {
+  if (watchdogInterval) return;
+  
+  watchdogInterval = setInterval(async () => {
+    // If boss is null but we had workers registered, try to recover
+    if (!boss && workersRegistered && recoveryAttempts < MAX_RECOVERY_ATTEMPTS) {
+      console.log(`[PG Boss Watchdog] Detected dead instance, attempting recovery (attempt ${recoveryAttempts + 1}/${MAX_RECOVERY_ATTEMPTS})...`);
+      recoveryAttempts++;
+      
+      // Reset state for fresh initialization
+      bossPromise = null;
+      
+      if (workerRegistrationFn) {
+        await workerRegistrationFn().catch(err => {
+          console.error('[PG Boss Watchdog] Recovery failed:', err);
+        });
+        
+        if (boss) {
+          console.log('[PG Boss Watchdog] Recovery successful!');
+          recoveryAttempts = 0; // Reset on success
+        }
+      }
+    } else if (boss) {
+      // Reset recovery attempts when healthy
+      recoveryAttempts = 0;
+    }
+  }, WATCHDOG_INTERVAL_MS);
+  
+  console.log('[PG Boss Watchdog] Started');
 }
 
 /**
@@ -58,6 +110,15 @@ export async function getPgBoss(): Promise<PgBossInstance> {
       expireInSeconds: 3600, // 1 hour max job expiration
       archiveCompletedAfterSeconds: 43200, // Archive after 12 hours
       deleteAfterDays: 7, // Delete archived jobs after 7 days
+      monitorStateIntervalSeconds: 30, // Monitor state every 30 seconds
+    });
+
+    // Handle PG Boss stopping unexpectedly
+    instance.on('stopped', () => {
+      console.error('[PG Boss] Stopped unexpectedly!');
+      boss = null;
+      bossPromise = null;
+      // Watchdog will attempt recovery
     });
 
     instance.on('error', (error: Error) => {
@@ -65,19 +126,17 @@ export async function getPgBoss(): Promise<PgBossInstance> {
       initializationError = error;
     });
 
-    try {
-      await instance.start();
-      console.log('[PG Boss] Started successfully');
-      
-      boss = instance;
-      initializationError = null;
-      return instance;
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error(String(error));
-      initializationError = err;
-      console.error('[PG Boss] Failed to start:', err.message);
-      throw err;
-    }
+    await instance.start();
+    console.log('[PG Boss] Started successfully');
+    
+    boss = instance;
+    initializationError = null;
+    workersRegistered = true;
+    
+    // Start watchdog after successful initialization
+    startWatchdog();
+    
+    return instance;
   })();
 
   return bossPromise;
@@ -88,11 +147,19 @@ export async function getPgBoss(): Promise<PgBossInstance> {
  * Call this during server shutdown
  */
 export async function stopPgBoss(): Promise<void> {
+  // Stop watchdog first
+  if (watchdogInterval) {
+    clearInterval(watchdogInterval);
+    watchdogInterval = null;
+    console.log('[PG Boss Watchdog] Stopped');
+  }
+  
   if (boss) {
     console.log('[PG Boss] Stopping...');
     await boss.stop({ graceful: true, timeout: 30000 });
     boss = null;
     bossPromise = null;
+    workersRegistered = false;
     console.log('[PG Boss] Stopped');
   }
 }

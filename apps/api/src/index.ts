@@ -47,15 +47,23 @@ app.use('*', cors({
 }));
 
 // Health check endpoint with PG Boss stats
+// Returns unhealthy status if PG Boss is dead (triggers Railway restart)
 app.get('/health', async (c) => {
+  const pgBossRunning = isPgBossRunning();
+  
+  // Determine overall health status
+  // If PG Boss should be running but isn't, mark as degraded
+  const pgBossRequired = process.env.ROLLOVER_ENABLED !== 'false';
+  const isHealthy = !pgBossRequired || pgBossRunning;
+  
   const healthData: Record<string, unknown> = {
-    status: 'ok',
+    status: isHealthy ? 'ok' : 'degraded',
     timestamp: new Date().toISOString(),
     version: process.env.npm_package_version || '0.0.0',
   };
 
   // Add PG Boss job queue stats if running
-  if (isPgBossRunning()) {
+  if (pgBossRunning) {
     try {
       const boss = await getPgBoss();
       const pendingRolloverBatches = await boss.getQueueSize(JOBS.USER_BATCH_ROLLOVER);
@@ -76,6 +84,11 @@ app.get('/health', async (c) => {
       initializationError: initError?.message || 'PG Boss not started (no error captured)',
       databaseUrlSet: !!process.env.DATABASE_URL,
     };
+  }
+
+  // Return 503 Service Unavailable if degraded (triggers Railway restart after health check failures)
+  if (!isHealthy) {
+    return c.json(healthData, 503);
   }
 
   return c.json(healthData);
