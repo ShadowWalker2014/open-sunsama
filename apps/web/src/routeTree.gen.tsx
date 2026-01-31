@@ -27,6 +27,8 @@ import KanbanFeaturePage from "./routes/features/kanban";
 import TimeBlockingFeaturePage from "./routes/features/time-blocking";
 import FocusModeFeaturePage from "./routes/features/focus-mode";
 import AIIntegrationFeaturePage from "./routes/features/ai-integration";
+import CommandPaletteFeaturePage from "./routes/features/command-palette";
+import CalendarSyncFeaturePage from "./routes/features/calendar-sync";
 
 // Create root route
 const rootRoute = createRootRoute({
@@ -134,6 +136,18 @@ const aiIntegrationFeatureRoute = createRoute({
   component: AIIntegrationFeaturePage,
 });
 
+const commandPaletteFeatureRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/features/command-palette",
+  component: CommandPaletteFeaturePage,
+});
+
+const calendarSyncFeatureRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/features/calendar-sync",
+  component: CalendarSyncFeaturePage,
+});
+
 const appRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/app",
@@ -202,6 +216,8 @@ const routeTree = rootRoute.addChildren([
   timeBlockingFeatureRoute,
   focusModeFeatureRoute,
   aiIntegrationFeatureRoute,
+  commandPaletteFeatureRoute,
+  calendarSyncFeatureRoute,
   appRoute.addChildren([
     appIndexRoute,
     appCalendarRoute,

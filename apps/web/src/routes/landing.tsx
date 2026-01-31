@@ -10,11 +10,12 @@ import {
   Download,
   Command,
   Layout,
-  Lock,
   Check,
   X,
   Timer,
   Sparkles,
+  ChevronRight,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useInView } from "react-intersection-observer";
@@ -346,14 +347,16 @@ export default function LandingPage() {
               <FeatureCard
                 icon={Command}
                 title="Command palette"
-                description="Access everything with ⌘K. Fast keyboard navigation."
+                description="Access everything with ⌘K. Search tasks, run commands, navigate fast."
                 delay={200}
+                href="/features/command-palette"
               />
               <FeatureCard
-                icon={Lock}
-                title="Privacy first"
-                description="Open source and self-hostable. Your data stays yours."
+                icon={RefreshCw}
+                title="Calendar sync"
+                description="Bidirectional sync with Google, Outlook, and iCloud calendars."
                 delay={250}
+                href="/features/calendar-sync"
               />
             </div>
           </div>
