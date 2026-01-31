@@ -84,6 +84,9 @@ jobs:
 
       - name: Build web app
         working-directory: apps/web
+        env:
+          VITE_API_URL: ${{ env.API_URL }}
+          VITE_WS_URL: wss://api.opensunsama.com
         run: bun run build
 
       - name: Build Tauri app
