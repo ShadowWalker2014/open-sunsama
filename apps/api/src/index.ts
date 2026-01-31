@@ -46,20 +46,30 @@ app.use('*', cors({
   credentials: true,
 }));
 
+// Track server start time for health check grace period
+const serverStartTime = Date.now();
+const HEALTH_CHECK_GRACE_PERIOD_MS = 5 * 60 * 1000; // 5 minutes grace period
+
 // Health check endpoint with PG Boss stats
 // Returns unhealthy status if PG Boss is dead (triggers Railway restart)
+// BUT has a grace period during startup to allow initial deployment
 app.get('/health', async (c) => {
   const pgBossRunning = isPgBossRunning();
+  const uptimeMs = Date.now() - serverStartTime;
+  const inGracePeriod = uptimeMs < HEALTH_CHECK_GRACE_PERIOD_MS;
   
   // Determine overall health status
   // If PG Boss should be running but isn't, mark as degraded
+  // BUT during grace period, always return healthy to allow deployment
   const pgBossRequired = process.env.ROLLOVER_ENABLED !== 'false';
-  const isHealthy = !pgBossRequired || pgBossRunning;
+  const isHealthy = inGracePeriod || !pgBossRequired || pgBossRunning;
   
   const healthData: Record<string, unknown> = {
     status: isHealthy ? 'ok' : 'degraded',
     timestamp: new Date().toISOString(),
     version: process.env.npm_package_version || '0.0.0',
+    uptimeSeconds: Math.floor(uptimeMs / 1000),
+    inGracePeriod,
   };
 
   // Add PG Boss job queue stats if running
@@ -86,7 +96,8 @@ app.get('/health', async (c) => {
     };
   }
 
-  // Return 503 Service Unavailable if degraded (triggers Railway restart after health check failures)
+  // Return 503 Service Unavailable if degraded AND past grace period
+  // This triggers Railway restart after the service has been running for a while
   if (!isHealthy) {
     return c.json(healthData, 503);
   }

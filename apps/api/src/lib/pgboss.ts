@@ -3,14 +3,10 @@
  * Uses PostgreSQL for reliable, persistent job scheduling
  * Includes automatic recovery and health monitoring
  */
-import * as PgBossModule from 'pg-boss';
+import PgBoss from 'pg-boss';
 
-// Handle ESM/CJS interop - pg-boss is CommonJS
-const PgBoss = (PgBossModule as any).default || PgBossModule;
-type PgBossInstance = InstanceType<typeof PgBoss>;
-
-let bossPromise: Promise<PgBossInstance> | null = null;
-let boss: PgBossInstance | null = null;
+let bossPromise: Promise<PgBoss> | null = null;
+let boss: PgBoss | null = null;
 
 // Store initialization error for debugging
 let initializationError: Error | null = null;
@@ -78,7 +74,7 @@ function startWatchdog(): void {
  * Lazily initializes and starts PG Boss on first call
  * Uses promise caching to prevent race conditions on concurrent calls
  */
-export async function getPgBoss(): Promise<PgBossInstance> {
+export async function getPgBoss(): Promise<PgBoss> {
   // Return cached instance if already started
   if (boss) {
     return boss;
