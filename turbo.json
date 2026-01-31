@@ -8,7 +8,6 @@
       "outputs": ["dist/**", ".next/**", "!.next/cache/**", "build/**", "src-tauri/target/release/bundle/**"]
     },
     "dev": {
-      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
     },

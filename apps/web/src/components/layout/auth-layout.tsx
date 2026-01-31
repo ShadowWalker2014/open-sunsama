@@ -10,30 +10,29 @@ interface AuthLayoutProps {
 
 /**
  * Layout wrapper for authentication pages (login/register)
- * Clean, minimal Linear-style aesthetic with mesh background
+ * Compact, minimal style matching the app
  */
 export function AuthLayout({ children, className }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 relative overflow-hidden">
-      {/* Background Decor */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 blur-[120px] rounded-full animate-pulse-subtle" />
-        <div className="absolute inset-0 bg-grid opacity-[0.03] dark:opacity-[0.05]" />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 relative">
+      {/* Subtle background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-primary/[0.03] blur-[100px] rounded-full" />
       </div>
 
-      <div className="relative z-10 w-full max-w-md flex flex-col items-center">
+      <div className="relative z-10 w-full max-w-sm flex flex-col items-center">
         {/* Logo */}
-        <Link to="/" className="mb-10 flex items-center gap-3 group">
-          <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-all duration-300 group-hover:rotate-6">
-            <Calendar className="h-6 w-6 text-primary" />
+        <Link to="/" className="mb-8 flex items-center gap-2">
+          <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary text-primary-foreground">
+            <Calendar className="h-4 w-4" />
           </div>
-          <span className="text-2xl font-bold font-display tracking-tight">Open Sunsama</span>
+          <span className="text-[15px] font-semibold">Open Sunsama</span>
         </Link>
 
         {/* Card */}
         <div
           className={cn(
-            "w-full glass p-8 rounded-[32px] shadow-2xl animate-fade-up",
+            "w-full rounded-xl border border-border/40 bg-card/50 p-6 shadow-sm",
             className
           )}
         >
@@ -41,14 +40,10 @@ export function AuthLayout({ children, className }: AuthLayoutProps) {
         </div>
 
         {/* Footer */}
-        <div className="mt-10 flex flex-col items-center gap-4 animate-fade-up animate-delay-300">
-           <p className="text-sm font-jetbrains text-muted-foreground uppercase tracking-widest">
-            Free and open source
-          </p>
-          <div className="flex items-center gap-6 text-muted-foreground/50">
-            <Link to="/privacy" className="text-xs hover:text-foreground transition-colors">Privacy</Link>
-            <Link to="/terms" className="text-xs hover:text-foreground transition-colors">Terms</Link>
-          </div>
+        <div className="mt-6 flex items-center gap-4 text-[11px] text-muted-foreground">
+          <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+          <span className="text-border">•</span>
+          <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
         </div>
       </div>
     </div>
@@ -65,10 +60,10 @@ interface AuthHeaderProps {
  */
 export function AuthHeader({ title, description }: AuthHeaderProps) {
   return (
-    <div className="flex flex-col space-y-2 text-center mb-8">
-      <h1 className="text-3xl font-bold font-display tracking-tight">{title}</h1>
+    <div className="flex flex-col space-y-1 text-center mb-6">
+      <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
       {description && (
-        <p className="text-muted-foreground">{description}</p>
+        <p className="text-sm text-muted-foreground">{description}</p>
       )}
     </div>
   );
@@ -83,6 +78,6 @@ interface AuthFooterProps {
  */
 export function AuthFooter({ children }: AuthFooterProps) {
   return (
-    <p className="mt-8 text-center text-sm text-muted-foreground">{children}</p>
+    <p className="mt-6 text-center text-xs text-muted-foreground">{children}</p>
   );
 }

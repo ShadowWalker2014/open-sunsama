@@ -7,20 +7,14 @@ import {
   Apple,
   Github,
   ExternalLink,
-  CheckCircle2,
   Cpu,
   Zap,
   Bell,
   RefreshCw,
-  Sparkles,
-  ArrowRight,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { BorderBeam } from "@/components/landing/border-beam";
-import { ShimmerButton } from "@/components/landing/shimmer-button";
 import { useInView } from "react-intersection-observer";
 import { cn } from "@/lib/utils";
 
@@ -42,7 +36,7 @@ const PLATFORMS: Record<PlatformKey, PlatformInfo> = {
     name: "Windows",
     shortName: "Windows",
     icon: Monitor,
-    description: "Windows 10 or later",
+    description: "Windows 10+",
     fileType: ".exe",
   },
   "macos-arm64": {
@@ -50,7 +44,7 @@ const PLATFORMS: Record<PlatformKey, PlatformInfo> = {
     name: "macOS (Apple Silicon)",
     shortName: "macOS",
     icon: Apple,
-    description: "M1, M2, M3, M4 chips",
+    description: "M1/M2/M3/M4",
     fileType: ".dmg",
   },
   "macos-x64": {
@@ -58,7 +52,7 @@ const PLATFORMS: Record<PlatformKey, PlatformInfo> = {
     name: "macOS (Intel)",
     shortName: "macOS",
     icon: Apple,
-    description: "Intel-based Macs",
+    description: "Intel Macs",
     fileType: ".dmg",
   },
   linux: {
@@ -66,12 +60,11 @@ const PLATFORMS: Record<PlatformKey, PlatformInfo> = {
     name: "Linux",
     shortName: "Linux",
     icon: Cpu,
-    description: "AppImage for most distros",
+    description: "AppImage",
     fileType: ".AppImage",
   },
 };
 
-// Release data from API
 interface Release {
   id: string;
   version: string;
@@ -89,37 +82,21 @@ type ReleasesResponse = {
   data: Record<PlatformKey, Release | undefined>;
 };
 
-/**
- * Detect user's operating system from navigator
- */
 function detectPlatform(): PlatformKey {
   if (typeof window === "undefined") return "macos-arm64";
-
   const userAgent = navigator.userAgent.toLowerCase();
   const platform = navigator.platform?.toLowerCase() || "";
 
-  if (platform.includes("win") || userAgent.includes("windows")) {
-    return "windows";
-  }
-
+  if (platform.includes("win") || userAgent.includes("windows")) return "windows";
   if (platform.includes("mac") || userAgent.includes("macintosh")) {
-    const isARM =
-      userAgent.includes("arm") ||
-      (navigator as { userAgentData?: { architecture?: string } }).userAgentData
-        ?.architecture === "arm";
+    const isARM = userAgent.includes("arm") || 
+      (navigator as { userAgentData?: { architecture?: string } }).userAgentData?.architecture === "arm";
     return isARM ? "macos-arm64" : "macos-x64";
   }
-
-  if (platform.includes("linux") || userAgent.includes("linux")) {
-    return "linux";
-  }
-
+  if (platform.includes("linux") || userAgent.includes("linux")) return "linux";
   return "macos-arm64";
 }
 
-/**
- * Format file size in human readable format
- */
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return "0 B";
   const k = 1024;
@@ -129,7 +106,7 @@ function formatFileSize(bytes: number): string {
 }
 
 /**
- * Platform download card component with Linear-style hover effects
+ * Platform card - compact style
  */
 function PlatformCard({
   platform,
@@ -149,179 +126,95 @@ function PlatformCard({
 
   if (isLoading) {
     return (
-      <Card className="relative p-6 bg-card/30 backdrop-blur-md border rounded-[24px]">
-        <div className="flex items-start gap-5">
-          <Skeleton className="h-14 w-14 rounded-2xl" />
-          <div className="flex-1 space-y-3 mt-1">
-            <Skeleton className="h-5 w-32" />
-            <Skeleton className="h-4 w-48" />
+      <div className="p-4 rounded-xl border border-border/40 bg-card/50">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-10 w-10 rounded-lg" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-3 w-32" />
           </div>
-          <Skeleton className="h-10 w-28 rounded-xl" />
+          <Skeleton className="h-8 w-20 rounded-lg" />
         </div>
-      </Card>
+      </div>
     );
   }
 
   return (
-    <Card
+    <div
       ref={ref}
       className={cn(
-        "group relative p-6 bg-card/30 backdrop-blur-md transition-all duration-500 hover:bg-card/50 hover:shadow-xl hover:shadow-primary/5 rounded-[24px]",
-        inView ? "animate-fade-up" : "opacity-0",
-        isDetected && "border-primary/30 shadow-sm shadow-primary/5"
+        "group p-4 rounded-xl border bg-card/50 transition-all duration-200",
+        isDetected ? "border-primary/30 bg-primary/5" : "border-border/40 hover:border-border/60",
+        inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
       )}
-      style={{ animationDelay: `${delay}ms` }}
+      style={{ transitionDelay: `${delay}ms` }}
     >
-      {isDetected && (
-        <div className="absolute -top-3 left-6">
-          <Badge
-            variant="secondary"
-            className="bg-primary/10 text-primary border-primary/20 text-[10px] font-jetbrains uppercase tracking-widest py-1 px-3"
-          >
-            <Sparkles className="h-3 w-3 mr-1.5" />
-            Detected
-          </Badge>
-        </div>
-      )}
-      <div className="flex items-center gap-5">
-        <div className="flex items-center justify-center h-14 w-14 rounded-2xl bg-primary/10 group-hover:bg-primary/20 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3">
-          <Icon className="h-7 w-7 text-primary" />
+      <div className="flex items-center gap-3">
+        <div className={cn(
+          "flex h-10 w-10 items-center justify-center rounded-lg",
+          isDetected ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
+        )}>
+          <Icon className="h-5 w-5" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold font-display text-lg tracking-tight">{platform.name}</h3>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <div className="flex items-center gap-2">
+            <h3 className="text-[13px] font-semibold">{platform.name}</h3>
+            {isDetected && (
+              <span className="text-[10px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                Detected
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">
             {platform.description}
+            {release && ` • ${formatFileSize(release.fileSize)}`}
           </p>
-          {release && (
-            <p className="text-xs font-jetbrains text-muted-foreground/60 mt-1.5 flex items-center gap-2">
-              <span>{formatFileSize(release.fileSize)}</span>
-              <span className="h-1 w-1 rounded-full bg-border" />
-              <span>{platform.fileType}</span>
-            </p>
-          )}
         </div>
         {release ? (
-          <Button size="lg" variant="outline" className="rounded-xl font-bold border-2 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all px-6" asChild>
+          <Button size="sm" variant={isDetected ? "default" : "outline"} className="h-8 px-3 text-xs" asChild>
             <a href={release.downloadUrl} download>
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="h-3.5 w-3.5" />
               Download
             </a>
           </Button>
         ) : (
-          <Button size="lg" variant="outline" disabled className="rounded-xl opacity-50 font-bold border-2 px-6">
+          <Button size="sm" variant="outline" disabled className="h-8 px-3 text-xs opacity-50">
             Coming soon
           </Button>
         )}
       </div>
-      <BorderBeam size={200} duration={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-    </Card>
-  );
-}
-
-/**
- * Main hero download button with Linear-style design
- */
-function HeroDownloadButton({
-  platform,
-  release,
-  isLoading,
-}: {
-  platform: PlatformInfo;
-  release?: Release;
-  isLoading: boolean;
-}) {
-  const Icon = platform.icon;
-
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center gap-4 mt-8">
-        <Skeleton className="h-16 w-80 rounded-full" />
-        <Skeleton className="h-5 w-56" />
-      </div>
-    );
-  }
-
-  if (!release) {
-    return (
-      <div className="flex flex-col items-center gap-4 mt-8">
-        <Button size="lg" disabled className="h-16 px-12 text-lg font-bold rounded-full border-2 opacity-50">
-          <Icon className="h-6 w-6 mr-3" />
-          Coming soon for {platform.shortName}
-        </Button>
-        <p className="text-sm font-medium text-muted-foreground">
-          Native desktop app is currently in development.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col items-center gap-5 mt-8 animate-fade-up animate-delay-300">
-      <ShimmerButton 
-        className="h-16 px-12 text-xl font-bold"
-        onClick={() => window.location.href = release.downloadUrl}
-      >
-        <Icon className="h-6 w-6 mr-3" />
-        Download for {platform.shortName}
-        <ArrowRight className="h-5 w-5 ml-3 opacity-60 group-hover:translate-x-1 transition-transform" />
-      </ShimmerButton>
-      <div className="flex items-center gap-4 text-sm font-jetbrains text-muted-foreground uppercase tracking-widest">
-        <span className="font-bold text-primary">v{release.version}</span>
-        <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/20" />
-        <span>{formatFileSize(release.fileSize)}</span>
-        <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/20" />
-        <span>{platform.fileType}</span>
-      </div>
     </div>
   );
 }
 
 /**
- * Feature highlight component
+ * Feature item - compact
  */
-function FeatureHighlight({
+function FeatureItem({
   icon: Icon,
   title,
   description,
-  delay = 0,
 }: {
   icon: any;
   title: string;
   description: string;
-  delay?: number;
 }) {
-  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
-  
   return (
-    <div 
-      ref={ref}
-      className={cn(
-        "flex flex-col items-start gap-4 p-6 rounded-3xl bg-card/20 border transition-all duration-500",
-        inView ? "animate-fade-up" : "opacity-0"
-      )}
-      style={{ animationDelay: `${delay}ms` }}
-    >
-      <div className="flex items-center justify-center h-12 w-12 rounded-2xl bg-primary/10">
-        <Icon className="h-6 w-6 text-primary" />
+    <div className="flex items-start gap-3">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <Icon className="h-4 w-4" />
       </div>
       <div>
-        <h4 className="text-lg font-bold font-display tracking-tight mb-2">{title}</h4>
-        <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+        <h4 className="text-[13px] font-semibold">{title}</h4>
+        <p className="text-xs text-muted-foreground">{description}</p>
       </div>
     </div>
   );
 }
 
-/**
- * Download page component
- * Linear-style design with OS detection and platform cards
- */
 export default function DownloadPage() {
-  const [detectedPlatform, setDetectedPlatform] =
-    React.useState<PlatformKey>("macos-arm64");
-  const [releases, setReleases] = React.useState<
-    Record<PlatformKey, Release | undefined>
-  >({
+  const [detectedPlatform, setDetectedPlatform] = React.useState<PlatformKey>("macos-arm64");
+  const [releases, setReleases] = React.useState<Record<PlatformKey, Release | undefined>>({
     windows: undefined,
     "macos-arm64": undefined,
     "macos-x64": undefined,
@@ -340,224 +233,201 @@ export default function DownloadPage() {
       try {
         const response = await fetch(`${apiUrl}/releases/latest`);
         if (!response.ok) {
-          setError("Unable to load release information");
+          setError("Unable to load releases");
           setIsLoading(false);
           return;
         }
         const data: ReleasesResponse = await response.json();
-        if (data.success) {
-          setReleases(data.data);
-        }
-      } catch (e) {
-        setError("Unable to connect to release server");
+        if (data.success) setReleases(data.data);
+      } catch {
+        setError("Unable to connect to server");
       } finally {
         setIsLoading(false);
       }
     }
-
     void fetchReleases();
   }, []);
 
   const detectedPlatformInfo = PLATFORMS[detectedPlatform];
   const detectedRelease = releases[detectedPlatform];
-
-  const otherPlatforms = Object.values(PLATFORMS).filter(
-    (p) => p.key !== detectedPlatform
-  );
+  const allPlatforms = Object.values(PLATFORMS);
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-hidden selection:bg-primary/30 selection:text-primary-foreground font-sans">
-      {/* Background Decor */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-primary/5 blur-[120px] rounded-full animate-pulse-subtle" />
-        <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-secondary/5 blur-[100px] rounded-full animate-pulse-subtle" />
-        <div className="absolute inset-0 bg-grid opacity-[0.03] dark:opacity-[0.05]" />
-        <div className="absolute inset-0 bg-noise opacity-[0.02] dark:opacity-[0.03]" />
+    <div className="min-h-screen bg-background text-foreground font-sans antialiased">
+      {/* Subtle background */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 right-1/4 w-[500px] h-[400px] bg-primary/[0.03] blur-[100px] rounded-full" />
       </div>
-      
+
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/60 backdrop-blur-xl">
-        <div className="container flex h-16 items-center justify-between px-6 mx-auto max-w-7xl">
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-all duration-300 group-hover:rotate-6">
-              <Calendar className="h-5 w-5 text-primary" />
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-12 items-center justify-between px-4 mx-auto max-w-5xl">
+          <Link to="/" className="flex items-center gap-2">
+            <div className="flex items-center justify-center h-7 w-7 rounded-md bg-primary text-primary-foreground">
+              <Calendar className="h-3.5 w-3.5" />
             </div>
-            <span className="font-bold tracking-tight text-xl font-display">Open Sunsama</span>
+            <span className="text-[13px] font-semibold">Open Sunsama</span>
           </Link>
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" asChild className="font-medium">
+          <div className="flex items-center gap-1.5">
+            <Button variant="ghost" size="sm" className="h-8 px-3 text-xs" asChild>
               <Link to="/login">Sign in</Link>
             </Button>
-            <ShimmerButton 
-              className="px-5 py-2 text-sm font-semibold"
-              onClick={() => window.location.href = '/register'}
-            >
-              Get Started
-            </ShimmerButton>
+            <Button size="sm" className="h-8 px-3 text-xs" asChild>
+              <Link to="/register">Get Started</Link>
+            </Button>
           </div>
         </div>
       </header>
 
-      <main className="relative z-10">
-        {/* Hero Section */}
-        <section className="relative pt-24 pb-32 overflow-hidden">
-          <div className="container px-6 mx-auto max-w-4xl text-center">
-            {/* App Icon */}
-            <div className="animate-fade-up mx-auto flex items-center justify-center h-28 w-28 rounded-[36px] bg-card p-1 border shadow-2xl mb-12">
-               <div className="h-full w-full rounded-[30px] bg-gradient-to-br from-primary via-primary/80 to-primary/40 flex items-center justify-center shadow-inner">
-                 <Calendar className="h-14 w-14 text-white" />
-               </div>
+      <main className="relative">
+        {/* Hero */}
+        <section className="pt-16 pb-12 md:pt-24 md:pb-16">
+          <div className="container px-4 mx-auto max-w-3xl text-center">
+            {/* App icon */}
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-2xl bg-primary mb-6">
+              <Calendar className="h-8 w-8 text-primary-foreground" />
             </div>
 
-            <h1 className="animate-fade-up animate-delay-100 text-balance text-5xl md:text-7xl font-extrabold tracking-tight font-display mb-8 leading-[0.95]">
+            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight mb-3">
               Open Sunsama for Desktop
             </h1>
-            <p className="animate-fade-up animate-delay-200 text-balance text-xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed">
-              Experience the best of Open Sunsama with native performance, 
-              global hotkeys, and seamless system integration.
+            <p className="text-sm text-muted-foreground max-w-md mx-auto mb-8">
+              Native performance, global hotkeys, and system integration.
             </p>
 
-            {/* Primary Download Button */}
-            <HeroDownloadButton
-              platform={detectedPlatformInfo}
-              release={detectedRelease}
-              isLoading={isLoading}
-            />
-
-            {/* Requirements note */}
-            <p className="animate-fade-up animate-delay-500 text-xs font-jetbrains text-muted-foreground/60 uppercase tracking-widest mt-12">
-              Requires {detectedPlatformInfo.description} • Free & Open Source
-            </p>
+            {/* Primary download */}
+            {!isLoading && detectedRelease && (
+              <div className="space-y-3">
+                <Button size="lg" className="h-10 px-5 text-[13px]" asChild>
+                  <a href={detectedRelease.downloadUrl} download>
+                    <detectedPlatformInfo.icon className="h-4 w-4" />
+                    Download for {detectedPlatformInfo.shortName}
+                  </a>
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  v{detectedRelease.version} • {formatFileSize(detectedRelease.fileSize)} • {detectedPlatformInfo.fileType}
+                </p>
+              </div>
+            )}
+            {!isLoading && !detectedRelease && (
+              <p className="text-sm text-muted-foreground">
+                Desktop app coming soon for {detectedPlatformInfo.shortName}
+              </p>
+            )}
+            {isLoading && (
+              <div className="space-y-3">
+                <Skeleton className="h-10 w-48 mx-auto rounded-lg" />
+                <Skeleton className="h-4 w-32 mx-auto" />
+              </div>
+            )}
           </div>
         </section>
 
-        {/* Features Section */}
-        <section className="py-24 border-y bg-card/20 relative">
-          <div className="absolute inset-0 bg-dots opacity-[0.05]" />
-          <div className="container px-6 mx-auto max-w-7xl relative">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <FeatureHighlight
+        {/* Features */}
+        <section className="py-12 border-t border-border/40 bg-muted/10">
+          <div className="container px-4 mx-auto max-w-3xl">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <FeatureItem
                 icon={Zap}
                 title="Tauri-Powered"
-                description="Built for speed and security. Our desktop app is lightweight, memory-efficient, and starts up instantly."
-                delay={0}
+                description="Lightweight, fast, secure"
               />
-              <FeatureHighlight
+              <FeatureItem
                 icon={Bell}
-                title="Native Focus"
-                description="Get native notifications and use the system tray for quick access. Stay focused with deep OS integration."
-                delay={100}
+                title="Native Notifications"
+                description="System tray integration"
               />
-              <FeatureHighlight
+              <FeatureItem
                 icon={RefreshCw}
-                title="Continuous Flow"
-                description="Auto-updates keep you on the latest version without interruption. Your tasks stay synced across all devices."
-                delay={200}
+                title="Auto Updates"
+                description="Always up to date"
               />
             </div>
           </div>
         </section>
 
-        {/* Other Platforms Section */}
-        <section className="py-24">
-          <div className="container px-6 mx-auto max-w-4xl">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold font-display tracking-tight mb-4">All Platforms</h2>
-              <p className="text-muted-foreground">
-                Download the latest stable release for your operating system.
-              </p>
-            </div>
+        {/* All platforms */}
+        <section className="py-12 border-t border-border/40">
+          <div className="container px-4 mx-auto max-w-2xl">
+            <h2 className="text-lg font-semibold tracking-tight text-center mb-6">
+              All Platforms
+            </h2>
 
             {error && (
-              <div className="text-sm text-destructive mb-10 p-5 rounded-2xl bg-destructive/10 border border-destructive/20 font-medium">
+              <div className="text-xs text-destructive mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
                 {error}
               </div>
             )}
 
-            <div className="grid gap-6">
-              {otherPlatforms.map((platform, i) => (
+            <div className="space-y-3">
+              {allPlatforms.map((platform, i) => (
                 <PlatformCard
                   key={platform.key}
                   platform={platform}
                   release={releases[platform.key]}
-                  isDetected={false}
+                  isDetected={platform.key === detectedPlatform}
                   isLoading={isLoading}
-                  delay={i * 100}
+                  delay={i * 50}
                 />
               ))}
             </div>
           </div>
         </section>
 
-        {/* Web App Section */}
-        <section className="py-24">
-          <div className="container px-6 mx-auto max-w-4xl">
-            <div className="glass p-10 md:p-16 rounded-[40px] border shadow-xl flex flex-col md:flex-row items-center justify-between gap-12 text-center md:text-left relative overflow-hidden group">
-              <div className="absolute inset-0 bg-noise opacity-[0.02]" />
-              <div className="relative z-10 flex-1">
-                <h3 className="text-3xl font-bold font-display tracking-tight mb-4">Prefer the browser?</h3>
-                <p className="text-lg text-muted-foreground max-w-md">
-                  Access Open Sunsama from any device with our full-featured web app. 
-                  No installation required.
+        {/* Web app */}
+        <section className="py-12 border-t border-border/40">
+          <div className="container px-4 mx-auto max-w-2xl">
+            <div className="rounded-xl border border-border/40 bg-card/50 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <h3 className="text-[13px] font-semibold">Prefer the browser?</h3>
+                <p className="text-xs text-muted-foreground">
+                  Access from any device with our web app.
                 </p>
               </div>
-              <div className="relative z-10">
-                <Button variant="outline" size="lg" className="h-16 px-10 text-lg font-bold rounded-full border-2 hover:bg-accent/50 transition-all shadow-xl" asChild>
-                  <Link to="/app">
-                    Open Web App
-                    <ExternalLink className="h-5 w-5 ml-2.5" />
-                  </Link>
-                </Button>
-              </div>
-              <BorderBeam size={400} duration={15} />
+              <Button variant="outline" size="sm" className="h-8 px-3 text-xs" asChild>
+                <Link to="/app">
+                  Open Web App
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </Link>
+              </Button>
             </div>
           </div>
         </section>
 
-        {/* Release Info */}
-        <section className="py-24 border-t">
-          <div className="container px-6 mx-auto max-w-4xl text-center">
-             <h2 className="text-2xl font-bold font-display tracking-tight mb-4">Open Source Integrity</h2>
-             <p className="text-muted-foreground mb-10 max-w-lg mx-auto">
-               We believe in transparency. Check our source code, 
-               verify our releases, and contribute on GitHub.
-             </p>
-             <div className="flex justify-center gap-6">
-               <Button variant="outline" className="rounded-xl px-8 h-12 font-bold" asChild>
-                 <a href="https://github.com/ShadowWalker2014/open-sunsama/releases" target="_blank" rel="noopener noreferrer">
-                   <Github className="h-5 w-5 mr-2" />
-                   Release Notes
-                 </a>
-               </Button>
-               <Button variant="outline" className="rounded-xl px-8 h-12 font-bold" asChild>
-                 <a href="https://github.com/ShadowWalker2014/open-sunsama" target="_blank" rel="noopener noreferrer">
-                   <Monitor className="h-5 w-5 mr-2" />
-                   Source Code
-                 </a>
-               </Button>
-             </div>
+        {/* Source */}
+        <section className="py-12 border-t border-border/40">
+          <div className="container px-4 mx-auto max-w-2xl text-center">
+            <h3 className="text-[13px] font-semibold mb-2">Open Source</h3>
+            <p className="text-xs text-muted-foreground mb-4">
+              Check source code and releases on GitHub.
+            </p>
+            <Button variant="outline" size="sm" className="h-8 px-3 text-xs" asChild>
+              <a href="https://github.com/ShadowWalker2014/open-sunsama" target="_blank" rel="noopener noreferrer">
+                <Github className="h-3.5 w-3.5" />
+                View on GitHub
+              </a>
+            </Button>
           </div>
         </section>
       </main>
 
       {/* Footer */}
-      <footer className="border-t bg-background pt-24 pb-12 relative z-10">
-        <div className="container px-6 mx-auto max-w-7xl">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-12 mb-16">
-            <Link to="/" className="flex items-center gap-3 group">
-              <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-all">
-                <Calendar className="h-5 w-5 text-primary" />
+      <footer className="border-t border-border/40 py-6">
+        <div className="container px-4 mx-auto max-w-5xl">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center h-5 w-5 rounded bg-primary/10">
+                <Calendar className="h-2.5 w-2.5 text-primary" />
               </div>
-              <span className="font-bold tracking-tight text-xl font-display">Open Sunsama</span>
-            </Link>
-            <nav className="flex items-center gap-10 text-sm font-medium text-muted-foreground">
-              <Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-              <Link to="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-              <a href="https://github.com/ShadowWalker2014/open-sunsama" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">GitHub</a>
+              <span className="text-[11px] text-muted-foreground">© 2026 Open Sunsama</span>
+            </div>
+            <nav className="flex items-center gap-4 text-[11px] text-muted-foreground">
+              <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+              <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+              <a href="https://github.com/ShadowWalker2014/open-sunsama" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+                <Github className="h-3.5 w-3.5" />
+              </a>
             </nav>
-          </div>
-          <div className="pt-8 border-t text-center text-sm text-muted-foreground">
-            <p>© 2026 Open Sunsama. Non-commercial license. Built for people who value their time.</p>
           </div>
         </div>
       </footer>

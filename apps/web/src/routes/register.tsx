@@ -150,8 +150,8 @@ export default function RegisterPage() {
           )}
         </div>
 
-        <Button type="submit" disabled={isLoading} className="w-full mt-4 h-12 text-base font-bold rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all">
-          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        <Button type="submit" disabled={isLoading} className="w-full mt-2 h-9 text-[13px]">
+          {isLoading && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
           Create account
         </Button>
       </form>

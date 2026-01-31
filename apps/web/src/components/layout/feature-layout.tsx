@@ -1,12 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { type ReactNode } from "react";
-import { Calendar, ArrowRight, Github, Zap } from "lucide-react";
+import { Calendar, ArrowRight, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ShimmerButton } from "@/components/landing/shimmer-button";
-import { BorderBeam } from "@/components/landing/border-beam";
 
 /**
  * Layout wrapper for feature-specific landing pages
+ * Compact style matching the app
  */
 export function FeatureLayout({ 
   children, 
@@ -20,62 +19,55 @@ export function FeatureLayout({
   badge?: string;
 }) {
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 selection:text-primary-foreground font-sans relative overflow-hidden">
-      {/* Background Decor */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-primary/5 blur-[120px] rounded-full" />
-        <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-secondary/5 blur-[100px] rounded-full" />
-        <div className="absolute inset-0 bg-grid opacity-[0.03]" />
-        <div className="absolute inset-0 bg-noise opacity-[0.02]" />
+    <div className="min-h-screen bg-background text-foreground font-sans antialiased">
+      {/* Subtle background */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 right-1/4 w-[500px] h-[400px] bg-primary/[0.03] blur-[100px] rounded-full" />
       </div>
 
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/60 backdrop-blur-xl">
-        <div className="container flex h-16 items-center justify-between px-6 mx-auto max-w-7xl">
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-all">
-              <Calendar className="h-5 w-5 text-primary" />
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-12 items-center justify-between px-4 mx-auto max-w-5xl">
+          <Link to="/" className="flex items-center gap-2">
+            <div className="flex items-center justify-center h-7 w-7 rounded-md bg-primary text-primary-foreground">
+              <Calendar className="h-3.5 w-3.5" />
             </div>
-            <span className="font-bold tracking-tight text-xl font-display">Open Sunsama</span>
+            <span className="text-[13px] font-semibold">Open Sunsama</span>
           </Link>
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" asChild className="font-medium">
+          <div className="flex items-center gap-1.5">
+            <Button variant="ghost" size="sm" className="h-8 px-3 text-xs" asChild>
               <Link to="/login">Sign in</Link>
             </Button>
-            <ShimmerButton 
-              className="px-5 py-2 text-sm font-semibold"
-              onClick={() => window.location.href = '/register'}
-            >
-              Get Started
-            </ShimmerButton>
+            <Button size="sm" className="h-8 px-3 text-xs" asChild>
+              <Link to="/register">Get Started</Link>
+            </Button>
           </div>
         </div>
       </header>
 
-      <main className="relative z-10">
+      <main className="relative">
         {/* Feature Hero */}
-        <section className="pt-24 pb-20 md:pt-32 md:pb-32">
-          <div className="container px-6 mx-auto max-w-5xl text-center">
+        <section className="pt-16 pb-12 md:pt-24 md:pb-16">
+          <div className="container px-4 mx-auto max-w-3xl text-center">
             {badge && (
-              <div className="inline-flex items-center gap-2 mb-6 px-3 py-1 rounded-full bg-primary/10 text-primary font-jetbrains text-xs tracking-widest uppercase animate-fade-up">
-                {badge}
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 mb-6 rounded-md border border-border/40 bg-card/50 text-[11px] font-medium">
+                <span className="text-primary">{badge}</span>
               </div>
             )}
-            <h1 className="text-5xl md:text-7xl font-extrabold font-display tracking-tight mb-8 leading-[0.95] animate-fade-up">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold tracking-tight leading-tight mb-4">
               {title}
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed animate-fade-up animate-delay-100">
+            <p className="text-sm md:text-[15px] text-muted-foreground max-w-lg mx-auto mb-8 leading-relaxed">
               {subtitle}
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-up animate-delay-200">
-              <ShimmerButton 
-                className="h-14 px-10 text-lg font-bold"
-                onClick={() => window.location.href = '/register'}
-              >
-                Try for free
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </ShimmerButton>
-              <Button variant="outline" size="lg" className="h-14 px-10 text-lg font-bold rounded-full border-2" asChild>
+            <div className="flex flex-col sm:flex-row gap-2 justify-center">
+              <Button size="sm" className="h-9 px-4 text-[13px]" asChild>
+                <Link to="/register">
+                  Try for free
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </Button>
+              <Button variant="outline" size="sm" className="h-9 px-4 text-[13px]" asChild>
                 <Link to="/download">Download App</Link>
               </Button>
             </div>
@@ -85,49 +77,42 @@ export function FeatureLayout({
         {children}
 
         {/* Final CTA */}
-        <section className="py-32 md:py-48">
-          <div className="container px-6 mx-auto max-w-4xl">
-            <div className="glass p-12 md:p-20 rounded-[48px] border-2 shadow-3xl text-center relative overflow-hidden group">
-              <div className="relative z-10">
-                <h2 className="text-4xl md:text-6xl font-bold font-display tracking-tight mb-8">
-                  Ready to upgrade your workflow?
-                </h2>
-                <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
-                  Experience the most powerful daily planner ever built. 
-                  Open source, AI-native, and lightning fast.
-                </p>
-                <ShimmerButton 
-                  className="h-16 px-12 text-xl font-bold mx-auto"
-                  onClick={() => window.location.href = '/register'}
-                >
-                  Create Your Account
-                </ShimmerButton>
-              </div>
-              <BorderBeam size={800} duration={20} className="opacity-50" />
-            </div>
+        <section className="py-16 border-t border-border/40">
+          <div className="container px-4 mx-auto max-w-xl text-center">
+            <h2 className="text-lg md:text-xl font-semibold tracking-tight mb-2">
+              Ready to try it?
+            </h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              Open source, AI-native, and fast.
+            </p>
+            <Button size="sm" className="h-9 px-4 text-[13px]" asChild>
+              <Link to="/register">
+                Create Your Account
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </Button>
           </div>
         </section>
       </main>
 
       {/* Footer */}
-      <footer className="border-t bg-background pt-24 pb-12">
-        <div className="container px-6 mx-auto max-w-7xl">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-12 mb-16">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-primary/10">
-                <Calendar className="h-5 w-5 text-primary" />
+      <footer className="border-t border-border/40 py-6">
+        <div className="container px-4 mx-auto max-w-5xl">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center h-5 w-5 rounded bg-primary/10">
+                <Calendar className="h-2.5 w-2.5 text-primary" />
               </div>
-              <span className="font-bold tracking-tight text-xl font-display">Open Sunsama</span>
-            </Link>
-            <nav className="flex items-center gap-10 text-sm font-medium text-muted-foreground">
-              <Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
-              <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>
-              <a href="https://github.com/ShadowWalker2014/open-sunsama" className="hover:text-primary transition-colors">GitHub</a>
+              <span className="text-[11px] text-muted-foreground">© 2026 Open Sunsama</span>
+            </div>
+            <nav className="flex items-center gap-4 text-[11px] text-muted-foreground">
+              <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+              <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+              <a href="https://github.com/ShadowWalker2014/open-sunsama" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+                <Github className="h-3.5 w-3.5" />
+              </a>
             </nav>
           </div>
-          <p className="text-center text-sm text-muted-foreground pt-8 border-t">
-            © 2026 Open Sunsama. Non-commercial license.
-          </p>
         </div>
       </footer>
     </div>
