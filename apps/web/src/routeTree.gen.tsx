@@ -30,6 +30,10 @@ import AIIntegrationFeaturePage from "./routes/features/ai-integration";
 import CommandPaletteFeaturePage from "./routes/features/command-palette";
 import CalendarSyncFeaturePage from "./routes/features/calendar-sync";
 
+// Import blog pages
+import BlogPage from "./routes/blog";
+import BlogPostPage from "./routes/blog.$slug";
+
 // Create root route
 const rootRoute = createRootRoute({
   component: () => {
@@ -148,6 +152,18 @@ const calendarSyncFeatureRoute = createRoute({
   component: CalendarSyncFeaturePage,
 });
 
+const blogRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/blog",
+  component: BlogPage,
+});
+
+const blogPostRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/blog/$slug",
+  component: BlogPostPage,
+});
+
 const appRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/app",
@@ -212,6 +228,8 @@ const routeTree = rootRoute.addChildren([
   privacyRoute,
   termsRoute,
   downloadRoute,
+  blogRoute,
+  blogPostRoute,
   kanbanFeatureRoute,
   timeBlockingFeatureRoute,
   focusModeFeatureRoute,

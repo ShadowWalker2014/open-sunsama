@@ -106,6 +106,7 @@ export function FeatureLayout({
               <span className="text-[11px] text-muted-foreground">© 2026 Open Sunsama</span>
             </div>
             <nav className="flex items-center gap-4 text-[11px] text-muted-foreground">
+              <Link to="/blog" className="hover:text-foreground transition-colors">Blog</Link>
               <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
               <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
               <a href="https://github.com/ShadowWalker2014/open-sunsama" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">

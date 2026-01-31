@@ -185,6 +185,9 @@ export default function LandingPage() {
 
           <nav className="hidden md:flex items-center gap-0.5">
             <Button variant="ghost" size="sm" className="h-8 px-3 text-xs" asChild>
+              <Link to="/blog">Blog</Link>
+            </Button>
+            <Button variant="ghost" size="sm" className="h-8 px-3 text-xs" asChild>
               <Link to="/download">Download</Link>
             </Button>
             <Button variant="ghost" size="sm" className="h-8 px-3 text-xs" asChild>
@@ -430,6 +433,9 @@ export default function LandingPage() {
               </span>
             </div>
             <nav className="flex items-center gap-4 text-[11px] text-muted-foreground">
+              <Link to="/blog" className="hover:text-foreground transition-colors">
+                Blog
+              </Link>
               <Link to="/privacy" className="hover:text-foreground transition-colors">
                 Privacy
               </Link>
