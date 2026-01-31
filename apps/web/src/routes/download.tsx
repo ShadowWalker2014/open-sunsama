@@ -9,6 +9,10 @@ import {
   ExternalLink,
   CheckCircle2,
   Cpu,
+  Zap,
+  Bell,
+  RefreshCw,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -42,7 +46,7 @@ const PLATFORMS: Record<PlatformKey, PlatformInfo> = {
     name: "macOS (Apple Silicon)",
     shortName: "macOS",
     icon: Apple,
-    description: "M1, M2, M3 chips",
+    description: "M1, M2, M3, M4 chips",
     fileType: ".dmg",
   },
   "macos-x64": {
@@ -90,32 +94,22 @@ function detectPlatform(): PlatformKey {
   const userAgent = navigator.userAgent.toLowerCase();
   const platform = navigator.platform?.toLowerCase() || "";
 
-  // Check for Windows
   if (platform.includes("win") || userAgent.includes("windows")) {
     return "windows";
   }
 
-  // Check for macOS
   if (platform.includes("mac") || userAgent.includes("macintosh")) {
-    // Try to detect Apple Silicon vs Intel
-    // Modern approach: check for ARM architecture hints
     const isARM =
       userAgent.includes("arm") ||
-      // Check if running under Rosetta 2 (Intel translation on ARM)
       (navigator as { userAgentData?: { architecture?: string } }).userAgentData
         ?.architecture === "arm";
-
-    // Default to Apple Silicon for newer Macs (post-2020)
-    // This is a reasonable default as most new Macs are Apple Silicon
     return isARM ? "macos-arm64" : "macos-arm64";
   }
 
-  // Check for Linux
   if (platform.includes("linux") || userAgent.includes("linux")) {
     return "linux";
   }
 
-  // Default to macOS Apple Silicon
   return "macos-arm64";
 }
 
@@ -131,7 +125,7 @@ function formatFileSize(bytes: number): string {
 }
 
 /**
- * Platform download card component
+ * Platform download card component with Linear-style hover effects
  */
 function PlatformCard({
   platform,
@@ -148,19 +142,14 @@ function PlatformCard({
 
   if (isLoading) {
     return (
-      <Card
-        className={cn(
-          "relative p-5 transition-all duration-200",
-          isDetected && "ring-2 ring-primary/20"
-        )}
-      >
+      <Card className="relative p-5">
         <div className="flex items-start gap-4">
-          <Skeleton className="h-10 w-10 rounded-lg" />
+          <Skeleton className="h-11 w-11 rounded-xl" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-3 w-32" />
           </div>
-          <Skeleton className="h-8 w-20 rounded-md" />
+          <Skeleton className="h-9 w-24 rounded-lg" />
         </div>
       </Card>
     );
@@ -169,8 +158,8 @@ function PlatformCard({
   return (
     <Card
       className={cn(
-        "relative p-5 transition-all duration-200 hover:border-border",
-        isDetected && "ring-2 ring-primary/20 border-primary/30"
+        "group relative p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5",
+        isDetected && "ring-2 ring-primary/20 border-primary/30 shadow-sm shadow-primary/5"
       )}
     >
       {isDetected && (
@@ -179,12 +168,13 @@ function PlatformCard({
             variant="secondary"
             className="bg-primary/10 text-primary border-primary/20 text-[10px] font-medium"
           >
+            <Sparkles className="h-3 w-3 mr-1" />
             Detected
           </Badge>
         </div>
       )}
       <div className="flex items-start gap-4">
-        <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-muted/80">
+        <div className="flex items-center justify-center h-11 w-11 rounded-xl bg-muted/80 group-hover:bg-muted transition-colors">
           <Icon className="h-5 w-5 text-foreground" />
         </div>
         <div className="flex-1 min-w-0">
@@ -199,14 +189,14 @@ function PlatformCard({
           )}
         </div>
         {release ? (
-          <Button size="sm" variant="outline" asChild>
+          <Button size="sm" variant="outline" className="transition-all hover:bg-primary hover:text-primary-foreground hover:border-primary" asChild>
             <a href={release.downloadUrl} download>
               <Download className="h-3.5 w-3.5 mr-1.5" />
               Download
             </a>
           </Button>
         ) : (
-          <Button size="sm" variant="outline" disabled>
+          <Button size="sm" variant="outline" disabled className="opacity-50">
             Coming soon
           </Button>
         )}
@@ -216,7 +206,7 @@ function PlatformCard({
 }
 
 /**
- * Main hero download button
+ * Main hero download button with Linear-style design
  */
 function HeroDownloadButton({
   platform,
@@ -232,8 +222,8 @@ function HeroDownloadButton({
   if (isLoading) {
     return (
       <div className="flex flex-col items-center gap-3">
-        <Skeleton className="h-12 w-64 rounded-md" />
-        <Skeleton className="h-4 w-40" />
+        <Skeleton className="h-14 w-72 rounded-xl" />
+        <Skeleton className="h-4 w-48" />
       </div>
     );
   }
@@ -241,8 +231,8 @@ function HeroDownloadButton({
   if (!release) {
     return (
       <div className="flex flex-col items-center gap-3">
-        <Button size="lg" disabled className="h-12 px-8 text-sm">
-          <Icon className="h-5 w-5 mr-2" />
+        <Button size="lg" disabled className="h-14 px-10 text-base rounded-xl">
+          <Icon className="h-5 w-5 mr-2.5" />
           Coming soon for {platform.shortName}
         </Button>
         <p className="text-sm text-muted-foreground">
@@ -253,19 +243,23 @@ function HeroDownloadButton({
   }
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      <Button size="lg" asChild className="h-12 px-8 text-sm font-medium group">
+    <div className="flex flex-col items-center gap-4">
+      <Button 
+        size="lg" 
+        asChild 
+        className="h-14 px-10 text-base font-medium rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+      >
         <a href={release.downloadUrl} download>
-          <Icon className="h-5 w-5 mr-2" />
+          <Icon className="h-5 w-5 mr-2.5" />
           Download for {platform.shortName}
-          <Download className="h-4 w-4 ml-2 opacity-60 group-hover:opacity-100 transition-opacity" />
+          <Download className="h-4 w-4 ml-2.5 opacity-60" />
         </a>
       </Button>
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <span>v{release.version}</span>
-        <span className="text-muted-foreground/40">·</span>
+      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+        <span className="font-medium text-foreground">v{release.version}</span>
+        <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
         <span>{formatFileSize(release.fileSize)}</span>
-        <span className="text-muted-foreground/40">·</span>
+        <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
         <span>{platform.fileType}</span>
       </div>
     </div>
@@ -285,13 +279,13 @@ function FeatureHighlight({
   description: string;
 }) {
   return (
-    <div className="flex items-start gap-3">
-      <div className="flex items-center justify-center h-6 w-6 rounded-full bg-primary/10 mt-0.5">
-        <Icon className="h-3.5 w-3.5 text-primary" />
+    <div className="flex items-start gap-3.5">
+      <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 mt-0.5 flex-shrink-0">
+        <Icon className="h-4 w-4 text-primary" />
       </div>
       <div>
         <h4 className="text-sm font-medium">{title}</h4>
-        <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{description}</p>
       </div>
     </div>
   );
@@ -315,33 +309,27 @@ export default function DownloadPage() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
-  // Detect platform on mount
   React.useEffect(() => {
     setDetectedPlatform(detectPlatform());
   }, []);
 
-  // Fetch releases from API
   React.useEffect(() => {
     async function fetchReleases() {
-      try {
-        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
-        const response = await fetch(`${apiUrl}/releases/latest`);
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
+      const response = await fetch(`${apiUrl}/releases/latest`);
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch releases");
-        }
-
-        const data: ReleasesResponse = await response.json();
-
-        if (data.success) {
-          setReleases(data.data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch releases:", err);
+      if (!response.ok) {
         setError("Unable to load release information");
-      } finally {
         setIsLoading(false);
+        return;
       }
+
+      const data: ReleasesResponse = await response.json();
+
+      if (data.success) {
+        setReleases(data.data);
+      }
+      setIsLoading(false);
     }
 
     void fetchReleases();
@@ -350,25 +338,29 @@ export default function DownloadPage() {
   const detectedPlatformInfo = PLATFORMS[detectedPlatform];
   const detectedRelease = releases[detectedPlatform];
 
-  // Get other platforms (excluding detected)
   const otherPlatforms = Object.values(PLATFORMS).filter(
     (p) => p.key !== detectedPlatform
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-hidden">
+      {/* Background Effects */}
+      <div className="fixed inset-0 bg-mesh pointer-events-none opacity-50" />
+      
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center justify-between px-4 mx-auto max-w-5xl">
-          <Link to="/" className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            <span className="font-semibold">Open Sunsama</span>
+      <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl">
+        <div className="container flex h-16 items-center justify-between px-4 mx-auto max-w-5xl">
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 group-hover:bg-primary/15 transition-colors">
+              <Calendar className="h-4 w-4 text-primary" />
+            </div>
+            <span className="font-semibold tracking-tight">Open Sunsama</span>
           </Link>
           <nav className="flex items-center gap-2">
             <Button variant="ghost" size="sm" asChild>
               <Link to="/login">Sign in</Link>
             </Button>
-            <Button size="sm" asChild>
+            <Button size="sm" className="shadow-sm" asChild>
               <Link to="/register">Get Started</Link>
             </Button>
           </nav>
@@ -376,72 +368,74 @@ export default function DownloadPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="container px-4 mx-auto max-w-5xl">
-        <div className="flex flex-col items-center justify-center text-center py-16 md:py-24">
+      <section className="relative container px-4 mx-auto max-w-5xl">
+        <div className="flex flex-col items-center justify-center text-center py-20 md:py-28">
           {/* App Icon */}
-          <div className="flex items-center justify-center h-20 w-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 mb-8 shadow-lg shadow-primary/5">
-            <Calendar className="h-10 w-10 text-primary" />
+          <div className="animate-fade-up flex items-center justify-center h-24 w-24 rounded-3xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent border border-primary/20 mb-8 shadow-xl shadow-primary/10">
+            <Calendar className="h-12 w-12 text-primary" />
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-semibold tracking-tight mb-4">
+          <h1 className="animate-fade-up-delay-1 text-4xl md:text-5xl font-bold tracking-tight mb-4">
             Download Open Sunsama
           </h1>
-          <p className="text-muted-foreground max-w-md mb-10">
+          <p className="animate-fade-up-delay-2 text-lg text-muted-foreground max-w-md mb-10 leading-relaxed">
             The desktop app for focused daily planning. Native performance,
-            offline support, and system integration.
+            offline support, and seamless system integration.
           </p>
 
           {/* Primary Download Button */}
-          <HeroDownloadButton
-            platform={detectedPlatformInfo}
-            release={detectedRelease}
-            isLoading={isLoading}
-          />
+          <div className="animate-fade-up-delay-3">
+            <HeroDownloadButton
+              platform={detectedPlatformInfo}
+              release={detectedRelease}
+              isLoading={isLoading}
+            />
+          </div>
 
           {/* Requirements note */}
-          <p className="text-xs text-muted-foreground/60 mt-6">
-            {detectedPlatformInfo.description}
+          <p className="text-xs text-muted-foreground/60 mt-8">
+            {detectedPlatformInfo.description} · Free and open source
           </p>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="container px-4 mx-auto max-w-5xl pb-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 rounded-xl bg-muted/30 border">
+      <section className="relative container px-4 mx-auto max-w-5xl pb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-8 rounded-2xl bg-card/50 backdrop-blur-sm border shadow-sm">
           <FeatureHighlight
-            icon={CheckCircle2}
+            icon={Zap}
             title="Native Performance"
-            description="Built with Tauri for fast, lightweight experience"
+            description="Built with Tauri for lightning-fast, lightweight experience"
           />
           <FeatureHighlight
-            icon={CheckCircle2}
+            icon={Bell}
             title="System Integration"
-            description="Global hotkeys, menu bar access, notifications"
+            description="Global hotkeys, menu bar, and native notifications"
           />
           <FeatureHighlight
-            icon={CheckCircle2}
+            icon={RefreshCw}
             title="Auto Updates"
-            description="Always stay on the latest version automatically"
+            description="Always stay current with seamless background updates"
           />
         </div>
       </section>
 
       {/* Other Platforms Section */}
-      <section className="container px-4 mx-auto max-w-5xl py-12 border-t">
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold">Other Platforms</h2>
+      <section className="relative container px-4 mx-auto max-w-5xl py-16 border-t">
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold tracking-tight">Other Platforms</h2>
           <p className="text-sm text-muted-foreground mt-1">
             Download Open Sunsama for your operating system
           </p>
         </div>
 
         {error && (
-          <div className="text-sm text-destructive mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+          <div className="text-sm text-destructive mb-6 p-4 rounded-xl bg-destructive/10 border border-destructive/20">
             {error}
           </div>
         )}
 
-        <div className="grid gap-3">
+        <div className="grid gap-4">
           {otherPlatforms.map((platform) => (
             <PlatformCard
               key={platform.key}
@@ -455,20 +449,20 @@ export default function DownloadPage() {
       </section>
 
       {/* Web App Section */}
-      <section className="container px-4 mx-auto max-w-5xl py-12 border-t">
-        <Card className="p-6 bg-muted/20">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <section className="relative container px-4 mx-auto max-w-5xl py-16 border-t">
+        <Card className="p-8 bg-card/50 backdrop-blur-sm border shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
-              <h3 className="font-medium">Prefer the web?</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Open Sunsama is also available as a web app. No installation
-                required.
+              <h3 className="text-lg font-semibold">Prefer the web?</h3>
+              <p className="text-sm text-muted-foreground mt-1.5 max-w-md">
+                Open Sunsama is also available as a progressive web app. 
+                Access your tasks from any browser, no installation required.
               </p>
             </div>
-            <Button variant="outline" asChild>
+            <Button variant="outline" size="lg" className="flex-shrink-0" asChild>
               <Link to="/app">
                 Open Web App
-                <ExternalLink className="h-3.5 w-3.5 ml-2" />
+                <ExternalLink className="h-4 w-4 ml-2" />
               </Link>
             </Button>
           </div>
@@ -476,13 +470,13 @@ export default function DownloadPage() {
       </section>
 
       {/* Release Notes Section */}
-      <section className="container px-4 mx-auto max-w-5xl py-12 border-t">
+      <section className="relative container px-4 mx-auto max-w-5xl py-16 border-t">
         <div className="text-center">
-          <h2 className="text-lg font-semibold mb-2">Release Notes</h2>
-          <p className="text-sm text-muted-foreground mb-4">
+          <h2 className="text-xl font-semibold tracking-tight mb-3">Release Notes</h2>
+          <p className="text-sm text-muted-foreground mb-6">
             See what's new in the latest version
           </p>
-          <Button variant="outline" size="sm" asChild>
+          <Button variant="outline" asChild>
             <a
               href="https://github.com/ShadowWalker2014/open-sunsama/releases"
               target="_blank"
@@ -496,37 +490,42 @@ export default function DownloadPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-8">
-        <div className="container px-4 mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Calendar className="h-4 w-4" />
-            <span>Open Sunsama</span>
-            <span className="mx-2">·</span>
-            <span>Free and open source</span>
+      <footer className="relative border-t bg-card/30 backdrop-blur-sm">
+        <div className="container px-4 mx-auto max-w-5xl py-10">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10">
+                <Calendar className="h-4 w-4 text-primary" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-semibold tracking-tight">Open Sunsama</span>
+                <span className="text-xs text-muted-foreground">Free and open source</span>
+              </div>
+            </div>
+            <nav className="flex items-center gap-6 text-sm text-muted-foreground">
+              <Link
+                to="/privacy"
+                className="hover:text-foreground transition-colors"
+              >
+                Privacy
+              </Link>
+              <Link
+                to="/terms"
+                className="hover:text-foreground transition-colors"
+              >
+                Terms
+              </Link>
+              <a
+                href="https://github.com/ShadowWalker2014/open-sunsama"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 hover:text-foreground transition-colors"
+              >
+                <Github className="h-4 w-4" />
+                <span>GitHub</span>
+              </a>
+            </nav>
           </div>
-          <nav className="flex items-center gap-4 text-sm text-muted-foreground">
-            <Link
-              to="/privacy"
-              className="hover:text-foreground transition-colors"
-            >
-              Privacy
-            </Link>
-            <Link
-              to="/terms"
-              className="hover:text-foreground transition-colors"
-            >
-              Terms
-            </Link>
-            <a
-              href="https://github.com/ShadowWalker2014/open-sunsama"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 hover:text-foreground transition-colors"
-            >
-              <Github className="h-4 w-4" />
-              <span>GitHub</span>
-            </a>
-          </nav>
         </div>
       </footer>
     </div>

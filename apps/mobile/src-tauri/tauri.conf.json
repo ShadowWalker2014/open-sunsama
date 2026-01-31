@@ -6,7 +6,7 @@
   "build": {
     "beforeDevCommand": "",
     "devUrl": "http://192.168.4.159:3000",
-    "beforeBuildCommand": "",
+    "beforeBuildCommand": "cd ../web && bun run build",
     "frontendDist": "../../web/dist"
   },
   "app": {
