@@ -198,10 +198,10 @@ export function AccountCard({
     <div className="rounded-lg border bg-card">
       {/* Account header */}
       <div className="flex items-center justify-between border-b px-4 py-3">
-        <div className="flex items-center gap-3">
-          <Icon className="h-5 w-5" />
-          <div>
-            <p className="text-sm font-medium">{account.email}</p>
+        <div className="flex min-w-0 items-center gap-3">
+          <Icon className="h-5 w-5 flex-shrink-0" />
+          <div className="min-w-0">
+            <p className="max-w-[200px] truncate text-sm font-medium">{account.email}</p>
             <p className="text-xs text-muted-foreground">{config.name}</p>
           </div>
         </div>
@@ -238,9 +238,21 @@ export function AccountCard({
       {/* Calendars list */}
       <div className="divide-y px-4">
         {calendars.length === 0 ? (
-          <p className="py-4 text-center text-sm text-muted-foreground">
-            No calendars found
-          </p>
+          // Only show "No calendars found" if account has been synced at least once
+          account.syncStatus === "syncing" || isSyncing ? (
+            <div className="flex items-center justify-center gap-2 py-4">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Syncing calendars...</span>
+            </div>
+          ) : !account.lastSyncedAt ? (
+            <p className="py-4 text-center text-sm text-muted-foreground">
+              Click sync to fetch calendars
+            </p>
+          ) : (
+            <p className="py-4 text-center text-sm text-muted-foreground">
+              No calendars found
+            </p>
+          )
         ) : (
           calendars.map((calendar) => (
             <CalendarItem
