@@ -22,6 +22,12 @@ import FocusPage from "./routes/app/focus.$taskId";
 import FocusCompletePage from "./routes/app/focus.complete";
 import MorePage from "./routes/app/more";
 
+// Import feature pages
+import KanbanFeaturePage from "./routes/features/kanban";
+import TimeBlockingFeaturePage from "./routes/features/time-blocking";
+import FocusModeFeaturePage from "./routes/features/focus-mode";
+import AIIntegrationFeaturePage from "./routes/features/ai-integration";
+
 // Create root route
 const rootRoute = createRootRoute({
   component: () => {
@@ -104,6 +110,30 @@ const downloadRoute = createRoute({
   component: DownloadPage,
 });
 
+const kanbanFeatureRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/features/kanban",
+  component: KanbanFeaturePage,
+});
+
+const timeBlockingFeatureRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/features/time-blocking",
+  component: TimeBlockingFeaturePage,
+});
+
+const focusModeFeatureRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/features/focus-mode",
+  component: FocusModeFeaturePage,
+});
+
+const aiIntegrationFeatureRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/features/ai-integration",
+  component: AIIntegrationFeaturePage,
+});
+
 const appRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/app",
@@ -168,6 +198,10 @@ const routeTree = rootRoute.addChildren([
   privacyRoute,
   termsRoute,
   downloadRoute,
+  kanbanFeatureRoute,
+  timeBlockingFeatureRoute,
+  focusModeFeatureRoute,
+  aiIntegrationFeatureRoute,
   appRoute.addChildren([
     appIndexRoute,
     appCalendarRoute,

@@ -27,6 +27,7 @@ import {
   Timer,
   CalendarDays,
   Target,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BorderBeam } from "@/components/landing/border-beam";
@@ -43,28 +44,22 @@ function BentoCard({
   description,
   className,
   delay = 0,
+  href,
 }: {
   icon: any;
   title: string;
   description: string;
   className?: string;
   delay?: number;
+  href?: string;
 }) {
   const { ref, inView } = useInView({
     triggerOnce: true,
     threshold: 0.1,
   });
 
-  return (
-    <div
-      ref={ref}
-      className={cn(
-        "group relative overflow-hidden rounded-[32px] border bg-card/30 p-8 backdrop-blur-md transition-all duration-500 hover:bg-card/50 hover:shadow-2xl hover:shadow-primary/5 glass",
-        inView ? "animate-fade-up" : "opacity-0",
-        className
-      )}
-      style={{ animationDelay: `${delay}ms` }}
-    >
+  const Content = (
+    <>
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       <div className="relative z-10">
         <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
@@ -74,6 +69,12 @@ function BentoCard({
         <p className="text-muted-foreground leading-relaxed text-lg">
           {description}
         </p>
+        {href && (
+          <div className="mt-6 flex items-center gap-2 text-primary font-bold text-sm group/link">
+            <span>Learn more</span>
+            <ArrowRight className="h-4 w-4 group-hover/link:translate-x-1 transition-transform" />
+          </div>
+        )}
       </div>
       <BorderBeam 
         size={300} 
@@ -81,6 +82,35 @@ function BentoCard({
         delay={delay / 1000} 
         className="opacity-0 group-hover:opacity-100 transition-opacity duration-500" 
       />
+    </>
+  );
+
+  const wrapperClass = cn(
+    "group relative overflow-hidden rounded-[32px] border bg-card/30 p-8 backdrop-blur-md transition-all duration-500 hover:bg-card/50 hover:shadow-2xl hover:shadow-primary/5 glass text-left",
+    inView ? "animate-fade-up" : "opacity-0",
+    className
+  );
+
+  if (href) {
+    return (
+      <Link 
+        to={href}
+        ref={ref}
+        className={wrapperClass}
+        style={{ animationDelay: `${delay}ms` }}
+      >
+        {Content}
+      </Link>
+    );
+  }
+
+  return (
+    <div
+      ref={ref}
+      className={wrapperClass}
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      {Content}
     </div>
   );
 }
@@ -196,17 +226,20 @@ function GridFeatures() {
       title: "Pomodoro Timer",
       description: "Stay focused with built-in focus sessions.",
       icon: Timer,
+      href: "/features/focus-mode"
     },
     {
       title: "Calendar Sync",
       description: "Bidirectional sync with Google, Outlook, and iCloud.",
       icon: CalendarDays,
+      href: "/features/time-blocking"
     },
     {
       title: "Analytics",
       description: "Insights into how you spend your time and where it goes.",
       icon: BarChart3,
       className: "md:col-span-2",
+      href: "/features/focus-mode"
     }
   ];
 
@@ -231,6 +264,7 @@ function GridFeatures() {
               icon={f.icon}
               className={f.className}
               delay={i * 100}
+              href={f.href}
             />
           ))}
         </div>
@@ -684,6 +718,65 @@ export default function LandingPage() {
              </div>
           </div>
         </FeatureSection>
+
+        {/* Bento Grid Features */}
+        <section className="py-24 md:py-32 bg-card/20 border-y relative overflow-hidden">
+          <div className="absolute inset-0 bg-dots opacity-[0.05]" />
+          <div className="container px-6 mx-auto max-w-7xl relative">
+            <div className="text-center mb-20">
+              <h2 className="text-4xl md:text-5xl font-bold font-display tracking-tight mb-6">Built for the modern workflow</h2>
+              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                Whether you're a developer, a creative, or an AI agent, Open Sunsama provides 
+                the tools you need to manage time effectively.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <BentoCard
+                icon={Bot}
+                title="AI Agent Native"
+                description="Built from the ground up with a robust API that AI agents love. Let your assistant schedule your day, manage tasks, and optimize your workflow."
+                className="md:col-span-2"
+                delay={0}
+                href="/features/ai-integration"
+              />
+              <BentoCard
+                icon={Layout}
+                title="Visual Kanban"
+                description="Organize your tasks with a beautiful, responsive Kanban board that keeps your priorities clear."
+                delay={100}
+                href="/features/kanban"
+              />
+              <BentoCard
+                icon={Clock}
+                title="Time Blocking"
+                description="The most effective way to get things done. Drag your tasks directly onto your timeline to commit to focused work sessions."
+                delay={200}
+                href="/features/time-blocking"
+              />
+              <BentoCard
+                icon={Command}
+                title="Command Palette"
+                description="Speed is a feature. Access everything instantly with Cmd+K. Create tasks, switch views, and run commands without your mouse."
+                className="md:col-span-2"
+                delay={300}
+              />
+              <BentoCard
+                icon={Lock}
+                title="Privacy & Freedom"
+                description="Open source and self-hostable. Your data belongs to you, always. No trackers, no locked-in silos."
+                delay={400}
+              />
+              <BentoCard
+                icon={Zap}
+                title="Blazing Fast"
+                description="Optimized for speed with a sub-50ms API and instant UI feedback. Built with the latest tech stack for performance."
+                className="md:col-span-2"
+                delay={500}
+              />
+            </div>
+          </div>
+        </section>
 
         <GridFeatures />
 
