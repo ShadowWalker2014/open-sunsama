@@ -11,6 +11,9 @@ on:
         required: false
         default: ''
 
+env:
+  API_URL: https://api.opensunsama.com
+
 jobs:
   build:
     strategy:
@@ -20,21 +23,45 @@ jobs:
           - platform: macos-latest
             args: --target aarch64-apple-darwin
             name: macOS-arm64
+            artifact_name: macos-arm64
+            file_pattern: '*.dmg'
+            bundle_path: apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/dmg
           - platform: macos-latest
             args: --target x86_64-apple-darwin
             name: macOS-x64
+            artifact_name: macos-x64
+            file_pattern: '*.dmg'
+            bundle_path: apps/desktop/src-tauri/target/x86_64-apple-darwin/release/bundle/dmg
           - platform: ubuntu-22.04
             args: ''
             name: Linux
+            artifact_name: linux
+            file_pattern: '*.AppImage'
+            bundle_path: apps/desktop/src-tauri/target/release/bundle/appimage
           - platform: windows-latest
             args: ''
             name: Windows
+            artifact_name: windows
+            file_pattern: '*-setup.exe'
+            bundle_path: apps/desktop/src-tauri/target/release/bundle/nsis
 
     runs-on: ${{ matrix.platform }}
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        shell: bash
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -68,37 +95,63 @@ jobs:
           tauriScript: bunx tauri
           args: ${{ matrix.args }}
 
-      - name: Upload artifacts
+      - name: Find built file
+        id: find_file
+        shell: bash
+        run: |
+          cd "${{ matrix.bundle_path }}"
+          FILE=$(ls ${{ matrix.file_pattern }} 2>/dev/null | head -1)
+          if [ -z "$FILE" ]; then
+            echo "No file found matching pattern ${{ matrix.file_pattern }}"
+            ls -la
+            exit 1
+          fi
+          echo "file=$FILE" >> $GITHUB_OUTPUT
+          echo "path=${{ matrix.bundle_path }}/$FILE" >> $GITHUB_OUTPUT
+          echo "size=$(stat -f%z "$FILE" 2>/dev/null || stat -c%s "$FILE")" >> $GITHUB_OUTPUT
+          echo "sha256=$(shasum -a 256 "$FILE" | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+
+      - name: Upload to S3
+        uses: jakejarvis/s3-sync-action@master
+        env:
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET_NAME }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_S3_ENDPOINT: ${{ secrets.AWS_ENDPOINT_URL }}
+          AWS_REGION: auto
+          SOURCE_DIR: ${{ matrix.bundle_path }}
+          DEST_DIR: releases/v${{ steps.version.outputs.version }}
+
+      - name: Register release with API
+        shell: bash
+        run: |
+          curl -X POST "${{ env.API_URL }}/releases" \
+            -H "Content-Type: application/json" \
+            -H "X-Release-Secret: ${{ secrets.RELEASE_SECRET }}" \
+            -d '{
+              "version": "${{ steps.version.outputs.version }}",
+              "platform": "${{ matrix.artifact_name }}",
+              "downloadUrl": "${{ secrets.AWS_S3_PUBLIC_URL }}/releases/v${{ steps.version.outputs.version }}/${{ steps.find_file.outputs.file }}",
+              "fileSize": ${{ steps.find_file.outputs.size }},
+              "fileName": "${{ steps.find_file.outputs.file }}",
+              "sha256": "${{ steps.find_file.outputs.sha256 }}"
+            }'
+
+      - name: Upload artifacts (backup)
         uses: actions/upload-artifact@v4
         with:
           name: desktop-${{ matrix.name }}
-          path: |
-            apps/desktop/src-tauri/target/release/bundle/**/*.dmg
-            apps/desktop/src-tauri/target/release/bundle/**/*.app
-            apps/desktop/src-tauri/target/release/bundle/**/*.exe
-            apps/desktop/src-tauri/target/release/bundle/**/*.msi
-            apps/desktop/src-tauri/target/release/bundle/**/*.AppImage
-            apps/desktop/src-tauri/target/release/bundle/**/*.deb
-            apps/desktop/src-tauri/target/*/release/bundle/**/*.dmg
-            apps/desktop/src-tauri/target/*/release/bundle/**/*.app
+          path: ${{ steps.find_file.outputs.path }}
           retention-days: 30
 
-  release:
+  notify:
     needs: build
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    if: always()
     
     steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: artifacts/**/*
-          draft: true
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Summary
+        run: |
+          echo "## Desktop Release v${{ needs.build.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Downloads available at: https://opensunsama.com/download" >> $GITHUB_STEP_SUMMARY

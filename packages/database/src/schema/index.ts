@@ -124,5 +124,14 @@ export type {
   ResponseStatus,
 } from './calendar-events';
 
+export {
+  releases,
+  insertReleaseSchema,
+  selectReleaseSchema,
+  updateReleaseSchema,
+  RELEASE_PLATFORMS,
+} from './releases';
+export type { Release, NewRelease, UpdateRelease, ReleasePlatform } from './releases';
+
 // Re-export relation helpers for query building
 export { relations } from 'drizzle-orm';

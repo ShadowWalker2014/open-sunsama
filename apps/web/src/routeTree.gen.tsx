@@ -12,6 +12,7 @@ import ForgotPasswordPage from "./routes/forgot-password";
 import ResetPasswordPage from "./routes/reset-password";
 import PrivacyPage from "./routes/privacy";
 import TermsPage from "./routes/terms";
+import DownloadPage from "./routes/download";
 import AppLayout from "./routes/app";
 import TasksPage from "./routes/app/index";
 import CalendarPage from "./routes/app/calendar";
@@ -96,6 +97,12 @@ const termsRoute = createRoute({
   component: TermsPage,
 });
 
+const downloadRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/download",
+  component: DownloadPage,
+});
+
 const appRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/app",
@@ -159,6 +166,7 @@ const routeTree = rootRoute.addChildren([
   resetPasswordRoute,
   privacyRoute,
   termsRoute,
+  downloadRoute,
   appRoute.addChildren([
     appIndexRoute,
     appCalendarRoute,

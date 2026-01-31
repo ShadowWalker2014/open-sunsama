@@ -50,6 +50,9 @@ export default function LandingPage() {
           </Link>
           <nav className="flex items-center gap-2">
             <Button variant="ghost" size="sm" asChild>
+              <Link to="/download">Download</Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
               <Link to="/login">Sign in</Link>
             </Button>
             <Button size="sm" asChild>

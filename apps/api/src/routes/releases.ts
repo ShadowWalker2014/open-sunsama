@@ -8,7 +8,7 @@
  * - GET /releases/:platform - Get latest for specific platform
  * 
  * Protected routes:
- * - POST /releases - Create a new release (requires RELEASE_TOKEN)
+ * - POST /releases - Create a new release (requires RELEASE_SECRET)
  */
 
 import { Hono } from 'hono';
@@ -25,24 +25,24 @@ import {
 const releasesRouter = new Hono();
 
 /**
- * Verify release token for protected routes
- * Checks X-Release-Token header against RELEASE_TOKEN env var
+ * Verify release secret for protected routes
+ * Checks X-Release-Secret header against RELEASE_SECRET env var
  */
 async function verifyReleaseAuth(c: { req: { header: (name: string) => string | undefined } }): Promise<void> {
-  const releaseToken = c.req.header('X-Release-Token');
-  const expectedToken = process.env.RELEASE_TOKEN;
+  const releaseSecret = c.req.header('X-Release-Secret');
+  const expectedSecret = process.env.RELEASE_SECRET;
 
-  // Check release token
-  if (releaseToken && expectedToken && releaseToken === expectedToken) {
+  // Check release secret
+  if (releaseSecret && expectedSecret && releaseSecret === expectedSecret) {
     return;
   }
 
-  // If no release token or invalid, throw error
-  if (!releaseToken) {
-    throw new AuthenticationError('X-Release-Token header required');
+  // If no release secret or invalid, throw error
+  if (!releaseSecret) {
+    throw new AuthenticationError('X-Release-Secret header required');
   }
 
-  throw new AuthenticationError('Invalid release token');
+  throw new AuthenticationError('Invalid release secret');
 }
 
 /** GET /releases - List all releases with pagination */
@@ -141,7 +141,7 @@ releasesRouter.get('/:platform', zValidator('param', platformParamSchema), async
 
 /** POST /releases - Create a new release */
 releasesRouter.post('/', zValidator('json', createReleaseSchema), async (c) => {
-  // Verify release token
+  // Verify release secret
   await verifyReleaseAuth(c);
 
   const data = c.req.valid('json');
