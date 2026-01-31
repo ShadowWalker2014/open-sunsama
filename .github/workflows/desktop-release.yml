@@ -131,7 +131,7 @@ jobs:
             -d '{
               "version": "${{ steps.version.outputs.version }}",
               "platform": "${{ matrix.artifact_name }}",
-              "downloadUrl": "${{ secrets.AWS_S3_PUBLIC_URL }}/releases/v${{ steps.version.outputs.version }}/${{ steps.find_file.outputs.file }}",
+              "downloadUrl": "${{ env.API_URL }}/uploads/releases/v${{ steps.version.outputs.version }}/${{ steps.find_file.outputs.file }}",
               "fileSize": ${{ steps.find_file.outputs.size }},
               "fileName": "${{ steps.find_file.outputs.file }}",
               "sha256": "${{ steps.find_file.outputs.sha256 }}"
