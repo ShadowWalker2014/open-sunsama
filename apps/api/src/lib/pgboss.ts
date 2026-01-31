@@ -11,6 +11,16 @@ type PgBossInstance = InstanceType<typeof PgBoss>;
 let bossPromise: Promise<PgBossInstance> | null = null;
 let boss: PgBossInstance | null = null;
 
+// Store initialization error for debugging
+let initializationError: Error | null = null;
+
+/**
+ * Get the initialization error if PG Boss failed to start
+ */
+export function getPgBossInitError(): Error | null {
+  return initializationError;
+}
+
 /**
  * Get or create the PG Boss instance
  * Lazily initializes and starts PG Boss on first call
@@ -31,8 +41,13 @@ export async function getPgBoss(): Promise<PgBossInstance> {
   bossPromise = (async () => {
     const databaseUrl = process.env.DATABASE_URL;
     if (!databaseUrl) {
-      throw new Error('DATABASE_URL environment variable is required for PG Boss');
+      const error = new Error('DATABASE_URL environment variable is required for PG Boss');
+      initializationError = error;
+      console.error('[PG Boss] DATABASE_URL not set:', error.message);
+      throw error;
     }
+
+    console.log('[PG Boss] Initializing with database URL (first 50 chars):', databaseUrl.substring(0, 50) + '...');
 
     const instance = new PgBoss({
       connectionString: databaseUrl,
@@ -47,13 +62,22 @@ export async function getPgBoss(): Promise<PgBossInstance> {
 
     instance.on('error', (error: Error) => {
       console.error('[PG Boss Error]', error);
+      initializationError = error;
     });
 
-    await instance.start();
-    console.log('[PG Boss] Started successfully');
-    
-    boss = instance;
-    return instance;
+    try {
+      await instance.start();
+      console.log('[PG Boss] Started successfully');
+      
+      boss = instance;
+      initializationError = null;
+      return instance;
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      initializationError = err;
+      console.error('[PG Boss] Failed to start:', err.message);
+      throw err;
+    }
   })();
 
   return bossPromise;

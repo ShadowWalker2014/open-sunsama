@@ -28,7 +28,7 @@ import { calendarsRouter } from './routes/calendars.js';
 import { calendarEventsRouter } from './routes/calendar-events.js';
 import { releasesRouter } from './routes/releases.js';
 import { registerAllWorkers } from './workers/index.js';
-import { stopPgBoss, isPgBossRunning, getPgBoss, JOBS } from './lib/pgboss.js';
+import { stopPgBoss, isPgBossRunning, getPgBoss, JOBS, getPgBossInitError } from './lib/pgboss.js';
 import { initWebSocket, initRedisSubscriber } from './lib/websocket/index.js';
 import { closeRedisConnections } from './lib/redis.js';
 
@@ -70,8 +70,11 @@ app.get('/health', async (c) => {
       };
     }
   } else {
+    const initError = getPgBossInitError();
     healthData.jobs = {
       pgBossRunning: false,
+      initializationError: initError?.message || 'PG Boss not started (no error captured)',
+      databaseUrlSet: !!process.env.DATABASE_URL,
     };
   }
 
@@ -138,9 +141,18 @@ let httpServer: HttpServer | null = null;
 async function startServer(): Promise<void> {
   // Initialize PG Boss and register workers
   try {
+    console.log('[Server] Starting worker registration...');
+    console.log('[Server] DATABASE_URL set:', !!process.env.DATABASE_URL);
+    console.log('[Server] ROLLOVER_ENABLED:', process.env.ROLLOVER_ENABLED !== 'false' ? 'true' : 'false');
     await registerAllWorkers();
+    console.log('[Server] Worker registration complete');
   } catch (error) {
-    console.error('[Server] Failed to initialize workers:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error('[Server] Failed to initialize workers:', errorMessage);
+    if (errorStack) {
+      console.error('[Server] Stack trace:', errorStack);
+    }
     // Continue starting the server even if workers fail
     // This allows the API to function without background jobs
   }

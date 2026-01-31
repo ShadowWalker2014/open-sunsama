@@ -5,11 +5,14 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { getDb, eq, and, isNull, isNotNull, desc, asc, tasks, sql } from '@open-sunsama/database';
+import { getDb, eq, and, lt, isNull, isNotNull, desc, asc, tasks, sql, notificationPreferences } from '@open-sunsama/database';
+import { users } from '@open-sunsama/database/schema';
 import { NotFoundError, uuidSchema } from '@open-sunsama/utils';
 import { auth, requireScopes, type AuthVariables } from '../middleware/auth.js';
 import { createTaskSchema, updateTaskSchema, taskFilterSchema, reorderTasksSchema } from '../validation/tasks.js';
 import { publishEvent } from '../lib/websocket/index.js';
+import { format } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 
 const tasksRouter = new Hono<{ Variables: AuthVariables }>();
 tasksRouter.use('*', auth);
@@ -233,6 +236,98 @@ tasksRouter.post('/reorder', requireScopes('tasks:write'), zValidator('json', re
   });
 
   return c.json({ success: true, data: updatedTasks, message: 'Tasks reordered successfully' });
+});
+
+/** POST /tasks/rollover - Manually trigger task rollover for the current user */
+tasksRouter.post('/rollover', requireScopes('tasks:write'), async (c) => {
+  const userId = c.get('userId');
+  const db = getDb();
+
+  // Get user's timezone
+  const [user] = await db.select({ timezone: users.timezone }).from(users).where(eq(users.id, userId)).limit(1);
+  const timezone = user?.timezone || 'UTC';
+
+  // Get current date in user's timezone
+  const now = new Date();
+  const zonedNow = toZonedTime(now, timezone);
+  const todayInTz = format(zonedNow, 'yyyy-MM-dd');
+
+  // Get user's rollover preferences
+  const [prefs] = await db.select({
+    rolloverDestination: notificationPreferences.rolloverDestination,
+    rolloverPosition: notificationPreferences.rolloverPosition,
+  }).from(notificationPreferences).where(eq(notificationPreferences.userId, userId)).limit(1);
+
+  const rolloverDestination = prefs?.rolloverDestination || 'backlog';
+  const rolloverPosition = prefs?.rolloverPosition || 'top';
+
+  // Find incomplete tasks scheduled before today
+  const incompleteTasks = await db.select({ id: tasks.id, title: tasks.title, scheduledDate: tasks.scheduledDate })
+    .from(tasks)
+    .where(and(
+      eq(tasks.userId, userId),
+      lt(tasks.scheduledDate, todayInTz),
+      isNull(tasks.completedAt),
+      isNotNull(tasks.scheduledDate)
+    ));
+
+  if (incompleteTasks.length === 0) {
+    return c.json({
+      success: true,
+      message: 'No tasks to rollover',
+      data: { tasksRolledOver: 0, timezone, today: todayInTz },
+    });
+  }
+
+  // Determine new scheduled date based on destination
+  const newScheduledDate = rolloverDestination === 'next_day' ? todayInTz : null;
+
+  // Get position bounds for the target destination
+  const [positionBounds] = await db.select({
+    minPos: sql<number>`COALESCE(MIN(${tasks.position}), 0)`,
+    maxPos: sql<number>`COALESCE(MAX(${tasks.position}), 0)`,
+  }).from(tasks).where(and(
+    eq(tasks.userId, userId),
+    newScheduledDate ? eq(tasks.scheduledDate, newScheduledDate) : isNull(tasks.scheduledDate)
+  ));
+
+  const POSITION_GAP = 1000;
+  const basePosition = rolloverPosition === 'top'
+    ? (positionBounds?.minPos ?? 0) - (incompleteTasks.length * POSITION_GAP) - POSITION_GAP
+    : (positionBounds?.maxPos ?? 0) + POSITION_GAP;
+
+  // Update all tasks
+  const taskIds = incompleteTasks.map(t => t.id);
+  await Promise.all(taskIds.map((taskId, index) =>
+    db.update(tasks)
+      .set({
+        scheduledDate: newScheduledDate,
+        position: basePosition + (index * POSITION_GAP),
+        updatedAt: new Date(),
+      })
+      .where(eq(tasks.id, taskId))
+  ));
+
+  // Publish realtime events
+  for (const task of incompleteTasks) {
+    publishEvent(userId, 'task:updated', {
+      taskId: task.id,
+      scheduledDate: newScheduledDate,
+    });
+  }
+
+  return c.json({
+    success: true,
+    message: `Rolled over ${incompleteTasks.length} tasks`,
+    data: {
+      tasksRolledOver: incompleteTasks.length,
+      taskIds,
+      destination: rolloverDestination,
+      position: rolloverPosition,
+      timezone,
+      today: todayInTz,
+    },
+  });
 });
 
 export { tasksRouter };
