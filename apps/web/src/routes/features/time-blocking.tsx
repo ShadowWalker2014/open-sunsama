@@ -1,5 +1,6 @@
 import { FeatureLayout } from "@/components/layout/feature-layout";
 import { Clock, Calendar, RefreshCw, ArrowRight } from "lucide-react";
+import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
 
 function FeatureItem({
   icon: Icon,
@@ -22,6 +23,8 @@ function FeatureItem({
 }
 
 export default function TimeBlockingFeaturePage() {
+  useSEO(SEO_CONFIGS.features.timeBlocking);
+
   return (
     <FeatureLayout
       badge="Feature"

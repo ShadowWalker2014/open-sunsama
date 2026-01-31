@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { AuthLayout, AuthHeader, AuthFooter } from "@/components/layout/auth-layout";
 import { Button, Input, Label } from "@/components/ui";
 import { toast } from "@/hooks/use-toast";
+import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
 
 interface LoginForm {
   email: string;
@@ -13,6 +14,7 @@ interface LoginForm {
 }
 
 export default function LoginPage() {
+  useSEO(SEO_CONFIGS.login);
   const navigate = useNavigate();
   const { login, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = React.useState(false);

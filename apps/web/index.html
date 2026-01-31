@@ -2,24 +2,64 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    
+    <!-- Primary Meta Tags -->
+    <title>Open Sunsama - Open Source Daily Planner & Time Blocking App</title>
+    <meta name="title" content="Open Sunsama - Open Source Daily Planner & Time Blocking App" />
+    <meta name="description" content="The open-source alternative to Sunsama. Time-block your day, manage tasks with a visual kanban board, sync with Google Calendar, Outlook & iCloud. Free, self-hostable, AI-native." />
+    <meta name="keywords" content="daily planner, time blocking, task management, kanban board, focus mode, calendar sync, productivity app, open source, MCP, AI integration, sunsama alternative" />
+    <meta name="author" content="Open Sunsama" />
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1" />
+    
+    <!-- Viewport & Theme -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <meta name="theme-color" content="#f97316" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#fb923c" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://opensunsama.com/" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://opensunsama.com/" />
+    <meta property="og:title" content="Open Sunsama - Open Source Daily Planner & Time Blocking App" />
+    <meta property="og:description" content="The open-source alternative to Sunsama. Time-block your day, manage tasks with a visual kanban board, sync calendars. Free & self-hostable." />
+    <meta property="og:image" content="https://opensunsama.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Open Sunsama - Daily planning done right" />
+    <meta property="og:site_name" content="Open Sunsama" />
+    <meta property="og:locale" content="en_US" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://opensunsama.com/" />
+    <meta name="twitter:title" content="Open Sunsama - Open Source Daily Planner & Time Blocking App" />
+    <meta name="twitter:description" content="The open-source alternative to Sunsama. Time-block your day, manage tasks with a visual kanban board. Free & self-hostable." />
+    <meta name="twitter:image" content="https://opensunsama.com/og-image.png" />
+    <meta name="twitter:image:alt" content="Open Sunsama - Daily planning done right" />
+    
+    <!-- Favicons -->
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Open Sunsama - Time-block your day with visual task management" />
-    <meta name="theme-color" content="#0f172a" />
-    <title>Open Sunsama</title>
+    
+    <!-- Preconnect to external resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    
+    <!-- DNS Prefetch for API -->
+    <link rel="dns-prefetch" href="https://api.opensunsama.com" />
+    
+    <!-- Font imports -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     
     <!-- Geist Font (Vercel) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
-    <!-- Font imports - Space Grotesk, Inter, JetBrains Mono -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Geist from CDN (or self-hosted) -->
     <style>
       @font-face {
         font-family: 'Geist';
@@ -51,9 +91,80 @@
       }
     </style>
     
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Open Sunsama",
+      "applicationCategory": "ProductivityApplication",
+      "operatingSystem": "Windows, macOS, Linux, Web",
+      "description": "The open-source daily planner for time-blocking, focused work, and AI integration. Alternative to Sunsama.",
+      "url": "https://opensunsama.com",
+      "downloadUrl": "https://opensunsama.com/download",
+      "screenshot": "https://opensunsama.com/og-image.png",
+      "softwareVersion": "1.0.0",
+      "datePublished": "2026-01-01",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5",
+        "ratingCount": "1"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "Open Sunsama",
+        "url": "https://opensunsama.com"
+      },
+      "featureList": [
+        "Time Blocking",
+        "Kanban Board",
+        "Focus Mode with Timer",
+        "Calendar Sync (Google, Outlook, iCloud)",
+        "AI/MCP Integration",
+        "Command Palette",
+        "Rich Text Notes",
+        "Keyboard Shortcuts",
+        "Desktop Apps (Windows, macOS, Linux)",
+        "Open Source",
+        "Self-Hostable"
+      ]
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Open Sunsama",
+      "url": "https://opensunsama.com",
+      "logo": "https://opensunsama.com/open-sunsama-logo.png",
+      "sameAs": [
+        "https://github.com/ShadowWalker2014/open-sunsama"
+      ]
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Open Sunsama",
+      "url": "https://opensunsama.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://opensunsama.com/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    
     <!-- Theme initialization script - prevents flash of wrong theme -->
     <script>
-      // Apply theme before page renders to prevent flash
       (function() {
         try {
           var prefs = JSON.parse(localStorage.getItem('open_sunsama_preferences') || '{}');
@@ -69,7 +180,6 @@
           if (colorTheme !== 'default') document.documentElement.classList.add('theme-' + colorTheme);
           document.documentElement.classList.add('font-' + fontFamily);
         } catch (e) {
-          // Fallback to dark theme on error
           document.documentElement.classList.add('dark');
           document.documentElement.classList.add('font-geist');
         }

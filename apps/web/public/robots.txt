@@ -1,0 +1,17 @@
+# robots.txt for Open Sunsama
+# https://opensunsama.com
+
+User-agent: *
+Allow: /
+Disallow: /app/
+Disallow: /app/*
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+
+# Sitemap
+Sitemap: https://opensunsama.com/sitemap.xml
+
+# Crawl-delay (optional, for polite crawlers)
+Crawl-delay: 1

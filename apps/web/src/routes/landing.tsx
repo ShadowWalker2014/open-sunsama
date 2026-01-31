@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useInView } from "react-intersection-observer";
 import { cn } from "@/lib/utils";
+import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
 
 /**
  * Feature card - matches app's card style
@@ -162,6 +163,7 @@ function ComparisonSection() {
 }
 
 export default function LandingPage() {
+  useSEO(SEO_CONFIGS.landing);
   const { ref: heroRef, inView: heroInView } = useInView({ triggerOnce: true });
 
   return (

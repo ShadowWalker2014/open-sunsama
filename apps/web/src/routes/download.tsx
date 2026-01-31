@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useInView } from "react-intersection-observer";
 import { cn } from "@/lib/utils";
+import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
 
 // Platform configuration
 type PlatformKey = "windows" | "macos-arm64" | "macos-x64" | "linux";
@@ -212,6 +213,7 @@ function FeatureItem({
 }
 
 export default function DownloadPage() {
+  useSEO(SEO_CONFIGS.download);
   const [detectedPlatform, setDetectedPlatform] = React.useState<PlatformKey>("macos-arm64");
   const [releases, setReleases] = React.useState<Record<PlatformKey, Release | undefined>>({
     windows: undefined,

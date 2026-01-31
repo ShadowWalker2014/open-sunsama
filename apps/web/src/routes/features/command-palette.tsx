@@ -1,5 +1,6 @@
 import { FeatureLayout } from "@/components/layout/feature-layout";
 import { Command, Search, Keyboard, ArrowRight } from "lucide-react";
+import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
 
 function FeatureItem({
   icon: Icon,
@@ -22,6 +23,8 @@ function FeatureItem({
 }
 
 export default function CommandPaletteFeaturePage() {
+  useSEO(SEO_CONFIGS.features.commandPalette);
+
   return (
     <FeatureLayout
       badge="Feature"

@@ -1,6 +1,7 @@
 import { FeatureLayout } from "@/components/layout/feature-layout";
 import { Layers, Zap, CheckSquare, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
 
 function FeatureItem({
   icon: Icon,
@@ -23,6 +24,8 @@ function FeatureItem({
 }
 
 export default function KanbanFeaturePage() {
+  useSEO(SEO_CONFIGS.features.kanban);
+
   return (
     <FeatureLayout
       badge="Feature"

@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { AuthLayout, AuthHeader, AuthFooter } from "@/components/layout/auth-layout";
 import { Button, Input, Label } from "@/components/ui";
 import { toast } from "@/hooks/use-toast";
+import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
 
 interface RegisterForm {
   name: string;
@@ -15,6 +16,7 @@ interface RegisterForm {
 }
 
 export default function RegisterPage() {
+  useSEO(SEO_CONFIGS.register);
   const navigate = useNavigate();
   const { register: registerUser, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = React.useState(false);

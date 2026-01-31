@@ -1,5 +1,6 @@
 import { FeatureLayout } from "@/components/layout/feature-layout";
 import { Calendar, RefreshCw, Shield } from "lucide-react";
+import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
 
 function FeatureItem({
   icon: Icon,
@@ -22,6 +23,8 @@ function FeatureItem({
 }
 
 export default function CalendarSyncFeaturePage() {
+  useSEO(SEO_CONFIGS.features.calendarSync);
+
   return (
     <FeatureLayout
       badge="Feature"
