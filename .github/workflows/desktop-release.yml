@@ -112,15 +112,15 @@ jobs:
           echo "sha256=$(shasum -a 256 "$FILE" | cut -d' ' -f1)" >> $GITHUB_OUTPUT
 
       - name: Upload to S3
-        uses: jakejarvis/s3-sync-action@master
+        shell: bash
         env:
-          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET_NAME }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_S3_ENDPOINT: ${{ secrets.AWS_ENDPOINT_URL }}
-          AWS_REGION: auto
-          SOURCE_DIR: ${{ matrix.bundle_path }}
-          DEST_DIR: releases/v${{ steps.version.outputs.version }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          aws s3 sync "${{ matrix.bundle_path }}" \
+            "s3://${{ secrets.AWS_S3_BUCKET_NAME }}/releases/v${{ steps.version.outputs.version }}" \
+            --endpoint-url "${{ secrets.AWS_ENDPOINT_URL }}"
 
       - name: Register release with API
         shell: bash
