@@ -161,6 +161,18 @@ Quick reference:
 
 ---
 
+## Desktop Releases
+
+**See [`.skills/desktop-releases/SKILL.md`](.skills/desktop-releases/SKILL.md) for complete release guide.**
+
+Quick reference:
+- **Trigger release:** `git tag v1.x.x && git push origin v1.x.x`
+- **Manual trigger:** GitHub → Actions → Desktop Release → Run workflow
+- **Downloads page:** https://opensunsama.com/download
+- **Platforms:** macOS (arm64/x64), Windows, Linux
+
+---
+
 ## License
 
 Non-Commercial License. Commercial use requires enterprise license.
