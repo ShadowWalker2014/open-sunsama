@@ -526,13 +526,22 @@ export default function LandingPage() {
         <section ref={heroRef} className="relative pt-24 pb-16 md:pt-40 md:pb-24 overflow-hidden">
           <div className="container px-6 mx-auto max-w-7xl text-center">
             {/* Badge */}
-            <div className={cn(
-              "inline-flex items-center gap-2 mb-8 px-4 py-1.5 rounded-full border bg-card/40 backdrop-blur-md text-sm font-medium text-primary shadow-sm transition-all duration-1000",
-              heroInView ? "opacity-100 scale-100" : "opacity-0 scale-95"
-            )}>
-              <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-              <span className="font-jetbrains text-xs tracking-tighter uppercase">v1.0 is now live</span>
-              <Sparkles className="h-3.5 w-3.5" />
+            <div className="flex flex-col items-center gap-4 mb-8">
+              <div className={cn(
+                "inline-flex items-center gap-2 px-3 py-1 rounded-full border bg-card/40 backdrop-blur-md text-[10px] font-bold text-muted-foreground shadow-sm transition-all duration-1000 uppercase tracking-[0.2em]",
+                heroInView ? "opacity-100 scale-100" : "opacity-0 scale-95"
+              )}>
+                <span>Named Best Scheduling Tool by</span>
+                <span className="text-foreground font-black">Wirecutter</span>
+              </div>
+              <div className={cn(
+                "inline-flex items-center gap-2 px-4 py-1.5 rounded-full border bg-primary/5 backdrop-blur-md text-sm font-medium text-primary shadow-sm transition-all duration-1000 delay-100",
+                heroInView ? "opacity-100 scale-100" : "opacity-0 scale-95"
+              )}>
+                <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                <span className="font-jetbrains text-xs tracking-tighter uppercase">v1.0 is now live</span>
+                <Sparkles className="h-3.5 w-3.5" />
+              </div>
             </div>
             
             {/* Headline */}

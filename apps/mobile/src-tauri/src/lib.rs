@@ -17,12 +17,9 @@ pub fn run() {
             commands::notifications::request_notification_permission,
             commands::notifications::set_badge_count,
         ])
-        .setup(|app| {
-            #[cfg(debug_assertions)]
-            {
-                let window = app.get_webview_window("main").unwrap();
-                window.open_devtools();
-            }
+        .setup(|_app| {
+            // DevTools not available on mobile platforms
+            // On desktop, devtools would be opened here in debug mode
             Ok(())
         })
         .run(tauri::generate_context!())
