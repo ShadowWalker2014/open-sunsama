@@ -107,7 +107,7 @@ export default function LoginPage() {
           )}
         </div>
 
-        <Button type="submit" disabled={isLoading} className="w-full mt-2">
+        <Button type="submit" disabled={isLoading} className="w-full mt-4 h-12 text-base font-bold rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all">
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Sign in
         </Button>

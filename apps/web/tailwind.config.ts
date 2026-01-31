@@ -18,6 +18,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ['var(--font-family)', 'system-ui', 'sans-serif'],
+        display: ['"Space Grotesk"', 'var(--font-family)', 'system-ui', 'sans-serif'],
         geist: ['"Geist"', '"Geist Sans"', 'system-ui', 'sans-serif'],
         system: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', 'sans-serif'],
         inter: ['"Inter"', 'system-ui', 'sans-serif'],
@@ -125,6 +126,19 @@ const config: Config = {
           from: { transform: "rotate(0deg)" },
           to: { transform: "rotate(360deg)" },
         },
+        "border-beam": {
+          "100%": {
+            "offset-distance": "100%",
+          },
+        },
+        "shimmer": {
+          "0%, 90%, 100%": {
+            "background-position": "calc(-100% - var(--shimmer-width)) 0",
+          },
+          "30%, 60%": {
+            "background-position": "calc(100% + var(--shimmer-width)) 0",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -139,6 +153,8 @@ const config: Config = {
         "float": "float 6s ease-in-out infinite",
         "pulse-subtle": "pulse-subtle 2s ease-in-out infinite",
         "spin-slow": "spin-slow 20s linear infinite",
+        "border-beam": "border-beam calc(var(--duration)*1s) infinite linear",
+        "shimmer": "shimmer 8s infinite",
       },
       transitionDuration: {
         'fast': '150ms',
