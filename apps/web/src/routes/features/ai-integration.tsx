@@ -1,6 +1,5 @@
 import { FeatureLayout } from "@/components/layout/feature-layout";
 import { Bot, Key, Command, ArrowRight } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 function FeatureItem({
   icon: Icon,

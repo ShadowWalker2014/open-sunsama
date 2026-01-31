@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import {
   Calendar,
   Clock,
-  CheckSquare,
   Bot,
   ArrowRight,
   Github,
@@ -16,7 +15,6 @@ import {
   X,
   Timer,
   Sparkles,
-  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useInView } from "react-intersection-observer";

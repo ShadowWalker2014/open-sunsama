@@ -199,8 +199,8 @@ export default function ResetPasswordPage() {
           )}
         </div>
 
-        <Button type="submit" disabled={isLoading} className="w-full">
-          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        <Button type="submit" disabled={isLoading} className="w-full h-9 text-[13px]">
+          {isLoading && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
           Reset Password
         </Button>
       </form>

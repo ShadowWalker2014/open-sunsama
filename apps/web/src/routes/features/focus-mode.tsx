@@ -1,6 +1,5 @@
 import { FeatureLayout } from "@/components/layout/feature-layout";
 import { Timer, FileText, BarChart3, ArrowRight } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 function FeatureItem({
   icon: Icon,

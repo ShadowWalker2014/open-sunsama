@@ -42,10 +42,10 @@ export default function ForgotPasswordPage() {
     return (
       <AuthLayout>
         <div className="flex flex-col items-center space-y-4 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
-            <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
+            <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">Check your email</h1>
+          <h1 className="text-lg font-semibold tracking-tight">Check your email</h1>
           <p className="text-sm text-muted-foreground max-w-[300px]">
             If an account exists for <strong>{submittedEmail}</strong>, we've sent a password reset link.
           </p>
@@ -54,20 +54,22 @@ export default function ForgotPasswordPage() {
           </p>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 mt-4">
           <Button
             variant="outline"
-            className="w-full"
+            size="sm"
+            className="w-full h-9 text-[13px]"
             onClick={() => setIsSubmitted(false)}
           >
             Try another email
           </Button>
           <Button
             variant="ghost"
-            className="w-full"
+            size="sm"
+            className="w-full h-9 text-[13px]"
             onClick={() => navigate({ to: "/login" })}
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
             Back to login
           </Button>
         </div>
@@ -110,8 +112,8 @@ export default function ForgotPasswordPage() {
           )}
         </div>
 
-        <Button type="submit" disabled={isLoading} className="w-full">
-          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        <Button type="submit" disabled={isLoading} className="w-full h-9 text-[13px]">
+          {isLoading && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
           Send Reset Link
         </Button>
       </form>
