@@ -8,6 +8,7 @@ import {
   PutObjectCommand,
   GetObjectCommand,
   DeleteObjectCommand,
+  NoSuchKey,
 } from '@aws-sdk/client-s3';
 
 // Lazy-initialized S3 client singleton
@@ -105,8 +106,12 @@ export async function getS3Object(
       contentLength: response.ContentLength || 0,
     };
   } catch (error: unknown) {
-    // Return null for not found errors
-    if (error instanceof Error && error.name === 'NoSuchKey') {
+    // Return null for not found errors (AWS SDK v3 throws NoSuchKey class)
+    if (error instanceof NoSuchKey) {
+      return null;
+    }
+    // Also check by name for compatibility
+    if (error instanceof Error && (error.name === 'NoSuchKey' || error.name === 'NotFound')) {
       return null;
     }
     throw error;
