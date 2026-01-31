@@ -125,7 +125,7 @@ jobs:
       - name: Register release with API
         shell: bash
         run: |
-          curl -X POST "${{ env.API_URL }}/releases" \
+          curl --fail -X POST "${{ env.API_URL }}/releases" \
             -H "Content-Type: application/json" \
             -H "X-Release-Secret: ${{ secrets.RELEASE_SECRET }}" \
             -d '{
