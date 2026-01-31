@@ -173,6 +173,102 @@ Quick reference:
 
 ---
 
+## Railway Debugging
+
+**Railway CLI** is installed. Use it to check services, environment variables, and logs.
+
+### Quick Commands
+
+```bash
+# Check login status
+railway whoami
+
+# Check current project/service
+railway status
+
+# List environment variables for a service
+railway variables --service api
+railway variables --service Postgres
+
+# View logs (streams live)
+railway logs --service api
+```
+
+### Database Access
+
+The Postgres MCP tool points to a different project. To query the Open Sunsama database directly:
+
+```bash
+# Get public DATABASE_URL
+railway variables --service Postgres | grep DATABASE_PUBLIC_URL
+
+# Run queries using the public URL
+DATABASE_URL="postgresql://postgres:PASSWORD@ballast.proxy.rlwy.net:29435/railway" node -e "
+const { Pool } = require('pg');
+const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+// ... your query
+"
+```
+
+---
+
+## PG Boss (Background Jobs)
+
+Task rollover, daily summaries, and task reminders use PG Boss for job scheduling.
+
+### Health Check
+
+```bash
+curl https://api.opensunsama.com/health
+# Should show: "pgBossRunning": true
+```
+
+### Debugging PG Boss Issues
+
+1. **Check health endpoint** - shows `pgBossRunning` status and any initialization errors
+2. **Check pgboss.schedule table** - should have `timezone-rollover-check`, `daily-summary-check`, `task-reminder-check`
+3. **Check pgboss.job table** - recent jobs and their states
+4. **Check rollover_logs table** - rollover history and errors
+
+```bash
+# Check PG Boss state in database
+DATABASE_URL="..." node -e "
+const { Pool } = require('pg');
+const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+async function check() {
+  const client = await pool.connect();
+  const schedules = await client.query('SELECT name, cron FROM pgboss.schedule');
+  console.log('Scheduled jobs:', schedules.rows);
+  const jobs = await client.query('SELECT name, state, created_on FROM pgboss.job ORDER BY created_on DESC LIMIT 10');
+  console.log('Recent jobs:', jobs.rows);
+  const logs = await client.query('SELECT * FROM rollover_logs ORDER BY executed_at DESC LIMIT 5');
+  console.log('Rollover logs:', logs.rows);
+  client.release();
+  await pool.end();
+}
+check();
+"
+```
+
+### Manual Rollover
+
+If PG Boss isn't running, use the manual rollover endpoint:
+
+```bash
+curl -X POST https://api.opensunsama.com/tasks/rollover \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### Common Issues
+
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| `pgBossRunning: false` | PG Boss failed to start | Check logs for initialization error, verify DATABASE_URL is set |
+| Jobs not running | Worker crashed/stopped | Redeploy API service to restart workers |
+| Rollover not happening | Check rollover_logs for errors | Fix error, delete failed log entry, redeploy |
+
+---
+
 ## License
 
 Non-Commercial License. Commercial use requires enterprise license.
