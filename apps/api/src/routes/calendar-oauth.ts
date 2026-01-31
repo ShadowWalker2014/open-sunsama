@@ -113,11 +113,15 @@ calendarOAuthRouter.get(
       let providerAccountId = '';
 
       if (providerName === 'google') {
-        const primaryCalendar = externalCalendars.find(cal =>
-          cal.externalId.includes('@') && !cal.externalId.includes('#')
-        );
-        email = primaryCalendar?.externalId || '';
-        providerAccountId = email;
+        // Fetch user profile from Google to get the actual email
+        const profileResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+          headers: { Authorization: `Bearer ${tokens.accessToken}` },
+        });
+        if (profileResponse.ok) {
+          const profile = await profileResponse.json() as { id: string; email: string; verified_email: boolean; name?: string; picture?: string };
+          email = profile.email || '';
+          providerAccountId = profile.id;
+        }
       } else {
         const profileResponse = await fetch('https://graph.microsoft.com/v1.0/me', {
           headers: { Authorization: `Bearer ${tokens.accessToken}` },
