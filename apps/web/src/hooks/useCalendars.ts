@@ -199,11 +199,31 @@ export function useConnectICloud() {
 }
 
 /**
- * Get OAuth initiation URL for a provider
+ * Initiate OAuth flow for a calendar provider
+ * Calls the API with auth to get the OAuth URL, then redirects
  */
-export function getOAuthUrl(provider: "google" | "outlook"): string {
-  const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
-  return `${apiUrl}/calendar/oauth/${provider}/initiate`;
+export function useInitiateOAuth() {
+  return useMutation({
+    mutationFn: async (provider: "google" | "outlook"): Promise<string> => {
+      const client = getApiClient();
+      const response = await client.get<{
+        success: boolean;
+        data: { authUrl: string; state: string };
+      }>(`/calendar/oauth/${provider}/initiate`);
+      return response.data.authUrl;
+    },
+    onSuccess: (authUrl) => {
+      // Redirect to the OAuth provider
+      window.location.href = authUrl;
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Failed to connect calendar",
+        description: error instanceof Error ? error.message : "Unknown error",
+      });
+    },
+  });
 }
 
 // Re-export types for convenience

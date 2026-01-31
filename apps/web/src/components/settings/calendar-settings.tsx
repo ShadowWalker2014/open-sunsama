@@ -14,7 +14,7 @@ import {
   useDisconnectAccount,
   useSyncAccount,
   useUpdateCalendar,
-  getOAuthUrl,
+  useInitiateOAuth,
   type Calendar,
 } from "@/hooks/useCalendars";
 import { ICloudConnectDialog } from "./icloud-connect-dialog";
@@ -36,6 +36,7 @@ export function CalendarSettings() {
   const disconnectMutation = useDisconnectAccount();
   const syncMutation = useSyncAccount();
   const updateCalendarMutation = useUpdateCalendar();
+  const initiateOAuthMutation = useInitiateOAuth();
 
   const isLoading = isLoadingAccounts || isLoadingCalendars;
 
@@ -51,11 +52,11 @@ export function CalendarSettings() {
   }, [calendars]);
 
   const handleConnectGoogle = () => {
-    window.location.href = getOAuthUrl("google");
+    initiateOAuthMutation.mutate("google");
   };
 
   const handleConnectOutlook = () => {
-    window.location.href = getOAuthUrl("outlook");
+    initiateOAuthMutation.mutate("outlook");
   };
 
   const handleRemoveAccount = () => {
@@ -109,12 +110,28 @@ export function CalendarSettings() {
         <CardContent className="space-y-6">
           {/* Connect buttons */}
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={handleConnectGoogle}>
-              <GoogleIcon className="mr-2 h-4 w-4" />
+            <Button 
+              variant="outline" 
+              onClick={handleConnectGoogle}
+              disabled={initiateOAuthMutation.isPending}
+            >
+              {initiateOAuthMutation.isPending && initiateOAuthMutation.variables === "google" ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <GoogleIcon className="mr-2 h-4 w-4" />
+              )}
               Add Google Calendar
             </Button>
-            <Button variant="outline" onClick={handleConnectOutlook}>
-              <OutlookIcon className="mr-2 h-4 w-4" />
+            <Button 
+              variant="outline" 
+              onClick={handleConnectOutlook}
+              disabled={initiateOAuthMutation.isPending}
+            >
+              {initiateOAuthMutation.isPending && initiateOAuthMutation.variables === "outlook" ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <OutlookIcon className="mr-2 h-4 w-4" />
+              )}
               Add Outlook
             </Button>
             <Button variant="outline" onClick={() => setICloudDialogOpen(true)}>

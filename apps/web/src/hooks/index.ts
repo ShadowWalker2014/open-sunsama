@@ -137,7 +137,7 @@ export {
   useSyncAccount,
   useUpdateCalendar,
   useConnectICloud,
-  getOAuthUrl,
+  useInitiateOAuth,
   calendarKeys,
   type CalendarAccount,
   type Calendar,
