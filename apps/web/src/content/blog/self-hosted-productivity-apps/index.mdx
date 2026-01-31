@@ -1,0 +1,242 @@
+export const frontmatter = {
+  title: "Self-Hosted Productivity Apps: The Privacy-First Guide to Task Management",
+  description: "Keep your data secure with self-hosted productivity apps. Compare Open Sunsama, OpenProject, and more.",
+  date: "2026-01-27",
+  author: "Open Sunsama Team",
+  tags: ["self-hosted", "privacy", "open-source"],
+  readingTime: 11,
+  image: "/blog-pattern-1.png"
+};
+
+In an era where data breaches make headlines weekly and tech giants monetize user behavior, a growing number of developers and privacy-conscious users are taking back control. The solution? Self-hosted productivity apps that keep your task lists, schedules, and personal data exactly where they belong—on your own infrastructure.
+
+Whether you're a solo developer managing side projects, a team lead coordinating sprints, or simply someone who values digital autonomy, this guide explores why self-hosting your task manager isn't just paranoia—it's pragmatic.
+
+## Why Self-Host Your Productivity Tools?
+
+The question isn't just *can* you self-host your productivity stack—it's *should* you. Here are the compelling reasons that make self-hosted task managers increasingly attractive.
+
+### Complete Data Ownership
+
+When you use a SaaS productivity app, your tasks, notes, and schedules live on someone else's servers. That "someone else" might be acquired, might pivot their business model, or might experience a breach. With a self-hosted to-do list, your data never leaves your control.
+
+Consider what your task manager contains: project codenames, client names, deadlines, personal goals, maybe even salary discussions or strategic plans. This metadata, aggregated over months or years, paints an intimate picture of your professional and personal life. Self-hosting ensures that picture stays private.
+
+### No Vendor Lock-in
+
+Cloud services come and go. Remember when Wunderlist was the darling of task management? Microsoft acquired it, then sunset it. Users scrambled to export their data and find alternatives. With an open source productivity app running on your own server, you're insulated from corporate decisions.
+
+### Offline-First Capability
+
+Self-hosted solutions can run entirely on your local network. No internet? No problem. Your task manager keeps working. This matters for developers working on air-gapped systems, teams in areas with unreliable connectivity, or anyone who's experienced the frustration of a cloud service being "temporarily unavailable."
+
+### Customization Freedom
+
+When you control the code and the infrastructure, you can modify the app to fit your workflow—not the other way around. Add custom fields, integrate with internal tools, or modify the UI. Open source self-hosted apps give you that freedom.
+
+### Cost Efficiency at Scale
+
+While individual SaaS subscriptions seem affordable, they add up. A team of 20 paying $10/month each means $2,400/year. A self-hosted solution running on a $20/month VPS serves the same team indefinitely. The economics become compelling quickly.
+
+## Comparing Self-Hosted Task Managers
+
+Not all self-hosted productivity apps are created equal. Here's how the leading options stack up for different use cases:
+
+| App | Best For | Docker Support | Key Features | Setup Difficulty |
+|-----|----------|----------------|--------------|------------------|
+| **Open Sunsama** | Developers & individuals | ✅ Official | Time blocking, focus mode, kanban, API | Easy |
+| **OpenProject** | Enterprise teams | ✅ Official | Gantt charts, agile boards, wikis | Moderate |
+| **Vikunja** | Power users | ✅ Official | Kanban, lists, caldav sync | Easy |
+| **Focalboard** | Mattermost users | ✅ Official | Kanban, database views | Easy |
+| **Planka** | Small teams | ✅ Official | Trello-like boards, real-time sync | Easy |
+
+### Open Sunsama
+
+Open Sunsama is an open source clone of the popular Sunsama app, designed for developers who want a privacy-first task manager with time blocking capabilities. It combines the mindful daily planning approach of Sunsama with the freedom of self-hosting.
+
+**Standout features:**
+- Time blocking with drag-and-drop scheduling
+- Focus mode with built-in timer
+- Kanban board for task visualization
+- Full REST API for automation
+- MCP integration for AI assistants
+
+**Best for:** Developers and individuals who want structured daily planning without sacrificing privacy.
+
+### OpenProject
+
+OpenProject is the heavyweight of self-hosted project management. Originally developed in Germany with GDPR compliance baked in, it's designed for enterprise teams that need comprehensive project tracking.
+
+**Standout features:**
+- Gantt charts with dependency tracking
+- Agile and Scrum boards
+- Time tracking and budgeting
+- Meeting management
+- Wiki documentation
+
+**Best for:** Large teams needing enterprise-grade project management with audit trails.
+
+### Vikunja
+
+Vikunja bills itself as "the to-do app to organize your life" and delivers a flexible, multi-view task manager. It supports everything from simple lists to complex kanban workflows.
+
+**Standout features:**
+- Multiple views: list, kanban, table, Gantt
+- CalDAV sync for calendar integration
+- Attachments and labels
+- Teams and namespaces
+
+**Best for:** Power users who want flexibility in how they view and organize tasks.
+
+### Focalboard
+
+Focalboard was created by Mattermost as an open source alternative to tools like Notion and Trello. It excels at combining different views of the same data.
+
+**Standout features:**
+- Board, table, gallery, and calendar views
+- Property templates
+- Mattermost integration
+- Multi-language support
+
+**Best for:** Teams already using Mattermost or those wanting Notion-like flexibility.
+
+### Planka
+
+Planka takes the Trello model and makes it self-hostable. It's intentionally simple, focusing on kanban boards without feature bloat.
+
+**Standout features:**
+- Real-time collaboration
+- Markdown support
+- Due dates and labels
+- Keyboard shortcuts
+
+**Best for:** Small teams wanting a straightforward, Trello-like experience.
+
+## How to Self-Host Open Sunsama
+
+Getting Open Sunsama running on your own infrastructure takes about 15 minutes. Here's the quick-start guide:
+
+### Prerequisites
+
+- Docker and Docker Compose installed
+- A server with at least 1GB RAM
+- A domain name (optional, for HTTPS)
+
+### Step 1: Clone the Repository
+
+```bash
+git clone https://github.com/opensunsama/opensunsama.git
+cd opensunsama
+```
+
+### Step 2: Configure Environment
+
+Copy the example environment file and edit it with your settings:
+
+```bash
+cp .env.example .env
+```
+
+Key variables to configure:
+
+```
+DATABASE_URL=postgresql://user:password@db:5432/opensunsama
+JWT_SECRET=your-secure-random-string
+CORS_ORIGIN=https://your-domain.com
+```
+
+### Step 3: Start with Docker Compose
+
+```bash
+docker-compose up -d
+```
+
+This spins up the PostgreSQL database, API server, and web frontend. The app will be available at `http://localhost:3000`.
+
+### Step 4: Initialize the Database
+
+```bash
+docker-compose exec api bun run db:migrate
+```
+
+### Step 5: Create Your Account
+
+Navigate to `http://localhost:3000/register` and create your first user account. That's it—you're running your own privacy-first task manager.
+
+### Optional: Reverse Proxy with HTTPS
+
+For production deployments, put the app behind a reverse proxy like Nginx or Caddy with Let's Encrypt certificates. This ensures your data is encrypted in transit.
+
+## GDPR and Data Sovereignty
+
+For users in the European Union—or anyone working with EU clients—data sovereignty isn't just a preference; it's a legal requirement. The General Data Protection Regulation (GDPR) mandates specific controls over personal data, and self-hosted productivity apps offer distinct advantages.
+
+### Data Residency Control
+
+GDPR requires that personal data of EU residents be handled according to strict rules about where it's stored and processed. When you self-host, you choose the jurisdiction. Run your instance on a server in Frankfurt or Amsterdam, and you have documented proof of EU data residency.
+
+### Right to Deletion
+
+Article 17 of GDPR grants individuals the "right to be forgotten." With a self-hosted solution, implementing this is straightforward—you control the database directly. No need to submit support tickets and hope the vendor actually purges your data.
+
+### Data Processing Agreements
+
+When using third-party SaaS tools, you need Data Processing Agreements (DPAs) with each vendor. Self-hosting eliminates this complexity for your task management stack entirely.
+
+### Audit Trail
+
+Self-hosted apps running on your infrastructure mean you control the logs. You know exactly who accessed what data and when—crucial for GDPR compliance audits.
+
+### Reduced Third-Party Risk
+
+Every SaaS vendor you use is a potential breach vector. Their employees, their subcontractors, their infrastructure—all become your concern. Self-hosting dramatically reduces this attack surface for sensitive productivity data.
+
+## Frequently Asked Questions
+
+### Is self-hosting a task manager actually more secure?
+
+It depends on your operational security. A well-maintained self-hosted instance is more secure because it eliminates third-party access to your data. However, you're responsible for updates, backups, and security patches. For most technically-inclined users, this trade-off favors self-hosting—you're not relying on a vendor's security team, but you need to be diligent about maintenance.
+
+### How much does it cost to self-host a productivity app?
+
+Costs vary based on your infrastructure choice. A basic VPS from providers like Hetzner or DigitalOcean runs $5-20/month and can comfortably host most self-hosted task managers. For local hosting (like a Raspberry Pi or home server), your ongoing cost is essentially just electricity. Compare this to $8-15/user/month for SaaS alternatives, and self-hosting becomes economical even for small teams.
+
+### Can I access my self-hosted task manager from mobile devices?
+
+Yes. Most modern self-hosted productivity apps, including Open Sunsama, are built as responsive web applications that work well on mobile browsers. Some also offer dedicated mobile apps. If your server is publicly accessible (behind HTTPS and proper authentication), you can access it from anywhere.
+
+### What happens if my server goes down?
+
+This is why backups are essential. Set up automated daily backups of your database to a separate location (cloud storage, another server, etc.). With proper backups, you can restore your entire task history on new infrastructure within minutes. The risk of data loss is comparable to SaaS solutions—and you have more control over recovery.
+
+### How do I migrate from a SaaS task manager to a self-hosted solution?
+
+Most task managers support some form of export (CSV, JSON, or API access). Open Sunsama provides import tools for common formats. The typical migration path is: export from your current tool, massage the data into the expected format if needed, then import into your self-hosted instance. Budget a few hours for a thorough migration with task history.
+
+### Can teams collaborate on self-hosted task managers?
+
+Absolutely. Applications like Open Sunsama, OpenProject, and Planka support real-time collaboration with multiple users. You create accounts for team members, and everyone works from the same self-hosted instance. Most support role-based access control to manage permissions appropriately.
+
+### Do I need to be a developer to self-host?
+
+Not necessarily, though it helps. Modern self-hosted apps with Docker support reduce deployment to a handful of commands. If you can follow documentation and are comfortable with a terminal, you can self-host. That said, troubleshooting issues does require some technical comfort. For completely non-technical users, managed hosting options or SaaS remain more practical.
+
+## Conclusion
+
+The shift toward self-hosted productivity apps reflects a broader awakening about digital privacy. Your task list isn't just a productivity tool—it's a detailed record of your priorities, commitments, and plans. That data deserves protection.
+
+Self-hosting your task manager gives you:
+
+- **Complete data ownership** with no third-party access
+- **Independence** from vendor decisions and shutdowns
+- **Compliance-ready** infrastructure for GDPR and data sovereignty
+- **Cost efficiency** as your team grows
+- **Customization** freedom to adapt the tool to your workflow
+
+Whether you choose Open Sunsama for its developer-friendly approach, OpenProject for enterprise needs, or another option from this guide, you're making an investment in your digital autonomy.
+
+The tools exist. The documentation is solid. The community is growing. The only question is whether you're ready to take control.
+
+---
+
+Ready to self-host your productivity stack? [Get started with Open Sunsama](/register)—it's open source, privacy-first, and designed for developers who care about where their data lives.
