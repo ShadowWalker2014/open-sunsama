@@ -496,6 +496,190 @@ html.font-jetbrains body { font-family: var(--font-jetbrains) !important; }
   }
 }
 
+/* Blog Prose Styles - Comprehensive MDX rendering */
+.blog-prose {
+  @apply text-foreground;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+/* Headings */
+.blog-prose h1 {
+  @apply text-2xl font-semibold tracking-tight mt-8 mb-4;
+}
+
+.blog-prose h2 {
+  @apply text-xl font-semibold tracking-tight mt-10 mb-4 pb-2 border-b border-border/40;
+}
+
+.blog-prose h3 {
+  @apply text-lg font-semibold tracking-tight mt-8 mb-3;
+}
+
+.blog-prose h4 {
+  @apply text-base font-semibold tracking-tight mt-6 mb-2;
+}
+
+/* Paragraphs */
+.blog-prose p {
+  @apply my-4 text-muted-foreground leading-relaxed;
+}
+
+/* Links */
+.blog-prose a {
+  @apply text-primary font-medium no-underline hover:underline;
+}
+
+/* Lists */
+.blog-prose ul {
+  @apply my-4 pl-6 space-y-2;
+  list-style-type: disc;
+}
+
+.blog-prose ol {
+  @apply my-4 pl-6 space-y-2;
+  list-style-type: decimal;
+}
+
+.blog-prose li {
+  @apply text-muted-foreground;
+}
+
+.blog-prose li::marker {
+  @apply text-muted-foreground/60;
+}
+
+/* Blockquotes */
+.blog-prose blockquote {
+  @apply my-6 pl-4 py-2 border-l-4 border-primary/50 bg-muted/30 rounded-r-lg italic;
+}
+
+.blog-prose blockquote p {
+  @apply my-0 text-muted-foreground;
+}
+
+/* Horizontal Rule */
+.blog-prose hr {
+  @apply my-8 border-border/40;
+}
+
+/* Inline Code */
+.blog-prose code:not(pre code) {
+  @apply text-[13px] font-mono bg-muted px-1.5 py-0.5 rounded text-foreground;
+}
+
+/* Code Blocks */
+.blog-prose pre {
+  @apply my-6 p-4 rounded-lg border border-border/40 overflow-x-auto;
+  background-color: hsl(var(--muted));
+}
+
+.blog-prose pre code {
+  @apply text-[13px] font-mono bg-transparent p-0;
+  color: hsl(var(--foreground));
+}
+
+/* Light mode code improvements */
+:root .blog-prose pre {
+  background-color: hsl(220 14% 96%);
+}
+
+:root .blog-prose pre code {
+  color: hsl(220 13% 18%);
+}
+
+.dark .blog-prose pre {
+  background-color: hsl(228 14% 11%);
+}
+
+.dark .blog-prose pre code {
+  color: hsl(220 13% 93%);
+}
+
+/* Tables - Critical fix */
+.blog-prose table {
+  @apply my-6 w-full border-collapse text-sm;
+}
+
+.blog-prose thead {
+  @apply border-b-2 border-border;
+}
+
+.blog-prose th {
+  @apply px-4 py-3 text-left font-semibold text-foreground bg-muted/50;
+}
+
+.blog-prose th:first-child {
+  @apply rounded-tl-lg;
+}
+
+.blog-prose th:last-child {
+  @apply rounded-tr-lg;
+}
+
+.blog-prose tbody tr {
+  @apply border-b border-border/40;
+}
+
+.blog-prose tbody tr:last-child {
+  @apply border-b-0;
+}
+
+.blog-prose tbody tr:hover {
+  @apply bg-muted/30;
+}
+
+.blog-prose td {
+  @apply px-4 py-3 text-muted-foreground;
+}
+
+/* Table wrapper for overflow */
+.blog-prose .table-wrapper {
+  @apply my-6 overflow-x-auto rounded-lg border border-border/40;
+}
+
+.blog-prose .table-wrapper table {
+  @apply my-0;
+}
+
+/* Strong and emphasis */
+.blog-prose strong {
+  @apply font-semibold text-foreground;
+}
+
+.blog-prose em {
+  @apply italic;
+}
+
+/* Images */
+.blog-prose img {
+  @apply my-6 rounded-lg border border-border/40 max-w-full;
+}
+
+/* Definition lists */
+.blog-prose dl {
+  @apply my-4;
+}
+
+.blog-prose dt {
+  @apply font-semibold text-foreground;
+}
+
+.blog-prose dd {
+  @apply ml-4 text-muted-foreground;
+}
+
+/* Task lists */
+.blog-prose input[type="checkbox"] {
+  @apply mr-2;
+}
+
+/* Emoji checkmarks and X marks */
+.blog-prose td:has(✅),
+.blog-prose td:has(❌) {
+  @apply text-center;
+}
+
 /* Tiptap Editor File Upload Styles */
 @layer components {
   /* Image styling */

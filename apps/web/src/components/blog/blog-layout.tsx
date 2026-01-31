@@ -126,7 +126,7 @@ export function BlogLayout({ children, post, relatedPosts = [] }: BlogLayoutProp
 
           {/* Article content */}
           <div className="container px-4 mx-auto max-w-3xl mt-8 md:mt-12">
-            <div className="prose prose-neutral dark:prose-invert prose-sm md:prose-base max-w-none prose-headings:font-semibold prose-headings:tracking-tight prose-p:text-muted-foreground prose-p:leading-relaxed prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-code:text-[13px] prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-pre:bg-muted prose-pre:border prose-pre:border-border/40">
+            <div className="blog-prose">
               {children}
             </div>
           </div>
