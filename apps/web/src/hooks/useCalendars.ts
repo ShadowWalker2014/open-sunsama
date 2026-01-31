@@ -29,7 +29,7 @@ export function useCalendarAccounts() {
     queryFn: async (): Promise<CalendarAccount[]> => {
       const client = getApiClient();
       const response = await client.get<{ success: boolean; data: CalendarAccount[] }>(
-        "/calendar/accounts"
+        "calendar/accounts"
       );
       return response.data;
     },
@@ -45,7 +45,7 @@ export function useCalendars() {
     queryFn: async (): Promise<Calendar[]> => {
       const client = getApiClient();
       const response = await client.get<{ success: boolean; data: Calendar[] }>(
-        "/calendars"
+        "calendars"
       );
       return response.data;
     },
@@ -61,7 +61,7 @@ export function useCalendarEvents(from: string, to: string, enabled = true) {
     queryFn: async (): Promise<CalendarEvent[]> => {
       const client = getApiClient();
       const response = await client.get<{ success: boolean; data: CalendarEvent[] }>(
-        "/calendar-events",
+        "calendar-events",
         { searchParams: { from, to } }
       );
       return response.data;
@@ -79,7 +79,7 @@ export function useDisconnectAccount() {
   return useMutation({
     mutationFn: async (accountId: string): Promise<void> => {
       const client = getApiClient();
-      await client.delete(`/calendar/accounts/${accountId}`);
+      await client.delete(`calendar/accounts/${accountId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: calendarKeys.accounts() });
@@ -109,7 +109,7 @@ export function useSyncAccount() {
   return useMutation({
     mutationFn: async (accountId: string): Promise<void> => {
       const client = getApiClient();
-      await client.post(`/calendar/accounts/${accountId}/sync`);
+      await client.post(`calendar/accounts/${accountId}/sync`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: calendarKeys.accounts() });
@@ -146,7 +146,7 @@ export function useUpdateCalendar() {
     }): Promise<Calendar> => {
       const client = getApiClient();
       const response = await client.patch<{ success: boolean; data: Calendar }>(
-        `/calendars/${calendarId}`,
+        `calendars/${calendarId}`,
         data
       );
       return response.data;
@@ -174,7 +174,7 @@ export function useConnectICloud() {
     mutationFn: async (data: ConnectCalDavRequest): Promise<CalendarAccount> => {
       const client = getApiClient();
       const response = await client.post<{ success: boolean; data: CalendarAccount }>(
-        "/calendar/caldav/connect",
+        "calendar/caldav/connect",
         data
       );
       return response.data;
@@ -209,7 +209,7 @@ export function useInitiateOAuth() {
       const response = await client.get<{
         success: boolean;
         data: { authUrl: string; state: string };
-      }>(`/calendar/oauth/${provider}/initiate`);
+      }>(`calendar/oauth/${provider}/initiate`);
       return response.data.authUrl;
     },
     onSuccess: (authUrl) => {
