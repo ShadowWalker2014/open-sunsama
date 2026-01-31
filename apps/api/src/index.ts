@@ -26,6 +26,7 @@ import { calendarCaldavRouter } from './routes/calendar-caldav.js';
 import { calendarAccountsRouter } from './routes/calendar-accounts.js';
 import { calendarsRouter } from './routes/calendars.js';
 import { calendarEventsRouter } from './routes/calendar-events.js';
+import { releasesRouter } from './routes/releases.js';
 import { registerAllWorkers } from './workers/index.js';
 import { stopPgBoss, isPgBossRunning, getPgBoss, JOBS } from './lib/pgboss.js';
 import { initWebSocket, initRedisSubscriber } from './lib/websocket/index.js';
@@ -99,6 +100,7 @@ app.get('/', (c) => {
       calendarAccounts: '/calendar/accounts',
       calendars: '/calendars',
       calendarEvents: '/calendar-events',
+      releases: '/releases',
     },
   });
 });
@@ -118,6 +120,7 @@ app.route('/calendar/caldav', calendarCaldavRouter);
 app.route('/calendar/accounts', calendarAccountsRouter);
 app.route('/calendars', calendarsRouter);
 app.route('/calendar-events', calendarEventsRouter);
+app.route('/releases', releasesRouter);
 
 // Error handling
 app.onError(errorHandler);
@@ -223,6 +226,7 @@ async function startServer(): Promise<void> {
    ║   - *    /calendar/* Calendar integration                 ║
    ║   - *    /calendars  Calendar settings                    ║
    ║   - *    /calendar-events Calendar events                 ║
+   ║   - *    /releases/*  Desktop releases                    ║
   ║                                                           ║
   ║   Background Jobs:                                        ║
   ║   - Task Rollover (${process.env.ROLLOVER_ENABLED !== 'false' ? 'enabled' : 'disabled'})                           ║
