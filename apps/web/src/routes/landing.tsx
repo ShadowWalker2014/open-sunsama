@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { type ReactNode } from "react";
 import {
   Calendar,
   Clock,
@@ -16,13 +17,6 @@ import {
   Lock,
   Check,
   X,
-  Plus,
-  Minus,
-  Briefcase,
-  Users,
-  TrendingUp,
-  MessageSquare,
-  RefreshCw,
   Globe,
   Monitor,
   Smartphone,
@@ -33,7 +27,6 @@ import {
   Timer,
   CalendarDays,
   Target,
-  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BorderBeam } from "@/components/landing/border-beam";
@@ -138,7 +131,7 @@ function FeatureSection({
   description: string; 
   imagePosition?: 'left' | 'right';
   badge?: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.2 });
 
