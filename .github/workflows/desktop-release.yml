@@ -73,9 +73,9 @@ jobs:
         with:
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      # macOS: Import Apple Developer Certificate for code signing
+      # macOS: Import Apple Developer Certificate for code signing (optional)
       - name: Import Apple Developer Certificate
-        if: matrix.platform == 'macos-latest'
+        if: matrix.platform == 'macos-latest' && secrets.APPLE_CERTIFICATE != ''
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
@@ -90,16 +90,15 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
           rm certificate.p12
 
-      # macOS: Get signing identity from imported certificate
+      # macOS: Get signing identity from imported certificate (optional)
       - name: Get Signing Identity
-        if: matrix.platform == 'macos-latest'
+        if: matrix.platform == 'macos-latest' && secrets.APPLE_CERTIFICATE != ''
         id: signing
         run: |
           IDENTITY=$(security find-identity -v -p codesigning build.keychain | grep "Developer ID Application" | head -1 | awk -F'"' '{print $2}')
           if [ -z "$IDENTITY" ]; then
-            echo "Error: No Developer ID Application certificate found"
+            echo "Warning: No Developer ID Application certificate found"
             security find-identity -v -p codesigning build.keychain
-            exit 1
           fi
           echo "identity=$IDENTITY" >> $GITHUB_OUTPUT
           echo "Found signing identity: $IDENTITY"
@@ -120,29 +119,17 @@ jobs:
           VITE_WS_URL: wss://api.opensunsama.com
         run: bun run build
 
-      # macOS: Build with signing and notarization
-      - name: Build Tauri app (macOS)
-        if: matrix.platform == 'macos-latest'
+      - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # macOS signing (optional - only if secrets are configured)
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_SIGNING_IDENTITY: ${{ steps.signing.outputs.identity }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        with:
-          projectPath: apps/desktop
-          tauriScript: bunx tauri
-          args: ${{ matrix.args }}
-
-      # Linux/Windows: Build without Apple signing
-      - name: Build Tauri app (Linux/Windows)
-        if: matrix.platform != 'macos-latest'
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: apps/desktop
           tauriScript: bunx tauri
