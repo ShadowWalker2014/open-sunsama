@@ -82,18 +82,53 @@ type ReleasesResponse = {
   data: Record<PlatformKey, Release | undefined>;
 };
 
-function detectPlatform(): PlatformKey {
+function detectPlatformSync(): PlatformKey {
   if (typeof window === "undefined") return "macos-arm64";
   const userAgent = navigator.userAgent.toLowerCase();
   const platform = navigator.platform?.toLowerCase() || "";
 
   if (platform.includes("win") || userAgent.includes("windows")) return "windows";
-  if (platform.includes("mac") || userAgent.includes("macintosh")) {
-    const isARM = userAgent.includes("arm") || 
-      (navigator as { userAgentData?: { architecture?: string } }).userAgentData?.architecture === "arm";
-    return isARM ? "macos-arm64" : "macos-x64";
-  }
   if (platform.includes("linux") || userAgent.includes("linux")) return "linux";
+  if (platform.includes("mac") || userAgent.includes("macintosh")) {
+    // Default to ARM for macOS - most Macs sold since 2020 are Apple Silicon
+    // Will be refined by async detection
+    return "macos-arm64";
+  }
+  return "macos-arm64";
+}
+
+async function detectMacArchitecture(): Promise<"macos-arm64" | "macos-x64"> {
+  // Method 1: Use User-Agent Client Hints API (Chromium browsers)
+  if ("userAgentData" in navigator) {
+    const ua = navigator.userAgentData as { getHighEntropyValues?: (hints: string[]) => Promise<{ architecture?: string }> };
+    if (ua.getHighEntropyValues) {
+      const values = await ua.getHighEntropyValues(["architecture"]);
+      if (values.architecture === "arm") return "macos-arm64";
+      if (values.architecture === "x86") return "macos-x64";
+    }
+  }
+
+  // Method 2: Check WebGL renderer (works in Safari and all browsers)
+  const canvas = document.createElement("canvas");
+  const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+  if (gl) {
+    const debugInfo = (gl as WebGLRenderingContext).getExtension("WEBGL_debug_renderer_info");
+    if (debugInfo) {
+      const renderer = (gl as WebGLRenderingContext).getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+      // Apple Silicon GPUs have "Apple" in the renderer name (e.g., "Apple M1", "Apple GPU")
+      // Intel Macs show Intel GPU names (e.g., "Intel Iris Plus Graphics")
+      if (typeof renderer === "string") {
+        if (renderer.includes("Apple M") || renderer.includes("Apple GPU")) {
+          return "macos-arm64";
+        }
+        if (renderer.includes("Intel")) {
+          return "macos-x64";
+        }
+      }
+    }
+  }
+
+  // Default to ARM - most Macs sold since late 2020 are Apple Silicon
   return "macos-arm64";
 }
 
@@ -225,7 +260,13 @@ export default function DownloadPage() {
   const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    setDetectedPlatform(detectPlatform());
+    const initialPlatform = detectPlatformSync();
+    setDetectedPlatform(initialPlatform);
+
+    // If macOS, refine detection with async method
+    if (initialPlatform === "macos-arm64" || initialPlatform === "macos-x64") {
+      detectMacArchitecture().then(setDetectedPlatform);
+    }
   }, []);
 
   React.useEffect(() => {
