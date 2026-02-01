@@ -1,5 +1,5 @@
 import * as React from "react";
-import { User, Lock, Palette, Bell, Key, ListTodo, Terminal, ChevronRight, CalendarDays } from "lucide-react";
+import { User, Lock, Palette, Bell, Key, ListTodo, Terminal, ChevronRight, CalendarDays, Monitor } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import {
@@ -17,9 +17,10 @@ import {
   TaskSettings,
   McpSettings,
   CalendarSettings,
+  DesktopSettings,
 } from "@/components/settings";
 
-type SettingsTab = "profile" | "security" | "appearance" | "tasks" | "calendars" | "notifications" | "api" | "mcp";
+type SettingsTab = "profile" | "security" | "appearance" | "tasks" | "calendars" | "notifications" | "desktop" | "api" | "mcp";
 
 const TABS: { id: SettingsTab; label: string; icon: React.ElementType }[] = [
   { id: "profile", label: "Profile", icon: User },
@@ -28,6 +29,7 @@ const TABS: { id: SettingsTab; label: string; icon: React.ElementType }[] = [
   { id: "tasks", label: "Tasks", icon: ListTodo },
   { id: "calendars", label: "Calendars", icon: CalendarDays },
   { id: "notifications", label: "Notifications", icon: Bell },
+  { id: "desktop", label: "Desktop App", icon: Monitor },
   { id: "api", label: "API Keys", icon: Key },
   { id: "mcp", label: "MCP", icon: Terminal },
 ];
@@ -46,6 +48,8 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
       return <CalendarSettings />;
     case "notifications":
       return <NotificationSettings />;
+    case "desktop":
+      return <DesktopSettings />;
     case "api":
       return <ApiKeysSettings />;
     case "mcp":
