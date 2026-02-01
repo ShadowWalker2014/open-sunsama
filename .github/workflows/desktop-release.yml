@@ -111,8 +111,22 @@ jobs:
           fi
           echo "file=$FILE" >> $GITHUB_OUTPUT
           echo "path=${{ matrix.bundle_path }}/$FILE" >> $GITHUB_OUTPUT
-          echo "size=$(stat -f%z "$FILE" 2>/dev/null || stat -c%s "$FILE")" >> $GITHUB_OUTPUT
-          echo "sha256=$(shasum -a 256 "$FILE" | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+          # Get file size (cross-platform)
+          if [[ "$OSTYPE" == "darwin"* ]]; then
+            SIZE=$(stat -f%z "$FILE")
+          elif [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]]; then
+            SIZE=$(wc -c < "$FILE" | tr -d ' ')
+          else
+            SIZE=$(stat -c%s "$FILE")
+          fi
+          echo "size=$SIZE" >> $GITHUB_OUTPUT
+          # Get SHA256 (cross-platform)
+          if command -v shasum &> /dev/null; then
+            SHA=$(shasum -a 256 "$FILE" | cut -d' ' -f1)
+          else
+            SHA=$(sha256sum "$FILE" | cut -d' ' -f1)
+          fi
+          echo "sha256=$SHA" >> $GITHUB_OUTPUT
 
       - name: Upload to S3
         shell: bash
