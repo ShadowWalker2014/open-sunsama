@@ -19,6 +19,13 @@ import {
   deleteOAuthState,
   verifyStateProvider,
 } from '../services/oauth-state.js';
+import {
+  syncOAuthAccount,
+  upsertEvents,
+  deleteRemovedEvents,
+  updateSyncStatus,
+  publishSyncEvent,
+} from '../services/calendar-sync.js';
 
 const calendarOAuthRouter = new Hono<{ Variables: AuthVariables }>();
 
@@ -220,6 +227,63 @@ calendarOAuthRouter.get(
               isReadOnly: extCal.isReadOnly,
             });
         }
+      }
+
+      // Set sync status to 'syncing' and trigger initial sync in background
+      await db
+        .update(calendarAccounts)
+        .set({ syncStatus: 'syncing', updatedAt: new Date() })
+        .where(eq(calendarAccounts.id, accountId));
+
+      // Get enabled calendars for syncing
+      const enabledCalendars = await db
+        .select({
+          id: calendars.id,
+          externalId: calendars.externalId,
+          syncToken: calendars.syncToken,
+        })
+        .from(calendars)
+        .where(
+          and(
+            eq(calendars.accountId, accountId),
+            eq(calendars.isEnabled, true)
+          )
+        );
+
+      // Trigger initial sync in background (don't block redirect)
+      if (enabledCalendars.length > 0) {
+        setImmediate(async () => {
+          try {
+            // Calculate sync window: past 30 days to future 90 days
+            const timeMin = new Date();
+            timeMin.setDate(timeMin.getDate() - 30);
+            const timeMax = new Date();
+            timeMax.setDate(timeMax.getDate() + 90);
+
+            const syncResult = await syncOAuthAccount(
+              tokens.accessToken,
+              provider,
+              enabledCalendars,
+              { timeMin, timeMax }
+            );
+
+            // Upsert events and delete removed ones
+            await upsertEvents(userId, syncResult.events, enabledCalendars);
+            await deleteRemovedEvents(userId, syncResult.deleted);
+
+            // Update sync status to idle
+            await updateSyncStatus(accountId, 'idle', syncResult.nextSyncToken);
+
+            // Publish sync event via WebSocket
+            publishSyncEvent(userId, accountId, syncResult.events.length, syncResult.deleted.length);
+
+            console.log(`[Calendar OAuth] Initial sync completed for ${providerName} account: ${syncResult.events.length} events`);
+          } catch (syncErr) {
+            const syncMessage = syncErr instanceof Error ? syncErr.message : 'Unknown sync error';
+            console.error(`[Calendar OAuth] Initial sync failed: ${syncMessage}`);
+            await updateSyncStatus(accountId, 'error', null, syncMessage);
+          }
+        });
       }
 
       console.log(`[Calendar OAuth] Successfully connected ${providerName} account for user ${userId}`);
