@@ -187,6 +187,10 @@ export const JOBS = {
   TASK_REMINDER_CHECK: 'task-reminder-check',
   /** Sends task reminder email for a specific time block */
   SEND_TASK_REMINDER: 'send-task-reminder',
+  /** Runs every 5 minutes to check for calendar accounts needing sync */
+  CALENDAR_SYNC_CHECK: 'calendar-sync-check',
+  /** Syncs events for a single calendar account */
+  SYNC_CALENDAR_ACCOUNT: 'sync-calendar-account',
 } as const;
 
 export type JobName = typeof JOBS[keyof typeof JOBS];
