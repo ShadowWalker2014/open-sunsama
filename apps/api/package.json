@@ -29,7 +29,7 @@
     "hono": "^4.6.14",
     "ioredis": "^5.9.2",
     "jsonwebtoken": "^9.0.2",
-    "pg-boss": "^10.1.5",
+    "pg-boss": "10.1.5",
     "resend": "^4.0.0",
     "tsdav": "^2.1.6",
     "web-push": "^3.6.7",

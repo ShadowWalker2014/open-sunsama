@@ -1,0 +1,364 @@
+export const frontmatter = {
+  title: "Best Open Source Productivity Apps in 2026 (Self-Hostable & Free)",
+  description: "Top open source productivity tools for task management, note-taking, and time tracking. Self-host your productivity stack.",
+  date: "2026-02-01",
+  author: "Open Sunsama Team",
+  tags: ["open-source", "productivity", "self-hosted"],
+  readingTime: 14,
+  image: "/blog-open-source-productivity.png"
+};
+
+The productivity software landscape in 2026 is dominated by subscription-based SaaS tools that hold your data hostage while charging monthly fees. But there's a growing movement of developers, privacy advocates, and cost-conscious teams choosing a different path: open source productivity apps that offer complete transparency, data ownership, and zero recurring costs.
+
+This guide covers the best open source productivity tools across every category—from daily planners and task managers to note-taking apps and time trackers. Whether you want to self-host your entire productivity stack or simply avoid subscription fatigue, these tools deliver enterprise-grade features without the enterprise price tag.
+
+## Why Open Source Matters for Productivity Tools
+
+Your productivity tools contain some of your most sensitive data: project plans, client names, deadlines, personal goals, and the daily rhythm of your professional life. Here's why open source productivity apps deserve serious consideration.
+
+### Complete Privacy and Data Ownership
+
+When you use a proprietary task manager, you're trusting a company with intimate details of your work and life. With open source tools, you can audit the code yourself. There's no telemetry silently reporting your habits, no AI training on your data, and no third-party analytics tracking your every click.
+
+For professionals handling sensitive information—lawyers, healthcare workers, financial advisors—this isn't paranoia. It's due diligence.
+
+### No Subscription Fatigue
+
+The average knowledge worker uses 8-10 productivity tools. At $10-15/month each, that's over $1,000/year just to stay organized. Open source alternatives eliminate this recurring cost entirely. The software is free forever, and self-hosting costs a fraction of SaaS subscriptions.
+
+### Freedom from Vendor Lock-in
+
+Remember Google Reader? Wunderlist? Sunrise Calendar? Popular productivity tools get acquired, pivoted, or sunset constantly. With open source tools, the code lives on even if the original developers move on. Community forks can continue development indefinitely.
+
+### Customization Without Limits
+
+Open source means you can modify the software to fit your workflow. Add custom fields, integrate with internal tools, change the UI, or build entirely new features. The only limit is your imagination and coding ability.
+
+## What Makes an App Truly Open Source?
+
+Not all "free" software is created equal. Understanding license types helps you choose tools that genuinely respect your freedom.
+
+### License Types Explained
+
+| License | Freedom Level | Self-Hosting | Modify & Distribute | Commercial Use |
+|---------|---------------|--------------|---------------------|----------------|
+| **MIT** | Maximum | ✅ Yes | ✅ Yes | ✅ Yes |
+| **Apache 2.0** | High | ✅ Yes | ✅ Yes | ✅ Yes |
+| **GPL v3** | High (copyleft) | ✅ Yes | ✅ Yes (must share) | ✅ Yes |
+| **AGPL** | High (network copyleft) | ✅ Yes | ✅ Yes (must share) | ✅ Yes |
+| **BSL** | Limited | ✅ Yes | ⚠️ Restricted | ⚠️ Delayed |
+| **Proprietary** | None | ❌ No | ❌ No | ❌ No |
+
+**MIT and Apache 2.0** are the most permissive licenses, allowing you to do almost anything with the code. **GPL** licenses require you to share modifications, which keeps the ecosystem open. **BSL (Business Source License)** is a newer model where code becomes fully open after a delay period—useful to know when evaluating tools.
+
+### The Self-Hosting Test
+
+A truly open source productivity app should be self-hostable without requiring any connection to the developer's servers. If an app is "open source" but still phones home or requires a proprietary service to function, your freedom is limited.
+
+## Best Open Source Productivity Apps by Category
+
+### Daily Planning & Time Blocking
+
+#### Open Sunsama — The Open Source Daily Planner
+
+**License:** MIT | **Self-Hosting:** Docker, easy | **Best For:** Developers and individuals
+
+Open Sunsama is the only fully open source daily planner with integrated time blocking. It combines the mindful planning methodology of premium tools like Sunsama with the freedom of self-hosting and an MIT license.
+
+**Key Features:**
+- **Time blocking** with drag-and-drop calendar scheduling
+- **Kanban board** with Today, Tomorrow, and Backlog columns
+- **Focus mode** with built-in Pomodoro timer
+- **REST API** for automation and integrations
+- **MCP server** for AI assistant integration
+- **Desktop app** (Tauri) with global hotkeys
+- **Mobile-responsive** web interface
+
+**Why It Stands Out:**
+
+Most open source task managers focus on lists and boards. Open Sunsama brings the daily planning ritual that premium tools charge $20+/month for—shutdown routines, time estimates, actual vs. planned tracking—all without the subscription.
+
+```bash
+# Self-host in minutes
+git clone https://github.com/opensunsama/opensunsama.git
+docker-compose up -d
+```
+
+**Best For:** Developers who want structured daily planning, privacy-conscious professionals, and anyone migrating from Sunsama or similar premium planners.
+
+---
+
+### Task Management
+
+#### Vikunja — Self-Hosted Todoist Alternative
+
+**License:** AGPL v3 | **Self-Hosting:** Docker, easy | **Best For:** Power users
+
+Vikunja positions itself as "the to-do app to organize your life" and delivers impressive flexibility. It supports multiple views (list, kanban, table, Gantt), CalDAV sync for calendar integration, and namespaces for organizing projects.
+
+**Key Features:**
+- Multiple views: list, kanban, table, Gantt
+- CalDAV sync for calendar apps
+- Labels, filters, and saved searches
+- Teams and permission management
+- API and webhooks
+
+**Why Choose Vikunja:** If you loved Todoist but want to own your data, Vikunja is the closest self-hosted equivalent with comparable features.
+
+---
+
+#### Kanboard — Minimalist Kanban
+
+**License:** MIT | **Self-Hosting:** Docker/PHP, easy | **Best For:** Kanban purists
+
+Kanboard is a no-frills kanban board that does one thing exceptionally well. It's lightweight, fast, and has been battle-tested for over a decade.
+
+**Key Features:**
+- Drag-and-drop kanban boards
+- Swimlanes and task relationships
+- Time tracking
+- Automatic actions and triggers
+- Plugin system
+
+**Why Choose Kanboard:** When you want kanban without bloat, Kanboard delivers. The PHP-based architecture runs on virtually any shared hosting.
+
+---
+
+#### WeKan — Open Source Trello
+
+**License:** MIT | **Self-Hosting:** Docker/Snap, easy | **Best For:** Teams migrating from Trello
+
+WeKan replicates the Trello experience with open source freedom. It's one of the most feature-complete Trello alternatives available.
+
+**Key Features:**
+- Boards, lists, and cards
+- Due dates, checklists, and labels
+- Custom fields
+- Rules automation
+- LDAP/OAuth authentication
+
+**Why Choose WeKan:** Teams comfortable with Trello who want self-hosted simplicity will feel right at home.
+
+---
+
+### Note-Taking & Knowledge Management
+
+#### Logseq — Graph-Based Knowledge Management
+
+**License:** AGPL v3 | **Self-Hosting:** Local files | **Best For:** Researchers and PKM enthusiasts
+
+Logseq pioneered the outliner-meets-graph-database approach to knowledge management. All data is stored as local markdown files, ensuring complete data ownership.
+
+**Key Features:**
+- Bidirectional linking and knowledge graph
+- Block-level references
+- Spaced repetition flashcards
+- PDF annotation
+- Plugin ecosystem
+
+**Why Choose Logseq:** For networked thinking and research, Logseq's graph view reveals connections you'd never notice in a traditional notes app.
+
+---
+
+#### Joplin — Encrypted Open Source Notes
+
+**License:** MIT (AGPL for server) | **Self-Hosting:** Self-sync options | **Best For:** Privacy-focused note-takers
+
+Joplin offers end-to-end encrypted notes with sync capabilities. It supports markdown, has web clipper extensions, and works across all platforms.
+
+**Key Features:**
+- End-to-end encryption
+- Markdown editor with preview
+- Web clipper for saving pages
+- Self-hosted sync (Joplin Server or WebDAV)
+- Notebooks and tags
+
+**Why Choose Joplin:** If encryption is non-negotiable and you want an Evernote alternative, Joplin is the gold standard.
+
+---
+
+#### Obsidian — Free Personal Knowledge Base
+
+**License:** Proprietary (free for personal use) | **Self-Hosting:** Local files | **Best For:** Knowledge workers
+
+While not fully open source, Obsidian deserves mention because it stores data as local markdown files and offers a thriving open source plugin ecosystem. The core app is free for personal use.
+
+**Key Features:**
+- Local markdown files (you own your data)
+- 1000+ community plugins
+- Graph view
+- Canvas for visual thinking
+- Publish and sync (paid add-ons)
+
+**Why Consider Obsidian:** The plugin ecosystem is unmatched, and local file storage means your notes are yours forever, regardless of what happens to Obsidian as a company.
+
+---
+
+### Time Tracking
+
+#### Traggo — Simple Self-Hosted Time Tracking
+
+**License:** MIT | **Self-Hosting:** Docker, easy | **Best For:** Individuals and freelancers
+
+Traggo takes a minimalist approach to time tracking. Tag-based entries let you track time without rigid project structures.
+
+**Key Features:**
+- Tag-based time entries
+- Calendar view
+- Dashboard with statistics
+- Docker deployment
+
+**Why Choose Traggo:** When you need time tracking without project management overhead, Traggo's simplicity shines.
+
+---
+
+#### Kimai — Full-Featured Time Tracking
+
+**License:** MIT | **Self-Hosting:** Docker/PHP | **Best For:** Agencies and consultants
+
+Kimai is a comprehensive time tracking solution with invoicing, reporting, and team management. It's been actively developed since 2006.
+
+**Key Features:**
+- Project and activity tracking
+- Expense tracking
+- Invoice generation
+- Team management with rates
+- API for integrations
+
+**Why Choose Kimai:** Freelancers and agencies who need to track billable hours and generate invoices will find Kimai covers the full workflow.
+
+---
+
+### Calendar
+
+#### Nextcloud Calendar — Self-Hosted Calendar Suite
+
+**License:** AGPL v3 | **Self-Hosting:** Part of Nextcloud | **Best For:** Existing Nextcloud users
+
+Nextcloud Calendar is part of the Nextcloud ecosystem, providing CalDAV-compatible calendar functionality. It integrates with email, contacts, and files in a complete self-hosted suite.
+
+**Key Features:**
+- CalDAV sync with any client
+- Shared calendars
+- Room and resource booking
+- Integration with Nextcloud Talk
+
+**Why Choose Nextcloud Calendar:** If you're already running Nextcloud (or considering it), the calendar provides seamless integration with your self-hosted file storage and collaboration tools.
+
+---
+
+## Open Source Productivity Apps Comparison
+
+| App | Category | License | Self-Host Difficulty | Key Strength |
+|-----|----------|---------|---------------------|--------------|
+| **Open Sunsama** | Daily Planning | MIT | Easy (Docker) | Time blocking + daily planning ritual |
+| **Vikunja** | Task Management | AGPL | Easy (Docker) | Multi-view flexibility |
+| **Kanboard** | Kanban | MIT | Easy (Docker/PHP) | Lightweight, fast |
+| **WeKan** | Kanban | MIT | Easy (Docker) | Trello-like experience |
+| **Logseq** | Notes | AGPL | N/A (local files) | Graph-based PKM |
+| **Joplin** | Notes | MIT/AGPL | Moderate | End-to-end encryption |
+| **Traggo** | Time Tracking | MIT | Easy (Docker) | Simple, tag-based |
+| **Kimai** | Time Tracking | MIT | Easy (Docker) | Invoicing built-in |
+| **Nextcloud Calendar** | Calendar | AGPL | Moderate | CalDAV ecosystem |
+
+## How to Build an Open Source Productivity Stack
+
+Assembling a complete productivity system from open source components is straightforward. Here's a recommended stack for different user types:
+
+### For Individual Developers
+
+1. **Daily Planning:** Open Sunsama (time blocking, focus mode)
+2. **Notes:** Logseq or Obsidian (knowledge graph)
+3. **Time Tracking:** Traggo (simple, tag-based)
+4. **Sync:** Syncthing (local file sync) or Nextcloud
+
+**Total Cost:** $5-20/month for a VPS, or free if running locally.
+
+### For Freelancers
+
+1. **Task Management:** Open Sunsama (client projects in backlog)
+2. **Notes:** Joplin with encryption (client-sensitive info)
+3. **Time Tracking:** Kimai (billable hours + invoicing)
+4. **Calendar:** Nextcloud Calendar (CalDAV sync)
+
+**Total Cost:** $10-30/month for VPS with adequate storage.
+
+### For Small Teams
+
+1. **Task Management:** Vikunja or WeKan (team boards)
+2. **Daily Planning:** Open Sunsama (individual planning)
+3. **Notes:** Outline or BookStack (team wiki)
+4. **Time Tracking:** Kimai (team rates and projects)
+5. **Calendar:** Nextcloud Calendar (shared schedules)
+
+**Total Cost:** $20-50/month for a robust VPS, supporting 10+ users.
+
+## Self-Hosting vs. Cloud: Making the Right Choice
+
+The decision between self-hosting and cloud services isn't binary. Consider these factors:
+
+### Choose Self-Hosting When:
+
+- **Privacy is paramount** — Your data contains sensitive client or business information
+- **Budget is fixed** — You want predictable costs without per-seat pricing
+- **Compliance requires it** — GDPR, HIPAA, or internal policies mandate data residency
+- **You have technical capacity** — Someone can maintain the infrastructure
+- **Offline access matters** — You work in areas with unreliable connectivity
+
+### Choose Cloud When:
+
+- **Speed to start matters** — You need a solution today, not next week
+- **Team lacks technical skills** — No one to maintain servers
+- **Reliability is critical** — Uptime guarantees and professional support matter
+- **Mobile-first usage** — Some self-hosted apps have limited mobile experiences
+- **Collaboration is intense** — Real-time sync across time zones needs robust infrastructure
+
+### The Hybrid Approach
+
+Many teams use both: cloud services for collaboration-heavy tools and self-hosted solutions for personal productivity and sensitive data. Open source apps with good export features make this transition painless.
+
+## Frequently Asked Questions
+
+### What are the best open source productivity apps for developers?
+
+For developers, Open Sunsama provides the best combination of structured daily planning, time blocking, and API-first design. Pair it with Logseq for technical note-taking and Traggo for time tracking. All three are MIT or AGPL licensed, fully self-hostable, and designed with developer workflows in mind.
+
+### Is there a free open source planner that includes time blocking?
+
+Open Sunsama is currently the only fully open source daily planner with integrated time blocking. It offers drag-and-drop calendar scheduling, Pomodoro-style focus mode, and planned vs. actual time tracking—all features typically found only in paid tools like Sunsama or Motion.
+
+### How hard is it to self-host productivity apps?
+
+Most modern open source productivity apps offer Docker deployment, reducing self-hosting to a few terminal commands. Open Sunsama, Vikunja, and Traggo can all be running within 15 minutes using docker-compose. The main ongoing tasks are backups and occasional updates.
+
+### Are open source task managers as good as paid alternatives?
+
+In many cases, yes. Vikunja matches most Todoist features, WeKan replicates Trello almost exactly, and Open Sunsama provides Sunsama-quality daily planning. The main trade-off is polish—commercial apps often have more refined mobile experiences and integrations with other SaaS tools.
+
+### Can I migrate from Todoist/Asana/Notion to open source alternatives?
+
+Yes. Most open source task managers accept CSV or JSON imports. Vikunja specifically supports Todoist imports. For Notion, you'll need to export pages as markdown and reorganize into your new tool's structure. Plan for a few hours of migration work for a complete switch.
+
+### What's the difference between MIT and GPL licenses?
+
+MIT license allows you to do almost anything with the code, including using it in proprietary software. GPL licenses require that any modified versions also be open source. For end users, both provide full freedom to use and self-host. The difference matters mainly if you're building commercial products on top of the code.
+
+### Do open source productivity apps sync across devices?
+
+Yes, though the mechanism varies. Open Sunsama runs as a web app accessible from any device. Logseq and Obsidian use local files that can be synced via Syncthing, Nextcloud, or their own sync services. Vikunja offers a progressive web app that works on mobile browsers.
+
+### How do I keep my self-hosted apps secure?
+
+Essential practices include: keeping software updated, using HTTPS with valid certificates, implementing strong authentication (consider SSO or 2FA), regular backups to separate locations, and running behind a reverse proxy like Caddy or nginx. Most Docker-based deployments handle much of this automatically.
+
+## Conclusion
+
+The open source productivity ecosystem in 2026 has matured to the point where you can build a complete, professional-grade workflow without spending a dollar on software subscriptions. From task management to note-taking to time tracking, every category has capable open source options.
+
+For daily planning specifically, **Open Sunsama** stands alone as the only open source tool combining time blocking, focus mode, and the mindful planning ritual that premium tools charge $20+/month for. It's MIT licensed, Docker-deployable, and designed specifically for developers and privacy-conscious professionals.
+
+The choice is clear: your productivity data is too valuable to rent. Take ownership with open source.
+
+---
+
+Ready to reclaim your productivity stack? [Get started with Open Sunsama](/register)—the open source daily planner built for developers who value privacy, freedom, and their time.

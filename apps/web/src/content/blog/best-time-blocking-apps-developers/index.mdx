@@ -1,0 +1,374 @@
+export const frontmatter = {
+  title: "Best Time Blocking Apps for Developers in 2026 (Free & Paid)",
+  description: "Compare the top time blocking apps for developers. Find the best tool for managing coding sessions and deep work.",
+  date: "2026-02-01",
+  author: "Open Sunsama Team",
+  tags: ["developers", "time-blocking", "productivity"],
+  readingTime: 14,
+  image: "/blog-time-blocking-developers.png"
+};
+
+Software development is one of the most cognitively demanding professions. A single context switch can cost 23 minutes of refocus time. Meetings fragment your calendar into unusable 30-minute gaps. And that "quick Slack question" just derailed an hour of debugging flow state.
+
+**Time blocking isn't optional for developers—it's survival.**
+
+The right time blocking app helps you protect deep work sessions, batch meetings, and actually ship code instead of drowning in reactive busywork. But most productivity tools are built for managers, not makers. They prioritize meeting scheduling over coding sessions and lack the keyboard-centric workflows developers expect.
+
+In this guide, we'll compare the **best time blocking apps for developers in 2026**, evaluating each through the lens of what engineers actually need: keyboard shortcuts, API access, minimal UI, and deep work protection.
+
+## Why Developers Need Time Blocking (More Than Anyone)
+
+Before diving into tools, let's establish why time blocking is particularly critical for software development work.
+
+### The Context Switching Tax
+
+Research from Microsoft and the University of California shows that it takes an average of 23 minutes to fully regain focus after an interruption. For developers working on complex systems, that number can be even higher. A single Slack notification during a debugging session doesn't just cost you 5 seconds—it can cost you half an hour of productive work.
+
+Time blocking creates visual boundaries that signal "do not disturb" periods to both yourself and your team. When your calendar shows a blocked "Deep Work: API Refactor" session, colleagues are less likely to interrupt with non-urgent requests.
+
+### The Maker's Schedule vs. Manager's Schedule
+
+Paul Graham's famous essay on maker's schedule versus manager's schedule explains why developers struggle with traditional calendaring. Managers can switch contexts every 30 minutes because their work is primarily coordination. Developers need 3-4 hour uninterrupted blocks to enter flow state and produce quality code.
+
+Most productivity apps are designed for the manager's schedule. They optimize for meeting efficiency, not focus protection. A developer-friendly time blocking app understands that a 2-hour coding block interrupted by a 30-minute meeting isn't two productive hours—it's two destroyed sessions.
+
+### Meeting Overload in Remote Work
+
+The shift to remote work increased meeting time by 13% on average, with some developers reporting 60%+ of their week consumed by calls. Without intentional time blocking, your calendar becomes a game of meeting Tetris where actual coding happens in leftover scraps of time.
+
+## Quick Comparison: Best Time Blocking Apps for Developers
+
+| App | Price | Keyboard Shortcuts | API/CLI | GitHub/Linear Integration | Open Source | Best For |
+|-----|-------|-------------------|---------|--------------------------|-------------|----------|
+| **Open Sunsama** | Free | ✅ Extensive | ✅ Full API + MCP | 🔜 Planned | ✅ Yes | Budget-conscious devs |
+| **Sunsama** | $20/mo | ✅ Good | ❌ No | ✅ Both | ❌ No | Premium integrations |
+| **Motion** | $19/mo | ⚠️ Basic | ❌ No | ❌ No | ❌ No | AI scheduling |
+| **Toggl Track** | $0-18/mo | ✅ Good | ✅ Full API | ✅ GitHub | ❌ No | Time tracking focus |
+| **Clockwise** | $0-15/mo | ⚠️ Limited | ✅ API | ❌ No | ❌ No | Calendar optimization |
+| **Akiflow** | $15/mo | ✅ Excellent | ⚠️ Limited | ✅ Linear | ❌ No | Power users |
+| **Morgen** | $0-14/mo | ✅ Good | ❌ No | ❌ No | ❌ No | Calendar unification |
+| **TickTick** | $0-36/yr | ⚠️ Basic | ❌ No | ❌ No | ❌ No | Simple option |
+
+Now let's examine each tool in detail through a developer's lens.
+
+## 1. Open Sunsama – The Free, Open-Source Developer Productivity App
+
+**Price: Free forever | Open source | Self-hostable**
+
+Open Sunsama is a free, open-source daily planner built with developers in mind. While it serves anyone who wants intentional time management, the architecture reflects developer values: clean codebase, full API access, keyboard-first navigation, and the transparency that comes with open source.
+
+### Developer-Focused Features
+
+**Command Palette (Cmd+K)**: Navigate the entire app without touching your mouse. Create tasks, switch views, jump to dates—all from the keyboard. If you've used VS Code's command palette, you'll feel right at home.
+
+**Full REST API**: Unlike most productivity apps that lock programmatic access behind enterprise tiers, Open Sunsama provides a complete API for free. Build custom integrations, automate task creation from CI/CD pipelines, or sync with your personal tools.
+
+**MCP Server Integration**: Open Sunsama includes a Model Context Protocol (MCP) server, making it compatible with AI assistants like Claude and Cursor. Ask your AI to create time blocks, schedule tasks, or review your daily plan—all through natural conversation.
+
+**Focus Mode**: Enter a distraction-free environment for deep work. The task expands to fill your screen, an optional timer tracks your session, and everything else fades away. It's the closest thing to IDE zen mode for productivity.
+
+**Self-Hosting**: Run Open Sunsama on your own infrastructure. For developers at companies with strict data policies, or anyone who prefers complete control, self-hosting means your task data never touches third-party servers.
+
+### Why Open Source Matters for Developers
+
+Being open source isn't just a pricing advantage—it's a trust signal. You can:
+
+- **Audit the code**: Verify exactly how your data is stored and processed
+- **Contribute features**: Submit PRs for integrations you need
+- **Fork and customize**: Build internal tools on top of the codebase
+- **Learn from the implementation**: Study how a modern TypeScript app is architected
+
+The stack (React, Hono, PostgreSQL, Drizzle ORM) uses the same technologies many developers work with daily.
+
+### Pricing
+
+Free. Forever. No premium tier, no feature gating, no "contact sales" for API access.
+
+**Try it free**: [Get started with Open Sunsama](/register)
+
+## 2. Sunsama – The Premium Developer Productivity App
+
+**Price: $20/month ($240/year)**
+
+Sunsama is the original inspiration for Open Sunsama and remains one of the most polished daily planning tools available. Its deep integrations with developer tools like Linear, GitHub, and Jira make it a strong choice for engineers willing to pay for premium features.
+
+### Developer-Focused Features
+
+**Linear and GitHub Integration**: Pull issues directly into your daily plan. When you complete a task in Sunsama, it updates the status in Linear or closes the GitHub issue. This bidirectional sync eliminates the overhead of maintaining multiple systems.
+
+**Daily Planning Ritual**: The guided morning planning session forces you to be intentional about the day ahead. Review yesterday's carryover, estimate time for today's tasks, and create a realistic plan before diving into code.
+
+**Timeboxing**: Drag tasks onto your calendar to create focused work sessions. Sunsama calculates whether your plan is realistic based on available calendar time and task estimates.
+
+### Limitations
+
+- No API access for personal automation
+- Not self-hostable
+- $240/year adds up, especially for individual developers
+
+### Who It's Best For
+
+Developers at well-funded startups or enterprises where the company pays for productivity tools. The Linear integration alone can justify the cost if you're already embedded in that ecosystem.
+
+## 3. Motion – AI Scheduling for Developers
+
+**Price: $19/month ($228/year)**
+
+Motion takes a different approach: instead of manually time blocking, you tell the AI what you need to do, and it schedules everything automatically. The algorithm considers deadlines, priorities, and meeting conflicts to create an "optimal" schedule.
+
+### Developer-Focused Features
+
+**Automatic Scheduling**: Add a task like "Review PR #847 - 1 hour" and Motion finds the best slot in your calendar. When meetings get added, it automatically reschedules your tasks around them.
+
+**Deadline Intelligence**: Motion prioritizes tasks approaching deadlines and warns you when your workload exceeds available time.
+
+**Meeting Protection**: Configure "focus time" rules and Motion will cluster meetings together, leaving contiguous blocks for coding.
+
+### Limitations
+
+For developers, Motion's AI-first approach has drawbacks:
+
+- **Loss of intentionality**: You might plan to tackle a complex bug in the morning when you're fresh, but Motion moves it to 4 PM because a meeting appeared
+- **No API or CLI**: Can't integrate with development workflows
+- **Limited keyboard navigation**: The UI is mouse-heavy
+- **No dev tool integrations**: Doesn't connect to GitHub, Linear, or Jira
+
+### Who It's Best For
+
+Developers who want to fully outsource scheduling decisions. If you trust AI to manage your time and prefer optimization over control, Motion can reduce planning overhead.
+
+## 4. Toggl Track – Time Tracking Focus for Developers
+
+**Price: Free tier | Premium: $18/user/month**
+
+Toggl Track is primarily a time tracking tool, but its time blocking features make it useful for developers who need to track billable hours or analyze how they spend time.
+
+### Developer-Focused Features
+
+**Full REST API**: Toggl's API is robust and well-documented. Automate time entry creation, pull reports programmatically, and build custom dashboards.
+
+**GitHub Integration**: Track time spent on specific repositories and issues. Some teams use Toggl to correlate coding time with sprint velocity.
+
+**Browser Extension**: Start timers without leaving your browser. The extension detects URLs and can automatically suggest projects based on the GitHub repo you're viewing.
+
+**Desktop App**: Native apps for macOS, Windows, and Linux with idle detection—useful for tracking actual coding time versus meetings.
+
+### Limitations
+
+- **Not a planner**: Toggl tracks time retroactively but doesn't help you plan the day ahead
+- **No focus mode or daily rituals**: Missing the intentional planning features of dedicated daily planners
+- **Reporting focus**: Built more for billing than productivity optimization
+
+### Who It's Best For
+
+Freelance developers billing by the hour, or team leads who need to report time allocation across projects. Pairs well with a separate planning tool.
+
+## 5. Clockwise – Calendar Optimization for Developers
+
+**Price: Free tier | Premium: $15/user/month**
+
+Clockwise focuses specifically on calendar optimization. It analyzes your schedule and automatically moves flexible meetings to create larger blocks of focus time.
+
+### Developer-Focused Features
+
+**Focus Time Protection**: Clockwise identifies fragmented calendar days and suggests moving flexible meetings (like 1:1s with reports) to consolidate free time.
+
+**Team Sync**: When your entire team uses Clockwise, it optimizes across everyone's calendars to find meeting times that minimize collective fragmentation.
+
+**Calendar Analytics**: See how much focus time you actually get each week, track meeting load over time, and identify scheduling patterns.
+
+**API Access**: Basic API for reading calendar analytics and scheduling preferences.
+
+### Limitations
+
+- **Google Calendar only**: No support for Outlook or iCloud
+- **Calendar-only**: Doesn't handle task management or time blocking
+- **Limited individual value**: Works best when adopted team-wide
+- **No dev tool integrations**: Purely calendar-focused
+
+### Who It's Best For
+
+Developers on teams with meeting-heavy cultures where collective calendar optimization would create significant focus time gains. Less useful for individuals or teams already disciplined about meeting schedules.
+
+## 6. Akiflow – Power User Time Blocking for Programmers
+
+**Price: $15/month ($180/year)**
+
+Akiflow targets power users who want deep keyboard control and extensive capture capabilities. Its design philosophy aligns well with developer expectations.
+
+### Developer-Focused Features
+
+**Keyboard-First Design**: Akiflow was built for users who never want to touch a mouse. Everything from task creation to scheduling to navigation works from the keyboard.
+
+**Universal Capture**: Quick entry from anywhere on your system, similar to Raycast or Alfred. Capture a task idea while debugging without leaving your IDE.
+
+**Linear Integration**: Two-way sync with Linear issues. Create time blocks for sprint tasks and see updates reflected in both systems.
+
+**Consolidated Inbox**: Pull tasks from email, Slack, and other sources into a single inbox for processing during your daily planning session.
+
+### Limitations
+
+- **No API access**: Despite the power-user focus, there's no programmatic access
+- **Not open source**: Can't self-host or audit the code
+- **Premium only**: No free tier to evaluate before committing
+
+### Who It's Best For
+
+Developers who prioritize keyboard efficiency and already use Linear. The $15/month price is reasonable if the workflow matches your needs.
+
+## 7. Morgen – Calendar Unification for Developers
+
+**Price: Free tier | Premium: $14/month ($168/year)**
+
+Morgen solves the multi-calendar problem by unifying Google, Outlook, and iCloud calendars into a single view. For developers juggling personal and work schedules, this consolidation alone provides value.
+
+### Developer-Focused Features
+
+**Multi-Calendar Support**: See all your calendars in one place with true read/write access. Book personal appointments around work meetings without switching apps.
+
+**Scheduling Links**: Share availability across all calendars for meeting booking. Useful for external calls without exposing your full schedule.
+
+**Keyboard Shortcuts**: Navigate calendars and create events without mouse interaction.
+
+**Cross-Platform**: Native apps for macOS, Windows, Linux, iOS, and Android.
+
+### Limitations
+
+- **Calendar-focused**: Task management is basic; this isn't a daily planner
+- **No API**: Can't automate scheduling or pull data programmatically
+- **No dev tool integrations**: Doesn't connect to GitHub, Linear, or issue trackers
+
+### Who It's Best For
+
+Developers whose primary pain is calendar fragmentation across multiple accounts. Use Morgen for calendar consolidation and pair with a separate task management tool.
+
+## 8. TickTick – Simple Coding Time Management
+
+**Price: Free tier | Premium: $35.99/year**
+
+TickTick offers the simplest entry point for developers who just want basic task management with calendar integration. It lacks developer-specific features but works reliably for straightforward needs.
+
+### Features
+
+**Pomodoro Timer**: Built-in focus timer for those who prefer time-boxed work sessions.
+
+**Calendar View**: See tasks alongside calendar events. Premium unlocks full Google Calendar sync.
+
+**Habit Tracking**: Track coding habits like daily commits, exercise, or learning time.
+
+**Cross-Platform**: Apps for every platform ensure capture from anywhere.
+
+### Limitations
+
+- **No API or keyboard focus**: Built for general consumers, not developers
+- **Limited integrations**: No GitHub, Linear, or dev tool connections
+- **Premium gates key features**: Calendar sync requires the paid tier
+
+### Who It's Best For
+
+Developers who want something simple that just works. If you don't need API access, deep integrations, or extensive keyboard shortcuts, TickTick's simplicity is a feature.
+
+## Developer-Specific Criteria: What Really Matters
+
+When evaluating time blocking apps as a developer, prioritize these factors:
+
+### 1. Keyboard Shortcuts
+
+Every second spent clicking menus is a second not coding. The best developer productivity apps provide extensive keyboard navigation—command palettes, vim-style bindings, or at minimum, shortcuts for common actions.
+
+### 2. API/CLI Access
+
+Developers automate everything. An app without API access can't integrate with your existing workflows, CI/CD pipelines, or personal tools. The best options provide full REST APIs; Open Sunsama goes further with MCP integration for AI assistants.
+
+### 3. Deep Work Protection
+
+Features that help you protect focus time matter more than features that help you schedule meetings. Look for focus modes, meeting-free time blocks, and calendar analytics showing actual deep work hours.
+
+### 4. Integration with Dev Tools
+
+GitHub, Linear, Jira—your tasks already live in these systems. The best time blocking apps pull from these sources rather than requiring duplicate entry.
+
+### 5. Minimal, Fast UI
+
+Developer tools should be fast. If the app lags when switching views or creating tasks, you'll unconsciously avoid using it. Electron apps and heavy web apps often suffer here; native apps and lean web apps perform better.
+
+## Best Time Blocking App by Developer Type
+
+### For Freelance Developers
+
+**Best Pick: Open Sunsama + Toggl Track**
+
+Freelancers need time tracking for billing and task management for organization. Open Sunsama's free tier handles planning, while Toggl Track captures billable hours. Both offer APIs for custom integrations.
+
+### For Startup Developers
+
+**Best Pick: Open Sunsama or Sunsama**
+
+Startups move fast and often can't justify per-seat enterprise pricing. Open Sunsama provides full functionality for free. If your company uses Linear and will pay for tools, Sunsama's integration makes it worthwhile.
+
+### For Enterprise Developers
+
+**Best Pick: Sunsama or Akiflow + Clockwise**
+
+Enterprise developers often face meeting overload. Clockwise helps team-wide, while Sunsama or Akiflow handle individual time blocking with integrations that work within corporate tool stacks.
+
+### For Open Source Contributors
+
+**Best Pick: Open Sunsama**
+
+If you value open source, using an open-source productivity tool is consistent with your values. Plus, you can contribute features you need.
+
+## Frequently Asked Questions
+
+### What is the best time blocking app for developers?
+
+For most developers, **Open Sunsama** offers the best combination of features, price (free), and developer-friendly design (open source, full API, keyboard-first). If budget isn't a concern and you need Linear/GitHub integration, Sunsama is the premium choice.
+
+### Is time blocking effective for programming?
+
+Yes. Time blocking is particularly effective for programming because it creates dedicated deep work periods essential for complex problem-solving. Studies show developers need 15+ minutes to reach flow state, and time blocking protects these periods from interruption.
+
+### How do I block time for coding as a developer?
+
+Start by identifying your peak cognitive hours (usually morning for most people). Block 2-4 hour sessions during these times for complex coding work. Schedule meetings in batches during lower-energy periods. Use a time blocking app to visualize and protect these blocks.
+
+### Can I use time blocking with Agile/Scrum?
+
+Absolutely. Time blocking complements Agile by helping you schedule sprint tasks realistically. Block time for story points, estimate more accurately based on actual calendar availability, and protect time for technical debt work that often gets deprioritized.
+
+### What's the difference between time blocking and time tracking?
+
+Time blocking is planning: deciding in advance how you'll spend your time. Time tracking is recording: documenting how you actually spent your time. The best workflow combines both—block time proactively, then track actual execution to improve estimates.
+
+### How much time should developers block for deep work?
+
+Research suggests knowledge workers need at least 4 hours of uninterrupted focus time daily for optimal productivity. Developers working on complex systems often need more. Start with two 2-hour blocks and adjust based on your results.
+
+### Are there any free time blocking apps for developers?
+
+**Open Sunsama** is the only fully-featured time blocking app that's completely free with no feature limitations. Other apps offer limited free tiers (Toggl Track, Clockwise, Morgen) but gate essential features behind premium subscriptions.
+
+### Can I self-host a time blocking app?
+
+Open Sunsama is the only time blocking app that supports self-hosting. Run it on your own servers using Docker for complete data sovereignty—critical for some enterprises and privacy-conscious developers.
+
+## Conclusion: Open Sunsama is the Best Free Time Blocking App for Developers
+
+Time blocking transforms how developers work. Instead of reacting to whatever demands attention, you proactively design your day around deep work. The right tool makes this practice sustainable.
+
+For developers, **Open Sunsama stands out as the best overall choice**:
+
+- **Free forever** with no feature limitations
+- **Open source** for transparency and customization
+- **Full API + MCP server** for programmatic access
+- **Keyboard-first design** with command palette
+- **Focus mode** for distraction-free deep work
+- **Self-hostable** for complete data control
+
+Whether you're a freelancer tracking billable hours, a startup engineer shipping features, or an enterprise developer fighting meeting overload, Open Sunsama provides the time blocking foundation you need—without the $200+/year subscription that other premium tools demand.
+
+The best productivity tool is one you'll actually use. When it's free, aligns with developer values, and provides full programmatic access, there's no barrier to getting started.
+
+---
+
+Ready to protect your deep work and ship more code? [Try Open Sunsama free](/register) and discover what intentional time blocking can do for your development workflow.

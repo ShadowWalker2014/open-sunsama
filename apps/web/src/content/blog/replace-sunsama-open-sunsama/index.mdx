@@ -1,0 +1,352 @@
+export const frontmatter = {
+  title: "How to Replace Sunsama with Open Sunsama (Save $240/Year)",
+  description: "Complete guide to switching from Sunsama to Open Sunsama. Get the same features for free with this open-source alternative.",
+  date: "2026-02-01",
+  author: "Open Sunsama Team",
+  tags: ["migration", "sunsama", "open-source"],
+  readingTime: 11,
+  image: "/blog-replace-sunsama.png"
+};
+
+You've been using Sunsama, and you love it. The calm interface, the daily planning ritual, the satisfying way tasks slide onto your calendar as time blocks. Sunsama transformed how you approach your workday, bringing intentionality to what used to be chaos.
+
+But there's one thing you don't love: **the $240 per year price tag**.
+
+That's $20 every month for a task manager. Over five years, you'll spend $1,200. And while Sunsama delivers value, you can't help wondering: is there a **Sunsama free alternative** that offers the same experience without the recurring cost?
+
+The answer is yes. Open Sunsama is a free, open-source daily planner built on the same philosophy as Sunsama—intentional daily planning, time blocking, and calm productivity—without the premium subscription. In this guide, we'll walk you through exactly how to replace Sunsama with Open Sunsama, what you'll gain, what's different, and how to make the transition seamless.
+
+## Why Users Cancel Sunsama
+
+Before diving into the replacement process, let's acknowledge why you might be looking for an alternative. Sunsama is genuinely excellent software, but several factors drive users to seek alternatives:
+
+### The Cost Adds Up
+
+At $20/month or $240/year, Sunsama is one of the most expensive personal productivity tools on the market. For comparison, Todoist Premium costs $48/year, and TickTick Premium is $36/year. When you're paying Sunsama's price for a single-user tool, you start questioning the value proposition.
+
+For freelancers, students, and anyone budget-conscious, **Sunsama is too expensive** to justify indefinitely—even if the product is wonderful. The daily planning methodology works, but the methodology doesn't require paying $240/year.
+
+### Vendor Lock-In Concerns
+
+With proprietary software, your workflow depends entirely on the company's continued existence and goodwill. What happens if Sunsama raises prices? Gets acquired? Pivots to enterprise-only? Shuts down? Your carefully built productivity system disappears.
+
+An **open source Sunsama** alternative eliminates this risk. Even if the hosted service goes away, the code remains available. You can run your own instance indefinitely.
+
+### Privacy and Data Control
+
+Every task you create in Sunsama lives on their servers. You're trusting them with intimate details of your work and life—your projects, your priorities, your daily plans. For privacy-conscious users and organizations with data sovereignty requirements, this is uncomfortable.
+
+Self-hosting an open-source alternative means your productivity data never leaves your infrastructure.
+
+## What You're NOT Losing
+
+The biggest concern when switching from Sunsama to any alternative is feature parity. Will you lose the workflow you've come to depend on? Here's the honest comparison:
+
+| Feature | Sunsama | Open Sunsama |
+|---------|---------|--------------|
+| **Daily Planning Ritual** | ✅ Guided shutdown/planning | ✅ Kanban + timeline view |
+| **Time Blocking** | ✅ Native drag-and-drop | ✅ Native drag-and-drop |
+| **Google Calendar Sync** | ✅ Two-way sync | ✅ Two-way sync |
+| **Outlook Calendar Sync** | ✅ Two-way sync | ✅ Two-way sync |
+| **iCloud Calendar Sync** | ❌ Not supported | ✅ Two-way sync |
+| **Focus Mode** | ✅ Built-in | ✅ Built-in with timer |
+| **Task Priorities** | ✅ High/Medium/Low | ✅ P0-P3 system |
+| **Subtasks** | ✅ Unlimited | ✅ Unlimited |
+| **Rich Text Notes** | ✅ Markdown support | ✅ Tiptap editor |
+| **Desktop App** | ✅ Electron | ✅ Tauri (lighter) |
+| **Mobile Apps** | ✅ iOS + Android | ✅ iOS + Android |
+| **Command Palette** | ✅ Quick actions | ✅ Cmd/Ctrl + K |
+| **Dark Mode** | ✅ Yes | ✅ Yes |
+| **Recurring Tasks** | ✅ Yes | ✅ Yes |
+| **Time Estimates** | ✅ Task duration | ✅ Task duration |
+| **Task Rollover** | ✅ Automatic | ✅ Automatic |
+| **Price** | $240/year | **Free** |
+
+The core workflow—planning your day, time blocking tasks, focusing on one thing at a time, reviewing your progress—works identically in both tools. You're not losing the methodology that made Sunsama valuable.
+
+## What You're Gaining
+
+Switching to Open Sunsama isn't just about saving money. You're gaining significant benefits that closed-source software can never offer:
+
+### Complete Transparency
+
+Open Sunsama's code is publicly available on GitHub. You can inspect exactly how your data is stored, processed, and transmitted. There are no dark patterns, no hidden tracking, no mysterious "product improvements" that compromise your privacy. What you see is what you get.
+
+### Self-Hosting Freedom
+
+Want your productivity data to live on your own servers? With Open Sunsama, you can. Docker images and deployment documentation make self-hosting accessible to anyone with basic server administration knowledge. Your tasks, time blocks, and planning history stay within your infrastructure.
+
+### No Vendor Lock-In
+
+Even if the Open Sunsama project were abandoned tomorrow (it won't be), you'd retain access to the source code forever. Fork it, run your own version, modify it for your needs. The productivity system you build is truly yours.
+
+### Community-Driven Development
+
+Open source projects evolve based on actual user needs rather than investor pressures. Feature requests, bug reports, and contributions come from people who use the software daily. There's no product manager deciding to pivot toward enterprise sales and abandon individual users.
+
+### API and MCP Integration
+
+Open Sunsama includes a full REST API and an MCP (Model Context Protocol) server for AI agents. Want to automate task creation from your calendar? Build a custom integration with your project management tool? Have Claude manage your daily planning? The tools are there.
+
+### Lighter Desktop App
+
+Sunsama's desktop app uses Electron, which bundles an entire Chromium browser and consumes significant memory. Open Sunsama's desktop app uses Tauri, which leverages your system's native webview. The result: dramatically smaller app size and lower resource usage.
+
+## Step-by-Step Replacement Guide
+
+Ready to make the switch? Here's exactly how to replace Sunsama with Open Sunsama.
+
+### Step 1: Export Your Sunsama Data
+
+Before leaving any service, it's wise to export your data. Sunsama allows data export through their settings:
+
+1. Log into Sunsama at sunsama.com
+2. Click your profile icon in the top-right corner
+3. Navigate to **Settings** → **Account**
+4. Look for **Export Data** or **Download Data**
+5. Request and download your task history
+
+This export serves as a backup and reference during your transition. Since both apps sync with your calendar, your time blocks will appear automatically once you connect your calendars to Open Sunsama.
+
+### Step 2: Create Your Free Open Sunsama Account
+
+Setting up Open Sunsama takes less than a minute:
+
+1. Visit [opensunsama.com/register](/register)
+2. Create an account with your email address
+3. Complete the brief onboarding flow
+4. You'll arrive at your daily planning dashboard
+
+The interface will feel familiar if you're coming from Sunsama. The left panel shows your task list organized by day, and the right side displays your timeline with calendar events and time blocks.
+
+### Step 3: Connect Your Calendars
+
+Calendar integration is the foundation of time blocking. Open Sunsama supports:
+
+- **Google Calendar**: Full two-way sync
+- **Microsoft Outlook**: Full two-way sync  
+- **Apple iCloud Calendar**: Full two-way sync
+
+To connect your calendar:
+
+1. Click **Settings** in the sidebar (gear icon)
+2. Navigate to **Calendar Accounts**
+3. Click **Add Calendar** and select your provider
+4. Authorize Open Sunsama to access your calendar
+5. Choose which calendars to sync (personal, work, etc.)
+
+Once connected, your existing meetings and events appear on the timeline. Any time blocks you create in Open Sunsama will sync back to your calendar, just like they did in Sunsama.
+
+**Pro tip**: If you were syncing Sunsama with your calendar, your existing time blocks may already appear as calendar events. These will show up automatically in Open Sunsama.
+
+### Step 4: Recreate Your Daily Planning Workflow
+
+Now comes the important part: setting up your workflow. Here's how to replicate your Sunsama habits in Open Sunsama:
+
+**Morning Planning**:
+
+1. Open Open Sunsama at the start of your workday
+2. Review the tasks in your "Today" column
+3. Check your calendar events on the timeline
+4. Drag tasks onto the timeline to create time blocks
+5. Adjust block durations by dragging the edges
+6. Ensure you're not overcommitting—be realistic about available time
+
+**During Work**:
+
+1. When it's time for a time block, click the task
+2. Enter **Focus Mode** to eliminate distractions
+3. The timer tracks your actual time spent
+4. Complete subtasks as you work through the task
+5. Mark the task complete when finished
+
+**End of Day**:
+
+1. Review what you completed
+2. Move incomplete tasks to tomorrow
+3. Add any new tasks that emerged
+4. Clear your mind knowing tomorrow is planned
+
+This ritual mirrors Sunsama's shutdown flow. The specific UI elements differ, but the core practice—intentional planning, focused execution, mindful review—transfers directly.
+
+### Step 5: Set Up Focus Mode and Preferences
+
+Open Sunsama's focus mode is designed for deep work:
+
+1. Click any task to open its detail view
+2. Click the **Focus** button (or use keyboard shortcut)
+3. The task expands to fill your screen
+4. A timer begins tracking your time
+5. Work until complete or until you need a break
+6. Press **Escape** or click **Exit Focus** when done
+
+Customize your experience in Settings:
+
+- **Theme**: Light or dark mode
+- **Default task duration**: How long time blocks default to
+- **Calendar visibility**: Which calendars show on your timeline
+- **Notifications**: Reminders for upcoming time blocks
+- **Keyboard shortcuts**: Customize for your workflow
+
+## Feature Mapping: Sunsama → Open Sunsama
+
+Wondering where your favorite Sunsama features live in Open Sunsama? Here's the complete mapping:
+
+| Sunsama Feature | Open Sunsama Equivalent |
+|-----------------|------------------------|
+| Daily Focus (Shutdown) | Evening review (manual) |
+| Channels | Task notes + subtasks |
+| Time blocking | Drag to timeline |
+| Task list | Kanban columns (Today, Tomorrow, Future) |
+| Integrations (Linear, Asana, etc.) | API + MCP server for custom integrations |
+| Keyboard shortcuts | Command palette (Cmd/Ctrl + K) |
+| Weekly planning | Week view (timeline) |
+| Time estimates | Duration field on tasks |
+| Recurring tasks | Recurrence settings |
+| Task priorities | P0-P3 priority levels |
+| Daily planning ritual | Morning planning in kanban view |
+
+The main difference is that Sunsama has more built-in third-party integrations, while Open Sunsama provides APIs for building custom connections. For most users, calendar sync is the critical integration, and that works identically.
+
+## What's Different: An Honest Comparison
+
+We believe in transparency, so here's what's genuinely different between Sunsama and Open Sunsama:
+
+### Integrations
+
+**Sunsama** offers direct integrations with Todoist, Asana, Trello, Jira, Linear, GitHub Issues, Notion, and more. You can pull tasks from these tools directly into your daily view.
+
+**Open Sunsama** focuses on calendar integration and provides an API/MCP server for building custom integrations. If you heavily rely on pulling tasks from project management tools, you'll need to create those tasks manually in Open Sunsama or build an integration using the API.
+
+### Guided Onboarding
+
+**Sunsama** has a more elaborate onboarding flow with tutorial videos and guided setup for the daily planning ritual.
+
+**Open Sunsama** assumes familiarity with time blocking concepts and provides a simpler onboarding. If you're new to daily planning, consider reading through documentation or blog posts before diving in.
+
+### Polish and Animation
+
+**Sunsama** has years of design refinement with smooth animations, micro-interactions, and delightful details that come from significant investment in UX.
+
+**Open Sunsama** prioritizes functionality over polish. The interface is clean and effective, but you won't find the same level of animation finesse. This is common in open-source projects—function first, form second.
+
+### Support
+
+**Sunsama** offers email support with typically fast response times. You're paying for that service.
+
+**Open Sunsama** support comes through GitHub issues and community forums. Response times vary based on contributor availability.
+
+### Team Features
+
+**Sunsama** supports team workspaces where you can see colleagues' availability.
+
+**Open Sunsama** currently focuses on individual productivity. Team features are on the roadmap but not yet available.
+
+## Self-Hosting for Power Users
+
+One of Open Sunsama's killer features is the ability to run your own instance. Here's a brief overview for technical users:
+
+### Requirements
+
+- A server (VPS, cloud instance, or local machine)
+- Docker and Docker Compose installed
+- PostgreSQL database
+- Domain name (optional but recommended)
+
+### Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/opensunsama/opensunsama.git
+cd opensunsama
+
+# Copy environment template
+cp .env.example .env
+
+# Edit .env with your database URL, JWT secret, etc.
+nano .env
+
+# Start with Docker Compose
+docker-compose up -d
+```
+
+### Benefits of Self-Hosting
+
+- **Data sovereignty**: Your tasks never leave your infrastructure
+- **Customization**: Modify the code for your specific needs
+- **No usage limits**: Add as many users as you want
+- **Offline operation**: Works without internet (sync when connected)
+
+### When to Self-Host
+
+Self-hosting makes sense if:
+
+- Your organization has data residency requirements
+- You're extremely privacy-conscious
+- You want to customize the application
+- You enjoy running your own infrastructure
+
+For most users, the hosted version at opensunsama.com is easier and still completely free.
+
+## Frequently Asked Questions
+
+### Is Open Sunsama really a good Sunsama free alternative?
+
+Yes. Open Sunsama was built specifically for users who love Sunsama's approach but can't or won't pay $240/year. The core functionality—daily planning, time blocking, focus mode, calendar sync—works identically. You're trading some polish and third-party integrations for complete freedom and zero cost.
+
+### How long does it take to replace Sunsama with Open Sunsama?
+
+Initial setup takes 15-30 minutes: creating an account, connecting calendars, and familiarizing yourself with the interface. Since both apps work similarly, there's no significant learning curve. You can be fully productive on day one.
+
+### Will I lose my Sunsama data when I cancel?
+
+Export your data before canceling your Sunsama subscription. Your time blocks that synced to your calendar will appear in Open Sunsama automatically once you connect the same calendar. Tasks don't transfer directly, but if your workflow is healthy, you're only dealing with this week's tasks anyway.
+
+### Can I cancel Sunsama mid-subscription?
+
+Check Sunsama's cancellation policy. Most subscription services allow cancellation but don't provide prorated refunds. You'll retain access until the end of your billing period. Use that time to run both tools in parallel and ensure Open Sunsama meets your needs before fully committing.
+
+### Is Open Sunsama too expensive? Wait, it's free?
+
+Correct—Open Sunsama is completely free. There's no premium tier, no artificial limitations, no trial period. The project is maintained by the community with optional sponsorships from users who want to support development.
+
+### Can I use Open Sunsama with my existing Google Calendar?
+
+Absolutely. Open Sunsama offers full two-way sync with Google Calendar. Events you create in Google appear on your Open Sunsama timeline, and time blocks you create in Open Sunsama appear in Google Calendar.
+
+### Does Open Sunsama have a mobile app?
+
+Yes. Open Sunsama has mobile apps for iOS and Android built with Expo React Native. You can view your schedule, add tasks, and check off completed items. Time blocking is optimized for desktop use, but mobile works for quick updates on the go.
+
+### How does Open Sunsama make money if it's free?
+
+Open Sunsama is a community-driven open-source project. Operating costs are minimal due to efficient architecture. The project accepts sponsorships from users and organizations who benefit from the software and want to ensure its continued development.
+
+### Is it hard to self-host Open Sunsama?
+
+Self-hosting requires basic familiarity with Docker, environment variables, and server administration. If you've ever deployed a web application, you can self-host Open Sunsama. If "Docker" sounds intimidating, just use the hosted version—it's equally free.
+
+### What happens if Open Sunsama shuts down?
+
+The source code is publicly available under an open-source license. Even if the hosted service disappears, you can run your own instance forever. This is the fundamental advantage of open-source software over proprietary alternatives.
+
+## Conclusion: Take Control of Your Productivity
+
+Sunsama pioneered a beautiful approach to daily planning. The calm interface, the intentional workflow, the focus on what matters today—these ideas changed how thousands of people work. But there's no reason to pay $240/year for a philosophy that should be accessible to everyone.
+
+Open Sunsama captures everything valuable about Sunsama's approach while adding the benefits of open source: transparency, control, community-driven development, and freedom from vendor lock-in. You keep the workflow that works. You lose the subscription that drains your wallet.
+
+Making the switch is straightforward:
+
+1. Export your Sunsama data as a backup
+2. Create a free Open Sunsama account
+3. Connect your calendars
+4. Continue your daily planning practice
+
+The methodology that made Sunsama valuable doesn't live in Sunsama's servers—it lives in your habits. Those habits transfer to Open Sunsama effortlessly.
+
+Whether you're looking for a **Sunsama free alternative** because of cost, privacy concerns, or simply the principle of owning your productivity system, Open Sunsama delivers. Same philosophy. Same workflow. Zero subscription.
+
+---
+
+Ready to replace Sunsama and save $240/year? [Create your free Open Sunsama account](/register) and experience open-source daily planning today. Your productivity shouldn't come with a monthly bill.
