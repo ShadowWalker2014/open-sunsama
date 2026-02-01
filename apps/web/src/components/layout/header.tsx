@@ -10,6 +10,7 @@ import {
   Moon,
   Sun,
   User,
+  Download,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSearch } from "@/hooks/useSearch";
@@ -33,10 +34,16 @@ interface HeaderProps {
   className?: string;
 }
 
+// Check if running in Tauri desktop app
+function isTauriApp(): boolean {
+  return typeof window !== "undefined" && "__TAURI__" in window;
+}
+
 export function Header({ className }: HeaderProps) {
   const { user, logout } = useAuth();
   const { openSearch } = useSearch();
   const { themeMode, setThemeMode } = useTheme();
+  const isDesktopApp = React.useMemo(() => isTauriApp(), []);
 
   const userInitials = React.useMemo(() => {
     if (!user?.name) return user?.email?.charAt(0).toUpperCase() ?? "U";
@@ -176,6 +183,14 @@ export function Header({ className }: HeaderProps) {
                   Settings
                 </a>
               </DropdownMenuItem>
+              {!isDesktopApp && (
+                <DropdownMenuItem asChild className="text-[13px] py-1.5">
+                  <a href="/download" className="w-full cursor-pointer">
+                    <Download className="mr-2 h-3.5 w-3.5" />
+                    Download Desktop App
+                  </a>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="cursor-pointer text-destructive focus:text-destructive text-[13px] py-1.5"
