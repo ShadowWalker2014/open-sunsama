@@ -171,6 +171,20 @@ Quick reference:
 - **Downloads page:** https://opensunsama.com/download
 - **Platforms:** macOS (arm64/x64), Windows, Linux
 
+### macOS Code Signing
+
+**Apple Developer Account:** Circo, Inc.
+**Team ID:** `DQVMM49PG9`
+**Apple ID:** `kai.jiabo.feng@gmail.com`
+
+GitHub Secrets required for signing:
+- `APPLE_CERTIFICATE` - Base64-encoded .p12 certificate
+- `APPLE_CERTIFICATE_PASSWORD` - Password for .p12
+- `KEYCHAIN_PASSWORD` - Random string for CI keychain
+- `APPLE_ID` - Apple Developer email
+- `APPLE_PASSWORD` - App-specific password (from appleid.apple.com)
+- `APPLE_TEAM_ID` - `DQVMM49PG9`
+
 ---
 
 ## Railway Debugging
