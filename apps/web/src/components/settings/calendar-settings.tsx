@@ -1,6 +1,5 @@
 import * as React from "react";
 import { Loader2, Plus } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
@@ -16,7 +15,6 @@ import {
   useSyncAccount,
   useUpdateCalendar,
   useInitiateOAuth,
-  calendarKeys,
   type Calendar,
 } from "@/hooks/useCalendars";
 import { ICloudConnectDialog } from "./icloud-connect-dialog";
@@ -32,24 +30,6 @@ export function CalendarSettings() {
   const [iCloudDialogOpen, setICloudDialogOpen] = React.useState(false);
   const [removeDialogOpen, setRemoveDialogOpen] = React.useState(false);
   const [accountToRemove, setAccountToRemove] = React.useState<Parameters<typeof RemoveAccountDialog>[0]["account"]>(null);
-  const queryClient = useQueryClient();
-
-  // Handle OAuth redirect - detect ?calendar=connected and force refetch data
-  React.useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("calendar") === "connected") {
-      // Force refetch calendar queries (not just invalidate, which respects staleTime)
-      // This ensures fresh data is fetched immediately after OAuth redirect
-      queryClient.refetchQueries({ queryKey: calendarKeys.accounts() });
-      queryClient.refetchQueries({ queryKey: calendarKeys.calendars() });
-
-      // Clean up URL params to avoid re-triggering on navigation
-      const url = new URL(window.location.href);
-      url.searchParams.delete("calendar");
-      url.searchParams.delete("provider");
-      window.history.replaceState({}, "", url.pathname);
-    }
-  }, [queryClient]);
 
   const { data: accounts, isLoading: isLoadingAccounts } = useCalendarAccounts();
   const { data: calendars, isLoading: isLoadingCalendars } = useCalendars();

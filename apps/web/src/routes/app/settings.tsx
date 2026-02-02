@@ -1,7 +1,9 @@
 import * as React from "react";
 import { User, Lock, Palette, Bell, Key, ListTodo, Terminal, ChevronRight, CalendarDays, Monitor } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { calendarKeys } from "@/hooks/useCalendars";
 import {
   Sheet,
   SheetContent,
@@ -59,20 +61,35 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
 
 export default function SettingsPage() {
   const isMobile = useIsMobile();
+  const queryClient = useQueryClient();
 
-  // Check if redirected from OAuth callback - switch to calendars tab
-  const initialTab = React.useMemo((): SettingsTab => {
+  // Check if redirected from OAuth callback
+  const isCalendarRedirect = React.useMemo(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("calendar") === "connected") {
-      return "calendars";
-    }
-    return "profile";
+    return params.get("calendar") === "connected";
   }, []);
 
-  const [activeTab, setActiveTab] = React.useState<SettingsTab>(initialTab);
-  const [openSheet, setOpenSheet] = React.useState<SettingsTab | null>(
-    isMobile && initialTab === "calendars" ? "calendars" : null
+  const [activeTab, setActiveTab] = React.useState<SettingsTab>(
+    isCalendarRedirect ? "calendars" : "profile"
   );
+  const [openSheet, setOpenSheet] = React.useState<SettingsTab | null>(
+    isMobile && isCalendarRedirect ? "calendars" : null
+  );
+
+  // Handle OAuth redirect - force refetch calendar data and clean up URL
+  React.useEffect(() => {
+    if (isCalendarRedirect) {
+      // Force refetch calendar queries immediately
+      queryClient.refetchQueries({ queryKey: calendarKeys.accounts() });
+      queryClient.refetchQueries({ queryKey: calendarKeys.calendars() });
+
+      // Clean up URL params to avoid re-triggering on navigation
+      const url = new URL(window.location.href);
+      url.searchParams.delete("calendar");
+      url.searchParams.delete("provider");
+      window.history.replaceState({}, "", url.pathname);
+    }
+  }, [isCalendarRedirect, queryClient]);
 
   // Mobile layout: List of sections that open sheets
   if (isMobile) {
