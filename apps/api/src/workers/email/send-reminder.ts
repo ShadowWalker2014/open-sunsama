@@ -7,20 +7,23 @@ import { getDb, eq } from '@open-sunsama/database';
 import { users, timeBlocks } from '@open-sunsama/database/schema';
 import type { SendTaskReminderPayload } from './task-reminder.js';
 import { sendTaskReminderEmail, getThemeHexColor } from '../../lib/email/index.js';
-import { toZonedTime } from 'date-fns-tz';
-import { format } from 'date-fns';
 
 /**
  * Format time from HH:mm to a human-readable format (e.g., "9:30 AM")
+ * Note: The time stored in the database is already in the user's local timezone,
+ * so we just need to parse and format it without any timezone conversion.
  */
-function formatTimeForEmail(time: string, date: string, timezone: string): string {
-  // Parse the date and time in the user's timezone
-  const dateTimeStr = `${date}T${time}:00`;
-  const utcDate = new Date(dateTimeStr);
+function formatTimeForEmail(time: string): string {
+  // Parse the HH:mm time string
+  const parts = time.split(':');
+  const hours = parseInt(parts[0] ?? '0', 10);
+  const minutes = parseInt(parts[1] ?? '0', 10);
   
-  // Format with the user's timezone context
-  const zonedDate = toZonedTime(utcDate, timezone);
-  return format(zonedDate, 'h:mm a');
+  // Format to 12-hour format with AM/PM
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12; // Convert 0 to 12 for midnight, and 13-23 to 1-11
+  
+  return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
 }
 
 /**
@@ -65,12 +68,8 @@ export async function processSendTaskReminder(
     const themeColor = timeBlock.color || getThemeHexColor(user.preferences?.colorTheme);
 
     // Format the start time for the email
-    const userTimezone = user.timezone || 'UTC';
-    const formattedStartTime = formatTimeForEmail(
-      timeBlock.startTime,
-      timeBlock.date,
-      userTimezone
-    );
+    // Note: startTime is already stored in the user's local timezone
+    const formattedStartTime = formatTimeForEmail(timeBlock.startTime);
 
     // Send the email
     await sendTaskReminderEmail({

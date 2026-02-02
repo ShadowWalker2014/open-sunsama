@@ -61,17 +61,14 @@ export async function processSendDailySummary(
     // Get theme color from user preferences
     const themeColor = getThemeHexColor(user.preferences?.colorTheme);
 
-    // Parse the date string to a Date object
-    const taskDate = new Date(date + 'T06:00:00'); // Use 6 AM as reference time
-
     // Send the email
+    // Note: date is already a string in YYYY-MM-DD format in the user's timezone
     await sendDailySummaryEmail({
       email: user.email,
       userName: user.name ?? undefined,
       tasks: emailTasks,
       themeColor,
-      date: taskDate,
-      timezone,
+      date,
     });
 
     const durationMs = Date.now() - startTime;

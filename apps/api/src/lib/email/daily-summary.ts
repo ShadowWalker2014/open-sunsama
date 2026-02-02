@@ -14,8 +14,6 @@ import {
   groupTasksByPriority,
   type EmailTaskItem,
 } from './builders';
-import { toZonedTime } from 'date-fns-tz';
-import { format } from 'date-fns';
 
 // =============================================================================
 // TYPES
@@ -26,13 +24,34 @@ export interface DailySummaryEmailOptions {
   userName?: string;
   tasks: EmailTaskItem[];
   themeColor?: string;
-  date: Date;
-  timezone: string;
+  /** Date string in YYYY-MM-DD format (already in user's timezone) */
+  date: string;
 }
 
 // =============================================================================
 // CONTENT GENERATOR
 // =============================================================================
+
+/**
+ * Format a YYYY-MM-DD date string to a human-readable format (e.g., "Monday, February 2")
+ */
+function formatDateString(dateStr: string): string {
+  // Parse the date string (YYYY-MM-DD)
+  const parts = dateStr.split('-');
+  const year = parseInt(parts[0] ?? '2026', 10);
+  const month = parseInt(parts[1] ?? '1', 10);
+  const day = parseInt(parts[2] ?? '1', 10);
+  
+  // Create a date object - we use noon to avoid any DST edge cases
+  // Note: month is 0-indexed in JavaScript Date
+  const date = new Date(year, month - 1, day, 12, 0, 0);
+  
+  const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                  'July', 'August', 'September', 'October', 'November', 'December'];
+  
+  return `${weekdays[date.getDay()]}, ${months[date.getMonth()]} ${day}`;
+}
 
 /**
  * Generate daily summary email content
@@ -41,13 +60,11 @@ export function generateDailySummaryContent(
   userName: string | undefined,
   tasks: EmailTaskItem[],
   themeColor: string,
-  date: Date,
-  timezone: string
+  date: string
 ): string {
   const greeting = userName ? `Good morning, ${userName}!` : 'Good morning!';
-  // Format the date in the user's timezone
-  const zonedDate = toZonedTime(date, timezone);
-  const dateStr = format(zonedDate, 'EEEE, MMMM d');
+  // Format the date string (already in user's timezone)
+  const dateStr = formatDateString(date);
 
   // Calculate stats
   const totalTasks = tasks.length;
@@ -112,16 +129,15 @@ export function generateDailySummaryContent(
 export async function sendDailySummaryEmail(
   options: DailySummaryEmailOptions
 ): Promise<void> {
-  const { email, userName, tasks, themeColor = '#3b82f6', date, timezone } = options;
+  const { email, userName, tasks, themeColor = '#3b82f6', date } = options;
 
   const resend = getResend();
   const fromEmail = getFromEmail();
 
-  // Format the date in the user's timezone
-  const zonedDate = toZonedTime(date, timezone);
-  const dateStr = format(zonedDate, 'EEEE, MMMM d');
+  // Format the date string (already in user's timezone)
+  const dateStr = formatDateString(date);
 
-  const content = generateDailySummaryContent(userName, tasks, themeColor, date, timezone);
+  const content = generateDailySummaryContent(userName, tasks, themeColor, date);
   const html = generateEmailHTML({
     title: `Your day: ${dateStr}`,
     preheader: `You have ${tasks.length} tasks scheduled for today`,
