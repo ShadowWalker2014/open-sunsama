@@ -14,6 +14,8 @@ import {
   groupTasksByPriority,
   type EmailTaskItem,
 } from './builders';
+import { toZonedTime } from 'date-fns-tz';
+import { format } from 'date-fns';
 
 // =============================================================================
 // TYPES
@@ -25,6 +27,7 @@ export interface DailySummaryEmailOptions {
   tasks: EmailTaskItem[];
   themeColor?: string;
   date: Date;
+  timezone: string;
 }
 
 // =============================================================================
@@ -38,14 +41,13 @@ export function generateDailySummaryContent(
   userName: string | undefined,
   tasks: EmailTaskItem[],
   themeColor: string,
-  date: Date
+  date: Date,
+  timezone: string
 ): string {
   const greeting = userName ? `Good morning, ${userName}!` : 'Good morning!';
-  const dateStr = date.toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
+  // Format the date in the user's timezone
+  const zonedDate = toZonedTime(date, timezone);
+  const dateStr = format(zonedDate, 'EEEE, MMMM d');
 
   // Calculate stats
   const totalTasks = tasks.length;
@@ -110,18 +112,16 @@ export function generateDailySummaryContent(
 export async function sendDailySummaryEmail(
   options: DailySummaryEmailOptions
 ): Promise<void> {
-  const { email, userName, tasks, themeColor = '#3b82f6', date } = options;
+  const { email, userName, tasks, themeColor = '#3b82f6', date, timezone } = options;
 
   const resend = getResend();
   const fromEmail = getFromEmail();
 
-  const dateStr = date.toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
+  // Format the date in the user's timezone
+  const zonedDate = toZonedTime(date, timezone);
+  const dateStr = format(zonedDate, 'EEEE, MMMM d');
 
-  const content = generateDailySummaryContent(userName, tasks, themeColor, date);
+  const content = generateDailySummaryContent(userName, tasks, themeColor, date, timezone);
   const html = generateEmailHTML({
     title: `Your day: ${dateStr}`,
     preheader: `You have ${tasks.length} tasks scheduled for today`,

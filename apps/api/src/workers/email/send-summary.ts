@@ -71,6 +71,7 @@ export async function processSendDailySummary(
       tasks: emailTasks,
       themeColor,
       date: taskDate,
+      timezone,
     });
 
     const durationMs = Date.now() - startTime;
