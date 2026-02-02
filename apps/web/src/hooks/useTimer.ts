@@ -56,6 +56,34 @@ function clearTimerState(taskId: string): void {
 }
 
 /**
+ * Check if a timer is running for a task and return total seconds if so
+ * Used to stop timer when task is completed from outside the focus view
+ */
+export function getRunningTimerSeconds(taskId: string): number | null {
+  const state = loadTimerState(taskId);
+  if (!state || !state.isRunning) {
+    return null;
+  }
+  
+  const elapsed = state.startedAt
+    ? Math.floor((Date.now() - state.startedAt) / 1000)
+    : 0;
+  return state.accumulatedSeconds + elapsed;
+}
+
+/**
+ * Stop and clear a running timer for a task
+ * Returns total seconds if timer was running, null otherwise
+ */
+export function stopAndClearTimer(taskId: string): number | null {
+  const totalSeconds = getRunningTimerSeconds(taskId);
+  if (totalSeconds !== null) {
+    clearTimerState(taskId);
+  }
+  return totalSeconds;
+}
+
+/**
  * Custom hook for managing a focus timer with localStorage persistence
  */
 export function useTimer({

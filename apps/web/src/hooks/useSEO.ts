@@ -95,6 +95,35 @@ export const SEO_CONFIGS = {
     description: "The open-source alternative to Sunsama. Time-block your day, manage tasks with a visual kanban board, sync with Google Calendar, Outlook & iCloud. Free, self-hostable, AI-native.",
     canonical: "/",
   },
+  alternatives: {
+    motion: {
+      title: "Motion App Alternative - Free & Manual Control",
+      description: "The best free alternative to Motion. Manual time blocking without rigid AI. You control your schedule. Open source, no subscription.",
+      canonical: "/alternative/motion",
+    },
+    reclaim: {
+      title: "Free Reclaim Alternative - Time Blocking Without AI Lock-in",
+      description: "The best free alternative to Reclaim AI. Manual time blocking, calendar sync, focus mode. No subscription, open source.",
+      canonical: "/alternative/reclaim",
+    },
+    akiflow: {
+      title: "Free Akiflow Alternative - Same Manual Control, Zero Cost",
+      description: "The best free alternative to Akiflow. Manual time blocking, keyboard-first design, calendar sync. Save $228/year. Open source.",
+      canonical: "/alternative/akiflow",
+    },
+    todoist: {
+      title: "Todoist Alternative with Built-in Time Blocking",
+      description: "Todoist tasks with native time blocking. Visual calendar scheduling, focus mode, priority system. Free alternative to Todoist + calendar plugins.",
+      canonical: "/alternative/todoist",
+    },
+  },
+  alternative: {
+    sunsama: {
+      title: "Free Sunsama Alternative",
+      description: "The best free alternative to Sunsama. Time blocking, calendar sync, focus mode, and kanban boards. Open source, no credit card required. Save $240/year.",
+      canonical: "/alternative/sunsama",
+    },
+  },
   download: {
     title: "Download",
     description: "Download Open Sunsama for macOS, Windows, and Linux. Native desktop apps with system tray integration, global hotkeys, and offline support.",
@@ -153,5 +182,32 @@ export const SEO_CONFIGS = {
       description: "Bidirectional sync with Google Calendar, Outlook, and iCloud. Your events and time blocks stay in perfect harmony across all your calendars.",
       canonical: "/features/calendar-sync",
     },
+  },
+  forAudiences: {
+    adhd: {
+      title: "Best Daily Planner for ADHD - Free",
+      description: "The best free ADHD daily planner app. Visual time blocking, focus mode for one task at a time, and a calm interface designed for ADHD minds.",
+      canonical: "/for/adhd",
+    },
+    developers: {
+      title: "Daily Planner for Developers - Keyboard-First & Open Source",
+      description: "The daily planner built for developers. Command palette, full API access, 24+ MCP tools, open source. Keyboard-first productivity.",
+      canonical: "/for/developers",
+    },
+    remoteWorkers: {
+      title: "Daily Planner for Remote Workers - Free",
+      description: "The daily planner for remote work. Time blocking, focus mode, calendar sync. Set boundaries and protect your productivity. Free.",
+      canonical: "/for/remote-workers",
+    },
+  },
+  freeTimeBlockingApp: {
+    title: "Free Time Blocking App - No Subscription Required",
+    description: "The best free time blocking app. Calendar sync, focus mode, kanban boards. Save $200+/year vs Sunsama, Motion, Reclaim. Open source.",
+    canonical: "/free-time-blocking-app",
+  },
+  openSourceTaskManager: {
+    title: "Open Source Task Manager - Self-Hosted & Free",
+    description: "The best open source task manager with time blocking. Self-host with Docker, full API access, 24+ MCP tools. Own your data.",
+    canonical: "/open-source-task-manager",
   },
 } as const;

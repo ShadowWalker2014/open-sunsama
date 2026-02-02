@@ -34,6 +34,9 @@ import CalendarSyncFeaturePage from "./routes/features/calendar-sync";
 import BlogPage from "./routes/blog";
 import BlogPostPage from "./routes/blog.$slug";
 
+// Import alternative pages (competitor comparisons)
+import MotionAlternativePage from "./routes/alternative.motion";
+
 // Create root route
 const rootRoute = createRootRoute({
   component: () => {
@@ -164,6 +167,12 @@ const blogPostRoute = createRoute({
   component: BlogPostPage,
 });
 
+const motionAlternativeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/alternative/motion",
+  component: MotionAlternativePage,
+});
+
 const appRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/app",
@@ -230,6 +239,7 @@ const routeTree = rootRoute.addChildren([
   downloadRoute,
   blogRoute,
   blogPostRoute,
+  motionAlternativeRoute,
   kanbanFeatureRoute,
   timeBlockingFeatureRoute,
   focusModeFeatureRoute,

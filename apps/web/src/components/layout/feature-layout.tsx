@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { type ReactNode } from "react";
 import { Calendar, ArrowRight, Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Breadcrumbs } from "@/components/seo";
 
 /**
  * Layout wrapper for feature-specific landing pages
@@ -46,8 +47,18 @@ export function FeatureLayout({
       </header>
 
       <main className="relative">
+        {/* Breadcrumb navigation */}
+        <div className="container px-4 mx-auto max-w-3xl pt-6">
+          <Breadcrumbs
+            items={[
+              { label: "Features", href: "/" },
+              { label: title },
+            ]}
+          />
+        </div>
+
         {/* Feature Hero */}
-        <section className="pt-16 pb-12 md:pt-24 md:pb-16">
+        <section className="pt-8 pb-12 md:pt-12 md:pb-16">
           <div className="container px-4 mx-auto max-w-3xl text-center">
             {badge && (
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 mb-6 rounded-md border border-border/40 bg-card/50 text-[11px] font-medium">

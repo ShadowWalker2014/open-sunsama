@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { type ReactNode } from "react";
-import { Calendar, ArrowLeft, Clock, User, Github, Tag } from "lucide-react";
+import { Calendar, Clock, User, Github, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ArticleSchema, Breadcrumbs } from "@/components/seo";
 import { format } from "date-fns";
 import type { BlogPost } from "@/types/blog";
 import { BlogCardCompact } from "./blog-card";
@@ -21,6 +22,14 @@ export function BlogLayout({ children, post, relatedPosts = [] }: BlogLayoutProp
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans antialiased">
+      <ArticleSchema
+        title={post.title}
+        description={post.description}
+        datePublished={post.date}
+        author={post.author}
+        image={post.image}
+        slug={post.slug}
+      />
       {/* Subtle background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 right-1/4 w-[500px] h-[400px] bg-primary/[0.03] blur-[100px] rounded-full" />
@@ -55,15 +64,14 @@ export function BlogLayout({ children, post, relatedPosts = [] }: BlogLayoutProp
       </header>
 
       <main className="relative">
-        {/* Back navigation */}
+        {/* Breadcrumb navigation */}
         <div className="container px-4 mx-auto max-w-3xl pt-6">
-          <Link
-            to="/blog"
-            className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Back to Blog
-          </Link>
+          <Breadcrumbs
+            items={[
+              { label: "Blog", href: "/blog" },
+              { label: post.title },
+            ]}
+          />
         </div>
 
         {/* Article header */}
