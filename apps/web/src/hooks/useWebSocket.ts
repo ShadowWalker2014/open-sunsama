@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { taskKeys } from "@/hooks/useTasks";
 import { timeBlockKeys } from "@/hooks/useTimeBlocks";
 import { subtaskKeys } from "@/hooks/useSubtasks";
+import { calendarKeys } from "@/hooks/useCalendars";
 
 /**
  * Hook that manages WebSocket connection and query invalidation
@@ -113,6 +114,16 @@ function handleWebSocketEvent(
 
     case "connected":
       console.log("[WS] Connection confirmed");
+      break;
+
+    // Calendar events
+    case "calendar:synced":
+    case "calendar:account-disconnected":
+    case "calendar:updated":
+      // Invalidate all calendar-related queries to refetch
+      queryClient.invalidateQueries({ queryKey: calendarKeys.accounts() });
+      queryClient.invalidateQueries({ queryKey: calendarKeys.calendars() });
+      queryClient.invalidateQueries({ queryKey: calendarKeys.all });
       break;
   }
 }

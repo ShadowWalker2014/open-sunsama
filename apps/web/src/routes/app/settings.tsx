@@ -58,9 +58,21 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
 }
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = React.useState<SettingsTab>("profile");
-  const [openSheet, setOpenSheet] = React.useState<SettingsTab | null>(null);
   const isMobile = useIsMobile();
+
+  // Check if redirected from OAuth callback - switch to calendars tab
+  const initialTab = React.useMemo((): SettingsTab => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("calendar") === "connected") {
+      return "calendars";
+    }
+    return "profile";
+  }, []);
+
+  const [activeTab, setActiveTab] = React.useState<SettingsTab>(initialTab);
+  const [openSheet, setOpenSheet] = React.useState<SettingsTab | null>(
+    isMobile && initialTab === "calendars" ? "calendars" : null
+  );
 
   // Mobile layout: List of sections that open sheets
   if (isMobile) {
