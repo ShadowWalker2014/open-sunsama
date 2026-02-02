@@ -77,18 +77,25 @@ export default function SettingsPage() {
   );
 
   // Handle OAuth redirect - force refetch calendar data and clean up URL
+  // Use a small delay to ensure the CalendarSettings component has mounted
+  // and its queries are registered before we trigger a refetch
   React.useEffect(() => {
-    if (isCalendarRedirect) {
-      // Force refetch calendar queries immediately
+    if (!isCalendarRedirect) return;
+
+    // Small delay to allow CalendarSettings component to mount and register queries
+    const timer = setTimeout(() => {
+      // Force refetch calendar queries
       queryClient.refetchQueries({ queryKey: calendarKeys.accounts() });
       queryClient.refetchQueries({ queryKey: calendarKeys.calendars() });
+    }, 100);
 
-      // Clean up URL params to avoid re-triggering on navigation
-      const url = new URL(window.location.href);
-      url.searchParams.delete("calendar");
-      url.searchParams.delete("provider");
-      window.history.replaceState({}, "", url.pathname);
-    }
+    // Clean up URL params immediately to avoid re-triggering
+    const url = new URL(window.location.href);
+    url.searchParams.delete("calendar");
+    url.searchParams.delete("provider");
+    window.history.replaceState({}, "", url.pathname);
+
+    return () => clearTimeout(timer);
   }, [isCalendarRedirect, queryClient]);
 
   // Mobile layout: List of sections that open sheets

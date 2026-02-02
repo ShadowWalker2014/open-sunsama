@@ -33,6 +33,8 @@ export function useCalendarAccounts() {
       );
       return response.data;
     },
+    // Always fetch fresh data - important for OAuth redirect flow
+    staleTime: 0,
   });
 }
 
@@ -68,6 +70,8 @@ export function useCalendars() {
         }))
       );
     },
+    // Always fetch fresh data - important for OAuth redirect flow
+    staleTime: 0,
   });
 }
 
