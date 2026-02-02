@@ -37,17 +37,36 @@ export function useCalendarAccounts() {
 }
 
 /**
- * Fetch all calendars (grouped by account)
+ * API response type for calendars endpoint (grouped by account)
+ */
+interface CalendarsApiResponse {
+  success: boolean;
+  data: Array<{
+    id: string;
+    provider: string;
+    email: string;
+    isActive: boolean;
+    calendars: Array<Omit<Calendar, "accountId">>;
+  }>;
+}
+
+/**
+ * Fetch all calendars (flattened from grouped response)
  */
 export function useCalendars() {
   return useQuery({
     queryKey: calendarKeys.calendars(),
     queryFn: async (): Promise<Calendar[]> => {
       const client = getApiClient();
-      const response = await client.get<{ success: boolean; data: Calendar[] }>(
-        "calendars"
+      const response = await client.get<CalendarsApiResponse>("calendars");
+      
+      // Flatten the nested structure and add accountId to each calendar
+      return response.data.flatMap((account) =>
+        account.calendars.map((cal) => ({
+          ...cal,
+          accountId: account.id,
+        }))
       );
-      return response.data;
     },
   });
 }
