@@ -1,7 +1,7 @@
 import * as React from "react";
 import { ChevronDown, Clock } from "lucide-react";
 import type { TaskPriority } from "@open-sunsama/types";
-import { cn } from "@/lib/utils";
+import { cn, TIME_PRESETS, formatTimeDisplayCompact } from "@/lib/utils";
 import { useCreateTask } from "@/hooks/useTasks";
 import { useCreateSubtask } from "@/hooks/useSubtaskMutations";
 import {
@@ -22,24 +22,6 @@ import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
 import { SubtaskList, type Subtask } from "./subtask-list";
 
 const PRIORITIES: TaskPriority[] = ["P0", "P1", "P2", "P3"];
-
-const TIME_PRESETS = [
-  { label: "15 min", value: "15" },
-  { label: "30 min", value: "30" },
-  { label: "1 hour", value: "60" },
-  { label: "2 hours", value: "120" },
-];
-
-function formatTimeDisplay(mins: string): string {
-  if (!mins) return "";
-  const num = parseInt(mins, 10);
-  if (isNaN(num)) return "";
-  if (num < 60) return `${num}m`;
-  const hours = Math.floor(num / 60);
-  const remaining = num % 60;
-  if (remaining === 0) return `${hours}h`;
-  return `${hours}h ${remaining}m`;
-}
 
 interface AddTaskModalProps {
   open: boolean;
@@ -195,7 +177,7 @@ export function AddTaskModal({
                     )}
                   >
                     <Clock className="h-3.5 w-3.5" />
-                    <span>{formatTimeDisplay(estimatedMins) || "Time"}</span>
+                    <span>{formatTimeDisplayCompact(estimatedMins) || "Time"}</span>
                     <ChevronDown className="h-3 w-3 opacity-50" />
                   </Button>
                 </DropdownMenuTrigger>
