@@ -34,14 +34,14 @@ export function CalendarSettings() {
   const [accountToRemove, setAccountToRemove] = React.useState<Parameters<typeof RemoveAccountDialog>[0]["account"]>(null);
   const queryClient = useQueryClient();
 
-  // Handle OAuth redirect - detect ?calendar=connected and refetch data
+  // Handle OAuth redirect - detect ?calendar=connected and force refetch data
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("calendar") === "connected") {
-      // Invalidate calendar queries to refetch the newly connected account
-      queryClient.invalidateQueries({ queryKey: calendarKeys.accounts() });
-      queryClient.invalidateQueries({ queryKey: calendarKeys.calendars() });
-      queryClient.invalidateQueries({ queryKey: calendarKeys.all });
+      // Force refetch calendar queries (not just invalidate, which respects staleTime)
+      // This ensures fresh data is fetched immediately after OAuth redirect
+      queryClient.refetchQueries({ queryKey: calendarKeys.accounts() });
+      queryClient.refetchQueries({ queryKey: calendarKeys.calendars() });
 
       // Clean up URL params to avoid re-triggering on navigation
       const url = new URL(window.location.href);

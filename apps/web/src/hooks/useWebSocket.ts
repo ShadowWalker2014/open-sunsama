@@ -120,10 +120,10 @@ function handleWebSocketEvent(
     case "calendar:synced":
     case "calendar:account-disconnected":
     case "calendar:updated":
-      // Invalidate all calendar-related queries to refetch
-      queryClient.invalidateQueries({ queryKey: calendarKeys.accounts() });
-      queryClient.invalidateQueries({ queryKey: calendarKeys.calendars() });
-      queryClient.invalidateQueries({ queryKey: calendarKeys.all });
+      // Force refetch all calendar-related queries (refetch ignores staleTime)
+      queryClient.refetchQueries({ queryKey: calendarKeys.accounts() });
+      queryClient.refetchQueries({ queryKey: calendarKeys.calendars() });
+      queryClient.refetchQueries({ queryKey: calendarKeys.all });
       break;
   }
 }
