@@ -187,7 +187,7 @@ export function Header({ className }: HeaderProps) {
                 <DropdownMenuItem asChild className="text-[13px] py-1.5">
                   <a href="/download" className="w-full cursor-pointer">
                     <Download className="mr-2 h-3.5 w-3.5" />
-                    Download Desktop App
+                    Get Desktop App
                   </a>
                 </DropdownMenuItem>
               )}
