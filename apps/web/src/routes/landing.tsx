@@ -901,7 +901,7 @@ function AppPreview({ inView }: { inView: boolean }) {
     { id: "kanban" as const, icon: Layout, label: "Kanban Board" },
     { id: "timeblocking" as const, icon: Clock, label: "Time Blocking" },
     { id: "focus" as const, icon: Timer, label: "Focus Mode" },
-    { id: "command" as const, icon: Command, label: "Command Palette" },
+    { id: "command" as const, icon: Search, label: "Command Palette" },
   ];
 
   // Handle mode switching with animation
