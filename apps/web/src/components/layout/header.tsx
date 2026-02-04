@@ -66,10 +66,14 @@ export function Header({ className }: HeaderProps) {
         {/* Logo */}
         <div className="mr-3 flex">
           <a href="/app" className="mr-4 flex items-center space-x-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded bg-primary">
-              <Calendar className="h-3.5 w-3.5 text-primary-foreground" />
-            </div>
-            <span className="hidden text-[13px] font-semibold sm:inline-block">Open Sunsama</span>
+            <img
+              src="/open-sunsama-logo.png"
+              alt="Open Sunsama"
+              className="h-6 w-6 rounded-lg object-cover"
+            />
+            <span className="hidden text-[13px] font-semibold sm:inline-block">
+              Open Sunsama
+            </span>
           </a>
         </div>
 
@@ -81,7 +85,10 @@ export function Header({ className }: HeaderProps) {
           <NavLink href="/app/tasks" icon={<List className="h-3.5 w-3.5" />}>
             Tasks
           </NavLink>
-          <NavLink href="/app/calendar" icon={<Calendar className="h-3.5 w-3.5" />}>
+          <NavLink
+            href="/app/calendar"
+            icon={<Calendar className="h-3.5 w-3.5" />}
+          >
             Calendar
           </NavLink>
         </nav>
@@ -101,7 +108,11 @@ export function Header({ className }: HeaderProps) {
 
         {/* Global Shortcut Hint - Hidden on mobile */}
         <div className="hidden lg:flex items-center mr-3 text-[10px] text-muted-foreground/50">
-          Press <kbd className="mx-1 rounded border border-border/40 bg-muted/50 px-1 py-0.5 text-[9px] font-medium">?</kbd> for shortcuts
+          Press{" "}
+          <kbd className="mx-1 rounded border border-border/40 bg-muted/50 px-1 py-0.5 text-[9px] font-medium">
+            ?
+          </kbd>{" "}
+          for shortcuts
         </div>
 
         {/* Actions */}
@@ -154,8 +165,13 @@ export function Header({ className }: HeaderProps) {
                 className="relative h-7 w-7 rounded-full p-0"
               >
                 <Avatar className="h-6 w-6">
-                  <AvatarImage src={getAvatarUrl(user?.avatarUrl)} alt={user?.name ?? "User"} />
-                  <AvatarFallback className="text-[10px]">{userInitials}</AvatarFallback>
+                  <AvatarImage
+                    src={getAvatarUrl(user?.avatarUrl)}
+                    alt={user?.name ?? "User"}
+                  />
+                  <AvatarFallback className="text-[10px]">
+                    {userInitials}
+                  </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
@@ -215,11 +231,11 @@ interface NavLinkProps {
 
 function NavLink({ href, icon, children }: NavLinkProps) {
   // Check if current path matches for active state
-  const isActive = typeof window !== "undefined" && (
-    (href === "/app" && window.location.pathname === "/app") ||
-    (href !== "/app" && window.location.pathname.startsWith(href))
-  );
-  
+  const isActive =
+    typeof window !== "undefined" &&
+    ((href === "/app" && window.location.pathname === "/app") ||
+      (href !== "/app" && window.location.pathname.startsWith(href)));
+
   return (
     <a
       href={href}
