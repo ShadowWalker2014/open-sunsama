@@ -894,6 +894,8 @@ function CommandPaletteView() {
  */
 function AppPreview({ inView }: { inView: boolean }) {
   const [activeMode, setActiveMode] = useState<PreviewMode>("kanban");
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [displayMode, setDisplayMode] = useState<PreviewMode>("kanban");
 
   const modes = [
     { id: "kanban" as const, icon: Layout, label: "Kanban Board" },
@@ -902,6 +904,18 @@ function AppPreview({ inView }: { inView: boolean }) {
     { id: "command" as const, icon: Command, label: "Command Palette" },
   ];
 
+  // Handle mode switching with animation
+  const handleModeChange = (newMode: PreviewMode) => {
+    if (newMode === activeMode) return;
+    setIsTransitioning(true);
+    setActiveMode(newMode);
+    // After fade out, switch content and fade back in
+    setTimeout(() => {
+      setDisplayMode(newMode);
+      setIsTransitioning(false);
+    }, 150);
+  };
+
   return (
     <div
       className={cn(
@@ -909,25 +923,6 @@ function AppPreview({ inView }: { inView: boolean }) {
         inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
       )}
     >
-      {/* Mode selector buttons */}
-      <div className="flex flex-wrap justify-center gap-2 mb-6">
-        {modes.map((mode) => (
-          <button
-            key={mode.id}
-            onClick={() => setActiveMode(mode.id)}
-            className={cn(
-              "flex items-center gap-1.5 px-4 py-2 rounded-full text-[12px] font-medium transition-all duration-200",
-              activeMode === mode.id
-                ? "bg-primary text-primary-foreground shadow-md"
-                : "border border-border/40 bg-card/50 text-muted-foreground hover:bg-card hover:text-foreground hover:border-border"
-            )}
-          >
-            <mode.icon className="h-3.5 w-3.5" />
-            <span>{mode.label}</span>
-          </button>
-        ))}
-      </div>
-
       {/* Outer glow container */}
       <div className="relative">
         <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 blur-3xl opacity-50 rounded-3xl" />
@@ -958,13 +953,42 @@ function AppPreview({ inView }: { inView: boolean }) {
 
             {/* App content - taller frame (5:4 aspect on desktop, taller on mobile) */}
             <div className="h-[400px] sm:h-[480px] md:h-[540px] lg:h-[580px] overflow-hidden">
-              {activeMode === "kanban" && <KanbanView />}
-              {activeMode === "timeblocking" && <TimeBlockingView />}
-              {activeMode === "focus" && <FocusModeView />}
-              {activeMode === "command" && <CommandPaletteView />}
+              {/* Animated view wrapper */}
+              <div
+                className={cn(
+                  "h-full w-full transition-all duration-200 ease-out",
+                  isTransitioning
+                    ? "opacity-0 scale-[0.98] translate-y-1"
+                    : "opacity-100 scale-100 translate-y-0"
+                )}
+              >
+                {displayMode === "kanban" && <KanbanView />}
+                {displayMode === "timeblocking" && <TimeBlockingView />}
+                {displayMode === "focus" && <FocusModeView />}
+                {displayMode === "command" && <CommandPaletteView />}
+              </div>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Mode selector buttons - positioned below the preview */}
+      <div className="flex flex-wrap justify-center gap-2 mt-6">
+        {modes.map((mode) => (
+          <button
+            key={mode.id}
+            onClick={() => handleModeChange(mode.id)}
+            className={cn(
+              "flex items-center gap-1.5 px-4 py-2 rounded-full text-[12px] transition-all duration-200 border",
+              activeMode === mode.id
+                ? "bg-accent/80 border-primary/30 text-foreground font-medium shadow-sm"
+                : "border-border/30 bg-transparent text-muted-foreground hover:bg-accent/50 hover:text-foreground hover:border-border/50"
+            )}
+          >
+            <mode.icon className="h-3.5 w-3.5" />
+            <span>{mode.label}</span>
+          </button>
+        ))}
       </div>
     </div>
   );
