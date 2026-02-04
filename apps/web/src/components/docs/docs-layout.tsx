@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useState } from "react";
-import { SEOHead } from "@/components/seo";
+import { SEOHead, DocsSchema, Breadcrumbs } from "@/components/seo";
 import { DocsLayoutHeader } from "./docs-layout-header";
 import { DocsLayoutFooter } from "./docs-layout-footer";
 import { DocsSidebar } from "./docs-sidebar";
@@ -9,6 +9,7 @@ import {
   type TOCHeading,
 } from "@/components/blog/table-of-contents";
 import type { DocPostWithComponent, DocSection } from "@/types/docs";
+import { SECTION_META } from "@/types/docs";
 
 interface DocsLayoutProps {
   children: ReactNode;
@@ -23,6 +24,16 @@ interface DocsLayoutProps {
 export function DocsLayout({ children, doc, sections }: DocsLayoutProps) {
   const [headings, setHeadings] = useState<TOCHeading[]>([]);
   const canonicalUrl = `/docs/${doc.slug}`;
+  const sectionMeta = SECTION_META[doc.section];
+
+  // Build breadcrumb items
+  const breadcrumbItems = [
+    { label: "Docs", href: "/docs" },
+    ...(sectionMeta
+      ? [{ label: sectionMeta.name, href: `/docs/${doc.section}` }]
+      : []),
+    { label: doc.title },
+  ];
 
   // Extract headings after content renders
   useEffect(() => {
@@ -44,6 +55,12 @@ export function DocsLayout({ children, doc, sections }: DocsLayoutProps) {
         canonicalUrl={canonicalUrl}
         ogType="article"
       />
+      <DocsSchema
+        title={doc.title}
+        description={doc.description}
+        slug={doc.slug}
+        section={sectionMeta?.name ?? doc.section}
+      />
 
       {/* Subtle background */}
       <div className="fixed inset-0 pointer-events-none">
@@ -62,6 +79,9 @@ export function DocsLayout({ children, doc, sections }: DocsLayoutProps) {
           {/* Main content */}
           <main className="flex-1 min-w-0 py-8">
             <article className="max-w-3xl">
+              {/* Breadcrumbs */}
+              <Breadcrumbs items={breadcrumbItems} />
+
               {/* Page header */}
               <header className="mb-8">
                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">
