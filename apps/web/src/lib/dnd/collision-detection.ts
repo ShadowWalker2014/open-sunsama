@@ -10,12 +10,12 @@ import {
  * Custom collision detection that handles both task reordering and column drops.
  *
  * Strategy:
- * 1. Check collisions with both tasks AND columns
- * 2. Return ALL potential collisions in order of priority
- * 3. Let event handlers resolve what to drop on
+ * 1. Prioritize column detection for cross-column drops
+ * 2. Check tasks for reordering within columns
+ * 3. Return collisions in priority order (columns first, then tasks)
  *
- * Tasks use closestCenter for accurate sorting, columns use pointerWithin with
- * rectIntersection fallback for edge cases.
+ * This ensures that dragging across columns always detects the column even
+ * when the cursor is over a task within that column.
  */
 export const taskPriorityCollision: CollisionDetection = (args) => {
   const { droppableContainers, active } = args;
@@ -35,7 +35,20 @@ export const taskPriorityCollision: CollisionDetection = (args) => {
 
   const collisions: ReturnType<CollisionDetection> = [];
 
-  // First, check collisions with tasks using closestCenter for accurate sorting
+  // PRIORITIZE column detection first - use rectIntersection to detect columns
+  // even when the cursor is over tasks inside the column
+  if (columnContainers.length > 0) {
+    const columnCollisions = rectIntersection({
+      ...args,
+      droppableContainers: columnContainers,
+    });
+
+    if (columnCollisions.length > 0) {
+      collisions.push(...columnCollisions);
+    }
+  }
+
+  // Then check task collisions for reordering within the same column
   if (taskContainers.length > 0) {
     const taskCollisions = closestCenter({
       ...args,
@@ -49,29 +62,7 @@ export const taskPriorityCollision: CollisionDetection = (args) => {
     collisions.push(...validTaskCollisions);
   }
 
-  // Always check column collisions to support empty column drops
-  if (columnContainers.length > 0) {
-    const columnCollisions = pointerWithin({
-      ...args,
-      droppableContainers: columnContainers,
-    });
-
-    if (columnCollisions.length > 0) {
-      collisions.push(...columnCollisions);
-    } else {
-      // Fallback to rect intersection for columns at edges
-      const rectCollisions = rectIntersection({
-        ...args,
-        droppableContainers: columnContainers,
-      });
-
-      if (rectCollisions.length > 0) {
-        collisions.push(...rectCollisions);
-      }
-    }
-  }
-
-  // Return ALL collisions - both tasks and columns
+  // Return ALL collisions - columns first, then tasks
   // Event handlers will determine what to do based on over.type
   if (collisions.length > 0) {
     return collisions;
