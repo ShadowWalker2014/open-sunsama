@@ -12,8 +12,24 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/open-sunsama.git"
+    "url": "https://github.com/ShadowWalker2014/open-sunsama.git"
   },
+  "homepage": "https://opensunsama.com",
+  "bugs": {
+    "url": "https://github.com/ShadowWalker2014/open-sunsama/issues"
+  },
+  "keywords": [
+    "task-management",
+    "time-blocking",
+    "productivity",
+    "calendar",
+    "ai",
+    "mcp",
+    "claude",
+    "sunsama",
+    "open-source",
+    "self-hosted"
+  ],
   "packageManager": "bun@1.2.21",
   "workspaces": [
     "apps/*",

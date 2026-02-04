@@ -1,182 +1,446 @@
+<div align="center">
+
+<img src="docs/images/logo.svg" alt="Open Sunsama Logo" width="120" height="120" />
+
 # Open Sunsama
 
-Open-source, AI agent friendly Sunsama alternative with direct API access.
+### The First AI-Native, Open-Source Task Manager
 
-## Overview
+**Your AI assistant can finally manage your calendar.**
 
-Open Sunsama is a free and open-source time blocking and task management application. Unlike traditional productivity apps, Open Sunsama provides direct API access that enables AI agents and assistants to help you manage your tasks and time effectively.
+[![GitHub stars](https://img.shields.io/github/stars/ShadowWalker2014/open-sunsama?style=for-the-badge&logo=github&color=yellow)](https://github.com/ShadowWalker2014/open-sunsama/stargazers)
+[![License](https://img.shields.io/badge/License-Non--Commercial-blue?style=for-the-badge)](LICENSE)
 
-### AI Agent Compatible
+<br />
 
-Open Sunsama is designed to work seamlessly with AI assistants including:
-- Claude Desktop, Cursor, Windsurf, and other MCP-compatible tools
-- Any AI agent that can interact with REST APIs
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
+[![Bun](https://img.shields.io/badge/Bun-1.2-fbf0df?style=flat-square&logo=bun&logoColor=black)](https://bun.sh/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Hono](https://img.shields.io/badge/Hono-4-E36002?style=flat-square&logo=hono&logoColor=white)](https://hono.dev/)
+[![Tauri](https://img.shields.io/badge/Tauri-2-FFC131?style=flat-square&logo=tauri&logoColor=black)](https://tauri.app/)
 
-This means your AI assistant can:
-- Create, update, and complete tasks on your behalf
-- Schedule time blocks for focused work
-- Help you plan your day
-- Track your progress
+<br />
 
-### MCP Server (Model Context Protocol)
+[**Live Demo**](https://opensunsama.com) · [**Documentation**](https://opensunsama.com/docs) · [**API Reference**](https://api.opensunsama.com) · [**MCP Setup**](./mcp/README.md) · [**Download**](https://opensunsama.com/download)
 
-Open Sunsama includes a built-in MCP server that enables AI assistants like Claude Desktop and Cursor to manage your tasks and calendar directly.
+<br />
 
-**[→ See MCP Setup Instructions](./mcp/README.md)**
+</div>
 
-The MCP server provides 23 tools for:
-- **Task Management**: Create, update, complete, delete, and schedule tasks
-- **Subtasks**: Break down tasks into smaller actionable items
-- **Time Blocking**: Schedule focused work sessions on your calendar
-- **User Profile**: Access and update preferences
+---
+
+## The Problem
+
+You use AI assistants daily—Claude, ChatGPT, Copilot. They help you code, write, and think.
+
+But when it comes to **managing your time**? They're useless. Your calendar and task manager are black boxes that AI can't touch.
+
+**Until now.**
+
+## The Solution
+
+Open Sunsama is the **first task manager built for the AI era**:
+
+- **MCP Protocol Support** — Claude Desktop, Cursor, and Windsurf can manage your tasks directly
+- **Full REST API** — Build automations, integrations, and AI workflows
+- **100% Open Source** — Self-host, customize, extend, contribute
+- **Beautiful UX** — We didn't sacrifice design for openness
+
+<br />
+
+---
 
 ## Features
 
-- **Task Management**: Full CRUD operations with priorities (P0-P3), subtasks, and notes
-- **Time Blocking**: Visual calendar with drag-and-drop scheduling
-- **Kanban Board**: Infinite horizontal scroll with day columns
-- **Rich Notes**: Tiptap-powered editor with file attachments (images, videos, documents)
-- **Profile & Settings**: Customizable profile with avatar upload
-- **Dark Mode**: Full dark/light theme support
-- **API Access**: RESTful API with API Key authentication for AI agent integration
-- **Mobile Responsive**: Works on desktop and mobile devices
+<table>
+<tr>
+<td width="50%">
 
-## Tech Stack
+### Task Management
 
-- **Frontend**: React 18, Vite, TanStack Router, TanStack Query, Tailwind CSS, Radix UI
-- **Backend**: Hono, Drizzle ORM, PostgreSQL
-- **Editor**: Tiptap (rich text)
-- **Storage**: S3-compatible (Railway)
-- **Monorepo**: Turborepo with Bun
+- Priorities (P0-P3) with color coding
+- Subtasks with progress tracking
+- Rich text notes with Tiptap editor
+- File attachments (images, videos, docs)
+- Drag-and-drop reordering
+- Task rollover at midnight
 
-## Getting Started
+</td>
+<td width="50%">
 
-### Prerequisites
+### Time Blocking
 
-- [Bun](https://bun.sh/) v1.0+
-- PostgreSQL database
+- Visual daily/weekly calendar
+- Drag to create time blocks
+- Resize blocks with snap-to-grid
+- Link blocks to tasks
+- Track actual vs. estimated time
+- Focus mode with timer
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### AI & Automation
+
+- **24 MCP tools** for Claude/Cursor
+- RESTful API with scoped API keys
+- Background job processing (PG Boss)
+
+</td>
+<td width="50%">
+
+### Multi-Platform
+
+- Web app (React + Vite)
+- Desktop apps (macOS, Windows, Linux)
+- Mobile apps (iOS, Android)
+- Dark/light/system themes
+
+</td>
+</tr>
+</table>
+
+---
+
+## AI Integration
+
+### Why AI-Native?
+
+Traditional productivity apps are **closed systems**. Your AI can't:
+
+- See your calendar to suggest meeting times
+- Reschedule tasks when priorities change
+- Create time blocks for deep work
+- Track your progress across projects
+
+Open Sunsama **opens the black box**.
+
+### MCP Server (Model Context Protocol)
+
+Connect your AI assistant in seconds:
+
+```json
+// Claude Desktop: ~/Library/Application Support/Claude/claude_desktop_config.json
+{
+  "mcpServers": {
+    "open-sunsama": {
+      "command": "npx",
+      "args": ["-y", "@open-sunsama/mcp"],
+      "env": {
+        "OPENSUNSAMA_API_KEY": "os_your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+**24 Tools Available:**
+
+| Category        | Tools                                                                                                                                |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **Tasks**       | `list_tasks`, `create_task`, `update_task`, `complete_task`, `delete_task`, `schedule_task`, `reorder_tasks`                         |
+| **Time Blocks** | `list_time_blocks`, `create_time_block`, `update_time_block`, `delete_time_block`, `link_task_to_time_block`, `get_schedule_for_day` |
+| **Subtasks**    | `list_subtasks`, `create_subtask`, `toggle_subtask`, `update_subtask`, `delete_subtask`                                              |
+| **User**        | `get_user_profile`, `update_user_profile`                                                                                            |
+
+### Example Prompts
+
+Once connected, try these with Claude:
+
+> "Schedule my top 3 tasks for tomorrow with 2-hour focus blocks"
+
+> "What's on my calendar today? Move anything non-urgent to next week"
+
+> "Create a task to review the Q4 roadmap, P1 priority, due Friday"
+
+> "I finished the design review—mark it complete and start my next task"
+
+### REST API
+
+For custom integrations:
+
+```bash
+# Create a task
+curl -X POST https://api.opensunsama.com/tasks \
+  -H "X-API-Key: os_your_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Ship v2.0",
+    "priority": "P0",
+    "scheduledDate": "2026-02-03",
+    "estimatedMins": 120
+  }'
+
+# Get today's schedule
+curl https://api.opensunsama.com/time-blocks?date=2026-02-03 \
+  -H "X-API-Key: os_your_key"
+```
+
+**Scopes:** `tasks:read`, `tasks:write`, `time-blocks:read`, `time-blocks:write`, `user:read`, `user:write`
+
+---
+
+## Quick Start
+
+### Cloud (Recommended)
+
+The fastest way to get started:
+
+1. **Sign up** at [opensunsama.com](https://opensunsama.com)
+2. **Generate an API key** in Settings → API Keys
+3. **Connect your AI** using the MCP config above
+
+### Self-Hosted
+
+<details>
+<summary><strong>Prerequisites</strong></summary>
+
+- [Bun](https://bun.sh/) v1.0+ (or Node.js 20+)
+- PostgreSQL 15+
 - S3-compatible storage (optional, for file uploads)
 
-### Installation
+</details>
 
-1. Clone the repository:
 ```bash
+# Clone the repository
 git clone https://github.com/ShadowWalker2014/open-sunsama.git
 cd open-sunsama
-```
 
-2. Install dependencies:
-```bash
+# Install dependencies
 bun install
-```
 
-3. Set up environment variables:
-```bash
-# Copy example env files
-cp apps/api/.env.example apps/api/.env
-cp apps/web/.env.example apps/web/.env
+# Configure environment
+cp .env.example .env
+# Edit .env with your DATABASE_URL
 
-# Edit with your database and API credentials
-```
-
-4. Run database migrations:
-```bash
-cd packages/database
+# Run database migrations
 bun run db:push
-```
 
-5. Start development servers:
-```bash
+# Start development servers
 bun run dev
 ```
 
-The web app will be available at http://localhost:3000 and the API at http://localhost:3001.
+| Service        | URL                   |
+| -------------- | --------------------- |
+| Web App        | http://localhost:3000 |
+| API            | http://localhost:3001 |
+| Drizzle Studio | http://localhost:4983 |
 
-## API Documentation
-
-Open Sunsama provides a RESTful API for AI agent integration:
-
-### Authentication
-
-The API supports two authentication methods:
-
-#### 1. API Key (Recommended for AI Agents / Integrations)
-
-API keys can be created in **Settings → API Keys** and are the recommended method for programmatic access:
-
-```
-X-API-Key: os_<your-api-key>
-```
-
-API keys can be scoped to specific permissions:
-- `tasks:read` / `tasks:write` - Task management
-- `time-blocks:read` / `time-blocks:write` - Time block scheduling
-- `user:read` / `user:write` - User profile access
-
-**Note:** API keys are shown only once at creation. The key is stored as a SHA-256 hash and cannot be recovered.
-
-#### 2. JWT Token (Web Sessions)
-
-Used internally by the web app, obtained via login:
-
-```
-Authorization: Bearer <jwt-token>
-```
-
-### Key Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /auth/register | Create account |
-| POST | /auth/login | Get JWT token |
-| GET | /tasks | List all tasks |
-| POST | /tasks | Create task |
-| PATCH | /tasks/:id | Update task |
-| DELETE | /tasks/:id | Delete task |
-| GET | /time-blocks | List time blocks |
-| POST | /time-blocks | Create time block |
-| GET | /attachments | List attachments |
-| POST | /uploads/attachments | Upload file |
-
-### Example: Create a Task (for AI agents)
+### Docker
 
 ```bash
-curl -X POST https://api.opensunsama.com/tasks \
-  -H "X-API-Key: os_your-api-key-here" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Review PR #123",
-    "notes": "Check the new authentication flow",
-    "scheduledDate": "2026-01-29",
-    "estimatedMins": 30,
-    "priority": "P1"
-  }'
+# Start all services
+docker-compose up -d
+
+# Or build and run individually
+docker build -f Dockerfile.api -t open-sunsama-api .
+docker build -f Dockerfile.web -t open-sunsama-web .
 ```
 
-> **Self-hosted/Local**: Replace `https://api.opensunsama.com` with your API URL (e.g., `http://localhost:3001`)
+### Desktop Apps
 
-### Managing API Keys
+Download from [opensunsama.com/download](https://opensunsama.com/download) or build from source:
 
-1. Navigate to **Settings → API Keys** in the web app
-2. Click **"Generate New Key"**
-3. Configure the key:
-   - **Name**: A descriptive name (e.g., "Claude Assistant")
-   - **Expiration**: Optional expiration date
-   - **Scopes**: Select which permissions the key should have
-4. **Copy the key immediately** - it will only be shown once
-5. Use the key in your API requests with the `X-API-Key` header
+```bash
+cd apps/desktop
+bun run tauri build
+```
 
-## License
+---
 
-This software is free for non-commercial use. See [LICENSE](LICENSE) for details.
+## Tech Stack
 
-For commercial or enterprise licensing, contact: **ceo@circo.so**
+<table>
+<tr>
+<td align="center" width="96">
+  <img src="https://skillicons.dev/icons?i=react" width="48" height="48" alt="React" />
+  <br>React 19
+</td>
+<td align="center" width="96">
+  <img src="https://skillicons.dev/icons?i=typescript" width="48" height="48" alt="TypeScript" />
+  <br>TypeScript
+</td>
+<td align="center" width="96">
+  <img src="https://skillicons.dev/icons?i=tailwind" width="48" height="48" alt="Tailwind" />
+  <br>Tailwind
+</td>
+<td align="center" width="96">
+  <img src="https://skillicons.dev/icons?i=postgresql" width="48" height="48" alt="PostgreSQL" />
+  <br>PostgreSQL
+</td>
+<td align="center" width="96">
+  <img src="https://skillicons.dev/icons?i=bun" width="48" height="48" alt="Bun" />
+  <br>Bun
+</td>
+<td align="center" width="96">
+  <img src="https://skillicons.dev/icons?i=tauri" width="48" height="48" alt="Tauri" />
+  <br>Tauri
+</td>
+</tr>
+</table>
+
+| Layer        | Technologies                                                                             |
+| ------------ | ---------------------------------------------------------------------------------------- |
+| **Frontend** | React 19, Vite 6, TanStack Router, TanStack Query, Tailwind CSS, Radix UI, Framer Motion |
+| **Backend**  | Hono 4, Drizzle ORM, PostgreSQL 15, PG Boss (jobs), Zod                                  |
+| **Desktop**  | Tauri 2 (Rust), system tray, global hotkeys, auto-launch                                 |
+| **Mobile**   | Expo 52, React Native, Expo Router                                                       |
+| **Editor**   | Tiptap (ProseMirror), syntax highlighting, file embeds                                   |
+| **Infra**    | Turborepo, Bun workspaces, Docker, Railway                                               |
+
+---
+
+## Architecture
+
+```
+open-sunsama/
+├── apps/
+│   ├── api/           # Hono REST API (port 3001)
+│   ├── web/           # React + Vite SPA (port 3000)
+│   ├── desktop/       # Tauri v2 desktop wrapper
+│   └── mobile/        # Expo React Native app
+├── packages/
+│   ├── database/      # Drizzle ORM, migrations, schema
+│   ├── types/         # Shared TypeScript interfaces
+│   ├── api-client/    # Type-safe HTTP client + React Query hooks
+│   └── utils/         # Date utils, validation, errors
+├── mcp/               # MCP server for AI assistants
+└── docs/              # Documentation and images
+```
+
+---
+
+## Roadmap
+
+We ship fast. Here's what's coming:
+
+- [x] Core task management with priorities
+- [x] Time blocking calendar
+- [x] MCP server for AI agents (24 tools)
+- [x] Desktop apps (macOS, Windows, Linux)
+- [x] Mobile apps (iOS, Android)
+- [x] Rich text notes with file attachments
+- [x] API key authentication with scopes
+- [ ] **Calendar sync** (Google Calendar, Outlook) — Q1 2026
+- [ ] **Recurring tasks** — Q1 2026
+- [ ] **Team workspaces** — Q2 2026
+- [ ] **Integrations** (Linear, GitHub, Jira, Notion) — Q2 2026
+- [ ] **Analytics dashboard** — Q2 2026
+- [ ] **AI auto-scheduling** — Q3 2026
+
+---
 
 ## Contributing
 
-Contributions are welcome! Please read our contributing guidelines before submitting PRs.
+We love contributions! Open Sunsama is built by the community, for the community.
 
-## Support
+### Ways to Contribute
 
-- Issues: GitHub Issues
-- Enterprise: ceo@circo.so
+- **Report bugs** — Found an issue? [Open a bug report](https://github.com/ShadowWalker2014/open-sunsama/issues/new?template=bug_report.md)
+- **Request features** — Have an idea? [Start a discussion](https://github.com/ShadowWalker2014/open-sunsama/discussions/new?category=ideas)
+- **Submit PRs** — Code contributions are always welcome
+- **Improve docs** — Help others get started
+- **Share** — Star the repo and spread the word!
+
+### Development Setup
+
+```bash
+# Fork and clone
+git clone https://github.com/YOUR_USERNAME/open-sunsama.git
+cd open-sunsama
+
+# Install dependencies
+bun install
+
+# Create a branch
+git checkout -b feature/amazing-feature
+
+# Make changes and test
+bun run dev
+bun run typecheck
+bun run lint
+
+# Commit with conventional commits
+git commit -m "feat: add amazing feature"
+
+# Push and open a PR
+git push origin feature/amazing-feature
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+---
+
+## Community
+
+<div align="center">
+
+[![GitHub Discussions](https://img.shields.io/badge/GitHub-Discussions-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/ShadowWalker2014/open-sunsama/discussions)
+
+</div>
+
+---
+
+## License
+
+Open Sunsama is **free for non-commercial use** under a custom license.
+
+**Permitted:**
+
+- Personal use
+- Educational use
+- Non-profit organizations
+- Open source projects
+- Evaluation and testing
+
+**Requires enterprise license:**
+
+- Commercial use
+- Use in products sold for profit
+- Production use by for-profit companies
+
+See [LICENSE](LICENSE) for full details.
+
+---
+
+## Acknowledgments
+
+Built with love using these amazing open-source projects:
+
+<table>
+<tr>
+<td align="center"><a href="https://hono.dev/"><img src="https://hono.dev/images/logo.png" width="40" /><br /><sub>Hono</sub></a></td>
+<td align="center"><a href="https://orm.drizzle.team/"><img src="https://orm.drizzle.team/favicon.ico" width="40" /><br /><sub>Drizzle</sub></a></td>
+<td align="center"><a href="https://tanstack.com/"><img src="https://tanstack.com/favicon.ico" width="40" /><br /><sub>TanStack</sub></a></td>
+<td align="center"><a href="https://www.radix-ui.com/"><img src="https://www.radix-ui.com/favicon.ico" width="40" /><br /><sub>Radix UI</sub></a></td>
+<td align="center"><a href="https://tiptap.dev/"><img src="https://tiptap.dev/favicon.ico" width="40" /><br /><sub>Tiptap</sub></a></td>
+<td align="center"><a href="https://tauri.app/"><img src="https://tauri.app/favicon.ico" width="40" /><br /><sub>Tauri</sub></a></td>
+<td align="center"><a href="https://expo.dev/"><img src="https://expo.dev/favicon.ico" width="40" /><br /><sub>Expo</sub></a></td>
+</tr>
+</table>
+
+---
+
+<div align="center">
+
+<br />
+
+**If Open Sunsama helps you ship faster, consider giving it a ⭐**
+
+<br />
+
+<a href="https://github.com/ShadowWalker2014/open-sunsama/stargazers">
+  <img src="https://img.shields.io/github/stars/ShadowWalker2014/open-sunsama?style=for-the-badge&logo=github&color=yellow" alt="Stars" />
+</a>
+
+<br />
+<br />
+
+Made with ❤️ by [Circo](https://circo.so)
+
+<sub>The future of productivity is open.</sub>
+
+</div>
