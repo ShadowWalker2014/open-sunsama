@@ -448,6 +448,8 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                 placeholder="--:--"
                 dropdownHeader="Set actual time"
                 shortcutHint="E"
+                showClear={!!actualMins}
+                clearText="Clear"
                 size="sm"
               />
 
@@ -460,8 +462,8 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                 placeholder="--:--"
                 dropdownHeader="Set planned time"
                 shortcutHint="W"
-                showClear
-                clearText="Clear planned"
+                showClear={!!plannedMins}
+                clearText="Clear"
                 size="sm"
               />
 

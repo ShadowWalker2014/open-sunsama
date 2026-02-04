@@ -47,16 +47,20 @@ interface TasksDndProviderProps {
  */
 export function TasksDndProvider({ children }: TasksDndProviderProps) {
   const [activeTask, setActiveTask] = React.useState<Task | null>(null);
-  const [activeOverColumn, setActiveOverColumn] = React.useState<string | null>(null);
+  const [activeOverColumn, setActiveOverColumn] = React.useState<string | null>(
+    null
+  );
 
   const moveTask = useMoveTask();
   const reorderTasks = useReorderTasks();
 
   // Drag and drop sensors with keyboard support for accessibility
+  // Using delay + distance to ensure clicks register before drag starts
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5,
+        delay: 100,
+        tolerance: 5,
       },
     }),
     useSensor(TouchSensor, {

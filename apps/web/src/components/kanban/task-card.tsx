@@ -18,7 +18,11 @@ interface TaskCardProps {
  * Sortable task card for drag-and-drop reordering within columns.
  * Uses @dnd-kit/sortable for smooth animations.
  */
-export function SortableTaskCard({ task, onSelect, isDragging: externalDragging }: TaskCardProps) {
+export function SortableTaskCard({
+  task,
+  onSelect,
+  isDragging: externalDragging,
+}: TaskCardProps) {
   const [isHovered, setIsHovered] = React.useState(false);
   const completeTask = useCompleteTask();
   const updateTask = useUpdateTask();
@@ -29,7 +33,7 @@ export function SortableTaskCard({ task, onSelect, isDragging: externalDragging 
   const updateSubtask = useUpdateSubtask();
 
   const handleToggleSubtask = async (subtaskId: string) => {
-    const subtask = subtasks?.find(s => s.id === subtaskId);
+    const subtask = subtasks?.find((s) => s.id === subtaskId);
     if (subtask) {
       await updateSubtask.mutateAsync({
         taskId: task.id,
@@ -61,13 +65,14 @@ export function SortableTaskCard({ task, onSelect, isDragging: externalDragging 
   // Determine if we should show a drop indicator
   // isOver is true when this item is being hovered by the dragged item
   const showIndicator = isOver && active?.id !== task.id;
-  
+
   // Determine indicator position based on where the item will be inserted
   // If dragging from above (higher index) to current position -> show indicator above
   // If dragging from below (lower index) to current position -> show indicator below
   const activeIndex = active?.data?.current?.sortable?.index ?? -1;
   const showDropIndicatorAbove = showIndicator && activeIndex > index;
-  const showDropIndicatorBelow = showIndicator && activeIndex < index && activeIndex !== -1;
+  const showDropIndicatorBelow =
+    showIndicator && activeIndex < index && activeIndex !== -1;
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -95,16 +100,14 @@ export function SortableTaskCard({ task, onSelect, isDragging: externalDragging 
         style={style}
         {...attributes}
         {...listeners}
-        className={cn(
-          "relative",
-          isCurrentlyDragging && "opacity-30 z-50"
-        )}
+        onClick={handleClick}
+        className={cn("relative", isCurrentlyDragging && "opacity-30 z-50")}
       >
         {/* Drop indicator line - above */}
         {showDropIndicatorAbove && (
           <div className="absolute -top-1 left-0 right-0 h-0.5 bg-primary rounded-full z-10 shadow-[0_0_4px_rgba(var(--primary),0.5)]" />
         )}
-        
+
         <TaskCardContent
           task={task}
           isCompleted={isCompleted}
@@ -118,7 +121,7 @@ export function SortableTaskCard({ task, onSelect, isDragging: externalDragging 
           subtasksHidden={task.subtasksHidden}
           onUpdateTask={handleUpdateTask}
         />
-        
+
         {/* Drop indicator line - below */}
         {showDropIndicatorBelow && (
           <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full z-10 shadow-[0_0_4px_rgba(var(--primary),0.5)]" />
@@ -131,7 +134,11 @@ export function SortableTaskCard({ task, onSelect, isDragging: externalDragging 
 /**
  * Legacy TaskCard - used for DragOverlay display
  */
-export function TaskCard({ task, onSelect, isDragging: externalDragging }: TaskCardProps) {
+export function TaskCard({
+  task,
+  onSelect,
+  isDragging: externalDragging,
+}: TaskCardProps) {
   const [isHovered, setIsHovered] = React.useState(false);
   const completeTask = useCompleteTask();
   const updateTask = useUpdateTask();
@@ -142,7 +149,7 @@ export function TaskCard({ task, onSelect, isDragging: externalDragging }: TaskC
   const updateSubtask = useUpdateSubtask();
 
   const handleToggleSubtask = async (subtaskId: string) => {
-    const subtask = subtasks?.find(s => s.id === subtaskId);
+    const subtask = subtasks?.find((s) => s.id === subtaskId);
     if (subtask) {
       await updateSubtask.mutateAsync({
         taskId: task.id,
