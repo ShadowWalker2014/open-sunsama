@@ -38,6 +38,7 @@ import type {
   CreateTaskSeriesInput,
 } from "@open-sunsama/types";
 import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
+import { cn } from "@/lib/utils";
 import {
   useUpdateTask,
   useDeleteTask,
@@ -402,79 +403,82 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden">
-        {/* Header - Title with checkbox and date */}
-        <div className="px-5 pt-4 pb-3 border-b">
-          <div className="flex items-start gap-3 pr-8">
+      <DialogContent className="max-w-xl p-0 gap-0 overflow-hidden">
+        {/* Clean header with title and time */}
+        <div className="px-6 pt-5 pb-4">
+          {/* Title row with checkbox */}
+          <div className="flex items-start gap-3">
             {/* Checkbox */}
             <button
               type="button"
-              className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors cursor-pointer ${
+              className={cn(
+                "mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all",
                 isCompleted
                   ? "border-primary bg-primary text-primary-foreground"
-                  : "border-muted-foreground/40 hover:border-primary hover:bg-primary/10"
-              }`}
+                  : "border-muted-foreground/30 hover:border-primary"
+              )}
               onClick={handleToggleComplete}
             >
               {isCompleted && <Check className="h-3 w-3" strokeWidth={3} />}
             </button>
 
-            {/* Title and date */}
-            <div className="flex-1 min-w-0">
+            {/* Title */}
+            <div className="flex-1 min-w-0 pr-4">
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 onBlur={() => title !== task.title && handleSave()}
-                className={`border-none p-0 text-lg font-medium shadow-none focus-visible:ring-0 h-auto ${
-                  isCompleted ? "line-through text-muted-foreground" : ""
-                }`}
+                className={cn(
+                  "border-none p-0 text-xl font-semibold shadow-none focus-visible:ring-0 h-auto bg-transparent",
+                  isCompleted && "line-through text-muted-foreground"
+                )}
                 placeholder="Task title"
               />
-              {scheduledDate && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  {scheduledDate}
-                </p>
-              )}
             </div>
 
-            {/* Time tracking section - ACTUAL / PLANNED with START button */}
-            <div className="flex items-center gap-3 shrink-0">
-              {/* Actual time */}
-              <TimeDropdown
-                ref={actualTimeRef}
-                value={actualMins}
-                onChange={handleActualMinsChange}
-                label="ACTUAL"
-                placeholder="--:--"
-                dropdownHeader="Set actual time"
-                shortcutHint="E"
-                showClear={!!actualMins}
-                clearText="Clear"
-                size="sm"
-              />
-
-              {/* Planned time */}
-              <TimeDropdown
-                ref={plannedTimeRef}
-                value={plannedMins}
-                onChange={handleDurationChange}
-                label="PLANNED"
-                placeholder="--:--"
-                dropdownHeader="Set planned time"
-                shortcutHint="W"
-                showClear={!!plannedMins}
-                clearText="Clear"
-                size="sm"
-              />
-
-              {/* START button */}
+            {/* Time tracking - compact inline */}
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1 text-xs">
+                <span className="text-muted-foreground/60 uppercase tracking-wide">
+                  Actual
+                </span>
+                <TimeDropdown
+                  ref={actualTimeRef}
+                  value={actualMins}
+                  onChange={handleActualMinsChange}
+                  placeholder="0:00"
+                  dropdownHeader="Set actual time"
+                  shortcutHint="E"
+                  showClear
+                  clearText="Clear"
+                  size="sm"
+                  className="text-sm font-medium"
+                />
+              </div>
+              <div className="flex items-center gap-1 text-xs">
+                <span className="text-muted-foreground/60 uppercase tracking-wide">
+                  Planned
+                </span>
+                <TimeDropdown
+                  ref={plannedTimeRef}
+                  value={plannedMins}
+                  onChange={handleDurationChange}
+                  placeholder="0:00"
+                  dropdownHeader="Set planned time"
+                  shortcutHint="W"
+                  showClear
+                  clearText="Clear"
+                  size="sm"
+                  className="text-sm font-medium"
+                />
+              </div>
+              {/* START button - Linear green style */}
               <Button
                 size="sm"
-                variant="outline"
                 onClick={handleExpandToFocus}
-                className="gap-1.5 h-8 px-3 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                className="gap-1 h-7 px-3 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium"
               >
-                <Play className="h-3.5 w-3.5" />
+                <Play className="h-3 w-3 fill-current" />
                 START
               </Button>
             </div>
@@ -482,60 +486,9 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
         </div>
 
         {/* Main Content */}
-        <div className="px-5 py-4 space-y-5 max-h-[60vh] overflow-y-auto">
+        <div className="px-6 pb-5 space-y-4 max-h-[60vh] overflow-y-auto">
           {/* Series Banner - show if task is part of a recurring series */}
           {task.seriesId && <TaskSeriesBanner task={task} />}
-
-          {/* Top row: Priority + Start Time inline */}
-          <div className="flex items-center gap-4 flex-wrap">
-            {/* Priority */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 gap-2 px-3">
-                  <PriorityIcon priority={priority} />
-                  <span className="text-sm">{PRIORITY_LABELS[priority]}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-40">
-                {PRIORITIES.map((p) => (
-                  <DropdownMenuItem
-                    key={p}
-                    onClick={() => handleSetPriority(p)}
-                    className={priority === p ? "bg-accent" : ""}
-                  >
-                    <PriorityIcon priority={p} className="mr-2" />
-                    {PRIORITY_LABELS[p]}
-                    {priority === p && (
-                      <span className="ml-auto text-xs text-muted-foreground">
-                        ✓
-                      </span>
-                    )}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Start Time - Only show if task has a time block */}
-            {activeTimeBlock && (
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="time"
-                  value={startTime}
-                  onChange={(e) => handleStartTimeChange(e.target.value)}
-                  className="h-8 w-28 text-sm"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Time block info - compact */}
-          {activeTimeBlock && (
-            <p className="text-xs text-muted-foreground -mt-2">
-              Scheduled {format(new Date(activeTimeBlock.startTime), "h:mm a")}{" "}
-              - {format(new Date(activeTimeBlock.endTime), "h:mm a")}
-            </p>
-          )}
 
           {/* Subtasks Section */}
           <div className="space-y-2">

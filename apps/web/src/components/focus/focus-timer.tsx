@@ -160,14 +160,14 @@ export function FocusTimer({
         />
       </div>
 
-      {/* Start/Stop button */}
+      {/* Start/Stop button - Linear green style */}
       <button
         onClick={isRunning ? stop : start}
         className={cn(
-          "flex items-center justify-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all",
+          "flex items-center justify-center gap-1.5 px-5 py-2 rounded-md text-sm font-medium transition-all",
           isRunning
             ? "bg-red-500/10 text-red-500 hover:bg-red-500/20"
-            : "bg-primary text-primary-foreground hover:bg-primary/90"
+            : "bg-emerald-500 text-white hover:bg-emerald-600"
         )}
       >
         {isRunning ? (
@@ -178,7 +178,7 @@ export function FocusTimer({
         ) : (
           <>
             <Play className="h-3.5 w-3.5 fill-current" />
-            Start Focus
+            START
           </>
         )}
       </button>

@@ -8,16 +8,14 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 
-// Time presets in minutes
+// Time presets in minutes - consistent across all time dropdowns
 const TIME_PRESETS = [
-  { value: 5, label: "5 min" },
-  { value: 10, label: "10 min" },
   { value: 15, label: "15 min" },
-  { value: 20, label: "20 min" },
-  { value: 25, label: "25 min" },
   { value: 30, label: "30 min" },
   { value: 45, label: "45 min" },
   { value: 60, label: "1 hr" },
+  { value: 90, label: "1.5 hr" },
+  { value: 120, label: "2 hr" },
 ];
 
 export interface TimeDropdownRef {
@@ -332,8 +330,8 @@ export const TimeDropdown = React.forwardRef<
             ))}
           </div>
 
-          {/* Clear option */}
-          {showClear && value !== null && (
+          {/* Clear option - show when showClear is true and there's a value */}
+          {showClear && value !== null && value > 0 && (
             <div className="border-t p-1">
               <button
                 type="button"
