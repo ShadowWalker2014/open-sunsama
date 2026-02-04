@@ -27,14 +27,16 @@ export function ShareButtons({
   const fullUrl = url.startsWith("http") ? url : `${BASE_URL}${url}`;
 
   const handleTwitterShare = useCallback(() => {
-    const text = encodeURIComponent(title);
+    const text = encodeURIComponent(
+      description ? `${title} - ${description}` : title
+    );
     const shareUrl = encodeURIComponent(fullUrl);
     window.open(
       `https://twitter.com/intent/tweet?text=${text}&url=${shareUrl}`,
       "_blank",
       "noopener,noreferrer,width=550,height=420"
     );
-  }, [title, fullUrl]);
+  }, [title, description, fullUrl]);
 
   const handleLinkedInShare = useCallback(() => {
     const shareUrl = encodeURIComponent(fullUrl);
