@@ -12,14 +12,8 @@ export default function DocPage() {
   const params = useParams({ from: "/docs/$" });
   const slug = (params as any)["_splat"] || "";
 
-  console.log("[DocPage] params:", params);
-  console.log("[DocPage] slug:", slug);
-
   const doc = getDocBySlug(slug);
   const sections = getDocsBySection();
-
-  console.log("[DocPage] doc found:", !!doc);
-  console.log("[DocPage] sections:", sections.length);
 
   // Redirect to docs landing if page not found
   if (!doc) {

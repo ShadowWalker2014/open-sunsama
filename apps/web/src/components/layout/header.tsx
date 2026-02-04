@@ -11,6 +11,7 @@ import {
   Sun,
   User,
   Download,
+  BookOpen,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSearch } from "@/hooks/useSearch";
@@ -197,6 +198,12 @@ export function Header({ className }: HeaderProps) {
                 <a href="/app/settings" className="w-full cursor-pointer">
                   <Settings className="mr-2 h-3.5 w-3.5" />
                   Settings
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="text-[13px] py-1.5">
+                <a href="/docs" className="w-full cursor-pointer">
+                  <BookOpen className="mr-2 h-3.5 w-3.5" />
+                  Documentation
                 </a>
               </DropdownMenuItem>
               {!isDesktopApp && (
