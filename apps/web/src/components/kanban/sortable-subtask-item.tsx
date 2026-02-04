@@ -90,7 +90,7 @@ export function SortableSubtaskItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group flex items-center gap-2 py-1.5 rounded-md hover:bg-muted/50 transition-colors",
+        "group flex items-center gap-3 py-2.5 px-1 -mx-1 rounded-md hover:bg-muted/30 transition-colors",
         isDragging && "opacity-50 bg-muted/30"
       )}
       onMouseEnter={() => setHoveredSubtaskId(subtask.id)}
@@ -102,23 +102,21 @@ export function SortableSubtaskItem({
         {...listeners}
         className="touch-none cursor-grab active:cursor-grabbing"
       >
-        <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <GripVertical className="h-4 w-4 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
 
-      {/* Checkbox - circular style for Sunsama look */}
+      {/* Checkbox - circular style */}
       <button
         onClick={onToggle}
         className={cn(
-          "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors",
+          "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all",
           "cursor-pointer",
           subtask.completed
             ? "border-primary bg-primary text-primary-foreground"
-            : "border-muted-foreground/40 hover:border-primary hover:bg-primary/10"
+            : "border-muted-foreground/30 hover:border-primary"
         )}
       >
-        {subtask.completed && (
-          <Check className="h-2.5 w-2.5" strokeWidth={3} />
-        )}
+        {subtask.completed && <Check className="h-3 w-3" strokeWidth={3} />}
       </button>
 
       {/* Title - click to edit */}
@@ -131,7 +129,7 @@ export function SortableSubtaskItem({
           onBlur={handleSave}
           onKeyDown={handleKeyDown}
           className={cn(
-            "flex-1 text-[13px] bg-transparent border-none outline-none",
+            "flex-1 text-sm bg-transparent border-none outline-none",
             "focus:ring-0 p-0"
           )}
         />
@@ -139,9 +137,8 @@ export function SortableSubtaskItem({
         <span
           onClick={handleTitleClick}
           className={cn(
-            "flex-1 text-[13px] cursor-text",
-            subtask.completed && "line-through text-muted-foreground",
-            onUpdate && "hover:bg-muted/30 rounded px-1 -mx-1"
+            "flex-1 text-sm cursor-text",
+            subtask.completed && "line-through text-muted-foreground"
           )}
         >
           {subtask.title}
@@ -152,10 +149,10 @@ export function SortableSubtaskItem({
       <Button
         variant="ghost"
         size="icon"
-        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
         onClick={onDelete}
       >
-        <X className="h-3 w-3" />
+        <X className="h-3.5 w-3.5" />
       </Button>
     </div>
   );

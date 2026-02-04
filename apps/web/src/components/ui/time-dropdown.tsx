@@ -188,9 +188,9 @@ export const TimeDropdown = React.forwardRef<
   }, [showCustomInput]);
 
   const sizeClasses = {
-    sm: "text-xl",
-    md: "text-2xl",
-    lg: "text-3xl",
+    sm: "text-sm",
+    md: "text-lg",
+    lg: "text-4xl",
   };
 
   return (
