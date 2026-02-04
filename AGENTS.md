@@ -6,10 +6,10 @@ AI-agent-friendly task management + time blocking app. TypeScript monorepo with 
 
 **Use Cursor browser tool for UI testing.**
 
-| Environment | Web | API | Prerequisites |
-|-------------|-----|-----|---------------|
-| Local | http://localhost:3000 | http://localhost:3001 | `bun dev` running for both web and api |
-| Production | https://opensunsama.com | https://api.opensunsama.com | None |
+| Environment | Web                     | API                         | Prerequisites                          |
+| ----------- | ----------------------- | --------------------------- | -------------------------------------- |
+| Local       | http://localhost:3000   | http://localhost:3001       | `bun dev` running for both web and api |
+| Production  | https://opensunsama.com | https://api.opensunsama.com | None                                   |
 
 **Login credentials:** `.env.local` in project root (gitignored, real user account - NEVER commit).
 
@@ -40,36 +40,42 @@ opensunsama/
 ## Apps
 
 ### API (`apps/api`)
+
 **Hono v4** | Port 3001 | tsup build
 
-| Route | Auth | Description |
-|-------|------|-------------|
-| `/auth/*` | Mixed | Login, register, profile |
-| `/tasks/*` | Yes | Task CRUD + reorder |
-| `/tasks/:id/subtasks/*` | Yes | Subtask CRUD |
-| `/time-blocks/*` | Yes | Time block CRUD + cascade resize |
-| `/api-keys/*` | JWT | API key management |
-| `/uploads/*` | Yes | S3 file uploads |
+| Route                   | Auth  | Description                      |
+| ----------------------- | ----- | -------------------------------- |
+| `/auth/*`               | Mixed | Login, register, profile         |
+| `/tasks/*`              | Yes   | Task CRUD + reorder              |
+| `/tasks/:id/subtasks/*` | Yes   | Subtask CRUD                     |
+| `/time-blocks/*`        | Yes   | Time block CRUD + cascade resize |
+| `/api-keys/*`           | JWT   | API key management               |
+| `/uploads/*`            | Yes   | S3 file uploads                  |
 
 **Auth:** JWT (`Bearer <token>`) or API Key (`X-API-Key: os_<key>`)  
 **Scopes:** `tasks:read`, `tasks:write`, `time-blocks:read`, `time-blocks:write`, `user:read`, `user:write`
 
 ### Web (`apps/web`)
+
 **React 19 + Vite** | TanStack Router + Query | Radix UI + Tailwind | Port 3000
 
-| Route | Description |
-|-------|-------------|
-| `/app` | Main kanban board |
-| `/app/calendar` | Timeline view |
-| `/app/focus/$taskId` | Focus mode |
-| `/app/settings` | User settings |
+| Route                | Description       |
+| -------------------- | ----------------- |
+| `/app`               | Main kanban board |
+| `/app/calendar`      | Timeline view     |
+| `/app/focus/$taskId` | Focus mode        |
+| `/app/settings`      | User settings     |
 
 **Features:** Kanban drag-drop (@dnd-kit), time blocking, focus mode with timer, command palette (Cmd+K), rich text (Tiptap), file attachments, WebSocket sync.
 
+**MDX Blog:** Uses `@mdx-js/rollup` + `remark-gfm` for GFM support (tables, strikethrough, task lists). Config in `vite.config.ts`.
+
 ### Desktop (`apps/desktop`)
+
 **Tauri v2** | System tray, global hotkeys (Cmd+Shift+T), notifications, auto-launch.
 
 ### Mobile (`apps/mobile`)
+
 **Expo 52** | Expo Router | Tab navigation (Tasks, Calendar, Settings).
 
 ---
@@ -78,15 +84,15 @@ opensunsama/
 
 **PostgreSQL + Drizzle ORM**
 
-| Table | Purpose |
-|-------|---------|
-| `users` | Accounts with preferences (JSONB) |
-| `tasks` | Title, notes, scheduledDate, priority (P0-P3), position |
-| `subtasks` | Checklist items per task |
-| `time_blocks` | Scheduled blocks linked to tasks |
-| `api_keys` | Hashed keys with scopes |
-| `attachments` | S3 file metadata |
-| `notification_preferences` | Reminders, rollover settings |
+| Table                      | Purpose                                                 |
+| -------------------------- | ------------------------------------------------------- |
+| `users`                    | Accounts with preferences (JSONB)                       |
+| `tasks`                    | Title, notes, scheduledDate, priority (P0-P3), position |
+| `subtasks`                 | Checklist items per task                                |
+| `time_blocks`              | Scheduled blocks linked to tasks                        |
+| `api_keys`                 | Hashed keys with scopes                                 |
+| `attachments`              | S3 file metadata                                        |
+| `notification_preferences` | Reminders, rollover settings                            |
 
 **Relations:** Users → Tasks → Subtasks (CASCADE), Tasks ↔ TimeBlocks (SET NULL), Tasks → Attachments (CASCADE)
 
@@ -96,12 +102,12 @@ opensunsama/
 
 Configure in Cursor/Claude with `OPENSUNSAMA_API_KEY` env var.
 
-| Category | Tools |
-|----------|-------|
-| Tasks | `list_tasks`, `get_task`, `create_task`, `update_task`, `complete_task`, `uncomplete_task`, `delete_task`, `schedule_task`, `reorder_tasks` |
+| Category    | Tools                                                                                                                                                  |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tasks       | `list_tasks`, `get_task`, `create_task`, `update_task`, `complete_task`, `uncomplete_task`, `delete_task`, `schedule_task`, `reorder_tasks`            |
 | Time Blocks | `list_time_blocks`, `get_time_block`, `create_time_block`, `update_time_block`, `delete_time_block`, `link_task_to_time_block`, `get_schedule_for_day` |
-| Subtasks | `list_subtasks`, `create_subtask`, `toggle_subtask`, `update_subtask`, `delete_subtask` |
-| User | `get_user_profile`, `update_user_profile` |
+| Subtasks    | `list_subtasks`, `create_subtask`, `toggle_subtask`, `update_subtask`, `delete_subtask`                                                                |
+| User        | `get_user_profile`, `update_user_profile`                                                                                                              |
 
 ---
 
@@ -155,6 +161,7 @@ bun run --filter=@open-sunsama/web dev
 **See [`.skills/versioning/SKILL.md`](.skills/versioning/SKILL.md) for complete versioning guide.**
 
 Quick reference:
+
 - **Source of truth:** `package.json` (root)
 - **Sync command:** `bun run version:sync`
 - **Current version:** v1.0.0
@@ -166,6 +173,7 @@ Quick reference:
 **See [`.skills/desktop-releases/SKILL.md`](.skills/desktop-releases/SKILL.md) for complete release guide.**
 
 Quick reference:
+
 - **Trigger release:** `git tag v1.x.x && git push origin v1.x.x`
 - **Manual trigger:** GitHub → Actions → Desktop Release → Run workflow
 - **Downloads page:** https://opensunsama.com/download
@@ -178,6 +186,7 @@ Quick reference:
 **Apple ID:** `kai.jiabo.feng@gmail.com`
 
 GitHub Secrets required for signing:
+
 - `APPLE_CERTIFICATE` - Base64-encoded .p12 certificate
 - `APPLE_CERTIFICATE_PASSWORD` - Password for .p12
 - `KEYCHAIN_PASSWORD` - Random string for CI keychain
@@ -283,12 +292,12 @@ PG Boss has built-in recovery mechanisms:
 
 ### Common Issues
 
-| Issue | Cause | Fix |
-|-------|-------|-----|
-| `pgBossRunning: false` | PG Boss failed to start | Check logs for initialization error, verify DATABASE_URL is set |
-| Jobs not running | Worker crashed/stopped | Watchdog should auto-recover; if not, redeploy |
-| Health returns 503 | PG Boss dead | Railway will auto-restart; check logs for root cause |
-| Rollover not happening | Check rollover_logs for errors | Fix error, delete failed log entry, redeploy |
+| Issue                  | Cause                          | Fix                                                             |
+| ---------------------- | ------------------------------ | --------------------------------------------------------------- |
+| `pgBossRunning: false` | PG Boss failed to start        | Check logs for initialization error, verify DATABASE_URL is set |
+| Jobs not running       | Worker crashed/stopped         | Watchdog should auto-recover; if not, redeploy                  |
+| Health returns 503     | PG Boss dead                   | Railway will auto-restart; check logs for root cause            |
+| Rollover not happening | Check rollover_logs for errors | Fix error, delete failed log entry, redeploy                    |
 
 ---
 
