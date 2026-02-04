@@ -27,6 +27,10 @@ import {
   Check,
   Repeat,
   MoreHorizontal,
+  Expand,
+  X,
+  Calendar,
+  CalendarClock,
   Play,
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
@@ -329,9 +333,89 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden">
-        {/* Header section - spacious with separated blocks */}
-        <div className="p-6 pb-0 space-y-5">
+      <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden [&>button]:hidden">
+        {/* Top toolbar - metadata and actions */}
+        <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-border/50 bg-muted/20">
+          {/* Left side - metadata */}
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            {task.scheduledDate && (
+              <span className="flex items-center gap-1 px-2 py-1 rounded hover:bg-muted/50 transition-colors">
+                <Calendar className="h-3.5 w-3.5" />
+                {format(new Date(task.scheduledDate), "MMM d")}
+              </span>
+            )}
+            {plannedMins && (
+              <span className="flex items-center gap-1 px-2 py-1 rounded hover:bg-muted/50 transition-colors">
+                <CalendarClock className="h-3.5 w-3.5" />
+                {plannedMins >= 60
+                  ? `${Math.floor(plannedMins / 60)}:${(plannedMins % 60).toString().padStart(2, "0")}`
+                  : `0:${plannedMins.toString().padStart(2, "0")}`}
+              </span>
+            )}
+          </div>
+
+          {/* Right side - action buttons */}
+          <div className="flex items-center gap-0.5">
+            {/* Add Subtask */}
+            <button
+              type="button"
+              onClick={() => setIsAddingSubtask(true)}
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Subtasks</span>
+            </button>
+
+            {/* More menu */}
+            {!task.seriesId && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onSelect={() => setRepeatDialogOpen(true)}>
+                    <Repeat className="mr-2 h-4 w-4" />
+                    Repeat...
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={handleDelete}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
+            {/* Focus mode button */}
+            <button
+              type="button"
+              onClick={handleExpandToFocus}
+              className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              title="Enter focus mode (F)"
+            >
+              <Expand className="h-4 w-4" />
+            </button>
+
+            {/* Close button */}
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Header section - title and time tracking */}
+        <div className="p-5 pb-0 space-y-4">
           {/* Title row with checkbox */}
           <div className="flex items-start gap-3">
             {/* Checkbox */}
@@ -363,12 +447,11 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
             </div>
           </div>
 
-          {/* Time tracking section - separate row */}
-          <div className="flex items-center justify-between gap-4 py-3 px-4 rounded-lg bg-muted/30 border border-border/50">
-            {/* Time displays */}
-            <div className="flex items-center gap-6">
+          {/* Time tracking section */}
+          <div className="flex items-center gap-6 py-2">
+            <div className="flex items-center gap-4">
               <div className="flex flex-col">
-                <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-1">
+                <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-0.5">
                   Actual
                 </span>
                 <TimeDropdown
@@ -381,12 +464,11 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                   showClear
                   clearText="Clear"
                   size="sm"
-                  className="font-mono text-base text-foreground"
+                  className="font-mono text-sm text-foreground"
                 />
               </div>
-              <div className="w-px h-8 bg-border/50" />
               <div className="flex flex-col">
-                <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-1">
+                <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-0.5">
                   Planned
                 </span>
                 <TimeDropdown
@@ -399,24 +481,24 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                   showClear
                   clearText="Clear"
                   size="sm"
-                  className="font-mono text-base text-foreground"
+                  className="font-mono text-sm text-foreground"
                 />
               </div>
             </div>
 
-            {/* START button - Linear green */}
+            {/* START button */}
             <button
               onClick={handleExpandToFocus}
-              className="flex items-center gap-1.5 h-9 px-4 rounded-md bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-medium transition-colors"
+              className="flex items-center gap-1.5 h-8 px-3 rounded-md bg-[#22c55e] hover:bg-[#16a34a] text-white text-xs font-medium transition-colors"
             >
-              <Play className="h-3.5 w-3.5 fill-current" />
+              <Play className="h-3 w-3 fill-current" />
               START
             </button>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="px-6 py-5 space-y-5 max-h-[55vh] overflow-y-auto">
+        <div className="px-5 py-4 space-y-4 max-h-[55vh] overflow-y-auto">
           {/* Series Banner */}
           {task.seriesId && <TaskSeriesBanner task={task} />}
 
@@ -451,10 +533,10 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
               </SortableContext>
             </DndContext>
 
-            {/* Add Subtask */}
-            {isAddingSubtask ? (
+            {/* Add Subtask input */}
+            {isAddingSubtask && (
               <div className="flex items-center gap-3 py-2 pl-1">
-                <div className="h-5 w-5 shrink-0 rounded-full border-2 border-dashed border-muted-foreground/30" />
+                <div className="h-4 w-4 shrink-0 rounded border border-dashed border-muted-foreground/30" />
                 <Input
                   value={newSubtaskTitle}
                   onChange={(e) => setNewSubtaskTitle(e.target.value)}
@@ -478,13 +560,16 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                   autoFocus
                 />
               </div>
-            ) : (
+            )}
+
+            {/* Show add button only when not adding and no subtasks */}
+            {!isAddingSubtask && subtasks.length === 0 && (
               <button
                 onClick={() => setIsAddingSubtask(true)}
-                className="flex items-center gap-3 py-2 pl-1 text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                <Plus className="h-5 w-5" />
-                <span className="text-sm">Add subtask</span>
+                <Plus className="h-4 w-4" />
+                <span>Add subtask</span>
               </button>
             )}
           </div>
@@ -503,41 +588,6 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
 
           {/* Attachments */}
           <TaskAttachments taskId={task.id} />
-        </div>
-
-        {/* Footer */}
-        <div className="px-6 py-3 border-t border-border/50 flex items-center justify-between">
-          {/* More actions */}
-          {!task.seriesId ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                  <span>More</span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem onSelect={() => setRepeatDialogOpen(true)}>
-                  <Repeat className="mr-2 h-4 w-4" />
-                  Repeat...
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <div />
-          )}
-
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-          >
-            <Trash2 className="h-4 w-4" />
-            <span>Delete</span>
-          </button>
         </div>
       </DialogContent>
 
