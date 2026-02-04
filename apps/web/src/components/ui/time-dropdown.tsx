@@ -10,15 +10,14 @@ import { Input } from "@/components/ui/input";
 
 // Time presets in minutes - consistent across all time dropdowns
 const TIME_PRESETS = [
-  { value: 15, label: "15 min" },
-  { value: 30, label: "30 min" },
-  { value: 45, label: "45 min" },
-  { value: 60, label: "1 hr" },
-  { value: 90, label: "1.5 hr" },
-  { value: 120, label: "2 hr" },
-  { value: 240, label: "4 hr" },
-  { value: 360, label: "6 hr" },
-  { value: 480, label: "8 hr" },
+  { value: 5, label: "5m" },
+  { value: 10, label: "10m" },
+  { value: 15, label: "15m" },
+  { value: 30, label: "30m" },
+  { value: 45, label: "45m" },
+  { value: 60, label: "1h" },
+  { value: 90, label: "1.5h" },
+  { value: 120, label: "2h" },
 ];
 
 export interface TimeDropdownRef {
