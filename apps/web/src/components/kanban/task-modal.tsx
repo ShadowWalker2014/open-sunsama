@@ -21,9 +21,23 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Plus, Clock, Trash2, Check, Calendar, Expand } from "lucide-react";
+import {
+  Plus,
+  Clock,
+  Trash2,
+  Check,
+  Calendar,
+  Expand,
+  Repeat,
+  MoreHorizontal,
+} from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
-import type { Task, Subtask, TaskPriority } from "@open-sunsama/types";
+import type {
+  Task,
+  Subtask,
+  TaskPriority,
+  CreateTaskSeriesInput,
+} from "@open-sunsama/types";
 import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
 import {
   useUpdateTask,
@@ -55,6 +69,8 @@ import { SortableSubtaskItem } from "./sortable-subtask-item";
 import { NotesField } from "./task-modal-form";
 import { TaskAttachments } from "./task-attachments";
 import { TaskSeriesBanner } from "./task-series-banner";
+import { RepeatConfigDialog } from "./repeat-config-popover";
+import { useCreateTaskSeries } from "@/hooks/useTaskSeries";
 
 interface TaskModalProps {
   task: Task | null;
@@ -88,8 +104,10 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   const [startTime, setStartTime] = React.useState<string>("");
   const [isCustomDuration, setIsCustomDuration] = React.useState(false);
   const [customDurationValue, setCustomDurationValue] = React.useState("");
+  const [repeatDialogOpen, setRepeatDialogOpen] = React.useState(false);
 
   const { setHoveredTask } = useHoveredTask();
+  const createTaskSeries = useCreateTaskSeries();
   const updateTask = useUpdateTask();
 
   // Set hovered task when modal is open so keyboard shortcuts (C to complete subtask) work
@@ -363,6 +381,17 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     navigate({ to: "/app/focus/$taskId", params: { taskId: task.id } });
   };
 
+  const handleRepeatSave = async (config: CreateTaskSeriesInput) => {
+    if (!task) return;
+    await createTaskSeries.mutateAsync({
+      ...config,
+      title: task.title,
+      notes: task.notes ?? undefined,
+      priority: task.priority,
+      estimatedMins: task.estimatedMins ?? undefined,
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden">
@@ -623,7 +652,30 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-2.5 border-t flex items-center justify-end">
+        <div className="px-5 py-2.5 border-t flex items-center justify-between">
+          {/* More actions dropdown - only show if task is not part of a series */}
+          {!task.seriesId ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center gap-1.5 px-2 py-1 rounded text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                  <span>More</span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onSelect={() => setRepeatDialogOpen(true)}>
+                  <Repeat className="mr-2 h-4 w-4" />
+                  Repeat...
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <div /> /* Empty spacer when no more menu */
+          )}
+
           <button
             type="button"
             onClick={handleDelete}
@@ -634,6 +686,21 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
           </button>
         </div>
       </DialogContent>
+
+      {/* Repeat Config Dialog */}
+      {task && !task.seriesId && (
+        <RepeatConfigDialog
+          title={task.title}
+          initialConfig={{
+            notes: task.notes ?? undefined,
+            priority: task.priority,
+            estimatedMins: task.estimatedMins ?? undefined,
+          }}
+          onSave={handleRepeatSave}
+          open={repeatDialogOpen}
+          onOpenChange={setRepeatDialogOpen}
+        />
+      )}
     </Dialog>
   );
 }

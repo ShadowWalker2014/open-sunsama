@@ -8,6 +8,7 @@ import {
   timestamp,
   index,
   boolean,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
@@ -61,6 +62,11 @@ export const tasks = pgTable(
       .where(sql`${table.completedAt} IS NULL`),
     // Index for finding all instances of a series
     index("tasks_series_idx").on(table.seriesId),
+    // Unique constraint to prevent duplicate recurring task instances
+    // Only applies when seriesId is not null (recurring tasks)
+    uniqueIndex("tasks_series_date_unique_idx")
+      .on(table.seriesId, table.scheduledDate)
+      .where(sql`${table.seriesId} IS NOT NULL`),
   ]
 );
 

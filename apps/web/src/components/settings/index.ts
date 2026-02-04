@@ -13,7 +13,17 @@ export { TaskSettings } from "./task-settings";
 export { McpSettings } from "./mcp-settings";
 export { CalendarSettings } from "./calendar-settings";
 export { DesktopSettings } from "./desktop-settings";
+export { RoutinesSettings } from "./routines-settings";
 export { ICloudConnectDialog } from "./icloud-connect-dialog";
-export { GoogleIcon, OutlookIcon, ICloudIcon, PROVIDER_CONFIG } from "./calendar-provider-icons";
-export { AccountCard, SyncStatusBadge, CalendarItem } from "./calendar-account-card";
+export {
+  GoogleIcon,
+  OutlookIcon,
+  ICloudIcon,
+  PROVIDER_CONFIG,
+} from "./calendar-provider-icons";
+export {
+  AccountCard,
+  SyncStatusBadge,
+  CalendarItem,
+} from "./calendar-account-card";
 export { RemoveAccountDialog } from "./remove-account-dialog";

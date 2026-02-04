@@ -211,7 +211,7 @@ export function TaskSeriesBanner({
             <DropdownMenuSeparator />
 
             <DropdownMenuItem asChild>
-              <Link to="/app/routines">
+              <Link to="/app/settings" search={{ tab: "routines" }}>
                 <Settings className="mr-2 h-4 w-4" />
                 Manage routines
               </Link>

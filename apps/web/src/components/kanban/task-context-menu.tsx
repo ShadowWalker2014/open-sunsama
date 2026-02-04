@@ -35,7 +35,7 @@ import { useSubtasks } from "@/hooks/useSubtasks";
 import { useCreateTaskSeries } from "@/hooks/useTaskSeries";
 import { formatShortcut, SHORTCUTS } from "@/hooks/useKeyboardShortcuts";
 import { toast } from "@/hooks/use-toast";
-import { RepeatConfigPopover } from "./repeat-config-popover";
+import { RepeatConfigDialog } from "./repeat-config-popover";
 
 interface TaskContextMenuProps {
   task: Task;
@@ -58,8 +58,8 @@ export function TaskContextMenu({
   const autoSchedule = useAutoSchedule();
   const createTaskSeries = useCreateTaskSeries();
 
-  // State for repeat config popover
-  const [repeatPopoverOpen, setRepeatPopoverOpen] = React.useState(false);
+  // State for repeat config dialog
+  const [repeatDialogOpen, setRepeatDialogOpen] = React.useState(false);
 
   // Fetch tasks for the same date/backlog to support reordering
   const { data: tasksInSameList } = useTasks(
@@ -220,133 +220,135 @@ export function TaskContextMenu({
   };
 
   return (
-    <ContextMenu>
-      <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
-      <ContextMenuContent className="w-56">
-        {/* Focus */}
-        <ContextMenuItem onClick={handleFocus}>
-          <Focus className="mr-2 h-4 w-4" />
-          Focus
-          <ContextMenuShortcut>
-            {SHORTCUTS.focus && formatShortcut(SHORTCUTS.focus)}
-          </ContextMenuShortcut>
-        </ContextMenuItem>
-
-        {/* Add to calendar */}
-        <ContextMenuItem onClick={handleAddToCalendar}>
-          <Calendar className="mr-2 h-4 w-4" />
-          Add to calendar
-          <ContextMenuShortcut>
-            {SHORTCUTS.addToCalendar && formatShortcut(SHORTCUTS.addToCalendar)}
-          </ContextMenuShortcut>
-        </ContextMenuItem>
-
-        <ContextMenuSeparator />
-
-        {/* Move to top */}
-        <ContextMenuItem onClick={handleMoveToTop}>
-          <ArrowUp className="mr-2 h-4 w-4" />
-          Move to top
-          <ContextMenuShortcut>
-            {SHORTCUTS.moveToTop && formatShortcut(SHORTCUTS.moveToTop)}
-          </ContextMenuShortcut>
-        </ContextMenuItem>
-
-        {/* Move to bottom */}
-        <ContextMenuItem onClick={handleMoveToBottom}>
-          <ArrowDown className="mr-2 h-4 w-4" />
-          Move to bottom
-          <ContextMenuShortcut>
-            {SHORTCUTS.moveToBottom && formatShortcut(SHORTCUTS.moveToBottom)}
-          </ContextMenuShortcut>
-        </ContextMenuItem>
-
-        <ContextMenuSeparator />
-
-        {/* Defer to next week */}
-        <ContextMenuItem onClick={handleDeferToNextWeek}>
-          <CalendarArrowUp className="mr-2 h-4 w-4" />
-          Defer to next week
-          <ContextMenuShortcut>
-            {SHORTCUTS.deferToNextWeek &&
-              formatShortcut(SHORTCUTS.deferToNextWeek)}
-          </ContextMenuShortcut>
-        </ContextMenuItem>
-
-        <ContextMenuItem onClick={handleDeferToBacklog}>
-          <Archive className="mr-2 h-4 w-4" />
-          Defer to backlog
-          <ContextMenuShortcut>
-            {SHORTCUTS.moveToBacklog && formatShortcut(SHORTCUTS.moveToBacklog)}
-          </ContextMenuShortcut>
-        </ContextMenuItem>
-
-        <ContextMenuSeparator />
-
-        {/* Hide subtasks - only show if task has subtasks */}
-        {hasSubtasks && (
-          <ContextMenuItem onClick={handleToggleHideSubtasks}>
-            {task.subtasksHidden ? (
-              <Eye className="mr-2 h-4 w-4" />
-            ) : (
-              <EyeOff className="mr-2 h-4 w-4" />
-            )}
-            {task.subtasksHidden ? "Show subtasks" : "Hide subtasks"}
+    <>
+      <ContextMenu>
+        <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
+        <ContextMenuContent className="w-56">
+          {/* Focus */}
+          <ContextMenuItem onClick={handleFocus}>
+            <Focus className="mr-2 h-4 w-4" />
+            Focus
             <ContextMenuShortcut>
-              {SHORTCUTS.hideSubtasks && formatShortcut(SHORTCUTS.hideSubtasks)}
+              {SHORTCUTS.focus && formatShortcut(SHORTCUTS.focus)}
             </ContextMenuShortcut>
           </ContextMenuItem>
-        )}
 
-        {/* Duplicate */}
-        <ContextMenuItem onClick={handleDuplicate}>
-          <Copy className="mr-2 h-4 w-4" />
-          Duplicate
-          <ContextMenuShortcut>
-            {SHORTCUTS.duplicate && formatShortcut(SHORTCUTS.duplicate)}
-          </ContextMenuShortcut>
-        </ContextMenuItem>
+          {/* Add to calendar */}
+          <ContextMenuItem onClick={handleAddToCalendar}>
+            <Calendar className="mr-2 h-4 w-4" />
+            Add to calendar
+            <ContextMenuShortcut>
+              {SHORTCUTS.addToCalendar &&
+                formatShortcut(SHORTCUTS.addToCalendar)}
+            </ContextMenuShortcut>
+          </ContextMenuItem>
 
-        {/* Repeat - only show if task is not already part of a series */}
-        {!task.seriesId && (
-          <RepeatConfigPopover
-            title={task.title}
-            initialConfig={{
-              notes: task.notes ?? undefined,
-              priority: task.priority,
-              estimatedMins: task.estimatedMins ?? undefined,
-            }}
-            onSave={handleRepeatSave}
-            open={repeatPopoverOpen}
-            onOpenChange={setRepeatPopoverOpen}
-            trigger={
-              <ContextMenuItem
-                onSelect={(e) => {
-                  e.preventDefault();
-                  setRepeatPopoverOpen(true);
-                }}
-              >
-                <Repeat className="mr-2 h-4 w-4" />
-                Repeat...
-              </ContextMenuItem>
-            }
-          />
-        )}
+          <ContextMenuSeparator />
 
-        <ContextMenuSeparator />
+          {/* Move to top */}
+          <ContextMenuItem onClick={handleMoveToTop}>
+            <ArrowUp className="mr-2 h-4 w-4" />
+            Move to top
+            <ContextMenuShortcut>
+              {SHORTCUTS.moveToTop && formatShortcut(SHORTCUTS.moveToTop)}
+            </ContextMenuShortcut>
+          </ContextMenuItem>
 
-        {/* Remove from tasks */}
-        <ContextMenuItem
-          onClick={handleDelete}
-          className="text-destructive focus:text-destructive focus:bg-destructive/10"
-        >
-          <Trash2 className="mr-2 h-4 w-4" />
-          Remove from tasks
-          <ContextMenuShortcut>
-            {SHORTCUTS.deleteTask && formatShortcut(SHORTCUTS.deleteTask)}
-          </ContextMenuShortcut>
-        </ContextMenuItem>
-      </ContextMenuContent>
-    </ContextMenu>
+          {/* Move to bottom */}
+          <ContextMenuItem onClick={handleMoveToBottom}>
+            <ArrowDown className="mr-2 h-4 w-4" />
+            Move to bottom
+            <ContextMenuShortcut>
+              {SHORTCUTS.moveToBottom && formatShortcut(SHORTCUTS.moveToBottom)}
+            </ContextMenuShortcut>
+          </ContextMenuItem>
+
+          <ContextMenuSeparator />
+
+          {/* Defer to next week */}
+          <ContextMenuItem onClick={handleDeferToNextWeek}>
+            <CalendarArrowUp className="mr-2 h-4 w-4" />
+            Defer to next week
+            <ContextMenuShortcut>
+              {SHORTCUTS.deferToNextWeek &&
+                formatShortcut(SHORTCUTS.deferToNextWeek)}
+            </ContextMenuShortcut>
+          </ContextMenuItem>
+
+          <ContextMenuItem onClick={handleDeferToBacklog}>
+            <Archive className="mr-2 h-4 w-4" />
+            Defer to backlog
+            <ContextMenuShortcut>
+              {SHORTCUTS.moveToBacklog &&
+                formatShortcut(SHORTCUTS.moveToBacklog)}
+            </ContextMenuShortcut>
+          </ContextMenuItem>
+
+          <ContextMenuSeparator />
+
+          {/* Hide subtasks - only show if task has subtasks */}
+          {hasSubtasks && (
+            <ContextMenuItem onClick={handleToggleHideSubtasks}>
+              {task.subtasksHidden ? (
+                <Eye className="mr-2 h-4 w-4" />
+              ) : (
+                <EyeOff className="mr-2 h-4 w-4" />
+              )}
+              {task.subtasksHidden ? "Show subtasks" : "Hide subtasks"}
+              <ContextMenuShortcut>
+                {SHORTCUTS.hideSubtasks &&
+                  formatShortcut(SHORTCUTS.hideSubtasks)}
+              </ContextMenuShortcut>
+            </ContextMenuItem>
+          )}
+
+          {/* Duplicate */}
+          <ContextMenuItem onClick={handleDuplicate}>
+            <Copy className="mr-2 h-4 w-4" />
+            Duplicate
+            <ContextMenuShortcut>
+              {SHORTCUTS.duplicate && formatShortcut(SHORTCUTS.duplicate)}
+            </ContextMenuShortcut>
+          </ContextMenuItem>
+
+          {/* Repeat - only show if task is not already part of a series */}
+          {!task.seriesId && (
+            <ContextMenuItem onSelect={() => setRepeatDialogOpen(true)}>
+              <Repeat className="mr-2 h-4 w-4" />
+              Repeat...
+            </ContextMenuItem>
+          )}
+
+          <ContextMenuSeparator />
+
+          {/* Remove from tasks */}
+          <ContextMenuItem
+            onClick={handleDelete}
+            className="text-destructive focus:text-destructive focus:bg-destructive/10"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Remove from tasks
+            <ContextMenuShortcut>
+              {SHORTCUTS.deleteTask && formatShortcut(SHORTCUTS.deleteTask)}
+            </ContextMenuShortcut>
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
+
+      {/* Repeat Config Dialog - rendered outside context menu */}
+      {!task.seriesId && (
+        <RepeatConfigDialog
+          title={task.title}
+          initialConfig={{
+            notes: task.notes ?? undefined,
+            priority: task.priority,
+            estimatedMins: task.estimatedMins ?? undefined,
+          }}
+          onSave={handleRepeatSave}
+          open={repeatDialogOpen}
+          onOpenChange={setRepeatDialogOpen}
+        />
+      )}
+    </>
   );
 }
