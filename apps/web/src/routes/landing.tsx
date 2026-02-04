@@ -972,23 +972,41 @@ function AppPreview({ inView }: { inView: boolean }) {
         </div>
       </div>
 
-      {/* Mode selector buttons - positioned below the preview */}
-      <div className="flex flex-wrap justify-center gap-2 mt-6">
-        {modes.map((mode) => (
-          <button
-            key={mode.id}
-            onClick={() => handleModeChange(mode.id)}
-            className={cn(
-              "flex items-center gap-1.5 px-4 py-2 rounded-full text-[12px] transition-all duration-200 border",
-              activeMode === mode.id
-                ? "bg-accent/80 border-primary/30 text-foreground font-medium shadow-sm"
-                : "border-border/30 bg-transparent text-muted-foreground hover:bg-accent/50 hover:text-foreground hover:border-border/50"
-            )}
-          >
-            <mode.icon className="h-3.5 w-3.5" />
-            <span>{mode.label}</span>
-          </button>
-        ))}
+      {/* Mode selector - Linear/Vercel-style segmented control */}
+      <div className="flex justify-center mt-8">
+        <div className="relative inline-flex items-center p-1 rounded-full bg-muted/50 border border-border/50 backdrop-blur-sm">
+          {/* Animated background pill */}
+          <div
+            className="absolute h-[calc(100%-8px)] rounded-full bg-background shadow-sm border border-border/60 transition-all duration-300 ease-out"
+            style={{
+              width: `${100 / modes.length}%`,
+              left: `calc(${modes.findIndex((m) => m.id === activeMode) * (100 / modes.length)}% + 4px)`,
+              transform: "translateX(0)",
+            }}
+          />
+          {modes.map((mode) => (
+            <button
+              key={mode.id}
+              onClick={() => handleModeChange(mode.id)}
+              className={cn(
+                "relative z-10 flex items-center gap-2 px-4 py-2 rounded-full text-[13px] font-medium transition-colors duration-200",
+                activeMode === mode.id
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground/80"
+              )}
+            >
+              <mode.icon
+                className={cn(
+                  "h-4 w-4 transition-colors duration-200",
+                  activeMode === mode.id
+                    ? "text-primary"
+                    : "text-muted-foreground"
+                )}
+              />
+              <span className="hidden sm:inline">{mode.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
