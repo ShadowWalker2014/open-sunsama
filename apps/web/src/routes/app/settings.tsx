@@ -115,16 +115,22 @@ export default function SettingsPage() {
   // Track if we've already handled the calendar redirect to avoid double-refetching
   const hasHandledRedirect = React.useRef(false);
 
-  // Handle OAuth redirect - refetch calendar data and clean up URL
+  // Handle OAuth redirect - refetch calendar data, set tab, and clean up URL
   React.useEffect(() => {
     // Only process if there are search params to handle
     const hasParams =
       searchParams.tab || searchParams.calendar || searchParams.provider;
     if (!hasParams) return;
 
-    // Handle OAuth redirect - force refetch calendar data
+    // Handle OAuth redirect - set tab to calendars and force refetch
     if (isCalendarRedirect && !hasHandledRedirect.current) {
       hasHandledRedirect.current = true;
+
+      // Force set the active tab to calendars
+      setActiveTab("calendars");
+      if (isMobile) {
+        setOpenSheet("calendars");
+      }
 
       // Invalidate and refetch calendar queries immediately
       // Using invalidateQueries ensures fresh data even if queries are already cached
@@ -139,7 +145,7 @@ export default function SettingsPage() {
       search: {},
       replace: true,
     });
-  }, [searchParams, isCalendarRedirect, queryClient, navigate]);
+  }, [searchParams, isCalendarRedirect, isMobile, queryClient, navigate]);
 
   // Mobile layout: List of sections that open sheets
   if (isMobile) {

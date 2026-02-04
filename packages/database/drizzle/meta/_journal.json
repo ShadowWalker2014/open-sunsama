@@ -50,6 +50,13 @@
       "when": 1770192969076,
       "tag": "0006_wild_luke_cage",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1770231301738,
+      "tag": "0007_melodic_exiles",
+      "breakpoints": true
     }
   ]
 }

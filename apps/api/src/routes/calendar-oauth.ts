@@ -2,49 +2,58 @@
  * Calendar OAuth routes for Open Sunsama API
  * Handles OAuth flows for Google Calendar and Outlook
  */
-import { Hono } from 'hono';
-import { zValidator } from '@hono/zod-validator';
-import { getDb, eq, and, calendarAccounts, calendars } from '@open-sunsama/database';
-import { auth, type AuthVariables } from '../middleware/auth.js';
-import { encrypt } from '../services/encryption.js';
+import { Hono } from "hono";
+import { zValidator } from "@hono/zod-validator";
+import {
+  getDb,
+  eq,
+  and,
+  calendarAccounts,
+  calendars,
+} from "@open-sunsama/database";
+import { auth, type AuthVariables } from "../middleware/auth.js";
+import { encrypt } from "../services/encryption.js";
 import {
   GoogleCalendarProvider,
   OutlookCalendarProvider,
   type CalendarProvider,
-} from '../services/calendar-providers/index.js';
-import { oauthInitiateParamsSchema, oauthCallbackQuerySchema } from '../validation/calendar.js';
+} from "../services/calendar-providers/index.js";
+import {
+  oauthInitiateParamsSchema,
+  oauthCallbackQuerySchema,
+} from "../validation/calendar.js";
 import {
   createOAuthState,
   validateOAuthState,
   deleteOAuthState,
   verifyStateProvider,
-} from '../services/oauth-state.js';
+} from "../services/oauth-state.js";
 import {
   syncOAuthAccount,
   upsertEvents,
   deleteRemovedEvents,
   updateSyncStatus,
   publishSyncEvent,
-} from '../services/calendar-sync.js';
+} from "../services/calendar-sync.js";
 
 const calendarOAuthRouter = new Hono<{ Variables: AuthVariables }>();
 
-function getProvider(providerName: 'google' | 'outlook'): CalendarProvider {
+function getProvider(providerName: "google" | "outlook"): CalendarProvider {
   switch (providerName) {
-    case 'google':
+    case "google":
       return new GoogleCalendarProvider();
-    case 'outlook':
+    case "outlook":
       return new OutlookCalendarProvider();
   }
 }
 
-function getRedirectUri(provider: 'google' | 'outlook'): string {
-  const baseUrl = process.env.API_URL || 'http://localhost:3001';
+function getRedirectUri(provider: "google" | "outlook"): string {
+  const baseUrl = process.env.API_URL || "http://localhost:3001";
   return `${baseUrl}/calendar/oauth/${provider}/callback`;
 }
 
 function getWebAppUrl(): string {
-  return process.env.WEB_APP_URL || 'http://localhost:3000';
+  return process.env.WEB_APP_URL || "http://localhost:3000";
 }
 
 /**
@@ -52,14 +61,14 @@ function getWebAppUrl(): string {
  * Initiates OAuth flow by generating auth URL
  */
 calendarOAuthRouter.get(
-  '/:provider/initiate',
+  "/:provider/initiate",
   auth,
-  zValidator('param', oauthInitiateParamsSchema),
+  zValidator("param", oauthInitiateParamsSchema),
   async (c) => {
-    const userId = c.get('userId');
-    const { provider: providerName } = c.req.valid('param');
+    const userId = c.get("userId");
+    const { provider: providerName } = c.req.valid("param");
 
-    const state = createOAuthState(userId, providerName);
+    const state = await createOAuthState(userId, providerName);
     const provider = getProvider(providerName);
     const redirectUri = getRedirectUri(providerName);
     const authUrl = provider.getAuthUrl(state, redirectUri);
@@ -79,34 +88,42 @@ calendarOAuthRouter.get(
  * OAuth callback handler - exchanges code for tokens
  */
 calendarOAuthRouter.get(
-  '/:provider/callback',
-  zValidator('param', oauthInitiateParamsSchema),
-  zValidator('query', oauthCallbackQuerySchema),
+  "/:provider/callback",
+  zValidator("param", oauthInitiateParamsSchema),
+  zValidator("query", oauthCallbackQuerySchema),
   async (c) => {
-    const { provider: providerName } = c.req.valid('param');
-    const { code, state, error, error_description } = c.req.valid('query');
+    const { provider: providerName } = c.req.valid("param");
+    const { code, state, error, error_description } = c.req.valid("query");
 
     const webAppUrl = getWebAppUrl();
     const settingsUrl = `${webAppUrl}/app/settings`;
 
     if (error) {
-      console.error(`[Calendar OAuth] Provider error: ${error} - ${error_description}`);
-      return c.redirect(`${settingsUrl}?calendar=error&message=${encodeURIComponent(error_description || error)}`);
+      console.error(
+        `[Calendar OAuth] Provider error: ${error} - ${error_description}`
+      );
+      return c.redirect(
+        `${settingsUrl}?calendar=error&message=${encodeURIComponent(error_description || error)}`
+      );
     }
 
-    const storedState = validateOAuthState(state);
+    const storedState = await validateOAuthState(state);
     if (!storedState) {
-      console.error('[Calendar OAuth] Invalid or expired state');
-      return c.redirect(`${settingsUrl}?calendar=error&message=${encodeURIComponent('Invalid or expired state. Please try again.')}`);
+      console.error("[Calendar OAuth] Invalid or expired state");
+      return c.redirect(
+        `${settingsUrl}?calendar=error&message=${encodeURIComponent("Invalid or expired state. Please try again.")}`
+      );
     }
 
     if (!verifyStateProvider(storedState, providerName)) {
-      deleteOAuthState(state);
-      console.error('[Calendar OAuth] Provider mismatch in state');
-      return c.redirect(`${settingsUrl}?calendar=error&message=${encodeURIComponent('Provider mismatch. Please try again.')}`);
+      await deleteOAuthState(state);
+      console.error("[Calendar OAuth] Provider mismatch in state");
+      return c.redirect(
+        `${settingsUrl}?calendar=error&message=${encodeURIComponent("Provider mismatch. Please try again.")}`
+      );
     }
 
-    deleteOAuthState(state);
+    await deleteOAuthState(state);
 
     const { userId } = storedState;
     const provider = getProvider(providerName);
@@ -114,34 +131,52 @@ calendarOAuthRouter.get(
 
     try {
       const tokens = await provider.exchangeCode(code, redirectUri);
-      const externalCalendars = await provider.listCalendars(tokens.accessToken);
+      const externalCalendars = await provider.listCalendars(
+        tokens.accessToken
+      );
 
-      let email = '';
-      let providerAccountId = '';
+      let email = "";
+      let providerAccountId = "";
 
-      if (providerName === 'google') {
+      if (providerName === "google") {
         // Fetch user profile from Google to get the actual email
-        const profileResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-          headers: { Authorization: `Bearer ${tokens.accessToken}` },
-        });
+        const profileResponse = await fetch(
+          "https://www.googleapis.com/oauth2/v2/userinfo",
+          {
+            headers: { Authorization: `Bearer ${tokens.accessToken}` },
+          }
+        );
         if (profileResponse.ok) {
-          const profile = await profileResponse.json() as { id: string; email: string; verified_email: boolean; name?: string; picture?: string };
-          email = profile.email || '';
+          const profile = (await profileResponse.json()) as {
+            id: string;
+            email: string;
+            verified_email: boolean;
+            name?: string;
+            picture?: string;
+          };
+          email = profile.email || "";
           providerAccountId = profile.id;
         }
       } else {
-        const profileResponse = await fetch('https://graph.microsoft.com/v1.0/me', {
-          headers: { Authorization: `Bearer ${tokens.accessToken}` },
-        });
+        const profileResponse = await fetch(
+          "https://graph.microsoft.com/v1.0/me",
+          {
+            headers: { Authorization: `Bearer ${tokens.accessToken}` },
+          }
+        );
         if (profileResponse.ok) {
-          const profile = await profileResponse.json() as { mail?: string; userPrincipalName?: string; id: string };
-          email = profile.mail || profile.userPrincipalName || '';
+          const profile = (await profileResponse.json()) as {
+            mail?: string;
+            userPrincipalName?: string;
+            id: string;
+          };
+          email = profile.mail || profile.userPrincipalName || "";
           providerAccountId = profile.id;
         }
       }
 
       if (!email || !providerAccountId) {
-        throw new Error('Could not determine account email');
+        throw new Error("Could not determine account email");
       }
 
       const db = getDb();
@@ -168,7 +203,7 @@ calendarOAuthRouter.get(
             refreshTokenEncrypted: encrypt(tokens.refreshToken),
             tokenExpiresAt: tokens.expiresAt,
             syncError: null,
-            syncStatus: 'idle',
+            syncStatus: "idle",
             isActive: true,
             updatedAt: new Date(),
           })
@@ -216,23 +251,21 @@ calendarOAuthRouter.get(
             })
             .where(eq(calendars.id, existingCalendar.id));
         } else {
-          await db
-            .insert(calendars)
-            .values({
-              accountId,
-              userId,
-              externalId: extCal.externalId,
-              name: extCal.name,
-              color: extCal.color,
-              isReadOnly: extCal.isReadOnly,
-            });
+          await db.insert(calendars).values({
+            accountId,
+            userId,
+            externalId: extCal.externalId,
+            name: extCal.name,
+            color: extCal.color,
+            isReadOnly: extCal.isReadOnly,
+          });
         }
       }
 
       // Set sync status to 'syncing' and trigger initial sync in background
       await db
         .update(calendarAccounts)
-        .set({ syncStatus: 'syncing', updatedAt: new Date() })
+        .set({ syncStatus: "syncing", updatedAt: new Date() })
         .where(eq(calendarAccounts.id, accountId));
 
       // Get enabled calendars for syncing
@@ -244,10 +277,7 @@ calendarOAuthRouter.get(
         })
         .from(calendars)
         .where(
-          and(
-            eq(calendars.accountId, accountId),
-            eq(calendars.isEnabled, true)
-          )
+          and(eq(calendars.accountId, accountId), eq(calendars.isEnabled, true))
         );
 
       // Trigger initial sync in background (don't block redirect)
@@ -272,26 +302,42 @@ calendarOAuthRouter.get(
             await deleteRemovedEvents(userId, syncResult.deleted);
 
             // Update sync status to idle
-            await updateSyncStatus(accountId, 'idle', syncResult.nextSyncToken);
+            await updateSyncStatus(accountId, "idle", syncResult.nextSyncToken);
 
             // Publish sync event via WebSocket
-            publishSyncEvent(userId, accountId, syncResult.events.length, syncResult.deleted.length);
+            publishSyncEvent(
+              userId,
+              accountId,
+              syncResult.events.length,
+              syncResult.deleted.length
+            );
 
-            console.log(`[Calendar OAuth] Initial sync completed for ${providerName} account: ${syncResult.events.length} events`);
+            console.log(
+              `[Calendar OAuth] Initial sync completed for ${providerName} account: ${syncResult.events.length} events`
+            );
           } catch (syncErr) {
-            const syncMessage = syncErr instanceof Error ? syncErr.message : 'Unknown sync error';
-            console.error(`[Calendar OAuth] Initial sync failed: ${syncMessage}`);
-            await updateSyncStatus(accountId, 'error', null, syncMessage);
+            const syncMessage =
+              syncErr instanceof Error ? syncErr.message : "Unknown sync error";
+            console.error(
+              `[Calendar OAuth] Initial sync failed: ${syncMessage}`
+            );
+            await updateSyncStatus(accountId, "error", null, syncMessage);
           }
         });
       }
 
-      console.log(`[Calendar OAuth] Successfully connected ${providerName} account for user ${userId}`);
-      return c.redirect(`${settingsUrl}?calendar=connected&provider=${providerName}`);
+      console.log(
+        `[Calendar OAuth] Successfully connected ${providerName} account for user ${userId}`
+      );
+      return c.redirect(
+        `${settingsUrl}?calendar=connected&provider=${providerName}`
+      );
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = err instanceof Error ? err.message : "Unknown error";
       console.error(`[Calendar OAuth] Error: ${message}`);
-      return c.redirect(`${settingsUrl}?calendar=error&message=${encodeURIComponent(message)}`);
+      return c.redirect(
+        `${settingsUrl}?calendar=error&message=${encodeURIComponent(message)}`
+      );
     }
   }
 );

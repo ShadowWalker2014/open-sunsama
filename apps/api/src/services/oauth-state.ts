@@ -1,100 +1,114 @@
 /**
  * OAuth state management service
- * Handles CSRF protection state for OAuth flows
+ * Handles CSRF protection state for OAuth flows using database storage
+ * This ensures state persists across server restarts and multiple instances
  */
-import { randomBytes } from 'crypto';
+import { randomBytes } from "crypto";
+import { getDb, oauthStates, eq, lt } from "@open-sunsama/database";
 
-export interface OAuthState {
+export interface OAuthStateData {
   userId: string;
-  provider: 'google' | 'outlook';
-  createdAt: number;
+  provider: "google" | "outlook";
+  createdAt: Date;
 }
 
-// In-memory state store (TTL: 10 minutes)
-// In production, use Redis with proper TTL
-const stateStore = new Map<string, OAuthState>();
-const STATE_TTL_MS = 10 * 60 * 1000; // 10 minutes
-
-// Cleanup expired states periodically
-let cleanupInterval: ReturnType<typeof setInterval> | null = null;
+// State TTL: 10 minutes
+const STATE_TTL_MS = 10 * 60 * 1000;
 
 /**
- * Start the cleanup interval for expired states
+ * Generate and store a new OAuth state in the database
  */
-export function startStateCleanup(): void {
-  if (cleanupInterval) return;
-  
-  cleanupInterval = setInterval(() => {
-    const now = Date.now();
-    for (const [state, data] of stateStore.entries()) {
-      if (now - data.createdAt > STATE_TTL_MS) {
-        stateStore.delete(state);
-      }
-    }
-  }, 60 * 1000); // Run every minute
-}
+export async function createOAuthState(
+  userId: string,
+  provider: "google" | "outlook"
+): Promise<string> {
+  const state = randomBytes(32).toString("hex");
+  const db = getDb();
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + STATE_TTL_MS);
 
-/**
- * Stop the cleanup interval
- */
-export function stopStateCleanup(): void {
-  if (cleanupInterval) {
-    clearInterval(cleanupInterval);
-    cleanupInterval = null;
-  }
-}
-
-/**
- * Generate and store a new OAuth state
- */
-export function createOAuthState(userId: string, provider: 'google' | 'outlook'): string {
-  const state = randomBytes(32).toString('hex');
-  
-  stateStore.set(state, {
+  await db.insert(oauthStates).values({
+    state,
     userId,
     provider,
-    createdAt: Date.now(),
+    createdAt: now,
+    expiresAt,
   });
 
   return state;
 }
 
 /**
- * Validate and consume an OAuth state
+ * Validate an OAuth state from the database
  * Returns the state data if valid, null if invalid or expired
  */
-export function validateOAuthState(state: string): OAuthState | null {
-  const storedState = stateStore.get(state);
-  
+export async function validateOAuthState(
+  state: string
+): Promise<OAuthStateData | null> {
+  const db = getDb();
+
+  const [storedState] = await db
+    .select()
+    .from(oauthStates)
+    .where(eq(oauthStates.state, state))
+    .limit(1);
+
   if (!storedState) {
     return null;
   }
 
   // Check if expired
-  if (Date.now() - storedState.createdAt > STATE_TTL_MS) {
-    stateStore.delete(state);
+  if (new Date() > storedState.expiresAt) {
+    // Clean up expired state
+    await db.delete(oauthStates).where(eq(oauthStates.id, storedState.id));
     return null;
   }
 
-  return storedState;
+  return {
+    userId: storedState.userId,
+    provider: storedState.provider as "google" | "outlook",
+    createdAt: storedState.createdAt,
+  };
 }
 
 /**
- * Delete a used OAuth state
+ * Delete a used OAuth state from the database
  */
-export function deleteOAuthState(state: string): void {
-  stateStore.delete(state);
+export async function deleteOAuthState(state: string): Promise<void> {
+  const db = getDb();
+  await db.delete(oauthStates).where(eq(oauthStates.state, state));
 }
 
 /**
  * Check if state provider matches expected provider
  */
 export function verifyStateProvider(
-  storedState: OAuthState,
-  expectedProvider: 'google' | 'outlook'
+  storedState: OAuthStateData,
+  expectedProvider: "google" | "outlook"
 ): boolean {
   return storedState.provider === expectedProvider;
 }
 
-// Auto-start cleanup on module load
-startStateCleanup();
+/**
+ * Clean up expired OAuth states from the database
+ * Called periodically by a background job or on startup
+ */
+export async function cleanupExpiredStates(): Promise<number> {
+  const db = getDb();
+  const result = await db
+    .delete(oauthStates)
+    .where(lt(oauthStates.expiresAt, new Date()))
+    .returning({ id: oauthStates.id });
+
+  return result.length;
+}
+
+// Legacy exports for backwards compatibility (no-op for cleanup interval)
+export function startStateCleanup(): void {
+  // No-op - cleanup is now handled by the cleanupExpiredStates function
+  // which should be called by a PG Boss job or similar
+}
+
+export function stopStateCleanup(): void {
+  // No-op
+}

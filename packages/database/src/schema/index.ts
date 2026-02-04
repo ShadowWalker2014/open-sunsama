@@ -168,5 +168,8 @@ export type {
   ReleasePlatform,
 } from "./releases";
 
+export { oauthStates } from "./oauth-states";
+export type { OAuthState, NewOAuthState } from "./oauth-states";
+
 // Re-export relation helpers for query building
 export { relations } from "drizzle-orm";
