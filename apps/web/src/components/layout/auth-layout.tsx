@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Calendar } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
 
@@ -23,9 +23,11 @@ export function AuthLayout({ children, className }: AuthLayoutProps) {
       <div className="relative z-10 w-full max-w-sm flex flex-col items-center">
         {/* Logo */}
         <Link to="/" className="mb-8 flex items-center gap-2">
-          <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary text-primary-foreground">
-            <Calendar className="h-4 w-4" />
-          </div>
+          <img
+            src="/open-sunsama-logo.png"
+            alt="Open Sunsama"
+            className="h-8 w-8 rounded-xl object-cover"
+          />
           <span className="text-[15px] font-semibold">Open Sunsama</span>
         </Link>
 
@@ -41,9 +43,16 @@ export function AuthLayout({ children, className }: AuthLayoutProps) {
 
         {/* Footer */}
         <div className="mt-6 flex items-center gap-4 text-[11px] text-muted-foreground">
-          <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+          <Link
+            to="/privacy"
+            className="hover:text-foreground transition-colors"
+          >
+            Privacy
+          </Link>
           <span className="text-border">•</span>
-          <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+          <Link to="/terms" className="hover:text-foreground transition-colors">
+            Terms
+          </Link>
         </div>
       </div>
     </div>

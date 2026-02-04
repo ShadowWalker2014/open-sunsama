@@ -939,7 +939,11 @@ function AppPreview({ inView }: { inView: boolean }) {
                   <div className="h-3 w-3 rounded-full bg-[#28c840]" />
                 </div>
                 <div className="hidden sm:flex items-center gap-1.5 ml-4 px-2 py-1 rounded-md bg-muted/50">
-                  <Calendar className="h-3 w-3 text-primary" />
+                  <img
+                    src="/open-sunsama-logo.png"
+                    alt="Open Sunsama"
+                    className="h-3 w-3 rounded-sm object-cover"
+                  />
                   <span className="text-[10px] font-medium text-muted-foreground">
                     Open Sunsama
                   </span>
@@ -1168,9 +1172,11 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-12 items-center justify-between px-4 mx-auto max-w-5xl">
           <Link to="/" className="flex items-center gap-2">
-            <div className="flex items-center justify-center h-7 w-7 rounded-md bg-primary text-primary-foreground">
-              <Calendar className="h-3.5 w-3.5" />
-            </div>
+            <img
+              src="/open-sunsama-logo.png"
+              alt="Open Sunsama"
+              className="h-7 w-7 rounded-lg object-cover"
+            />
             <span className="text-[13px] font-semibold">Open Sunsama</span>
           </Link>
 
@@ -1428,9 +1434,11 @@ export default function LandingPage() {
         <div className="container px-4 mx-auto max-w-5xl">
           <div className="flex flex-col md:flex-row justify-between items-center gap-3">
             <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center h-5 w-5 rounded bg-primary/10">
-                <Calendar className="h-2.5 w-2.5 text-primary" />
-              </div>
+              <img
+                src="/open-sunsama-logo.png"
+                alt="Open Sunsama"
+                className="h-5 w-5 rounded object-cover"
+              />
               <span className="text-[11px] text-muted-foreground">
                 © 2026 Open Sunsama
               </span>

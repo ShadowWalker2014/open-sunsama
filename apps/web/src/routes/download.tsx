@@ -1,7 +1,6 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import {
-  Calendar,
   Download,
   Monitor,
   Apple,
@@ -87,7 +86,8 @@ function detectPlatformSync(): PlatformKey {
   const userAgent = navigator.userAgent.toLowerCase();
   const platform = navigator.platform?.toLowerCase() || "";
 
-  if (platform.includes("win") || userAgent.includes("windows")) return "windows";
+  if (platform.includes("win") || userAgent.includes("windows"))
+    return "windows";
   if (platform.includes("linux") || userAgent.includes("linux")) return "linux";
   if (platform.includes("mac") || userAgent.includes("macintosh")) {
     // Default to ARM for macOS - most Macs sold since 2020 are Apple Silicon
@@ -100,7 +100,11 @@ function detectPlatformSync(): PlatformKey {
 async function detectMacArchitecture(): Promise<"macos-arm64" | "macos-x64"> {
   // Method 1: Use User-Agent Client Hints API (Chromium browsers)
   if ("userAgentData" in navigator) {
-    const ua = navigator.userAgentData as { getHighEntropyValues?: (hints: string[]) => Promise<{ architecture?: string }> };
+    const ua = navigator.userAgentData as {
+      getHighEntropyValues?: (
+        hints: string[]
+      ) => Promise<{ architecture?: string }>;
+    };
     if (ua.getHighEntropyValues) {
       const values = await ua.getHighEntropyValues(["architecture"]);
       if (values.architecture === "arm") return "macos-arm64";
@@ -110,11 +114,16 @@ async function detectMacArchitecture(): Promise<"macos-arm64" | "macos-x64"> {
 
   // Method 2: Check WebGL renderer (works in Safari and all browsers)
   const canvas = document.createElement("canvas");
-  const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+  const gl =
+    canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
   if (gl) {
-    const debugInfo = (gl as WebGLRenderingContext).getExtension("WEBGL_debug_renderer_info");
+    const debugInfo = (gl as WebGLRenderingContext).getExtension(
+      "WEBGL_debug_renderer_info"
+    );
     if (debugInfo) {
-      const renderer = (gl as WebGLRenderingContext).getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+      const renderer = (gl as WebGLRenderingContext).getParameter(
+        debugInfo.UNMASKED_RENDERER_WEBGL
+      );
       // Apple Silicon GPUs have "Apple" in the renderer name (e.g., "Apple M1", "Apple GPU")
       // Intel Macs show Intel GPU names (e.g., "Intel Iris Plus Graphics")
       if (typeof renderer === "string") {
@@ -179,16 +188,22 @@ function PlatformCard({
       ref={ref}
       className={cn(
         "group p-4 rounded-xl border bg-card/50 transition-all duration-200",
-        isDetected ? "border-primary/30 bg-primary/5" : "border-border/40 hover:border-border/60",
+        isDetected
+          ? "border-primary/30 bg-primary/5"
+          : "border-border/40 hover:border-border/60",
         inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
       )}
       style={{ transitionDelay: `${delay}ms` }}
     >
       <div className="flex items-center gap-3">
-        <div className={cn(
-          "flex h-10 w-10 items-center justify-center rounded-lg",
-          isDetected ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
-        )}>
+        <div
+          className={cn(
+            "flex h-10 w-10 items-center justify-center rounded-lg",
+            isDetected
+              ? "bg-primary text-primary-foreground"
+              : "bg-primary/10 text-primary"
+          )}
+        >
           <Icon className="h-5 w-5" />
         </div>
         <div className="flex-1 min-w-0">
@@ -206,14 +221,24 @@ function PlatformCard({
           </p>
         </div>
         {release ? (
-          <Button size="sm" variant={isDetected ? "default" : "outline"} className="h-8 px-3 text-xs" asChild>
+          <Button
+            size="sm"
+            variant={isDetected ? "default" : "outline"}
+            className="h-8 px-3 text-xs"
+            asChild
+          >
             <a href={release.downloadUrl} download>
               <Download className="h-3.5 w-3.5" />
               Download
             </a>
           </Button>
         ) : (
-          <Button size="sm" variant="outline" disabled className="h-8 px-3 text-xs opacity-50">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled
+            className="h-8 px-3 text-xs opacity-50"
+          >
             Coming soon
           </Button>
         )}
@@ -249,8 +274,11 @@ function FeatureItem({
 
 export default function DownloadPage() {
   useSEO(SEO_CONFIGS.download);
-  const [detectedPlatform, setDetectedPlatform] = React.useState<PlatformKey>("macos-arm64");
-  const [releases, setReleases] = React.useState<Record<PlatformKey, Release | undefined>>({
+  const [detectedPlatform, setDetectedPlatform] =
+    React.useState<PlatformKey>("macos-arm64");
+  const [releases, setReleases] = React.useState<
+    Record<PlatformKey, Release | undefined>
+  >({
     windows: undefined,
     "macos-arm64": undefined,
     "macos-x64": undefined,
@@ -305,13 +333,20 @@ export default function DownloadPage() {
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-12 items-center justify-between px-4 mx-auto max-w-5xl">
           <Link to="/" className="flex items-center gap-2">
-            <div className="flex items-center justify-center h-7 w-7 rounded-md bg-primary text-primary-foreground">
-              <Calendar className="h-3.5 w-3.5" />
-            </div>
+            <img
+              src="/open-sunsama-logo.png"
+              alt="Open Sunsama"
+              className="h-7 w-7 rounded-lg object-cover"
+            />
             <span className="text-[13px] font-semibold">Open Sunsama</span>
           </Link>
           <div className="flex items-center gap-1.5">
-            <Button variant="ghost" size="sm" className="h-8 px-3 text-xs" asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-3 text-xs"
+              asChild
+            >
               <Link to="/login">Sign in</Link>
             </Button>
             <Button size="sm" className="h-8 px-3 text-xs" asChild>
@@ -326,9 +361,11 @@ export default function DownloadPage() {
         <section className="pt-16 pb-12 md:pt-24 md:pb-16">
           <div className="container px-4 mx-auto max-w-3xl text-center">
             {/* App icon */}
-            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-2xl bg-primary mb-6">
-              <Calendar className="h-8 w-8 text-primary-foreground" />
-            </div>
+            <img
+              src="/open-sunsama-logo.png"
+              alt="Open Sunsama"
+              className="mx-auto h-16 w-16 rounded-2xl object-cover mb-6"
+            />
 
             <h1 className="text-2xl md:text-3xl font-semibold tracking-tight mb-3">
               Open Sunsama for Desktop
@@ -347,7 +384,9 @@ export default function DownloadPage() {
                   </a>
                 </Button>
                 <p className="text-xs text-muted-foreground">
-                  v{detectedRelease.version} • {formatFileSize(detectedRelease.fileSize)} • {detectedPlatformInfo.fileType}
+                  v{detectedRelease.version} •{" "}
+                  {formatFileSize(detectedRelease.fileSize)} •{" "}
+                  {detectedPlatformInfo.fileType}
                 </p>
               </div>
             )}
@@ -421,12 +460,19 @@ export default function DownloadPage() {
           <div className="container px-4 mx-auto max-w-2xl">
             <div className="rounded-xl border border-border/40 bg-card/50 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div>
-                <h3 className="text-[13px] font-semibold">Prefer the browser?</h3>
+                <h3 className="text-[13px] font-semibold">
+                  Prefer the browser?
+                </h3>
                 <p className="text-xs text-muted-foreground">
                   Access from any device with our web app.
                 </p>
               </div>
-              <Button variant="outline" size="sm" className="h-8 px-3 text-xs" asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 px-3 text-xs"
+                asChild
+              >
                 <Link to="/app">
                   Open Web App
                   <ExternalLink className="h-3.5 w-3.5" />
@@ -443,8 +489,17 @@ export default function DownloadPage() {
             <p className="text-xs text-muted-foreground mb-4">
               Check source code and releases on GitHub.
             </p>
-            <Button variant="outline" size="sm" className="h-8 px-3 text-xs" asChild>
-              <a href="https://github.com/ShadowWalker2014/open-sunsama" target="_blank" rel="noopener noreferrer">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 px-3 text-xs"
+              asChild
+            >
+              <a
+                href="https://github.com/ShadowWalker2014/open-sunsama"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Github className="h-3.5 w-3.5" />
                 View on GitHub
               </a>
@@ -458,15 +513,34 @@ export default function DownloadPage() {
         <div className="container px-4 mx-auto max-w-5xl">
           <div className="flex flex-col md:flex-row justify-between items-center gap-3">
             <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center h-5 w-5 rounded bg-primary/10">
-                <Calendar className="h-2.5 w-2.5 text-primary" />
-              </div>
-              <span className="text-[11px] text-muted-foreground">© 2026 Open Sunsama</span>
+              <img
+                src="/open-sunsama-logo.png"
+                alt="Open Sunsama"
+                className="h-5 w-5 rounded object-cover"
+              />
+              <span className="text-[11px] text-muted-foreground">
+                © 2026 Open Sunsama
+              </span>
             </div>
             <nav className="flex items-center gap-4 text-[11px] text-muted-foreground">
-              <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
-              <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
-              <a href="https://github.com/ShadowWalker2014/open-sunsama" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+              <Link
+                to="/privacy"
+                className="hover:text-foreground transition-colors"
+              >
+                Privacy
+              </Link>
+              <Link
+                to="/terms"
+                className="hover:text-foreground transition-colors"
+              >
+                Terms
+              </Link>
+              <a
+                href="https://github.com/ShadowWalker2014/open-sunsama"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-foreground transition-colors"
+              >
                 <Github className="h-3.5 w-3.5" />
               </a>
             </nav>
