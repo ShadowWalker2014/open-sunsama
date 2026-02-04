@@ -131,7 +131,7 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
 
   const handleDragEnd = React.useCallback(
     (event: DragEndEvent) => {
-      const { active, over } = event;
+      const { active, over, collisions } = event;
 
       setActiveTask(null);
       setActiveOverColumn(null);
@@ -144,17 +144,63 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
 
       if (!task) return;
 
-      // Check if dropped on a column (not a task)
+      // Since collision detection prioritizes columns, over.id is likely a column.
+      // We need to check ALL collisions to find task collisions for reordering.
       const targetDate = findTargetColumnDate(over.id);
+      const taskCollision = collisions?.find((c) => isTaskId(c.id));
 
+      // Case 1: Dropped on same column - check if we should reorder
+      if (
+        targetDate &&
+        (targetDate === task.scheduledDate ||
+          (targetDate === "backlog" && task.scheduledDate === null))
+      ) {
+        // Same column drop - check if there's a task collision for reordering
+        if (taskCollision && taskCollision.data?.current) {
+          const overTask = taskCollision.data.current.task as Task | undefined;
+
+          if (overTask && overTask.id !== task.id) {
+            // Get the sortable items from the active element's sortable context
+            const sortableData = active.data.current?.sortable;
+            const containerTasks = sortableData?.items as string[] | undefined;
+
+            if (containerTasks) {
+              const oldIndex = containerTasks.indexOf(task.id);
+              const newIndex = containerTasks.indexOf(overTask.id);
+
+              if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
+                // Reorder the task IDs
+                const newTaskIds = arrayMove(
+                  containerTasks,
+                  oldIndex,
+                  newIndex
+                );
+
+                // Determine the date parameter for reorder API
+                const reorderDate =
+                  targetDate === "backlog" ? "backlog" : targetDate;
+
+                if (reorderDate) {
+                  reorderTasks.mutate({
+                    date: reorderDate,
+                    taskIds: newTaskIds,
+                  });
+                }
+              }
+            }
+          }
+        }
+        return;
+      }
+
+      // Case 2: Dropped on a different column or backlog
       if (targetDate) {
         // Handle backlog - unschedule the task
         if (targetDate === "backlog") {
-          // Only unschedule if task is currently scheduled
           if (task.scheduledDate !== null) {
             moveTask.mutate({
               id: taskId,
-              targetDate: null, // null = unscheduled
+              targetDate: null,
             });
           }
           return;
@@ -170,54 +216,19 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
         return;
       }
 
-      // Check if dropped on another task (reordering within same container)
-      if (isTaskId(over.id)) {
-        const overTask = over.data.current?.task as Task | undefined;
-        const overSource = over.data.current?.source as string | undefined;
+      // Case 3: Dropped directly on a task (without also hitting column)
+      // This shouldn't happen with our collision detection, but handle it for safety
+      if (taskCollision && taskCollision.data?.current) {
+        const overTask = taskCollision.data.current.task as Task | undefined;
 
-        if (!overTask) return;
-
-        // If dropped on a task in a different column, move to that column
-        if (task.scheduledDate !== overTask.scheduledDate) {
-          moveTask.mutate({
-            id: taskId,
-            targetDate: overTask.scheduledDate,
-          });
-          return;
-        }
-
-        // Both tasks are in the backlog (no scheduledDate)
-        const isBacklogReorder =
-          sourceContainer === "backlog" && overSource === "backlog";
-
-        // Reordering within the same column or backlog
-        if (task.id !== overTask.id) {
-          // Get the sortable items from the active element's sortable context
-          const sortableData = active.data.current?.sortable;
-          const containerTasks = sortableData?.items as string[] | undefined;
-
-          if (containerTasks) {
-            const oldIndex = containerTasks.indexOf(task.id);
-            const newIndex = containerTasks.indexOf(overTask.id);
-
-            if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
-              // Reorder the task IDs using arrayMove for correct ordering
-              const newTaskIds = arrayMove(containerTasks, oldIndex, newIndex);
-
-              // Determine the date parameter for reorder API
-              // For backlog tasks, use "backlog" as the date
-              const reorderDate = isBacklogReorder
-                ? "backlog"
-                : task.scheduledDate;
-
-              if (reorderDate) {
-                // Persist the new order via API with optimistic update
-                reorderTasks.mutate({
-                  date: reorderDate,
-                  taskIds: newTaskIds,
-                });
-              }
-            }
+        if (overTask) {
+          // If dropped on a task in a different column, move to that column
+          if (task.scheduledDate !== overTask.scheduledDate) {
+            moveTask.mutate({
+              id: taskId,
+              targetDate: overTask.scheduledDate,
+            });
+            return;
           }
         }
       }
