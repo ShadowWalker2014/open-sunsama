@@ -38,9 +38,8 @@ export const taskPriorityCollision: CollisionDetection = (args) => {
   });
 
   if (pointerCollisions.length > 0) {
-    // Found column, also include task collisions for complete picture
-    const allCollisions = pointerWithin(args) || rectIntersection(args);
-    return allCollisions;
+    // Found column - return ONLY the column collision to ensure "over" is the column
+    return pointerCollisions;
   }
 
   // Fallback to rectIntersection for edge cases (column borders, etc.)
@@ -50,9 +49,8 @@ export const taskPriorityCollision: CollisionDetection = (args) => {
   });
 
   if (rectCollisions.length > 0) {
-    // Found column via rect intersection, include all collisions
-    const allCollisions = rectIntersection(args);
-    return allCollisions;
+    // Found column via rect intersection - return ONLY column collision
+    return rectCollisions;
   }
 
   // No column collision found - return all collisions for within-column reordering
