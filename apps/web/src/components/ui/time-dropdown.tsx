@@ -20,6 +20,11 @@ const TIME_PRESETS = [
   { value: 60, label: "1 hr" },
 ];
 
+export interface TimeDropdownRef {
+  open: () => void;
+  close: () => void;
+}
+
 interface TimeDropdownProps {
   /** Time value in minutes */
   value: number | null;
@@ -106,23 +111,43 @@ function parseTimeInput(input: string): number | null {
   return null;
 }
 
-export function TimeDropdown({
-  value,
-  onChange,
-  label,
-  placeholder = "--:--",
-  dropdownHeader,
-  shortcutHint,
-  showClear = false,
-  clearText = "Clear",
-  disabled = false,
-  className,
-  size = "md",
-}: TimeDropdownProps) {
+export const TimeDropdown = React.forwardRef<
+  TimeDropdownRef,
+  TimeDropdownProps
+>(function TimeDropdown(
+  {
+    value,
+    onChange,
+    label,
+    placeholder = "--:--",
+    dropdownHeader,
+    shortcutHint,
+    showClear = false,
+    clearText = "Clear",
+    disabled = false,
+    className,
+    size = "md",
+  },
+  ref
+) {
   const [open, setOpen] = React.useState(false);
   const [customInputValue, setCustomInputValue] = React.useState("");
   const [showCustomInput, setShowCustomInput] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
+
+  // Expose open/close methods via ref
+  React.useImperativeHandle(
+    ref,
+    () => ({
+      open: () => {
+        if (!disabled) {
+          setOpen(true);
+        }
+      },
+      close: () => setOpen(false),
+    }),
+    [disabled]
+  );
 
   const displayValue = value ? formatDuration(value) : placeholder;
 
@@ -314,4 +339,4 @@ export function TimeDropdown({
       </Popover>
     </div>
   );
-}
+});

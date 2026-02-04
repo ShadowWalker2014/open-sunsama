@@ -2,7 +2,10 @@ import * as React from "react";
 import { Play, Pause, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
-import { TimeDropdown } from "@/components/ui/time-dropdown";
+import {
+  TimeDropdown,
+  type TimeDropdownRef,
+} from "@/components/ui/time-dropdown";
 import { useTimer, formatTime, formatMins } from "@/hooks/useTimer";
 
 interface FocusTimerProps {
@@ -18,6 +21,8 @@ interface FocusTimerProps {
 export interface FocusTimerRef {
   toggle: () => void;
   isRunning: boolean;
+  openActualTimeDropdown: () => void;
+  openPlannedTimeDropdown: () => void;
 }
 
 /**
@@ -48,6 +53,10 @@ export function FocusTimer({
     onStop: handleStop,
   });
 
+  // Refs for time dropdowns
+  const actualTimeRef = React.useRef<TimeDropdownRef>(null);
+  const plannedTimeRef = React.useRef<TimeDropdownRef>(null);
+
   // Toggle function for keyboard shortcut
   const toggle = React.useCallback(() => {
     if (isRunning) {
@@ -57,12 +66,14 @@ export function FocusTimer({
     }
   }, [isRunning, start, stop]);
 
-  // Expose toggle function via ref
+  // Expose controls via ref
   React.useImperativeHandle(
     timerRef,
     () => ({
       toggle,
       isRunning,
+      openActualTimeDropdown: () => actualTimeRef.current?.open(),
+      openPlannedTimeDropdown: () => plannedTimeRef.current?.open(),
     }),
     [toggle, isRunning]
   );
@@ -72,8 +83,14 @@ export function FocusTimer({
   const isSignificantlyOver =
     totalSeconds > plannedSeconds * 1.5 && plannedSeconds > 0;
 
-  // Calculate actual minutes from seconds for dropdown
+  // Calculate actual minutes from timer's total seconds
+  // This includes both accumulated time and any current elapsed time
   const actualMinsFromTimer = Math.floor(totalSeconds / 60);
+
+  // Use timer's accumulated time if it exists, otherwise fall back to prop
+  // This ensures we show the correct time even if the server hasn't updated yet
+  const displayActualMins =
+    totalSeconds > 0 ? actualMinsFromTimer : (actualMins ?? 0);
 
   // Handle manual actual time change from dropdown
   const handleActualTimeChange = React.useCallback(
@@ -109,7 +126,8 @@ export function FocusTimer({
           ) : (
             // Show editable dropdown when stopped
             <TimeDropdown
-              value={actualMinsFromTimer > 0 ? actualMinsFromTimer : actualMins}
+              ref={actualTimeRef}
+              value={displayActualMins > 0 ? displayActualMins : null}
               onChange={handleActualTimeChange}
               placeholder="--:--"
               dropdownHeader="Set actual time"
@@ -128,6 +146,7 @@ export function FocusTimer({
 
         {/* Planned time - editable via dropdown */}
         <TimeDropdown
+          ref={plannedTimeRef}
           value={plannedMins}
           onChange={onPlannedMinsChange ?? (() => {})}
           label="PLANNED"

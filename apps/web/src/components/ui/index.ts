@@ -126,4 +126,4 @@ export {
   formatTimeHMM,
   parseTimeInput,
 } from "./inline-time-input";
-export { TimeDropdown } from "./time-dropdown";
+export { TimeDropdown, type TimeDropdownRef } from "./time-dropdown";

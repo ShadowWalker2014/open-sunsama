@@ -73,16 +73,19 @@ export default function FocusPage() {
     }
   }, [task?.notes]);
 
-  // Handle keyboard shortcuts (Esc to close, Space to toggle timer)
+  // Handle keyboard shortcuts (Esc to close, Space to toggle timer, E/W for time editing)
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Check if we should ignore (typing in input/textarea)
+      if (shouldIgnoreShortcut(e)) return;
+
       // Esc to close focus mode
       if (e.key === "Escape") {
         navigate({ to: "/app" });
         return;
       }
 
-      // Space to toggle timer (only when not in input/textarea)
+      // Space to toggle timer
       if (
         (e.key === " " || e.code === "Space") &&
         !e.shiftKey &&
@@ -90,11 +93,25 @@ export default function FocusPage() {
         !e.metaKey &&
         !e.altKey
       ) {
-        // Check if we should ignore (typing in input/textarea)
-        if (shouldIgnoreShortcut(e)) return;
-
         e.preventDefault();
         timerRef.current?.toggle();
+        return;
+      }
+
+      // E to edit actual time (only when timer is not running)
+      if (e.key === "e" || e.key === "E") {
+        if (!timerRef.current?.isRunning) {
+          e.preventDefault();
+          timerRef.current?.openActualTimeDropdown();
+        }
+        return;
+      }
+
+      // W to edit planned time
+      if (e.key === "w" || e.key === "W") {
+        e.preventDefault();
+        timerRef.current?.openPlannedTimeDropdown();
+        return;
       }
     };
     window.addEventListener("keydown", handleKeyDown);

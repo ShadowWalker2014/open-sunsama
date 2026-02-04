@@ -121,6 +121,16 @@ export const SHORTCUTS: Record<string, ShortcutDefinition> = {
     description: "Start/pause timer",
     category: "focus",
   },
+  editActualTime: {
+    key: "e",
+    description: "Edit actual time",
+    category: "focus",
+  },
+  editPlannedTime: {
+    key: "w",
+    description: "Edit planned time",
+    category: "focus",
+  },
 };
 
 // Format shortcut for display (e.g., "Shift + Space", "Cmd + Delete")
