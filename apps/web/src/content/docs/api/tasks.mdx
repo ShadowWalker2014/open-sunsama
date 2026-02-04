@@ -1,0 +1,272 @@
+export const frontmatter = {
+  title: "Tasks API",
+  description:
+    "Complete reference for the Tasks API endpoints. Create, read, update, and delete tasks programmatically.",
+  order: 2,
+  section: "api",
+};
+
+The Tasks API lets you manage tasks in Open Sunsama. All endpoints require authentication via JWT token or API key with the appropriate scopes.
+
+## Task Object
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "userId": "550e8400-e29b-41d4-a716-446655440001",
+  "title": "Review quarterly report",
+  "notes": "Focus on revenue trends and customer churn",
+  "scheduledDate": "2024-01-15",
+  "estimatedMins": 60,
+  "actualMins": null,
+  "priority": "P1",
+  "position": 0,
+  "completedAt": null,
+  "subtasksHidden": false,
+  "createdAt": "2024-01-10T09:00:00Z",
+  "updatedAt": "2024-01-10T09:00:00Z"
+}
+```
+
+### Fields
+
+| Field            | Type    | Description                                      |
+| ---------------- | ------- | ------------------------------------------------ |
+| `id`             | UUID    | Unique task identifier                           |
+| `userId`         | UUID    | Owner's user ID                                  |
+| `title`          | string  | Task title (1-500 chars)                         |
+| `notes`          | string  | Additional notes (max 10,000 chars)              |
+| `scheduledDate`  | string  | Date in YYYY-MM-DD format, or `null` for backlog |
+| `estimatedMins`  | integer | Estimated time in minutes                        |
+| `actualMins`     | integer | Actual time spent (tracked via focus mode)       |
+| `priority`       | string  | `P0`, `P1`, `P2`, or `P3`                        |
+| `position`       | integer | Sort order within the day                        |
+| `completedAt`    | string  | ISO timestamp when completed, or `null`          |
+| `subtasksHidden` | boolean | Whether subtasks are collapsed                   |
+| `createdAt`      | string  | ISO creation timestamp                           |
+| `updatedAt`      | string  | ISO last update timestamp                        |
+
+## List Tasks
+
+```http
+GET /tasks
+```
+
+### Query Parameters
+
+| Parameter   | Type    | Description                            |
+| ----------- | ------- | -------------------------------------- |
+| `date`      | string  | Filter by specific date (YYYY-MM-DD)   |
+| `from`      | string  | Start of date range                    |
+| `to`        | string  | End of date range                      |
+| `completed` | boolean | Filter by completion status            |
+| `backlog`   | boolean | If true, only backlog tasks            |
+| `priority`  | string  | Filter by priority level               |
+| `sortBy`    | string  | `position`, `priority`, or `createdAt` |
+| `page`      | integer | Page number (default: 1)               |
+| `limit`     | integer | Items per page (max: 100, default: 50) |
+
+### Example
+
+```bash
+# Get today's incomplete tasks
+curl -X GET "https://api.opensunsama.com/tasks?date=2024-01-15&completed=false" \
+  -H "X-API-Key: os_live_xxx"
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "title": "Review quarterly report",
+      "priority": "P1",
+      "scheduledDate": "2024-01-15",
+      "completedAt": null,
+      ...
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 50,
+    "total": 5,
+    "totalPages": 1
+  }
+}
+```
+
+## Get Task
+
+```http
+GET /tasks/:id
+```
+
+### Example
+
+```bash
+curl -X GET "https://api.opensunsama.com/tasks/550e8400-e29b-41d4-a716-446655440000" \
+  -H "X-API-Key: os_live_xxx"
+```
+
+## Create Task
+
+```http
+POST /tasks
+```
+
+### Request Body
+
+```json
+{
+  "title": "Review quarterly report",
+  "notes": "Focus on revenue trends",
+  "scheduledDate": "2024-01-15",
+  "estimatedMins": 60,
+  "priority": "P1"
+}
+```
+
+### Required Fields
+
+| Field   | Type   | Description              |
+| ------- | ------ | ------------------------ |
+| `title` | string | Task title (1-500 chars) |
+
+### Optional Fields
+
+| Field           | Type    | Default          |
+| --------------- | ------- | ---------------- |
+| `notes`         | string  | `null`           |
+| `scheduledDate` | string  | `null` (backlog) |
+| `estimatedMins` | integer | `null`           |
+| `priority`      | string  | `P2`             |
+
+### Example
+
+```bash
+curl -X POST "https://api.opensunsama.com/tasks" \
+  -H "X-API-Key: os_live_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Review quarterly report",
+    "scheduledDate": "2024-01-15",
+    "priority": "P1",
+    "estimatedMins": 60
+  }'
+```
+
+## Update Task
+
+```http
+PATCH /tasks/:id
+```
+
+Only include fields you want to update. Set a field to `null` to clear it.
+
+### Example
+
+```bash
+# Update title and priority
+curl -X PATCH "https://api.opensunsama.com/tasks/550e8400-e29b-41d4-a716-446655440000" \
+  -H "X-API-Key: os_live_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Review Q1 report",
+    "priority": "P0"
+  }'
+
+# Move to backlog
+curl -X PATCH "https://api.opensunsama.com/tasks/550e8400-e29b-41d4-a716-446655440000" \
+  -H "X-API-Key: os_live_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{"scheduledDate": null}'
+```
+
+## Complete Task
+
+```http
+POST /tasks/:id/complete
+```
+
+Marks a task as complete by setting `completedAt` to the current time.
+
+### Example
+
+```bash
+curl -X POST "https://api.opensunsama.com/tasks/550e8400-e29b-41d4-a716-446655440000/complete" \
+  -H "X-API-Key: os_live_xxx"
+```
+
+## Uncomplete Task
+
+```http
+POST /tasks/:id/uncomplete
+```
+
+Marks a completed task as incomplete by clearing `completedAt`.
+
+## Delete Task
+
+```http
+DELETE /tasks/:id
+```
+
+Permanently deletes a task and all its subtasks.
+
+### Example
+
+```bash
+curl -X DELETE "https://api.opensunsama.com/tasks/550e8400-e29b-41d4-a716-446655440000" \
+  -H "X-API-Key: os_live_xxx"
+```
+
+## Reorder Tasks
+
+```http
+POST /tasks/reorder
+```
+
+Reorders tasks within a specific date or backlog.
+
+### Request Body
+
+```json
+{
+  "date": "2024-01-15",
+  "taskIds": [
+    "550e8400-e29b-41d4-a716-446655440002",
+    "550e8400-e29b-41d4-a716-446655440000",
+    "550e8400-e29b-41d4-a716-446655440001"
+  ]
+}
+```
+
+Use `"date": "backlog"` for backlog tasks.
+
+## Manual Rollover
+
+```http
+POST /tasks/rollover
+```
+
+Manually triggers task rollover, moving incomplete tasks from past dates to today or backlog based on user preferences.
+
+### Response
+
+```json
+{
+  "success": true,
+  "message": "Rolled over 3 tasks",
+  "data": {
+    "tasksRolledOver": 3,
+    "taskIds": ["...", "...", "..."],
+    "destination": "next_day",
+    "position": "top",
+    "timezone": "America/New_York",
+    "today": "2024-01-15"
+  }
+}
+```

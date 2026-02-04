@@ -31,19 +31,21 @@
     --gradient-start: 24 95% 53%;
     --gradient-end: 43 96% 56%;
     --shadow-color: 24 95% 53%;
-    
+
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-md:
+      0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg:
+      0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.15);
-    
+
     /* Transitions */
     --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
-    
+
     --font-family: "Geist", "Geist Sans", system-ui, sans-serif;
   }
 
@@ -68,28 +70,31 @@
     --border: 228 14% 15%;
     --input: 228 14% 13%;
     --ring: 24 95% 60%;
-    
+
     /* Dark mode extended tokens */
     --primary-glow: 24 95% 75%;
     --gradient-start: 24 95% 60%;
     --gradient-end: 43 96% 65%;
     --shadow-color: 24 95% 60%;
-    
+
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    --shadow-md:
+      0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+    --shadow-lg:
+      0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
     --shadow-glow: 0 0 60px hsl(var(--primary-glow) / 0.2);
   }
 
   /* Font Variables */
   :root {
     --font-geist: "Geist", "Geist Sans", system-ui, sans-serif;
-    --font-system: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-system:
+      -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+      Arial, sans-serif;
     --font-inter: "Inter", system-ui, sans-serif;
     --font-jetbrains: "JetBrains Mono", "Fira Code", monospace;
     --font-family: var(--font-geist);
   }
-
 }
 
 /* Color theme classes - outside @layer for higher specificity over :root */
@@ -180,16 +185,32 @@ html.dark.theme-slate {
 }
 
 /* Font classes - outside @layer for higher specificity */
-html.font-geist { --font-family: var(--font-geist); }
-html.font-system { --font-family: var(--font-system); }
-html.font-inter { --font-family: var(--font-inter); }
-html.font-jetbrains { --font-family: var(--font-jetbrains); }
+html.font-geist {
+  --font-family: var(--font-geist);
+}
+html.font-system {
+  --font-family: var(--font-system);
+}
+html.font-inter {
+  --font-family: var(--font-inter);
+}
+html.font-jetbrains {
+  --font-family: var(--font-jetbrains);
+}
 
 /* Font class also directly sets on body for immediate updates */
-html.font-geist body { font-family: var(--font-geist) !important; }
-html.font-system body { font-family: var(--font-system) !important; }
-html.font-inter body { font-family: var(--font-inter) !important; }
-html.font-jetbrains body { font-family: var(--font-jetbrains) !important; }
+html.font-geist body {
+  font-family: var(--font-geist) !important;
+}
+html.font-system body {
+  font-family: var(--font-system) !important;
+}
+html.font-inter body {
+  font-family: var(--font-inter) !important;
+}
+html.font-jetbrains body {
+  font-family: var(--font-jetbrains) !important;
+}
 
 @layer base {
   * {
@@ -198,7 +219,9 @@ html.font-jetbrains body { font-family: var(--font-jetbrains) !important; }
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-family);
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
 
   /* Subtle focus styles - prevent cut-off rings and reduce visual noise */
@@ -319,7 +342,11 @@ html.font-jetbrains body { font-family: var(--font-jetbrains) !important; }
 
   /* Gradient text */
   .text-gradient {
-    background: linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-end)));
+    background: linear-gradient(
+      135deg,
+      hsl(var(--gradient-start)),
+      hsl(var(--gradient-end))
+    );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -385,13 +412,19 @@ html.font-jetbrains body { font-family: var(--font-jetbrains) !important; }
   }
 
   .gradient-border::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
     border-radius: inherit;
     padding: 1px;
-    background: linear-gradient(135deg, hsl(var(--gradient-start) / 0.5), hsl(var(--gradient-end) / 0.5));
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    background: linear-gradient(
+      135deg,
+      hsl(var(--gradient-start) / 0.5),
+      hsl(var(--gradient-end) / 0.5)
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
@@ -403,7 +436,7 @@ html.font-jetbrains body { font-family: var(--font-jetbrains) !important; }
   }
 
   .noise::after {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
@@ -414,7 +447,9 @@ html.font-jetbrains body { font-family: var(--font-jetbrains) !important; }
 
   /* Hover lift effect */
   .hover-lift {
-    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    transition:
+      transform var(--transition-base),
+      box-shadow var(--transition-base);
   }
 
   .hover-lift:hover {
@@ -437,7 +472,7 @@ html.font-jetbrains body { font-family: var(--font-jetbrains) !important; }
 
   /* Grid pattern background */
   .bg-grid {
-    background-image: 
+    background-image:
       linear-gradient(hsl(var(--border) / 0.5) 1px, transparent 1px),
       linear-gradient(90deg, hsl(var(--border) / 0.5) 1px, transparent 1px);
     background-size: 64px 64px;
@@ -451,12 +486,32 @@ html.font-jetbrains body { font-family: var(--font-jetbrains) !important; }
 
   /* Gradient mesh background */
   .bg-mesh {
-    background: 
-      radial-gradient(at 40% 20%, hsl(var(--gradient-start) / 0.15) 0px, transparent 50%),
-      radial-gradient(at 80% 0%, hsl(var(--gradient-end) / 0.1) 0px, transparent 50%),
-      radial-gradient(at 0% 50%, hsl(var(--gradient-start) / 0.1) 0px, transparent 50%),
-      radial-gradient(at 80% 50%, hsl(var(--gradient-end) / 0.08) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, hsl(var(--gradient-start) / 0.1) 0px, transparent 50%);
+    background:
+      radial-gradient(
+        at 40% 20%,
+        hsl(var(--gradient-start) / 0.15) 0px,
+        transparent 50%
+      ),
+      radial-gradient(
+        at 80% 0%,
+        hsl(var(--gradient-end) / 0.1) 0px,
+        transparent 50%
+      ),
+      radial-gradient(
+        at 0% 50%,
+        hsl(var(--gradient-start) / 0.1) 0px,
+        transparent 50%
+      ),
+      radial-gradient(
+        at 80% 50%,
+        hsl(var(--gradient-end) / 0.08) 0px,
+        transparent 50%
+      ),
+      radial-gradient(
+        at 0% 100%,
+        hsl(var(--gradient-start) / 0.1) 0px,
+        transparent 50%
+      );
   }
 
   /* Shimmer effect */
@@ -472,8 +527,12 @@ html.font-jetbrains body { font-family: var(--font-jetbrains) !important; }
   }
 
   @keyframes shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
   }
 
   /* Pulse glow animation */
@@ -482,14 +541,21 @@ html.font-jetbrains body { font-family: var(--font-jetbrains) !important; }
   }
 
   @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 20px hsl(var(--primary-glow) / 0.2); }
-    50% { box-shadow: 0 0 40px hsl(var(--primary-glow) / 0.4); }
+    0%,
+    100% {
+      box-shadow: 0 0 20px hsl(var(--primary-glow) / 0.2);
+    }
+    50% {
+      box-shadow: 0 0 40px hsl(var(--primary-glow) / 0.4);
+    }
   }
 }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -678,6 +744,120 @@ html.font-jetbrains body { font-family: var(--font-jetbrains) !important; }
 .blog-prose td:has(✅),
 .blog-prose td:has(❌) {
   @apply text-center;
+}
+
+/* Docs Prose Styles - Same as blog-prose but for documentation */
+.docs-prose {
+  @apply text-foreground;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.docs-prose h1 {
+  @apply text-2xl font-semibold tracking-tight mt-8 mb-4;
+}
+.docs-prose h2 {
+  @apply text-xl font-semibold tracking-tight mt-10 mb-4 pb-2 border-b border-border/40;
+}
+.docs-prose h3 {
+  @apply text-lg font-semibold tracking-tight mt-8 mb-3;
+}
+.docs-prose h4 {
+  @apply text-base font-semibold tracking-tight mt-6 mb-2;
+}
+.docs-prose p {
+  @apply my-4 text-muted-foreground leading-relaxed;
+}
+.docs-prose a {
+  @apply text-primary font-medium no-underline hover:underline;
+}
+.docs-prose ul {
+  @apply my-4 pl-6 space-y-2;
+  list-style-type: disc;
+}
+.docs-prose ol {
+  @apply my-4 pl-6 space-y-2;
+  list-style-type: decimal;
+}
+.docs-prose li {
+  @apply text-muted-foreground;
+}
+.docs-prose li::marker {
+  @apply text-muted-foreground/60;
+}
+.docs-prose blockquote {
+  @apply my-6 pl-4 py-2 border-l-4 border-primary/50 bg-muted/30 rounded-r-lg italic;
+}
+.docs-prose blockquote p {
+  @apply my-0 text-muted-foreground;
+}
+.docs-prose hr {
+  @apply my-8 border-border/40;
+}
+.docs-prose code:not(pre code) {
+  @apply text-[13px] font-mono bg-muted px-1.5 py-0.5 rounded text-foreground;
+}
+.docs-prose pre {
+  @apply my-6 p-4 rounded-lg border border-border/40 overflow-x-auto;
+  background-color: hsl(var(--muted));
+}
+.docs-prose pre code {
+  @apply text-[13px] font-mono bg-transparent p-0;
+  color: hsl(var(--foreground));
+}
+:root .docs-prose pre {
+  background-color: hsl(220 14% 96%);
+}
+:root .docs-prose pre code {
+  color: hsl(220 13% 18%);
+}
+.dark .docs-prose pre {
+  background-color: hsl(228 14% 11%);
+}
+.dark .docs-prose pre code {
+  color: hsl(220 13% 93%);
+}
+.docs-prose table {
+  @apply my-6 w-full border-collapse text-sm;
+}
+.docs-prose thead {
+  @apply border-b-2 border-border;
+}
+.docs-prose th {
+  @apply px-4 py-3 text-left font-semibold text-foreground bg-muted/50;
+}
+.docs-prose th:first-child {
+  @apply rounded-tl-lg;
+}
+.docs-prose th:last-child {
+  @apply rounded-tr-lg;
+}
+.docs-prose tbody tr {
+  @apply border-b border-border/40;
+}
+.docs-prose tbody tr:last-child {
+  @apply border-b-0;
+}
+.docs-prose tbody tr:hover {
+  @apply bg-muted/30;
+}
+.docs-prose td {
+  @apply px-4 py-3 text-muted-foreground;
+}
+.docs-prose .table-wrapper {
+  @apply my-6 overflow-x-auto rounded-lg border border-border/40;
+}
+.docs-prose .table-wrapper table {
+  @apply my-0;
+}
+.docs-prose strong {
+  @apply font-semibold text-foreground;
+}
+.docs-prose em {
+  @apply italic;
+}
+.docs-prose img {
+  @apply my-6 rounded-lg border border-border/40 max-w-full;
 }
 
 /* Tiptap Editor File Upload Styles */

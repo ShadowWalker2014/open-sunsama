@@ -1,0 +1,152 @@
+export const frontmatter = {
+  title: "MCP Overview",
+  description:
+    "Learn how to connect AI agents to Open Sunsama using the Model Context Protocol (MCP). Enable Claude, GPT, and other AI assistants to manage your tasks.",
+  order: 1,
+  section: "mcp",
+};
+
+The Open Sunsama MCP server allows AI agents to interact with your tasks, time blocks, and calendar. This enables powerful workflows where AI assistants can help you plan your day, create tasks from conversations, and track your productivity.
+
+## What is MCP?
+
+The **Model Context Protocol (MCP)** is an open standard for connecting AI assistants to external tools and data sources. It allows AI models like Claude and GPT to:
+
+- Read your task list and schedule
+- Create and update tasks
+- Schedule time blocks
+- Mark tasks as complete
+- Help you plan and organize your work
+
+## Why Use MCP with Open Sunsama?
+
+Instead of manually copying task details between your AI assistant and Open Sunsama, the MCP integration allows seamless communication:
+
+- **"What's on my schedule today?"** - AI reads your tasks and time blocks
+- **"Create a task to review the Q1 report"** - AI creates the task directly
+- **"Schedule 2 hours for deep work tomorrow morning"** - AI creates the time block
+- **"Mark that task as complete"** - AI updates the task status
+
+## Supported AI Platforms
+
+The Open Sunsama MCP server works with any AI platform that supports MCP:
+
+| Platform              | Status          |
+| --------------------- | --------------- |
+| Claude Desktop        | Fully supported |
+| Claude for Enterprise | Fully supported |
+| OpenCode              | Fully supported |
+| Cursor                | Fully supported |
+| Other MCP clients     | Compatible      |
+
+## Getting Started
+
+### 1. Get an API Key
+
+1. Log into [Open Sunsama](https://opensunsama.com/app)
+2. Go to **Settings** → **API Keys**
+3. Click **Generate New Key**
+4. Select these scopes:
+   - `tasks:read`
+   - `tasks:write`
+   - `time-blocks:read`
+   - `time-blocks:write`
+   - `user:read`
+5. Copy the key (starts with `os_live_`)
+
+### 2. Install the MCP Server
+
+```bash
+# Install globally
+npm install -g @open-sunsama/mcp
+
+# Or use npx
+npx @open-sunsama/mcp
+```
+
+### 3. Configure Your AI Client
+
+The configuration depends on your AI platform. See the specific setup guides:
+
+- [Claude Desktop Setup](/docs/mcp/claude-desktop)
+- [Cursor Setup](/docs/mcp/cursor)
+
+## Available Tools
+
+The MCP server provides 24 tools organized into categories:
+
+### Task Tools
+
+| Tool              | Description                                      |
+| ----------------- | ------------------------------------------------ |
+| `list_tasks`      | List tasks with filters (date, status, priority) |
+| `get_task`        | Get a specific task by ID                        |
+| `create_task`     | Create a new task                                |
+| `update_task`     | Update task details                              |
+| `complete_task`   | Mark a task as complete                          |
+| `uncomplete_task` | Mark a task as incomplete                        |
+| `delete_task`     | Delete a task                                    |
+| `schedule_task`   | Move a task to a specific date                   |
+| `reorder_tasks`   | Change task order within a day                   |
+
+### Time Block Tools
+
+| Tool                      | Description                    |
+| ------------------------- | ------------------------------ |
+| `list_time_blocks`        | List time blocks with filters  |
+| `get_time_block`          | Get a specific time block      |
+| `create_time_block`       | Create a new time block        |
+| `update_time_block`       | Update time block details      |
+| `delete_time_block`       | Delete a time block            |
+| `link_task_to_time_block` | Connect a task to a time block |
+| `get_schedule_for_day`    | Get formatted daily schedule   |
+
+### Subtask Tools
+
+| Tool             | Description               |
+| ---------------- | ------------------------- |
+| `list_subtasks`  | List subtasks for a task  |
+| `create_subtask` | Add a subtask             |
+| `toggle_subtask` | Toggle subtask completion |
+| `update_subtask` | Update subtask details    |
+| `delete_subtask` | Delete a subtask          |
+
+### User Tools
+
+| Tool                  | Description           |
+| --------------------- | --------------------- |
+| `get_user_profile`    | Get current user info |
+| `update_user_profile` | Update preferences    |
+
+## Example Prompts
+
+Here are some example prompts you can use with your AI assistant:
+
+```
+"What tasks do I have today?"
+
+"Create a P0 task to fix the production bug with notes: Server returning 500 errors on /api/users endpoint"
+
+"Schedule a 2-hour deep work block tomorrow from 9am to 11am"
+
+"Mark the task about reviewing PR #123 as complete"
+
+"Move all my backlog tasks to tomorrow"
+
+"What's my schedule look like for Monday?"
+
+"Add subtasks to my 'Launch feature' task: Write tests, Update docs, Deploy to staging"
+```
+
+## Security
+
+- Your API key is stored locally on your machine
+- All communication uses HTTPS
+- API keys have scoped permissions (you control what the AI can access)
+- You can revoke keys anytime from Settings
+
+## Next Steps
+
+- [Claude Desktop Setup](/docs/mcp/claude-desktop) - Detailed setup instructions
+- [Cursor Setup](/docs/mcp/cursor) - Configure MCP in Cursor
+- [Tasks API](/docs/api/tasks) - Full API reference

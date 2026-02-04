@@ -1,0 +1,190 @@
+export const frontmatter = {
+  title: "Claude Desktop Setup",
+  description:
+    "Step-by-step guide to connect Open Sunsama with Claude Desktop using MCP. Enable Claude to manage your tasks and time blocks.",
+  order: 2,
+  section: "mcp",
+};
+
+This guide walks you through setting up the Open Sunsama MCP server with Claude Desktop, Anthropic's desktop application for Claude.
+
+## Prerequisites
+
+- [Claude Desktop](https://claude.ai/download) installed
+- An Open Sunsama account
+- Node.js 18+ installed
+
+## Step 1: Get Your API Key
+
+1. Log into [Open Sunsama](https://opensunsama.com/app)
+2. Navigate to **Settings** → **API Keys**
+3. Click **Generate New Key**
+4. Select all scopes you need:
+   - `tasks:read` - Read your tasks
+   - `tasks:write` - Create and modify tasks
+   - `time-blocks:read` - Read your schedule
+   - `time-blocks:write` - Create and modify time blocks
+   - `user:read` - Read your profile
+5. Copy the API key (it starts with `os_live_`)
+
+**Important:** Save this key securely. It won't be shown again.
+
+## Step 2: Configure Claude Desktop
+
+Open your Claude Desktop configuration file:
+
+**macOS:**
+
+```bash
+open ~/Library/Application\ Support/Claude/claude_desktop_config.json
+```
+
+**Windows:**
+
+```bash
+notepad %APPDATA%\Claude\claude_desktop_config.json
+```
+
+**Linux:**
+
+```bash
+nano ~/.config/Claude/claude_desktop_config.json
+```
+
+If the file doesn't exist, create it.
+
+## Step 3: Add MCP Configuration
+
+Add the Open Sunsama MCP server to your configuration:
+
+```json
+{
+  "mcpServers": {
+    "open-sunsama": {
+      "command": "npx",
+      "args": ["-y", "@open-sunsama/mcp"],
+      "env": {
+        "OPENSUNSAMA_API_KEY": "os_live_your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+Replace `os_live_your_api_key_here` with your actual API key.
+
+### For Self-Hosted Instances
+
+If you're running your own Open Sunsama server:
+
+```json
+{
+  "mcpServers": {
+    "open-sunsama": {
+      "command": "npx",
+      "args": ["-y", "@open-sunsama/mcp"],
+      "env": {
+        "OPENSUNSAMA_API_KEY": "os_live_your_api_key_here",
+        "OPENSUNSAMA_API_URL": "http://localhost:3001"
+      }
+    }
+  }
+}
+```
+
+## Step 4: Restart Claude Desktop
+
+1. Quit Claude Desktop completely
+2. Reopen Claude Desktop
+3. Look for the MCP icon (hammer) in the input area
+
+## Step 5: Verify the Connection
+
+Ask Claude to test the connection:
+
+```
+What tasks do I have scheduled for today?
+```
+
+Claude should use the `list_tasks` tool and return your task list.
+
+## Troubleshooting
+
+### "MCP server failed to start"
+
+1. Ensure Node.js 18+ is installed: `node --version`
+2. Test the MCP server manually:
+   ```bash
+   OPENSUNSAMA_API_KEY=your_key npx @open-sunsama/mcp
+   ```
+3. Check for error messages
+
+### "Authentication failed"
+
+1. Verify your API key is correct
+2. Check that the key hasn't been revoked in Settings
+3. Ensure the key has the required scopes
+
+### "Tool not available"
+
+1. Restart Claude Desktop after config changes
+2. Check that the MCP server is listed in Claude's settings
+3. Look for the hammer icon in the chat input
+
+### Viewing Logs
+
+**macOS:**
+
+```bash
+tail -f ~/Library/Logs/Claude/mcp-server-open-sunsama.log
+```
+
+**Windows:**
+
+```powershell
+Get-Content "$env:APPDATA\Claude\logs\mcp-server-open-sunsama.log" -Wait
+```
+
+## Example Workflows
+
+### Morning Planning
+
+```
+Good morning! What's on my schedule for today?
+
+[Claude lists your tasks]
+
+That's a lot. Can you help me prioritize? Move the low-priority items
+to tomorrow and create time blocks for the P0 tasks.
+```
+
+### Quick Task Capture
+
+```
+Create a task: Call dentist to reschedule appointment - P2 priority,
+schedule for tomorrow, estimated 15 minutes
+```
+
+### End of Day Review
+
+```
+How did I do today? Show me completed vs incomplete tasks.
+
+[Claude analyzes your progress]
+
+Please roll over the incomplete tasks to tomorrow and add them
+to the top of my list.
+```
+
+## Security Notes
+
+- Your API key is stored locally in the config file
+- Claude Desktop sends requests through the MCP server, not directly to Anthropic
+- You can see exactly which tools Claude uses in the chat interface
+- Revoke the API key anytime from Open Sunsama Settings
+
+## Next Steps
+
+- [MCP Tools Reference](/docs/mcp/tools) - Full list of available tools
+- [API Authentication](/docs/api/authentication) - API key management
+- [Cursor Setup](/docs/mcp/cursor) - Use with Cursor IDE

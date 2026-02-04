@@ -1,0 +1,316 @@
+export const frontmatter = {
+  title: "Docker Deployment",
+  description:
+    "Deploy Open Sunsama using Docker and Docker Compose. Complete guide for self-hosting your own instance.",
+  order: 1,
+  section: "self-hosting",
+};
+
+Open Sunsama can be self-hosted using Docker for maximum privacy and control. This guide covers deploying with Docker Compose.
+
+## Prerequisites
+
+- Docker 20.10+
+- Docker Compose 2.0+
+- 2GB RAM minimum
+- Domain name (for HTTPS)
+
+## Quick Start
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/ShadowWalker2014/open-sunsama.git
+cd open-sunsama
+```
+
+### 2. Configure Environment
+
+Copy the example environment file:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your configuration:
+
+```bash
+# Database
+DATABASE_URL=postgresql://postgres:your_password@db:5432/opensunsama
+
+# API
+JWT_SECRET=your-super-secret-jwt-key-min-32-chars
+PORT=3001
+CORS_ORIGIN=https://your-domain.com
+
+# Web App
+VITE_API_URL=https://api.your-domain.com
+```
+
+### 3. Start Services
+
+```bash
+docker compose up -d
+```
+
+This starts:
+
+- PostgreSQL database
+- Open Sunsama API (port 3001)
+- Open Sunsama Web (port 3000)
+
+### 4. Run Migrations
+
+```bash
+docker compose exec api bun run db:migrate
+```
+
+### 5. Access the App
+
+Open `http://localhost:3000` in your browser.
+
+## Production Deployment
+
+### Docker Compose File
+
+Create `docker-compose.prod.yml`:
+
+```yaml
+version: "3.8"
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: opensunsama
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    image: ghcr.io/shadowwalker2014/open-sunsama-api:latest
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:${DB_PASSWORD}@db:5432/opensunsama
+      JWT_SECRET: ${JWT_SECRET}
+      PORT: 3001
+      CORS_ORIGIN: ${CORS_ORIGIN}
+    ports:
+      - "3001:3001"
+
+  web:
+    image: ghcr.io/shadowwalker2014/open-sunsama-web:latest
+    restart: always
+    depends_on:
+      - api
+    environment:
+      VITE_API_URL: ${API_URL}
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:
+```
+
+### Environment Variables
+
+Create `.env.prod`:
+
+```bash
+DB_PASSWORD=secure-database-password
+JWT_SECRET=your-jwt-secret-at-least-32-characters
+CORS_ORIGIN=https://tasks.your-domain.com
+API_URL=https://api.tasks.your-domain.com
+```
+
+### Start Production
+
+```bash
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+```
+
+## Reverse Proxy (Nginx)
+
+Configure Nginx for HTTPS:
+
+```nginx
+# API
+server {
+    listen 443 ssl http2;
+    server_name api.tasks.your-domain.com;
+
+    ssl_certificate /etc/letsencrypt/live/tasks.your-domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/tasks.your-domain.com/privkey.pem;
+
+    location / {
+        proxy_pass http://localhost:3001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # WebSocket support
+    location /ws {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+
+# Web App
+server {
+    listen 443 ssl http2;
+    server_name tasks.your-domain.com;
+
+    ssl_certificate /etc/letsencrypt/live/tasks.your-domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/tasks.your-domain.com/privkey.pem;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+## Configuration Options
+
+### Required Environment Variables
+
+| Variable       | Description                           |
+| -------------- | ------------------------------------- |
+| `DATABASE_URL` | PostgreSQL connection string          |
+| `JWT_SECRET`   | Secret for JWT signing (min 32 chars) |
+| `PORT`         | API server port                       |
+| `CORS_ORIGIN`  | Allowed origins for CORS              |
+| `VITE_API_URL` | API URL for the web app               |
+
+### Optional Environment Variables
+
+| Variable           | Default | Description                     |
+| ------------------ | ------- | ------------------------------- |
+| `ROLLOVER_ENABLED` | `true`  | Enable automatic task rollover  |
+| `REDIS_URL`        | -       | Redis URL for WebSocket scaling |
+
+## Database Backup
+
+### Manual Backup
+
+```bash
+docker compose exec db pg_dump -U postgres opensunsama > backup.sql
+```
+
+### Automated Backup Script
+
+```bash
+#!/bin/bash
+BACKUP_DIR=/var/backups/opensunsama
+DATE=$(date +%Y%m%d_%H%M%S)
+
+docker compose exec -T db pg_dump -U postgres opensunsama | gzip > $BACKUP_DIR/backup_$DATE.sql.gz
+
+# Keep last 7 days
+find $BACKUP_DIR -name "backup_*.sql.gz" -mtime +7 -delete
+```
+
+Add to crontab:
+
+```
+0 2 * * * /path/to/backup.sh
+```
+
+### Restore
+
+```bash
+gunzip < backup.sql.gz | docker compose exec -T db psql -U postgres opensunsama
+```
+
+## Updating
+
+### Pull Latest Images
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+### Run Migrations
+
+After updating, run any new migrations:
+
+```bash
+docker compose exec api bun run db:migrate
+```
+
+## Monitoring
+
+### View Logs
+
+```bash
+# All services
+docker compose logs -f
+
+# Specific service
+docker compose logs -f api
+```
+
+### Health Check
+
+```bash
+curl http://localhost:3001/health
+```
+
+Expected response:
+
+```json
+{
+  "status": "ok",
+  "pgBossRunning": true
+}
+```
+
+## Troubleshooting
+
+### Database Connection Failed
+
+1. Check if PostgreSQL is running:
+   ```bash
+   docker compose ps db
+   ```
+2. Verify connection string in `DATABASE_URL`
+3. Check database logs:
+   ```bash
+   docker compose logs db
+   ```
+
+### API Not Starting
+
+1. Check logs:
+   ```bash
+   docker compose logs api
+   ```
+2. Verify all required environment variables
+3. Ensure database migrations ran successfully
+
+### CORS Errors
+
+1. Verify `CORS_ORIGIN` matches your web app domain
+2. Include protocol: `https://tasks.your-domain.com`
+
+## Next Steps
+
+- [Railway Deployment](/docs/self-hosting/railway) - One-click deployment
+- [API Reference](/docs/api/authentication) - API documentation
+- [MCP Setup](/docs/mcp/overview) - Connect AI agents

@@ -1,0 +1,230 @@
+export const frontmatter = {
+  title: "Time Blocks API",
+  description:
+    "Complete reference for the Time Blocks API. Schedule focused work time and link blocks to tasks.",
+  order: 3,
+  section: "api",
+};
+
+Time blocks represent scheduled chunks of focused work time on your calendar. They can optionally be linked to tasks to track what you're working on during that time.
+
+## Time Block Object
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440010",
+  "userId": "550e8400-e29b-41d4-a716-446655440001",
+  "title": "Deep work: Quarterly report",
+  "date": "2024-01-15",
+  "startTime": "09:00",
+  "endTime": "11:00",
+  "durationMins": 120,
+  "taskId": "550e8400-e29b-41d4-a716-446655440000",
+  "description": "Focus on revenue analysis",
+  "color": "#3B82F6",
+  "createdAt": "2024-01-10T09:00:00Z",
+  "updatedAt": "2024-01-10T09:00:00Z",
+  "task": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "title": "Review quarterly report"
+  }
+}
+```
+
+### Fields
+
+| Field          | Type    | Description                        |
+| -------------- | ------- | ---------------------------------- |
+| `id`           | UUID    | Unique time block identifier       |
+| `userId`       | UUID    | Owner's user ID                    |
+| `title`        | string  | Time block title (1-200 chars)     |
+| `date`         | string  | Date in YYYY-MM-DD format          |
+| `startTime`    | string  | Start time in HH:MM 24-hour format |
+| `endTime`      | string  | End time in HH:MM 24-hour format   |
+| `durationMins` | integer | Duration in minutes (calculated)   |
+| `taskId`       | UUID    | Linked task ID, or `null`          |
+| `description`  | string  | Additional notes (max 1,000 chars) |
+| `color`        | string  | Hex color code (e.g., `#3B82F6`)   |
+| `task`         | object  | Linked task object (when included) |
+
+## List Time Blocks
+
+```http
+GET /time-blocks
+```
+
+### Query Parameters
+
+| Parameter | Type    | Description                            |
+| --------- | ------- | -------------------------------------- |
+| `date`    | string  | Filter by specific date (YYYY-MM-DD)   |
+| `from`    | string  | Start of date range                    |
+| `to`      | string  | End of date range                      |
+| `taskId`  | string  | Filter by linked task                  |
+| `page`    | integer | Page number (default: 1)               |
+| `limit`   | integer | Items per page (max: 100, default: 50) |
+
+### Example
+
+```bash
+# Get today's schedule
+curl -X GET "https://api.opensunsama.com/time-blocks?date=2024-01-15" \
+  -H "X-API-Key: os_live_xxx"
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440010",
+      "title": "Deep work: Quarterly report",
+      "date": "2024-01-15",
+      "startTime": "09:00",
+      "endTime": "11:00",
+      "durationMins": 120,
+      "taskId": "550e8400-e29b-41d4-a716-446655440000",
+      "task": {
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "title": "Review quarterly report"
+      }
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 50,
+    "total": 3,
+    "totalPages": 1
+  }
+}
+```
+
+## Get Time Block
+
+```http
+GET /time-blocks/:id
+```
+
+## Create Time Block
+
+```http
+POST /time-blocks
+```
+
+### Request Body
+
+```json
+{
+  "title": "Deep work session",
+  "date": "2024-01-15",
+  "startTime": "09:00",
+  "endTime": "11:00",
+  "taskId": "550e8400-e29b-41d4-a716-446655440000",
+  "description": "Focus on quarterly report",
+  "color": "#3B82F6"
+}
+```
+
+### Required Fields
+
+| Field       | Type   | Description                                        |
+| ----------- | ------ | -------------------------------------------------- |
+| `title`     | string | Time block title (1-200 chars)                     |
+| `date`      | string | Date in YYYY-MM-DD format                          |
+| `startTime` | string | Start time in HH:MM format                         |
+| `endTime`   | string | End time in HH:MM format (must be after startTime) |
+
+### Optional Fields
+
+| Field         | Type   | Default |
+| ------------- | ------ | ------- |
+| `taskId`      | UUID   | `null`  |
+| `description` | string | `null`  |
+| `color`       | string | `null`  |
+
+### Example
+
+```bash
+curl -X POST "https://api.opensunsama.com/time-blocks" \
+  -H "X-API-Key: os_live_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Deep work session",
+    "date": "2024-01-15",
+    "startTime": "09:00",
+    "endTime": "11:00"
+  }'
+```
+
+## Update Time Block
+
+```http
+PATCH /time-blocks/:id
+```
+
+Only include fields you want to update.
+
+### Example
+
+```bash
+# Reschedule a time block
+curl -X PATCH "https://api.opensunsama.com/time-blocks/550e8400-e29b-41d4-a716-446655440010" \
+  -H "X-API-Key: os_live_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "startTime": "14:00",
+    "endTime": "16:00"
+  }'
+
+# Link to a different task
+curl -X PATCH "https://api.opensunsama.com/time-blocks/550e8400-e29b-41d4-a716-446655440010" \
+  -H "X-API-Key: os_live_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "taskId": "550e8400-e29b-41d4-a716-446655440099"
+  }'
+
+# Unlink from task
+curl -X PATCH "https://api.opensunsama.com/time-blocks/550e8400-e29b-41d4-a716-446655440010" \
+  -H "X-API-Key: os_live_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{"taskId": null}'
+```
+
+## Delete Time Block
+
+```http
+DELETE /time-blocks/:id
+```
+
+Deletes the time block. Any linked task is **not** deleted.
+
+### Example
+
+```bash
+curl -X DELETE "https://api.opensunsama.com/time-blocks/550e8400-e29b-41d4-a716-446655440010" \
+  -H "X-API-Key: os_live_xxx"
+```
+
+## Cascade Resize
+
+When you update a time block's start or end time, adjacent time blocks can optionally be resized to fill gaps or avoid overlaps. This is handled automatically by the web UI but can also be triggered via the API.
+
+### Resize Behavior
+
+| Scenario        | Behavior                                            |
+| --------------- | --------------------------------------------------- |
+| Block shortened | Adjacent blocks remain unchanged                    |
+| Block extended  | Adjacent blocks are shortened if they would overlap |
+| Block moved     | Gap may be created                                  |
+
+### Example: Adjacent Block Cascade
+
+If you have:
+
+- Block A: 09:00 - 10:00
+- Block B: 10:00 - 11:00
+
+And you extend Block A to 10:30, Block B automatically adjusts to 10:30 - 11:00.

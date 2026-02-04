@@ -110,12 +110,15 @@ export function TableOfContents({ headings, className }: TableOfContentsProps) {
 }
 
 /**
- * Extract headings from blog content for TOC
- * Parses the DOM to find H2 and H3 elements within the blog prose
+ * Extract headings from blog/docs content for TOC
+ * Parses the DOM to find H2 and H3 elements within the prose container
  */
 export function extractHeadings(): TOCHeading[] {
   const headings: TOCHeading[] = [];
-  const container = document.querySelector(".blog-prose");
+  // Support both blog-prose and docs-prose containers
+  const container =
+    document.querySelector(".blog-prose") ||
+    document.querySelector(".docs-prose");
 
   if (!container) return headings;
 

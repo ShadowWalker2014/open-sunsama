@@ -26,6 +26,14 @@ export function BlogLayoutHeader() {
             className="h-8 px-3 text-xs"
             asChild
           >
+            <Link to="/docs">Docs</Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 px-3 text-xs"
+            asChild
+          >
             <Link to="/blog" search={{}}>
               Blog
             </Link>

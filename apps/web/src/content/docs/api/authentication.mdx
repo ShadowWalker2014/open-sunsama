@@ -1,0 +1,155 @@
+export const frontmatter = {
+  title: "Authentication",
+  description:
+    "Learn how to authenticate with the Open Sunsama API using JWT tokens or API keys.",
+  order: 1,
+  section: "api",
+};
+
+The Open Sunsama API supports two authentication methods: **JWT tokens** for user sessions and **API keys** for programmatic access.
+
+## Authentication Methods
+
+### JWT Tokens
+
+JWT tokens are issued when a user logs in through the web application. They're best for:
+
+- Browser-based applications
+- Mobile apps
+- Short-lived sessions
+
+```http
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### API Keys
+
+API keys are long-lived tokens for server-to-server communication. They're best for:
+
+- CI/CD integrations
+- MCP tool connections
+- Automation scripts
+
+```http
+X-API-Key: os_live_abc123...
+```
+
+## Getting an API Key
+
+1. Log into Open Sunsama at [opensunsama.com/app](https://opensunsama.com/app)
+2. Go to **Settings** → **API Keys**
+3. Click **Generate New Key**
+4. Select the scopes you need:
+   - `tasks:read` - Read task data
+   - `tasks:write` - Create, update, delete tasks
+   - `time-blocks:read` - Read time block data
+   - `time-blocks:write` - Create, update, delete time blocks
+   - `user:read` - Read user profile
+   - `user:write` - Update user profile
+5. Copy the key immediately (it won't be shown again)
+
+## API Key Format
+
+API keys follow this format:
+
+```
+os_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+- `os_` - Prefix identifying Open Sunsama keys
+- `live_` - Environment (`live` for production, `test` for sandbox)
+- 32 character random string
+
+## Base URL
+
+| Environment       | Base URL                      |
+| ----------------- | ----------------------------- |
+| Production        | `https://api.opensunsama.com` |
+| Local Development | `http://localhost:3001`       |
+
+## Example Request
+
+```bash
+# Using API Key
+curl -X GET "https://api.opensunsama.com/tasks" \
+  -H "X-API-Key: os_live_your_api_key_here"
+
+# Using JWT Token
+curl -X GET "https://api.opensunsama.com/tasks" \
+  -H "Authorization: Bearer your_jwt_token_here"
+```
+
+## Response Format
+
+All API responses follow a consistent format:
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "data": {
+    // Response data here
+  },
+  "meta": {
+    "page": 1,
+    "limit": 50,
+    "total": 123,
+    "totalPages": 3
+  }
+}
+```
+
+### Error Response
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Title is required",
+    "statusCode": 400
+  }
+}
+```
+
+## Error Codes
+
+| Code               | HTTP Status | Description                             |
+| ------------------ | ----------- | --------------------------------------- |
+| `UNAUTHORIZED`     | 401         | Missing or invalid authentication       |
+| `FORBIDDEN`        | 403         | Valid auth but insufficient permissions |
+| `NOT_FOUND`        | 404         | Resource doesn't exist                  |
+| `VALIDATION_ERROR` | 400         | Invalid request data                    |
+| `RATE_LIMITED`     | 429         | Too many requests                       |
+| `INTERNAL_ERROR`   | 500         | Server error                            |
+
+## Rate Limiting
+
+API requests are rate limited to prevent abuse:
+
+| Limit Type  | Rate                 |
+| ----------- | -------------------- |
+| Per user    | 1000 requests/minute |
+| Per API key | 100 requests/second  |
+
+Rate limit headers are included in responses:
+
+```http
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1704067200
+```
+
+## Security Best Practices
+
+1. **Never expose API keys in client-side code** - Use server-side proxies
+2. **Use minimal scopes** - Only request permissions you need
+3. **Rotate keys regularly** - Delete old keys when creating new ones
+4. **Monitor usage** - Check your API key activity in settings
+
+## Next Steps
+
+- [Tasks API](/docs/api/tasks) - Create and manage tasks
+- [Time Blocks API](/docs/api/time-blocks) - Schedule time blocks
+- [Webhooks](/docs/api/webhooks) - Real-time event notifications

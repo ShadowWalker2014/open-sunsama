@@ -1,0 +1,231 @@
+export const frontmatter = {
+  title: "Effective Time Blocking",
+  description:
+    "Learn how to use time blocking in Open Sunsama to maximize your productivity and protect your focus time.",
+  order: 1,
+  section: "guides",
+};
+
+Time blocking is one of the most effective productivity techniques, and Open Sunsama makes it easy to implement. This guide covers how to use time blocking effectively.
+
+## What is Time Blocking?
+
+Time blocking is the practice of scheduling specific time slots for specific tasks. Instead of working from a to-do list and switching between tasks randomly, you assign each task a dedicated time on your calendar.
+
+**Without time blocking:**
+
+- Work on whatever feels urgent
+- Constant context switching
+- Important tasks get pushed aside
+- Day ends with key work incomplete
+
+**With time blocking:**
+
+- Each task has protected time
+- Focus periods for deep work
+- Clear boundaries between tasks
+- Realistic view of your capacity
+
+## Creating Time Blocks in Open Sunsama
+
+### Method 1: Drag and Drop
+
+1. Find a task in your day column
+2. Drag it to the calendar panel on the right
+3. Drop it at your desired time
+4. Adjust duration by dragging the edges
+
+### Method 2: From Task Details
+
+1. Click a task to open its details
+2. Click **Schedule Time Block**
+3. Select date, start time, and end time
+4. Click **Create**
+
+### Method 3: Calendar First
+
+1. Click an empty slot in the calendar
+2. Enter a title for the time block
+3. Optionally link it to an existing task
+
+## Best Practices
+
+### 1. Block Your Most Important Work First
+
+Start each day by blocking time for your most important tasks. These should get your best hours.
+
+```
+9:00 - 11:00  Deep work: Project proposal (P0)
+11:00 - 11:30 Email and Slack
+11:30 - 12:30 Team meeting
+12:30 - 13:30 Lunch
+13:30 - 15:30 Deep work: Code review (P1)
+15:30 - 16:00 Admin tasks
+16:00 - 16:30 Day wrap-up and tomorrow planning
+```
+
+### 2. Protect Deep Work Time
+
+For focused work, block at least 90-minute chunks. Shorter blocks fragment your attention.
+
+**Good:**
+
+- 2-hour deep work block
+- 90-minute focused writing session
+
+**Avoid:**
+
+- 30-minute "try to focus" blocks
+- Back-to-back 15-minute tasks
+
+### 3. Include Buffer Time
+
+Don't schedule back-to-back. Leave 15-30 minutes between blocks for:
+
+- Mental transitions
+- Quick responses
+- Unexpected issues
+- Bio breaks
+
+### 4. Be Realistic About Meetings
+
+If you have a 30-minute meeting at 10:00, block until at least 10:45:
+
+- 30 min: Actual meeting
+- 15 min: Notes and follow-up actions
+
+### 5. Review and Adjust Daily
+
+At the end of each day:
+
+1. Look at which blocks you completed
+2. Note where you went over or under time
+3. Adjust tomorrow's blocks based on learnings
+
+## Time Blocking Patterns
+
+### The Deep Work Pattern
+
+```
+6:00 - 7:00   Morning routine
+7:00 - 9:00   Deep Work Block 1 (most important task)
+9:00 - 9:30   Break / Email
+9:30 - 12:00  Deep Work Block 2 (second priority)
+12:00 - 13:00 Lunch
+13:00 - 14:30 Meetings / Collaboration
+14:30 - 15:00 Admin / Email
+15:00 - 16:30 Deep Work Block 3 (creative work)
+16:30 - 17:00 Day wrap-up
+```
+
+### The Meeting-Heavy Day Pattern
+
+When you have many meetings:
+
+```
+8:00 - 9:00   Deep work (protect this!)
+9:00 - 12:00  Meetings
+12:00 - 13:00 Lunch
+13:00 - 14:00 Meeting follow-up tasks
+14:00 - 16:00 Meetings
+16:00 - 17:00 Quick tasks and tomorrow prep
+```
+
+### The Flexible Day Pattern
+
+For days with variable demands:
+
+```
+Morning:     Block 2-3 hours for priority work
+Midday:      Keep open for meetings/collaboration
+Afternoon:   Block 1-2 hours for secondary work
+End of day:  30 min for wrap-up
+```
+
+## Using Time Blocks with Tasks
+
+### Linking Tasks to Time Blocks
+
+When you create a time block from a task, they're automatically linked:
+
+- Time block shows the task title
+- Clicking the time block opens the task
+- Completing the task doesn't delete the time block
+- Time spent is tracked
+
+### One Task per Block
+
+For best results, each time block should focus on one task. If you have multiple small tasks:
+
+1. Create a single "Admin Tasks" time block
+2. List the tasks in the description
+3. Or batch them into one task with subtasks
+
+### Estimating Time
+
+Use task estimates to plan blocks:
+
+1. Set estimated time on tasks (`estimatedMins`)
+2. When blocking, use the estimate as duration
+3. Track actual vs estimated to improve over time
+
+## Handling Interruptions
+
+### Expected Interruptions
+
+Build in buffer blocks:
+
+- 30 min mid-morning for "catch up"
+- 30 min mid-afternoon for "overflow"
+
+### Unexpected Interruptions
+
+When interrupted during a time block:
+
+1. Note where you stopped
+2. Handle the interruption
+3. Return to the task or reschedule the remaining time
+
+### Recurring Interruptions
+
+If you're constantly interrupted at certain times:
+
+1. Move deep work to less interrupted times
+2. Communicate your "do not disturb" times to team
+3. Use status indicators (Slack DND, calendar as "busy")
+
+## Time Blocking with MCP
+
+Let AI help you time block:
+
+```
+"I have 3 hours of deep work available tomorrow morning.
+Schedule time blocks for my top 3 P0 tasks."
+
+"I finished the report early. Move my next time block up
+and add a 15-minute break."
+
+"What does my schedule look like for the week? Where do
+I have gaps for deep work?"
+```
+
+## Measuring Success
+
+Track these metrics to improve your time blocking:
+
+1. **Block completion rate**: What % of blocks did you complete?
+2. **Estimate accuracy**: Actual time vs. estimated time
+3. **Deep work hours**: Total focused time per day/week
+4. **Task completion**: Tasks done vs. planned
+
+Over time, you'll get better at:
+
+- Estimating how long things take
+- Knowing your productive hours
+- Protecting focus time
+
+## Next Steps
+
+- [Focus Mode](/docs/guides/focus-mode) - Deep work with timers
+- [Daily Planning](/docs/guides/daily-planning) - Plan your day effectively
+- [Time Blocks API](/docs/api/time-blocks) - Automate time blocking
