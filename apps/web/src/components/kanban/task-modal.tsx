@@ -910,71 +910,58 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
           </div>
         </div>
 
-        {/* Time tracking section - centered, clean design */}
-        <div className="px-6 pb-5 flex flex-col items-center">
-          {/* Time display */}
-          <div className="flex items-center gap-8 mb-4">
-            <div className="flex flex-col items-center">
-              <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-1">
-                Actual
-              </span>
-              <TimeDropdown
-                ref={actualTimeRef}
-                value={actualMins}
-                onChange={handleActualMinsChange}
-                placeholder="0:00"
-                dropdownHeader="Set actual time"
-                shortcutHint="E"
-                showClear
-                clearText="Clear"
-                size="lg"
-                className="font-mono text-3xl font-light text-foreground"
-              />
-            </div>
-
-            {/* Separator */}
-            <span className="text-3xl font-light text-muted-foreground/30">
-              /
+        {/* Time tracking section - inline, minimal */}
+        <div className="px-6 pb-4 flex items-center gap-4">
+          {/* Actual time */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">
+              Act
             </span>
-
-            <div className="flex flex-col items-center">
-              <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-1">
-                Planned
-              </span>
-              <TimeDropdown
-                ref={plannedTimeRef}
-                value={plannedMins}
-                onChange={handleDurationChange}
-                placeholder="0:00"
-                dropdownHeader="Set planned time"
-                shortcutHint="W"
-                showClear
-                clearText="Clear"
-                size="lg"
-                className="font-mono text-3xl font-light text-muted-foreground/50"
-              />
-            </div>
+            <TimeDropdown
+              ref={actualTimeRef}
+              value={actualMins}
+              onChange={handleActualMinsChange}
+              placeholder="0:00"
+              dropdownHeader="Set actual time"
+              shortcutHint="E"
+              showClear
+              clearText="Clear"
+              size="sm"
+              className="font-mono text-sm text-foreground"
+            />
           </div>
 
-          {/* Estimated time display */}
-          {plannedMins && (
-            <p className="text-xs text-muted-foreground/60 mb-3">
-              Estimated:{" "}
-              {plannedMins >= 60 ? `${Math.floor(plannedMins / 60)}h` : ""}
-              {plannedMins % 60 > 0
-                ? `${plannedMins % 60}m`
-                : plannedMins >= 60
-                  ? ""
-                  : `${plannedMins}m`}
-            </p>
-          )}
+          {/* Separator */}
+          <span className="text-muted-foreground/30">/</span>
 
-          {/* Start button - border style */}
+          {/* Planned time */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">
+              Plan
+            </span>
+            <TimeDropdown
+              ref={plannedTimeRef}
+              value={plannedMins}
+              onChange={handleDurationChange}
+              placeholder="0:00"
+              dropdownHeader="Set planned time"
+              shortcutHint="W"
+              showClear
+              clearText="Clear"
+              size="sm"
+              className="font-mono text-sm text-muted-foreground/70"
+            />
+          </div>
+
+          {/* Spacer */}
+          <div className="flex-1" />
+
+          {/* Start button - minimal inline */}
           <button
             onClick={handleExpandToFocus}
-            className="flex items-center gap-2 px-4 py-2 rounded-md border border-border hover:bg-muted/50 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1 rounded text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
           >
-            <Play className="h-3.5 w-3.5" />
+            <Play className="h-3 w-3" />
             Start
           </button>
         </div>
