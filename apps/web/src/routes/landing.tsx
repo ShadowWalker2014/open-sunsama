@@ -1187,7 +1187,9 @@ export default function LandingPage() {
               className="h-8 px-3 text-xs"
               asChild
             >
-              <Link to="/blog">Blog</Link>
+              <Link to="/blog" search={{}}>
+                Blog
+              </Link>
             </Button>
             <Button
               variant="ghost"
@@ -1446,6 +1448,7 @@ export default function LandingPage() {
             <nav className="flex items-center gap-4 text-[11px] text-muted-foreground">
               <Link
                 to="/blog"
+                search={{}}
                 className="hover:text-foreground transition-colors"
               >
                 Blog

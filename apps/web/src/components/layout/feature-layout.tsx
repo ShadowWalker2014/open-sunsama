@@ -132,6 +132,7 @@ export function FeatureLayout({
             <nav className="flex items-center gap-4 text-[11px] text-muted-foreground">
               <Link
                 to="/blog"
+                search={{}}
                 className="hover:text-foreground transition-colors"
               >
                 Blog

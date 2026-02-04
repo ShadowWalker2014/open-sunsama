@@ -615,7 +615,7 @@ export default function AlternativeSunsamaPage() {
 
           <nav className="hidden md:flex items-center gap-0.5">
             <Button variant="ghost" size="sm" className="h-8 px-3 text-xs" asChild>
-              <Link to="/blog">Blog</Link>
+              <Link to="/blog" search={{}}>Blog</Link>
             </Button>
             <Button variant="ghost" size="sm" className="h-8 px-3 text-xs" asChild>
               <Link to="/download">Download</Link>

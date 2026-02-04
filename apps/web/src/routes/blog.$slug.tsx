@@ -12,7 +12,7 @@ export default function BlogPostPage() {
 
   // Redirect to blog listing if post not found
   if (!post) {
-    return <Navigate to="/blog" />;
+    return <Navigate to="/blog" search={{}} />;
   }
 
   const relatedPosts = getRelatedPosts(slug, 2);

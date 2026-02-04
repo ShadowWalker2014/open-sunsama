@@ -90,7 +90,9 @@ export function BlogLayout({
               className="h-8 px-3 text-xs"
               asChild
             >
-              <Link to="/blog">Blog</Link>
+              <Link to="/blog" search={{}}>
+                Blog
+              </Link>
             </Button>
             <Button
               variant="ghost"
@@ -135,7 +137,7 @@ export function BlogLayout({
                   <Link
                     key={tag}
                     to="/blog"
-                    search={{ tag }}
+                    search={{ tag, page: undefined, q: undefined }}
                     className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
                   >
                     <Tag className="h-2.5 w-2.5" />
@@ -277,6 +279,7 @@ export function BlogLayout({
             <nav className="flex items-center gap-4 text-[11px] text-muted-foreground">
               <Link
                 to="/blog"
+                search={{}}
                 className="hover:text-foreground transition-colors"
               >
                 Blog

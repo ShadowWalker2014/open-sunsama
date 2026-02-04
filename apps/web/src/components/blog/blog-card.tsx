@@ -28,13 +28,14 @@ export function BlogCard({ post, featured = false }: BlogCardProps) {
       {/* Cover image (if available) */}
       {post.image && (
         <div className="relative overflow-hidden rounded-t-xl border-b border-border/40">
-          <div className={cn(
-            "bg-muted/30",
-            featured ? "h-48 md:h-64" : "h-36"
-          )}>
+          <div
+            className={cn("bg-muted/30", featured ? "h-48 md:h-64" : "h-36")}
+          >
             <img
               src={post.image}
               alt={post.title}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover"
             />
           </div>
@@ -58,18 +59,22 @@ export function BlogCard({ post, featured = false }: BlogCardProps) {
         )}
 
         {/* Title */}
-        <h3 className={cn(
-          "font-semibold tracking-tight group-hover:text-primary transition-colors",
-          featured ? "text-lg md:text-xl" : "text-[15px]"
-        )}>
+        <h3
+          className={cn(
+            "font-semibold tracking-tight group-hover:text-primary transition-colors",
+            featured ? "text-lg md:text-xl" : "text-[15px]"
+          )}
+        >
           {post.title}
         </h3>
 
         {/* Description */}
-        <p className={cn(
-          "mt-2 text-muted-foreground leading-relaxed line-clamp-2",
-          featured ? "text-sm" : "text-xs"
-        )}>
+        <p
+          className={cn(
+            "mt-2 text-muted-foreground leading-relaxed line-clamp-2",
+            featured ? "text-sm" : "text-xs"
+          )}
+        >
           {post.description}
         </p>
 
@@ -116,6 +121,8 @@ export function BlogCardCompact({ post }: { post: BlogPost }) {
           <img
             src={post.image}
             alt={post.title}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover"
           />
         </div>

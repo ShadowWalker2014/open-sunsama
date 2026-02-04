@@ -54,6 +54,7 @@
     "lucide-react": "^0.468.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-helmet-async": "^2.0.5",
     "react-hook-form": "^7.54.1",
     "react-intersection-observer": "^10.0.2",
     "remark-gfm": "^4.0.1",

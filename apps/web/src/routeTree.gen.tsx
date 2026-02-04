@@ -1,7 +1,12 @@
 // Manual route tree for TanStack Router
 // @ts-nocheck
 
-import { createRootRoute, createRoute, redirect, Outlet } from "@tanstack/react-router";
+import {
+  createRootRoute,
+  createRoute,
+  redirect,
+  Outlet,
+} from "@tanstack/react-router";
 import { Toaster } from "./components/ui/toaster";
 
 // Import route components
@@ -159,6 +164,20 @@ const blogRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/blog",
   component: BlogPage,
+  validateSearch: (
+    search: Record<string, unknown>
+  ): { tag?: string; page?: number; q?: string } => {
+    return {
+      tag: typeof search.tag === "string" ? search.tag : undefined,
+      page:
+        typeof search.page === "string"
+          ? parseInt(search.page, 10)
+          : typeof search.page === "number"
+            ? search.page
+            : undefined,
+      q: typeof search.q === "string" ? search.q : undefined,
+    };
+  },
 });
 
 const blogPostRoute = createRoute({
