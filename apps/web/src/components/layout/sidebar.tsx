@@ -1,13 +1,11 @@
 import * as React from "react";
-import { 
-  Plus, 
-  Inbox, 
-  ChevronLeft, 
-  ChevronRight, 
-} from "lucide-react";
+import { Plus, Inbox, ChevronLeft, ChevronRight } from "lucide-react";
 import { useDroppable } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { Task } from "@open-sunsama/types";
 import { useTasks, useCompleteTask } from "@/hooks/useTasks";
@@ -15,11 +13,7 @@ import { TaskCardContent } from "@/components/kanban/task-card-content";
 import { TaskContextMenu } from "@/components/kanban/task-context-menu";
 import { useTasksDnd } from "@/lib/dnd/tasks-dnd-context";
 import { cn } from "@/lib/utils";
-import {
-  Button,
-  ScrollArea,
-  Skeleton,
-} from "@/components/ui";
+import { Button, ScrollArea, Skeleton } from "@/components/ui";
 import { AddTaskModal } from "@/components/kanban/add-task-modal";
 import { TaskModal } from "@/components/kanban/task-modal";
 
@@ -43,9 +37,12 @@ export function Sidebar({ className }: SidebarProps) {
 
   // Use high limit to ensure we get all backlog tasks (API default is 50)
   const BACKLOG_LIMIT = 500;
-  const { data: tasks, isLoading } = useTasks({ backlog: true, limit: BACKLOG_LIMIT });
+  const { data: tasks, isLoading } = useTasks({
+    backlog: true,
+    limit: BACKLOG_LIMIT,
+  });
   const { activeTask, isDragging } = useTasksDnd();
-  
+
   // If we hit exactly the limit, there may be more tasks than shown
   const maybeTruncated = (tasks?.length ?? 0) >= BACKLOG_LIMIT;
 
@@ -62,9 +59,11 @@ export function Sidebar({ className }: SidebarProps) {
   // CRITICAL: Preserve the actively dragged task to prevent removeChild DOM errors
   const { pendingTasks, completedTasks } = React.useMemo(() => {
     const all = tasks ?? [];
-    let pending = all.filter((task) => !task.completedAt).sort((a, b) => a.position - b.position);
+    let pending = all
+      .filter((task) => !task.completedAt)
+      .sort((a, b) => a.position - b.position);
     const completed = all.filter((task) => task.completedAt);
-    
+
     // If dragging a backlog task, ensure it stays in the list
     if (isDragging && activeTask && activeTask.scheduledDate === null) {
       const isIncluded = pending.some((t) => t.id === activeTask.id);
@@ -72,7 +71,7 @@ export function Sidebar({ className }: SidebarProps) {
         pending = [...pending, activeTask];
       }
     }
-    
+
     return { pendingTasks: pending, completedTasks: completed };
   }, [tasks, isDragging, activeTask]);
 
@@ -226,7 +225,8 @@ export function Sidebar({ className }: SidebarProps) {
               {maybeTruncated && (
                 <div className="pt-3 mt-3 border-t border-border/40 px-2 text-center">
                   <p className="text-xs text-amber-600 dark:text-amber-400">
-                    Showing first {BACKLOG_LIMIT} tasks. Some tasks may be hidden.
+                    Showing first {BACKLOG_LIMIT} tasks. Some tasks may be
+                    hidden.
                   </p>
                 </div>
               )}
@@ -265,7 +265,10 @@ interface SortableBacklogTaskCardProps {
  * - Dragging to kanban day columns (to schedule)
  * - Dragging to calendar view (to create time blocks)
  */
-function SortableBacklogTaskCard({ task, onSelect }: SortableBacklogTaskCardProps) {
+function SortableBacklogTaskCard({
+  task,
+  onSelect,
+}: SortableBacklogTaskCardProps) {
   const completeTask = useCompleteTask();
   const {
     attributes,
@@ -282,17 +285,34 @@ function SortableBacklogTaskCard({ task, onSelect }: SortableBacklogTaskCardProp
     data: {
       type: "task",
       task,
+      columnId: "backlog", // Fix: Must set columnId for consistent drag handler logic
       source: "backlog",
     },
   });
 
   // Determine if we should show a drop indicator
   const showIndicator = isOver && active?.id !== task.id;
-  
+
   // Determine indicator position based on where the item will be inserted
-  const activeIndex = active?.data?.current?.sortable?.index ?? -1;
-  const showDropIndicatorAbove = showIndicator && activeIndex > index;
-  const showDropIndicatorBelow = showIndicator && activeIndex < index && activeIndex !== -1;
+  // Improved logic that works for both same-column and cross-column drags
+  const activeColumn = active?.data?.current?.columnId;
+  const currentColumn = "backlog";
+  const isCrossColumnDrag = activeColumn !== currentColumn;
+
+  let showDropIndicatorAbove = false;
+  let showDropIndicatorBelow = false;
+
+  if (showIndicator) {
+    if (isCrossColumnDrag) {
+      // For cross-column drags, always show below the target task
+      showDropIndicatorBelow = true;
+    } else {
+      // For same-column drags, use index-based logic
+      const activeIndex = active?.data?.current?.sortable?.index ?? -1;
+      showDropIndicatorAbove = activeIndex > index;
+      showDropIndicatorBelow = activeIndex < index && activeIndex !== -1;
+    }
+  }
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -308,16 +328,13 @@ function SortableBacklogTaskCard({ task, onSelect }: SortableBacklogTaskCardProp
         style={style}
         {...attributes}
         {...listeners}
-        className={cn(
-          "relative",
-          isDragging && "opacity-30 z-50"
-        )}
+        className={cn("relative", isDragging && "opacity-30 z-50")}
       >
         {/* Drop indicator line - above */}
         {showDropIndicatorAbove && (
           <div className="absolute -top-0.5 left-0 right-0 h-0.5 bg-primary rounded-full z-10" />
         )}
-        
+
         <TaskCardContent
           task={task}
           isCompleted={!!task.completedAt}
@@ -329,7 +346,7 @@ function SortableBacklogTaskCard({ task, onSelect }: SortableBacklogTaskCardProp
           onClick={onTaskClick}
           onHoverChange={() => {}}
         />
-        
+
         {/* Drop indicator line - below */}
         {showDropIndicatorBelow && (
           <div className="absolute -bottom-0.5 left-0 right-0 h-0.5 bg-primary rounded-full z-10" />

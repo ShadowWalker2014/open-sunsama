@@ -57,22 +57,45 @@ export function SortableTaskCard({
     isOver,
     active,
     index,
+    setActivatorNodeRef,
   } = useSortable({
     id: task.id,
-    data: { type: "task", task },
+    data: {
+      type: "task",
+      task,
+      columnId: task.scheduledDate || "backlog",
+    },
   });
 
   // Determine if we should show a drop indicator
   // isOver is true when this item is being hovered by the dragged item
   const showIndicator = isOver && active?.id !== task.id;
 
+  // Get the draggable node's position for better indicator placement
+  const activeNode = active?.data?.current?.sortable?.containerNode;
+  const overNode = setNodeRef;
+
   // Determine indicator position based on where the item will be inserted
-  // If dragging from above (higher index) to current position -> show indicator above
-  // If dragging from below (lower index) to current position -> show indicator below
-  const activeIndex = active?.data?.current?.sortable?.index ?? -1;
-  const showDropIndicatorAbove = showIndicator && activeIndex > index;
-  const showDropIndicatorBelow =
-    showIndicator && activeIndex < index && activeIndex !== -1;
+  // Improved logic that works for both same-column and cross-column drags
+  const activeColumn = active?.data?.current?.columnId;
+  const currentColumn = task.scheduledDate || "backlog";
+  const isCrossColumnDrag = activeColumn !== currentColumn;
+
+  let showDropIndicatorAbove = false;
+  let showDropIndicatorBelow = false;
+
+  if (showIndicator) {
+    if (isCrossColumnDrag) {
+      // For cross-column drags, always show below the target task
+      // This indicates "insert after this task"
+      showDropIndicatorBelow = true;
+    } else {
+      // For same-column drags, use index-based logic
+      const activeIndex = active?.data?.current?.sortable?.index ?? -1;
+      showDropIndicatorAbove = activeIndex > index;
+      showDropIndicatorBelow = activeIndex < index && activeIndex !== -1;
+    }
+  }
 
   const style = {
     transform: CSS.Transform.toString(transform),

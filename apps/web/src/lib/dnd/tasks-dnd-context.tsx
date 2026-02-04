@@ -148,95 +148,101 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
 
       const overId = String(over.id);
 
-      // Check if dropped on a task (within-column reordering)
+      // Get source column from drag data
+      // The columnId must be set in useSortable data for both task cards and backlog tasks
+      const sourceColumn = String(
+        active.data.current?.columnId || task.scheduledDate || "backlog"
+      );
+
+      // Determine destination column
+      let destinationColumn: string;
+      let overTask: Task | undefined;
+
+      // Check if dropped on a task or a column
       if (isTaskId(over.id)) {
-        const overTask = over.data.current?.task as Task | undefined;
-
-        if (overTask) {
-          // Check if same column
-          const isBacklogTask = task.scheduledDate === null;
-          const isOverBacklog = overTask.scheduledDate === null;
-
-          const sameColumn =
-            isBacklogTask === isOverBacklog &&
-            (!isBacklogTask
-              ? task.scheduledDate === overTask.scheduledDate
-              : true);
-
-          if (sameColumn && taskId !== overId) {
-            // Get all tasks in this column from the cache
-            const queryKey = isBacklogTask
-              ? taskKeys.list({ backlog: true })
-              : taskKeys.list({
-                  scheduledDate: task.scheduledDate ?? undefined,
-                });
-
-            const columnTasks = queryClient.getQueryData<Task[]>(queryKey);
-
-            if (columnTasks) {
-              // Sort by position to get current order
-              const sortedTasks = [...columnTasks].sort(
-                (a, b) => (a.position ?? 0) - (b.position ?? 0)
-              );
-
-              // Find indices of active and over tasks
-              const activeIndex = sortedTasks.findIndex((t) => t.id === taskId);
-              const overIndex = sortedTasks.findIndex((t) => t.id === overId);
-
-              if (activeIndex !== -1 && overIndex !== -1) {
-                // Reorder using arrayMove
-                const reorderedTasks = arrayMove(
-                  sortedTasks,
-                  activeIndex,
-                  overIndex
-                );
-                const reorderedIds = reorderedTasks.map((t) => t.id);
-
-                // Call reorder API
-                const dateParam = isBacklogTask
-                  ? "backlog"
-                  : (task.scheduledDate ?? "backlog");
-                reorderTasks.mutate({
-                  date: dateParam,
-                  taskIds: reorderedIds,
-                });
-              }
-            }
-          }
-        }
-        return;
-      }
-
-      // Dropped on a column or backlog
-      const targetDate = findTargetColumnDate(over.id);
-
-      if (!targetDate) return;
-
-      const isBacklogDrop = targetDate === "backlog";
-      const isBacklogTask = task.scheduledDate === null;
-
-      // Check if column changed
-      const columnChanged =
-        isBacklogDrop !== isBacklogTask || targetDate !== task.scheduledDate;
-
-      if (!columnChanged) {
-        // Same column drop on column droppable - no action needed
-        return;
-      }
-
-      // Column changed - update task's scheduledDate
-      if (isBacklogDrop) {
-        // Moving to backlog
-        moveTask.mutate({
-          id: taskId,
-          targetDate: null, // null = unscheduled/backlog
-        });
+        // Dropped on another task
+        overTask = over.data.current?.task as Task | undefined;
+        destinationColumn = String(
+          over.data.current?.columnId ?? overTask?.scheduledDate ?? "backlog"
+        );
       } else {
-        // Moving to a specific date
+        // Dropped on a column or backlog - extract from ID
+        const targetDate = findTargetColumnDate(over.id);
+        if (!targetDate) return;
+        destinationColumn =
+          targetDate === "backlog" ? "backlog" : String(targetDate);
+      }
+
+      // Check if columns changed
+      const columnChanged = sourceColumn !== destinationColumn;
+      const isSameTask = taskId === overId;
+
+      // OPTIMIZATION: Do nothing if dropped on self in the same column
+      if (isSameTask && !columnChanged) {
+        return;
+      }
+
+      // When columns change, we need to move the task to the new column
+      if (columnChanged) {
+        const targetDate =
+          destinationColumn === "backlog" ? null : destinationColumn;
+
+        // Move the task to the new column
         moveTask.mutate({
           id: taskId,
           targetDate,
         });
+
+        // If dropped on a specific task in the destination column,
+        // we should reorder the task to the correct position after the move
+        // This requires fetching the tasks after the move and reordering
+        // For now, we just accept that the task will be at the end until the user reorders
+        return;
+      }
+
+      // Same column but different position - reorder within column
+      if (!columnChanged && overTask && !isSameTask) {
+        // Get all tasks in this column from the cache
+        const isBacklog = sourceColumn === "backlog";
+        const queryKey = isBacklog
+          ? taskKeys.list({ backlog: true })
+          : taskKeys.list({
+              scheduledDate: sourceColumn,
+            });
+
+        const columnTasks = queryClient.getQueryData<Task[]>(queryKey);
+
+        if (columnTasks) {
+          // Sort by position to get current order
+          const sortedTasks = [...columnTasks].sort(
+            (a, b) => (a.position ?? 0) - (b.position ?? 0)
+          );
+
+          // Find indices of active and over tasks
+          const activeIndex = sortedTasks.findIndex((t) => t.id === taskId);
+          const overIndex = sortedTasks.findIndex((t) => t.id === overId);
+
+          if (
+            activeIndex !== -1 &&
+            overIndex !== -1 &&
+            activeIndex !== overIndex
+          ) {
+            // Reorder using arrayMove
+            const reorderedTasks = arrayMove(
+              sortedTasks,
+              activeIndex,
+              overIndex
+            );
+            const reorderedIds = reorderedTasks.map((t) => t.id);
+
+            // Call reorder API
+            const dateParam = isBacklog ? "backlog" : sourceColumn;
+            reorderTasks.mutate({
+              date: dateParam,
+              taskIds: reorderedIds,
+            });
+          }
+        }
       }
     },
     [findTargetColumnDate, moveTask, reorderTasks, isTaskId, queryClient]
