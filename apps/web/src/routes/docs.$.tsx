@@ -4,13 +4,17 @@ import { DocsLayout } from "@/components/docs/docs-layout";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 /**
- * Individual documentation page
+ * Individual documentation page (splat route)
  * Renders MDX content within the docs layout with sidebar
+ *
+ * Route: /docs/$ (splat - captures all remaining path segments)
+ * Examples: /docs/getting-started, /docs/api/authentication, /docs/mcp/overview
+ * The _splat param contains the full path after /docs/
  */
 export default function DocPage() {
-  // Use splat param to capture nested paths like "api/authentication"
+  // Splat route captures remaining path in _splat
   const params = useParams({ from: "/docs/$" });
-  const slug = (params as any)["_splat"] || "";
+  const slug = (params as { _splat?: string })._splat || "";
 
   const doc = getDocBySlug(slug);
   const sections = getDocsBySection();

@@ -197,15 +197,24 @@ const motionAlternativeRoute = createRoute({
   component: MotionAlternativePage,
 });
 
+// Docs parent route - just renders Outlet for children
 const docsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/docs",
+  component: () => <Outlet />,
+});
+
+// Index route for /docs - shows landing page
+const docsIndexRoute = createRoute({
+  getParentRoute: () => docsRoute,
+  path: "/",
   component: DocsPage,
 });
 
-const docsSlugRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/docs/$",
+// Splat route for nested doc paths like /docs/getting-started or /docs/api/authentication
+const docsSplatRoute = createRoute({
+  getParentRoute: () => docsRoute,
+  path: "$",
   component: DocPage,
 });
 
@@ -292,8 +301,7 @@ const routeTree = rootRoute.addChildren([
   downloadRoute,
   blogRoute,
   blogPostRoute,
-  docsRoute,
-  docsSlugRoute,
+  docsRoute.addChildren([docsIndexRoute, docsSplatRoute]),
   motionAlternativeRoute,
   kanbanFeatureRoute,
   timeBlockingFeatureRoute,

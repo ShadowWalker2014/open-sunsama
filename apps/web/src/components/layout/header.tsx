@@ -201,7 +201,12 @@ export function Header({ className }: HeaderProps) {
                 </a>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="text-[13px] py-1.5">
-                <a href="/docs" className="w-full cursor-pointer">
+                <a
+                  href="/docs"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full cursor-pointer"
+                >
                   <BookOpen className="mr-2 h-3.5 w-3.5" />
                   Documentation
                 </a>
