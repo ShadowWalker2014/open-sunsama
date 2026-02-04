@@ -5,11 +5,11 @@ export interface ShortcutDefinition {
   key: string;
   modifiers?: {
     shift?: boolean;
-    cmd?: boolean;  // Meta key (Cmd on Mac, Ctrl on Windows)
+    cmd?: boolean; // Meta key (Cmd on Mac, Ctrl on Windows)
     alt?: boolean;
   };
   description: string;
-  category: "navigation" | "task" | "general";
+  category: "navigation" | "task" | "general" | "focus";
 }
 
 // Define all shortcuts
@@ -115,12 +115,18 @@ export const SHORTCUTS: Record<string, ShortcutDefinition> = {
     description: "Undo last action",
     category: "general",
   },
+  // Focus Mode shortcuts
+  toggleFocusTimer: {
+    key: " ",
+    description: "Start/pause timer",
+    category: "focus",
+  },
 };
 
 // Format shortcut for display (e.g., "Shift + Space", "Cmd + Delete")
 export function formatShortcut(shortcut: ShortcutDefinition): string {
   const parts: string[] = [];
-  
+
   if (shortcut.modifiers?.cmd) {
     parts.push(navigator.platform.includes("Mac") ? "⌘" : "Ctrl");
   }
@@ -130,7 +136,7 @@ export function formatShortcut(shortcut: ShortcutDefinition): string {
   if (shortcut.modifiers?.alt) {
     parts.push(navigator.platform.includes("Mac") ? "⌥" : "Alt");
   }
-  
+
   // Format the key nicely
   let keyDisplay = shortcut.key;
   switch (shortcut.key) {
@@ -155,26 +161,26 @@ export function formatShortcut(shortcut: ShortcutDefinition): string {
     default:
       keyDisplay = shortcut.key.toUpperCase();
   }
-  
+
   parts.push(keyDisplay);
   return parts.join(" ");
 }
 
 // Check if a keyboard event matches a shortcut
-export function matchesShortcut(event: KeyboardEvent, shortcut: ShortcutDefinition): boolean {
+export function matchesShortcut(
+  event: KeyboardEvent,
+  shortcut: ShortcutDefinition
+): boolean {
   const isMac = navigator.platform.includes("Mac");
   const cmdKey = isMac ? event.metaKey : event.ctrlKey;
-  
+
   const cmdMatches = shortcut.modifiers?.cmd ? cmdKey : !cmdKey;
-  const shiftMatches = shortcut.modifiers?.shift ? event.shiftKey : !event.shiftKey;
+  const shiftMatches = shortcut.modifiers?.shift
+    ? event.shiftKey
+    : !event.shiftKey;
   const altMatches = shortcut.modifiers?.alt ? event.altKey : !event.altKey;
-  
-  return (
-    event.key === shortcut.key &&
-    cmdMatches &&
-    shiftMatches &&
-    altMatches
-  );
+
+  return event.key === shortcut.key && cmdMatches && shiftMatches && altMatches;
 }
 
 // Context for hovered task
@@ -185,14 +191,27 @@ interface HoveredTaskContextValue {
   setHoveredSubtaskId: (id: string | null) => void;
 }
 
-const HoveredTaskContext = React.createContext<HoveredTaskContextValue | null>(null);
+const HoveredTaskContext = React.createContext<HoveredTaskContextValue | null>(
+  null
+);
 
-export function HoveredTaskProvider({ children }: { children: React.ReactNode }) {
+export function HoveredTaskProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [hoveredTask, setHoveredTask] = React.useState<Task | null>(null);
-  const [hoveredSubtaskId, setHoveredSubtaskId] = React.useState<string | null>(null);
+  const [hoveredSubtaskId, setHoveredSubtaskId] = React.useState<string | null>(
+    null
+  );
 
   const value = React.useMemo(
-    () => ({ hoveredTask, hoveredSubtaskId, setHoveredTask, setHoveredSubtaskId }),
+    () => ({
+      hoveredTask,
+      hoveredSubtaskId,
+      setHoveredTask,
+      setHoveredSubtaskId,
+    }),
     [hoveredTask, hoveredSubtaskId]
   );
 
@@ -217,7 +236,9 @@ interface ShortcutsContextValue {
   setShowShortcutsModal: (show: boolean) => void;
 }
 
-const ShortcutsContext = React.createContext<ShortcutsContextValue | null>(null);
+const ShortcutsContext = React.createContext<ShortcutsContextValue | null>(
+  null
+);
 
 export function ShortcutsProvider({ children }: { children: React.ReactNode }) {
   const [showShortcutsModal, setShowShortcutsModal] = React.useState(false);
@@ -246,7 +267,7 @@ export function useShortcutsModal() {
 export function shouldIgnoreShortcut(event: KeyboardEvent): boolean {
   const target = event.target as HTMLElement;
   const tagName = target.tagName.toLowerCase();
-  
+
   // Ignore if in input, textarea, or contenteditable
   if (
     tagName === "input" ||
@@ -255,6 +276,6 @@ export function shouldIgnoreShortcut(event: KeyboardEvent): boolean {
   ) {
     return true;
   }
-  
+
   return false;
 }

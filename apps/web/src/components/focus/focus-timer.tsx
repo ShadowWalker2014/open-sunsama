@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Play, Pause, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui";
+import { Button, InlineTimeInput } from "@/components/ui";
 import { useTimer, formatTime, formatMins } from "@/hooks/useTimer";
 
 interface FocusTimerProps {
@@ -9,6 +9,14 @@ interface FocusTimerProps {
   plannedMins: number | null;
   actualMins: number | null;
   onActualMinsChange: (mins: number) => void;
+  onPlannedMinsChange?: (mins: number | null) => void;
+  /** Ref to expose timer controls (toggle function) */
+  timerRef?: React.RefObject<FocusTimerRef | null>;
+}
+
+export interface FocusTimerRef {
+  toggle: () => void;
+  isRunning: boolean;
 }
 
 /**
@@ -20,6 +28,8 @@ export function FocusTimer({
   plannedMins,
   actualMins,
   onActualMinsChange,
+  onPlannedMinsChange,
+  timerRef,
 }: FocusTimerProps) {
   const initialSeconds = (actualMins ?? 0) * 60;
 
@@ -37,9 +47,29 @@ export function FocusTimer({
     onStop: handleStop,
   });
 
+  // Toggle function for keyboard shortcut
+  const toggle = React.useCallback(() => {
+    if (isRunning) {
+      stop();
+    } else {
+      start();
+    }
+  }, [isRunning, start, stop]);
+
+  // Expose toggle function via ref
+  React.useImperativeHandle(
+    timerRef,
+    () => ({
+      toggle,
+      isRunning,
+    }),
+    [toggle, isRunning]
+  );
+
   const plannedSeconds = (plannedMins ?? 0) * 60;
   const isOverPlanned = totalSeconds > plannedSeconds && plannedSeconds > 0;
-  const isSignificantlyOver = totalSeconds > plannedSeconds * 1.5 && plannedSeconds > 0;
+  const isSignificantlyOver =
+    totalSeconds > plannedSeconds * 1.5 && plannedSeconds > 0;
 
   return (
     <div className="flex flex-col items-center gap-5 py-6">
@@ -65,14 +95,23 @@ export function FocusTimer({
         {/* Separator */}
         <span className="text-xl text-muted-foreground/30 font-light">/</span>
 
-        {/* Planned time */}
+        {/* Planned time - editable */}
         <div className="flex flex-col items-center gap-1">
           <span className="text-[11px] font-medium text-muted-foreground/70">
             Planned
           </span>
-          <span className="text-3xl font-mono font-normal tabular-nums tracking-tight text-muted-foreground/60">
-            {plannedMins ? formatTime(plannedSeconds) : "--:--"}
-          </span>
+          {onPlannedMinsChange ? (
+            <InlineTimeInput
+              value={plannedMins}
+              onChange={onPlannedMinsChange}
+              placeholder="--:--"
+              className="text-3xl font-mono font-normal tabular-nums tracking-tight text-muted-foreground/60"
+            />
+          ) : (
+            <span className="text-3xl font-mono font-normal tabular-nums tracking-tight text-muted-foreground/60">
+              {plannedMins ? formatTime(plannedSeconds) : "--:--"}
+            </span>
+          )}
         </div>
       </div>
 

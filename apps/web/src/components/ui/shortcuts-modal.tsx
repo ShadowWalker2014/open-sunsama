@@ -1,7 +1,11 @@
 import * as React from "react";
 import { Keyboard } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { SHORTCUTS, formatShortcut, type ShortcutDefinition } from "@/hooks/useKeyboardShortcuts";
+import {
+  SHORTCUTS,
+  formatShortcut,
+  type ShortcutDefinition,
+} from "@/hooks/useKeyboardShortcuts";
 import { cn } from "@/lib/utils";
 
 interface ShortcutsModalProps {
@@ -10,25 +14,25 @@ interface ShortcutsModalProps {
 }
 
 // Group shortcuts by category
-const groupedShortcuts = Object.entries(SHORTCUTS).reduce<Record<string, ShortcutDefinition[]>>(
-  (acc, [_key, shortcut]) => {
-    const category = shortcut.category;
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category]!.push(shortcut);
-    return acc;
-  },
-  {}
-);
+const groupedShortcuts = Object.entries(SHORTCUTS).reduce<
+  Record<string, ShortcutDefinition[]>
+>((acc, [_key, shortcut]) => {
+  const category = shortcut.category;
+  if (!acc[category]) {
+    acc[category] = [];
+  }
+  acc[category]!.push(shortcut);
+  return acc;
+}, {});
 
 const categoryLabels: Record<string, string> = {
   general: "General",
   navigation: "Navigation",
   task: "Task Actions",
+  focus: "Focus Mode",
 };
 
-const categoryOrder = ["general", "navigation", "task"];
+const categoryOrder = ["general", "navigation", "task", "focus"];
 
 export function ShortcutsModal({ open, onOpenChange }: ShortcutsModalProps) {
   return (
@@ -89,7 +93,13 @@ function ShortcutRow({ shortcut }: { shortcut: ShortcutDefinition }) {
 }
 
 // Keyboard key badge component
-function Kbd({ children, className }: { children: React.ReactNode; className?: string }) {
+function Kbd({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <kbd
       className={cn(

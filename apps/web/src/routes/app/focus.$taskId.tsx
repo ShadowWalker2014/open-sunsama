@@ -11,6 +11,8 @@ import {
   FocusNotes,
   CalendarSidebar,
 } from "@/components/focus";
+import type { FocusTimerRef } from "@/components/focus/focus-timer";
+import { shouldIgnoreShortcut } from "@/hooks/useKeyboardShortcuts";
 
 /**
  * Full-screen focus mode view for a single task
@@ -26,6 +28,9 @@ export default function FocusPage() {
   const [isCalendarOpen, setIsCalendarOpen] = React.useState(false);
   const [wasCompleted, setWasCompleted] = React.useState(false);
 
+  // Timer ref to expose toggle function for keyboard shortcut
+  const timerRef = React.useRef<FocusTimerRef | null>(null);
+
   // Fetch today's tasks to find next incomplete task
   const today = format(new Date(), "yyyy-MM-dd");
   const { data: todayTasks = [] } = useTasks({ scheduledDate: today });
@@ -33,7 +38,7 @@ export default function FocusPage() {
   // Get incomplete tasks sorted by position (excluding current)
   const nextIncompleteTask = React.useMemo(() => {
     const incompleteTasks = todayTasks
-      .filter(t => !t.completedAt && t.id !== taskId)
+      .filter((t) => !t.completedAt && t.id !== taskId)
       .sort((a, b) => a.position - b.position);
     return incompleteTasks[0] ?? null;
   }, [todayTasks, taskId]);
@@ -45,7 +50,10 @@ export default function FocusPage() {
       // Small delay for visual feedback before switching
       const timer = setTimeout(() => {
         if (nextIncompleteTask) {
-          navigate({ to: "/app/focus/$taskId", params: { taskId: nextIncompleteTask.id } });
+          navigate({
+            to: "/app/focus/$taskId",
+            params: { taskId: nextIncompleteTask.id },
+          });
         } else {
           navigate({ to: "/app/focus/complete" });
         }
@@ -65,11 +73,28 @@ export default function FocusPage() {
     }
   }, [task?.notes]);
 
-  // Handle Esc key to close
+  // Handle keyboard shortcuts (Esc to close, Space to toggle timer)
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Esc to close focus mode
       if (e.key === "Escape") {
         navigate({ to: "/app" });
+        return;
+      }
+
+      // Space to toggle timer (only when not in input/textarea)
+      if (
+        (e.key === " " || e.code === "Space") &&
+        !e.shiftKey &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey
+      ) {
+        // Check if we should ignore (typing in input/textarea)
+        if (shouldIgnoreShortcut(e)) return;
+
+        e.preventDefault();
+        timerRef.current?.toggle();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -78,16 +103,16 @@ export default function FocusPage() {
 
   // Auto-save notes on blur with debounce
   const saveNotesTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
-  
+
   const handleNotesChange = React.useCallback(
     (newNotes: string) => {
       setNotes(newNotes);
-      
+
       // Debounce the save
       if (saveNotesTimeoutRef.current) {
         clearTimeout(saveNotesTimeoutRef.current);
       }
-      
+
       saveNotesTimeoutRef.current = setTimeout(() => {
         if (task && newNotes !== task.notes) {
           updateTask.mutate({
@@ -131,6 +156,15 @@ export default function FocusPage() {
     (mins: number) => {
       if (task) {
         updateTask.mutate({ id: task.id, data: { actualMins: mins } });
+      }
+    },
+    [task, updateTask]
+  );
+
+  const handlePlannedMinsChange = React.useCallback(
+    (mins: number | null) => {
+      if (task) {
+        updateTask.mutate({ id: task.id, data: { estimatedMins: mins } });
       }
     },
     [task, updateTask]
@@ -181,6 +215,8 @@ export default function FocusPage() {
           plannedMins={task.estimatedMins}
           actualMins={task.actualMins ?? null}
           onActualMinsChange={handleActualMinsChange}
+          onPlannedMinsChange={handlePlannedMinsChange}
+          timerRef={timerRef}
         />
 
         {/* Divider */}

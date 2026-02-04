@@ -13,6 +13,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { InlineTimeInput } from "@/components/ui/inline-time-input";
 
 interface TaskCardContentProps {
   task: Task;
@@ -209,69 +210,98 @@ export function TaskCardContent({
 
       {/* Metadata row: Duration + Priority badges */}
       <div className="flex items-center gap-1.5 pl-6">
-        {/* Duration badge - inline editable, shows actual/estimated time */}
-        <Popover open={durationOpen} onOpenChange={setDurationOpen}>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setDurationOpen(true);
-              }}
-              className={cn(
-                "shrink-0 rounded px-1.5 py-0.5 text-[11px] tabular-nums",
-                "bg-muted/50 text-muted-foreground",
-                "transition-all duration-150",
-                "hover:ring-1 hover:ring-primary/30 hover:bg-muted/70",
-                "focus:outline-none focus:ring-1 focus:ring-primary/50",
-                isCompleted && "opacity-50"
-              )}
+        {/* Time display - inline editable actual / estimated */}
+        <div
+          className={cn(
+            "shrink-0 flex items-center gap-0.5 rounded px-1.5 py-0.5",
+            "bg-muted/50",
+            "transition-all duration-150",
+            isCompleted && "opacity-50"
+          )}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Actual time - inline editable */}
+          <InlineTimeInput
+            value={task.actualMins ?? null}
+            onChange={(mins) => onUpdateTask?.({ actualMins: mins ?? 0 })}
+            placeholder="0:00"
+            className={cn(
+              "text-muted-foreground",
+              task.actualMins &&
+                task.estimatedMins &&
+                task.actualMins > task.estimatedMins
+                ? "text-amber-500"
+                : ""
+            )}
+            disabled={isCompleted}
+          />
+
+          {/* Separator */}
+          <span className="text-muted-foreground/50 text-[11px]">/</span>
+
+          {/* Estimated time - popover with presets + inline edit */}
+          <Popover open={durationOpen} onOpenChange={setDurationOpen}>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDurationOpen(true);
+                }}
+                className={cn(
+                  "text-[11px] tabular-nums text-muted-foreground",
+                  "hover:underline hover:decoration-dotted cursor-pointer",
+                  "focus:outline-none focus:underline",
+                  task.estimatedMins && "text-foreground"
+                )}
+                disabled={isCompleted}
+              >
+                {task.estimatedMins ? formatDuration(task.estimatedMins) : "—"}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-auto p-1"
+              align="start"
+              onClick={(e) => e.stopPropagation()}
             >
-              {(() => {
-                const hasActual =
-                  task.actualMins != null && task.actualMins > 0;
-                const hasEstimate =
-                  task.estimatedMins != null && task.estimatedMins > 0;
-                if (hasActual && hasEstimate) {
-                  return `${formatDuration(task.actualMins!)} / ${formatDuration(task.estimatedMins!)}`;
-                }
-                if (hasEstimate) {
-                  return formatDuration(task.estimatedMins!);
-                }
-                if (hasActual) {
-                  return formatDuration(task.actualMins!);
-                }
-                return "—";
-              })()}
-            </button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="w-auto p-1"
-            align="start"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="grid grid-cols-4 gap-0.5">
-              {DURATION_PRESETS.map((preset) => (
-                <button
-                  key={preset.value}
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDurationChange(preset.value);
-                  }}
-                  className={cn(
-                    "px-2 py-1 text-xs rounded transition-colors",
-                    "hover:bg-accent hover:text-accent-foreground",
-                    task.estimatedMins === preset.value &&
-                      "bg-accent text-accent-foreground font-medium"
-                  )}
-                >
-                  {preset.label}
-                </button>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
+              <div className="grid grid-cols-4 gap-0.5">
+                {DURATION_PRESETS.map((preset) => (
+                  <button
+                    key={preset.value}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDurationChange(preset.value);
+                    }}
+                    className={cn(
+                      "px-2 py-1 text-xs rounded transition-colors",
+                      "hover:bg-accent hover:text-accent-foreground",
+                      task.estimatedMins === preset.value &&
+                        "bg-accent text-accent-foreground font-medium"
+                    )}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+              {/* Clear button */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onUpdateTask?.({ estimatedMins: null });
+                  setDurationOpen(false);
+                }}
+                className={cn(
+                  "w-full mt-1 px-2 py-1 text-xs rounded transition-colors",
+                  "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                )}
+              >
+                Clear
+              </button>
+            </PopoverContent>
+          </Popover>
+        </div>
 
         {/* Priority indicator - inline editable */}
         <Popover open={priorityOpen} onOpenChange={setPriorityOpen}>

@@ -121,3 +121,8 @@ export {
   TooltipContent,
   TooltipProvider,
 } from "./tooltip";
+export {
+  InlineTimeInput,
+  formatTimeHMM,
+  parseTimeInput,
+} from "./inline-time-input";
