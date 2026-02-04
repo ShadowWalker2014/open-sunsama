@@ -1,10 +1,7 @@
 import * as React from "react";
 import { format, isToday, isTomorrow, isPast, isYesterday } from "date-fns";
 import { useDroppable } from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Clock } from "lucide-react";
 import type { Task } from "@open-sunsama/types";
 import { useTasks } from "@/hooks/useTasks";
@@ -42,13 +39,8 @@ export function DayColumn({
   sortBy = "position",
 }: DayColumnProps) {
   // Use explicit limit to prevent accidental truncation (API default is 50)
-  const {
-    data: tasks,
-    isLoading,
-    isError,
-    refetch,
-  } = useTasks({ scheduledDate: dateString, limit: 200 });
-  const { activeTask, activeOverColumn, isDragging } = useTasksDnd();
+  const { data: tasks, isLoading, isError, refetch } = useTasks({ scheduledDate: dateString, limit: 200 });
+  const { activeTask, isDragging } = useTasksDnd();
 
   const { setNodeRef, isOver: isOverDroppable } = useDroppable({
     id: `day-${dateString}`,
@@ -62,7 +54,7 @@ export function DayColumn({
   const tomorrow = isTomorrow(date);
   const yesterday = isYesterday(date);
   const pastDay = isPast(date) && !today && !yesterday;
-  const isDropTarget = activeOverColumn === dateString || isOverDroppable;
+  const isDropTarget = isOverDroppable;
   const activeTaskId = activeTask?.id;
 
   // Sort function based on sortBy with direction support
@@ -70,16 +62,15 @@ export function DayColumn({
     (taskList: Task[]) => {
       const sorted = [...taskList];
       const { field, direction } = parseSortOption(sortBy);
-
+      
       switch (field) {
         case "priority":
           return sorted.sort((a, b) => {
             const priorityA = PRIORITY_ORDER[a.priority] ?? 2;
             const priorityB = PRIORITY_ORDER[b.priority] ?? 2;
-            const priorityDiff =
-              direction === "desc"
-                ? priorityA - priorityB // High to Low (P0=0 first)
-                : priorityB - priorityA; // Low to High (P3=3 first)
+            const priorityDiff = direction === "desc" 
+              ? priorityA - priorityB  // High to Low (P0=0 first)
+              : priorityB - priorityA; // Low to High (P3=3 first)
             if (priorityDiff !== 0) return priorityDiff;
             return a.position - b.position;
           });
@@ -87,8 +78,8 @@ export function DayColumn({
           return sorted.sort((a, b) => {
             const dateA = new Date(a.createdAt).getTime();
             const dateB = new Date(b.createdAt).getTime();
-            return direction === "desc"
-              ? dateB - dateA // Newest first
+            return direction === "desc" 
+              ? dateB - dateA  // Newest first
               : dateA - dateB; // Oldest first
           });
         case "position":
@@ -104,7 +95,7 @@ export function DayColumn({
   // when React Query refetches or optimistic updates change the data mid-drag
   const pendingTasks = React.useMemo(() => {
     let filtered = sortTasks(tasks?.filter((t) => !t.completedAt) ?? []);
-
+    
     // If dragging a task that belongs to this column, ensure it stays in the list
     if (isDragging && activeTask?.scheduledDate === dateString) {
       const isIncluded = filtered.some((t) => t.id === activeTask.id);
@@ -113,10 +104,10 @@ export function DayColumn({
         filtered = [...filtered, activeTask];
       }
     }
-
+    
     return filtered;
   }, [tasks, sortTasks, isDragging, activeTask, dateString]);
-
+  
   const completedTasks = React.useMemo(
     () => tasks?.filter((t) => t.completedAt) ?? [],
     [tasks]
@@ -130,18 +121,15 @@ export function DayColumn({
 
   // Calculate total estimated time for all tasks (pending + completed)
   const totalEstimatedMins = React.useMemo(
-    () =>
-      [...pendingTasks, ...completedTasks].reduce(
-        (sum, t) => sum + (t.estimatedMins ?? 0),
-        0
-      ),
+    () => [...pendingTasks, ...completedTasks].reduce((sum, t) => sum + (t.estimatedMins ?? 0), 0),
     [pendingTasks, completedTasks]
   );
 
   // Calculate progress for today column
   const totalTasks = pendingTasks.length + completedTasks.length;
-  const progressPercent =
-    totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 0;
+  const progressPercent = totalTasks > 0 
+    ? Math.round((completedTasks.length / totalTasks) * 100) 
+    : 0;
 
   // Get day label - "Today", "Tomorrow", or day name like "Thursday"
   const getDayLabel = () => {
@@ -192,19 +180,17 @@ export function DayColumn({
             {getDayLabel()}
           </span>
           {totalTasks > 0 && (
-            <span
-              className={cn(
-                "text-xs px-1.5 py-0.5 rounded",
-                today
-                  ? "bg-primary/20 text-primary"
-                  : "bg-muted text-muted-foreground"
-              )}
-            >
+            <span className={cn(
+              "text-xs px-1.5 py-0.5 rounded",
+              today 
+                ? "bg-primary/20 text-primary" 
+                : "bg-muted text-muted-foreground"
+            )}>
               {totalTasks}
             </span>
           )}
         </button>
-
+        
         {/* Date - smaller text below */}
         <div className="text-sm text-muted-foreground mt-0.5">
           {getFormattedDate()}
@@ -224,7 +210,7 @@ export function DayColumn({
         <div className="flex items-center justify-between mt-3">
           {/* Add task button */}
           <AddTaskInline scheduledDate={dateString} compact />
-
+          
           {/* Total time estimate with clock icon */}
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Clock className="h-3 w-3" />
@@ -278,7 +264,9 @@ export function DayColumn({
               {/* Empty state */}
               {pendingTasks.length === 0 && !isDropTarget && (
                 <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <p className="text-sm text-muted-foreground">No tasks</p>
+                  <p className="text-sm text-muted-foreground">
+                    No tasks
+                  </p>
                 </div>
               )}
 
@@ -303,6 +291,7 @@ export function DayColumn({
           )}
         </div>
       </ScrollArea>
+
     </div>
   );
 }
