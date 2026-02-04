@@ -27,9 +27,9 @@ import {
   Trash2,
   Check,
   Calendar,
-  Expand,
   Repeat,
   MoreHorizontal,
+  Play,
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import type {
@@ -65,6 +65,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui";
+import { TimeDropdown } from "@/components/ui/time-dropdown";
 import { SortableSubtaskItem } from "./sortable-subtask-item";
 import { NotesField } from "./task-modal-form";
 import { TaskAttachments } from "./task-attachments";
@@ -105,6 +106,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   const [isCustomDuration, setIsCustomDuration] = React.useState(false);
   const [customDurationValue, setCustomDurationValue] = React.useState("");
   const [repeatDialogOpen, setRepeatDialogOpen] = React.useState(false);
+  const [actualMins, setActualMins] = React.useState<number | null>(null);
 
   const { setHoveredTask } = useHoveredTask();
   const createTaskSeries = useCreateTaskSeries();
@@ -205,6 +207,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
       setDescription(task.notes || "");
       setPlannedMins(task.estimatedMins || null);
       setPriority(task.priority);
+      setActualMins(task.actualMins || null);
       setIsAddingSubtask(false);
       setNewSubtaskTitle("");
       setIsCustomDuration(false);
@@ -301,6 +304,17 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     }
     setIsCustomDuration(false);
     setCustomDurationValue("");
+  };
+
+  // Handle actual time change
+  const handleActualMinsChange = async (newActualMins: number | null) => {
+    setActualMins(newActualMins);
+    if (task) {
+      await updateTask.mutateAsync({
+        id: task.id,
+        data: { actualMins: newActualMins ?? 0 },
+      });
+    }
   };
 
   const handleDelete = async () => {
@@ -429,15 +443,43 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
               )}
             </div>
 
-            {/* Expand to focus button */}
-            <button
-              type="button"
-              onClick={handleExpandToFocus}
-              className="shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-              title="Open in focus mode"
-            >
-              <Expand className="h-4 w-4" />
-            </button>
+            {/* Time tracking section - ACTUAL / PLANNED with START button */}
+            <div className="flex items-center gap-3 shrink-0">
+              {/* Actual time */}
+              <TimeDropdown
+                value={actualMins}
+                onChange={handleActualMinsChange}
+                label="ACTUAL"
+                placeholder="--:--"
+                dropdownHeader="Set actual time"
+                shortcutHint="E"
+                size="sm"
+              />
+
+              {/* Planned time */}
+              <TimeDropdown
+                value={plannedMins}
+                onChange={handleDurationChange}
+                label="PLANNED"
+                placeholder="--:--"
+                dropdownHeader="Set planned time"
+                shortcutHint="W"
+                showClear
+                clearText="Clear planned"
+                size="sm"
+              />
+
+              {/* START button */}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleExpandToFocus}
+                className="gap-1.5 h-8 px-3 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+              >
+                <Play className="h-3.5 w-3.5" />
+                START
+              </Button>
+            </div>
           </div>
         </div>
 

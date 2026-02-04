@@ -1,7 +1,8 @@
 import * as React from "react";
 import { Play, Pause, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button, InlineTimeInput } from "@/components/ui";
+import { Button } from "@/components/ui";
+import { TimeDropdown } from "@/components/ui/time-dropdown";
 import { useTimer, formatTime, formatMins } from "@/hooks/useTimer";
 
 interface FocusTimerProps {
@@ -71,48 +72,74 @@ export function FocusTimer({
   const isSignificantlyOver =
     totalSeconds > plannedSeconds * 1.5 && plannedSeconds > 0;
 
+  // Calculate actual minutes from seconds for dropdown
+  const actualMinsFromTimer = Math.floor(totalSeconds / 60);
+
+  // Handle manual actual time change from dropdown
+  const handleActualTimeChange = React.useCallback(
+    (mins: number | null) => {
+      if (mins !== null) {
+        onActualMinsChange(mins);
+      }
+    },
+    [onActualMinsChange]
+  );
+
   return (
     <div className="flex flex-col items-center gap-5 py-6">
       {/* Time display */}
-      <div className="flex items-baseline gap-6 text-center">
-        {/* Actual time */}
+      <div className="flex items-center gap-6 text-center">
+        {/* Actual time - editable via dropdown, shows running time */}
         <div className="flex flex-col items-center gap-1">
-          <span className="text-[11px] font-medium text-muted-foreground/70">
-            Actual
+          <span className="text-[10px] font-medium text-muted-foreground/70 tracking-wide uppercase">
+            ACTUAL
           </span>
-          <span
-            className={cn(
-              "text-3xl font-mono font-normal tabular-nums tracking-tight",
-              isSignificantlyOver && "text-red-400",
-              isOverPlanned && !isSignificantlyOver && "text-amber-400",
-              isRunning && !isOverPlanned && "text-foreground"
-            )}
-          >
-            {formatTime(totalSeconds)}
-          </span>
+          {isRunning ? (
+            // Show live timer when running
+            <span
+              className={cn(
+                "text-3xl font-mono font-normal tabular-nums tracking-tight",
+                isSignificantlyOver && "text-red-400",
+                isOverPlanned && !isSignificantlyOver && "text-amber-400",
+                !isOverPlanned && "text-foreground"
+              )}
+            >
+              {formatTime(totalSeconds)}
+            </span>
+          ) : (
+            // Show editable dropdown when stopped
+            <TimeDropdown
+              value={actualMinsFromTimer > 0 ? actualMinsFromTimer : actualMins}
+              onChange={handleActualTimeChange}
+              placeholder="--:--"
+              dropdownHeader="Set actual time"
+              shortcutHint="E"
+              size="lg"
+              className={cn(
+                isSignificantlyOver && "text-red-400",
+                isOverPlanned && !isSignificantlyOver && "text-amber-400"
+              )}
+            />
+          )}
         </div>
 
         {/* Separator */}
         <span className="text-xl text-muted-foreground/30 font-light">/</span>
 
-        {/* Planned time - editable */}
-        <div className="flex flex-col items-center gap-1">
-          <span className="text-[11px] font-medium text-muted-foreground/70">
-            Planned
-          </span>
-          {onPlannedMinsChange ? (
-            <InlineTimeInput
-              value={plannedMins}
-              onChange={onPlannedMinsChange}
-              placeholder="--:--"
-              className="text-3xl font-mono font-normal tabular-nums tracking-tight text-muted-foreground/60"
-            />
-          ) : (
-            <span className="text-3xl font-mono font-normal tabular-nums tracking-tight text-muted-foreground/60">
-              {plannedMins ? formatTime(plannedSeconds) : "--:--"}
-            </span>
-          )}
-        </div>
+        {/* Planned time - editable via dropdown */}
+        <TimeDropdown
+          value={plannedMins}
+          onChange={onPlannedMinsChange ?? (() => {})}
+          label="PLANNED"
+          placeholder="--:--"
+          dropdownHeader="Set planned time"
+          shortcutHint="W"
+          showClear
+          clearText="Clear planned"
+          size="lg"
+          disabled={!onPlannedMinsChange}
+          className="text-muted-foreground/60"
+        />
       </div>
 
       {/* Estimated time badge */}
@@ -139,7 +166,7 @@ export function FocusTimer({
             size="sm"
             variant="outline"
             onClick={start}
-            className="gap-1.5 px-4 h-8"
+            className="gap-1.5 px-4 h-8 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
           >
             <Play className="h-3.5 w-3.5" />
             Start

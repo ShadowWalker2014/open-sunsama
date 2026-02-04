@@ -13,7 +13,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { InlineTimeInput } from "@/components/ui/inline-time-input";
 
 interface TaskCardContentProps {
   task: Task;
@@ -210,36 +209,49 @@ export function TaskCardContent({
 
       {/* Metadata row: Duration + Priority badges */}
       <div className="flex items-center gap-1.5 pl-6">
-        {/* Time display - inline editable actual / estimated */}
-        <div
-          className={cn(
-            "shrink-0 flex items-center gap-0.5 rounded px-1.5 py-0.5",
-            "bg-muted/50",
-            "transition-all duration-150",
-            isCompleted && "opacity-50"
+        {/* Time display - only show when actual time is defined */}
+        {task.actualMins !== null &&
+          task.actualMins !== undefined &&
+          task.actualMins > 0 && (
+            <div
+              className={cn(
+                "shrink-0 flex items-center gap-0.5 rounded px-1.5 py-0.5",
+                "bg-muted/50",
+                "transition-all duration-150",
+                isCompleted && "opacity-50"
+              )}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Actual time display */}
+              <span
+                className={cn(
+                  "text-[11px] tabular-nums",
+                  task.actualMins &&
+                    task.estimatedMins &&
+                    task.actualMins > task.estimatedMins
+                    ? "text-amber-500"
+                    : "text-foreground"
+                )}
+              >
+                {formatDuration(task.actualMins)}
+              </span>
+
+              {/* Separator and estimated - only show if estimated is set */}
+              {task.estimatedMins && (
+                <>
+                  <span className="text-muted-foreground/50 text-[11px]">
+                    /
+                  </span>
+                  <span className="text-[11px] tabular-nums text-muted-foreground">
+                    {formatDuration(task.estimatedMins)}
+                  </span>
+                </>
+              )}
+            </div>
           )}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Actual time - inline editable */}
-          <InlineTimeInput
-            value={task.actualMins ?? null}
-            onChange={(mins) => onUpdateTask?.({ actualMins: mins ?? 0 })}
-            placeholder="0:00"
-            className={cn(
-              "text-muted-foreground",
-              task.actualMins &&
-                task.estimatedMins &&
-                task.actualMins > task.estimatedMins
-                ? "text-amber-500"
-                : ""
-            )}
-            disabled={isCompleted}
-          />
 
-          {/* Separator */}
-          <span className="text-muted-foreground/50 text-[11px]">/</span>
-
-          {/* Estimated time - popover with presets + inline edit */}
+        {/* Estimated time badge - show when no actual time but has estimate */}
+        {(!task.actualMins || task.actualMins === 0) && task.estimatedMins && (
           <Popover open={durationOpen} onOpenChange={setDurationOpen}>
             <PopoverTrigger asChild>
               <button
@@ -249,14 +261,15 @@ export function TaskCardContent({
                   setDurationOpen(true);
                 }}
                 className={cn(
+                  "shrink-0 flex items-center gap-0.5 rounded px-1.5 py-0.5",
+                  "bg-muted/50",
                   "text-[11px] tabular-nums text-muted-foreground",
-                  "hover:underline hover:decoration-dotted cursor-pointer",
-                  "focus:outline-none focus:underline",
-                  task.estimatedMins && "text-foreground"
+                  "hover:bg-muted transition-colors cursor-pointer",
+                  isCompleted && "opacity-50"
                 )}
                 disabled={isCompleted}
               >
-                {task.estimatedMins ? formatDuration(task.estimatedMins) : "—"}
+                {formatDuration(task.estimatedMins)}
               </button>
             </PopoverTrigger>
             <PopoverContent
@@ -301,7 +314,7 @@ export function TaskCardContent({
               </button>
             </PopoverContent>
           </Popover>
-        </div>
+        )}
 
         {/* Priority indicator - inline editable */}
         <Popover open={priorityOpen} onOpenChange={setPriorityOpen}>
