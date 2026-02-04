@@ -39,8 +39,9 @@ export function FocusTimer({
 
   const handleStop = React.useCallback(
     (totalSeconds: number) => {
+      // Always save the actual time, even if 0 minutes (keeps seconds in localStorage)
       const totalMins = Math.floor(totalSeconds / 60);
-      onActualMinsChange(totalMins > 0 ? totalMins : null);
+      onActualMinsChange(totalMins);
     },
     [onActualMinsChange]
   );
@@ -100,17 +101,17 @@ export function FocusTimer({
 
   return (
     <div className="flex flex-col items-center gap-6">
-      {/* Timer display - compact */}
-      <div className="flex items-baseline gap-1">
+      {/* Timer display - same size for actual and planned */}
+      <div className="flex items-baseline gap-2">
         {/* Running indicator */}
         {isRunning && (
-          <span className="relative flex h-2 w-2 mr-2 self-center">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+          <span className="relative flex h-2.5 w-2.5 mr-1 self-center">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
           </span>
         )}
 
-        {/* Actual time */}
+        {/* Actual time - always show, same size as planned */}
         {isRunning ? (
           <span
             className={cn(
@@ -123,51 +124,73 @@ export function FocusTimer({
             {formatTime(totalSeconds)}
           </span>
         ) : (
-          <TimeDropdown
-            ref={actualTimeRef}
-            value={displayMins > 0 ? displayMins : null}
-            onChange={handleActualTimeChange}
-            placeholder="0:00"
-            dropdownHeader="Set actual time"
-            shortcutHint="E"
-            showClear={displayMins > 0}
-            clearText="Clear"
-            size="lg"
+          <span
             className={cn(
-              "text-5xl font-light",
-              isSignificantlyOver && "text-red-400",
-              isOverPlanned && !isSignificantlyOver && "text-amber-400"
+              "text-5xl font-light font-mono tabular-nums tracking-tight cursor-pointer hover:text-foreground transition-colors",
+              displaySeconds > 0
+                ? "text-foreground"
+                : "text-muted-foreground/50"
             )}
-          />
+            onClick={() => actualTimeRef.current?.open()}
+          >
+            {formatTime(displaySeconds)}
+          </span>
         )}
 
-        {/* Separator and planned time - inline */}
-        <span className="text-2xl font-light text-muted-foreground/30 mx-1">
-          /
+        {/* Hidden dropdown for actual time editing */}
+        <TimeDropdown
+          ref={actualTimeRef}
+          value={displayMins > 0 ? displayMins : null}
+          onChange={handleActualTimeChange}
+          placeholder="0:00"
+          dropdownHeader="Set actual time"
+          shortcutHint="E"
+          showClear={displayMins > 0}
+          clearText="Clear"
+          size="lg"
+          className="hidden"
+        />
+
+        {/* Separator */}
+        <span className="text-5xl font-light text-muted-foreground/30">/</span>
+
+        {/* Planned time - same size as actual */}
+        <span
+          className={cn(
+            "text-5xl font-light font-mono tabular-nums tracking-tight cursor-pointer hover:text-muted-foreground/60 transition-colors",
+            plannedMins
+              ? "text-muted-foreground/40"
+              : "text-muted-foreground/30"
+          )}
+          onClick={() => plannedTimeRef.current?.open()}
+        >
+          {plannedMins ? formatTime(plannedMins * 60) : "0:00"}
         </span>
+
+        {/* Hidden dropdown for planned time editing */}
         <TimeDropdown
           ref={plannedTimeRef}
           value={plannedMins}
           onChange={onPlannedMinsChange ?? (() => {})}
-          placeholder="--:--"
+          placeholder="0:00"
           dropdownHeader="Set planned time"
           shortcutHint="W"
           showClear={!!plannedMins}
           clearText="Clear"
-          size="md"
+          size="lg"
           disabled={!onPlannedMinsChange}
-          className="text-2xl font-light text-muted-foreground/40"
+          className="hidden"
         />
       </div>
 
-      {/* Start/Stop button - Linear green style */}
+      {/* Start/Stop button */}
       <button
         onClick={isRunning ? stop : start}
         className={cn(
           "flex items-center justify-center gap-1.5 px-5 py-2 rounded-md text-sm font-medium transition-all",
           isRunning
             ? "bg-red-500/10 text-red-500 hover:bg-red-500/20"
-            : "bg-emerald-500 text-white hover:bg-emerald-600"
+            : "bg-[#22c55e] text-white hover:bg-[#16a34a]"
         )}
       >
         {isRunning ? (

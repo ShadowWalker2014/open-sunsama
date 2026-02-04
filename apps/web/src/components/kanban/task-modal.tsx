@@ -402,10 +402,10 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                 </div>
               </div>
 
-              {/* START button */}
+              {/* START button - Linear green */}
               <button
                 onClick={handleExpandToFocus}
-                className="flex items-center gap-1.5 h-8 px-4 rounded-md bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium transition-colors"
+                className="flex items-center gap-1.5 h-8 px-4 rounded-md bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-medium transition-colors"
               >
                 <Play className="h-3.5 w-3.5 fill-current" />
                 START
