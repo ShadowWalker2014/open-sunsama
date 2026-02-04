@@ -1,12 +1,22 @@
-<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="120" height="120" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#8B5CF6"/>
-      <stop offset="100%" style="stop-color:#3B82F6"/>
+    <linearGradient id="grad1" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" style="stop-color:#F97068"/>
+      <stop offset="100%" style="stop-color:#FCAB9F"/>
     </linearGradient>
   </defs>
-  <rect width="120" height="120" rx="24" fill="url(#gradient)"/>
-  <circle cx="60" cy="50" r="24" fill="white" fill-opacity="0.9"/>
-  <path d="M40 80 L60 65 L80 80 L60 95 Z" fill="white" fill-opacity="0.9"/>
-  <circle cx="60" cy="50" r="8" fill="url(#gradient)"/>
+  <!-- Left bean/seed shape -->
+  <path d="M48 10 
+           C28 10 12 28 12 50 
+           C12 72 28 90 48 90 
+           C48 70 38 58 38 50 
+           C38 42 48 30 48 10Z" 
+        fill="url(#grad1)"/>
+  <!-- Right bean/seed shape -->
+  <path d="M52 90 
+           C72 90 88 72 88 50 
+           C88 28 72 10 52 10 
+           C52 30 62 42 62 50 
+           C62 58 52 70 52 90Z" 
+        fill="url(#grad1)"/>
 </svg>

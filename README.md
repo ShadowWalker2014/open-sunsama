@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/images/logo.svg" alt="Open Sunsama Logo" width="120" height="120" />
+<img src="docs/images/logo.png" alt="Open Sunsama Logo" width="120" height="120" />
 
 # Open Sunsama
 
