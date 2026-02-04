@@ -901,7 +901,7 @@ function AppPreview({ inView }: { inView: boolean }) {
     { id: "kanban" as const, icon: Layout, label: "Kanban Board" },
     { id: "timeblocking" as const, icon: Clock, label: "Time Blocking" },
     { id: "focus" as const, icon: Timer, label: "Focus Mode" },
-    { id: "command" as const, icon: Search, label: "Command Palette" },
+    { id: "command" as const, icon: Command, label: "Command Palette" },
   ];
 
   // Handle mode switching with animation
@@ -974,36 +974,29 @@ function AppPreview({ inView }: { inView: boolean }) {
 
       {/* Mode selector - Linear/Vercel-style segmented control */}
       <div className="flex justify-center mt-8">
-        <div className="relative inline-flex items-center p-1 rounded-full bg-muted/50 border border-border/50 backdrop-blur-sm">
-          {/* Animated background pill */}
-          <div
-            className="absolute h-[calc(100%-8px)] rounded-full bg-background shadow-sm border border-border/60 transition-all duration-300 ease-out"
-            style={{
-              width: `${100 / modes.length}%`,
-              left: `calc(${modes.findIndex((m) => m.id === activeMode) * (100 / modes.length)}% + 4px)`,
-              transform: "translateX(0)",
-            }}
-          />
+        <div className="inline-flex items-center gap-1 p-1 rounded-full bg-muted/40 border border-border/40">
           {modes.map((mode) => (
             <button
               key={mode.id}
               onClick={() => handleModeChange(mode.id)}
               className={cn(
-                "relative z-10 flex items-center gap-2 px-4 py-2 rounded-full text-[13px] font-medium transition-colors duration-200",
+                "flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-all duration-200",
                 activeMode === mode.id
-                  ? "text-foreground"
+                  ? "bg-background text-foreground shadow-sm border border-border/50"
                   : "text-muted-foreground hover:text-foreground/80"
               )}
             >
               <mode.icon
                 className={cn(
-                  "h-4 w-4 transition-colors duration-200",
+                  "h-3.5 w-3.5 shrink-0 transition-colors duration-200",
                   activeMode === mode.id
                     ? "text-primary"
                     : "text-muted-foreground"
                 )}
               />
-              <span className="hidden sm:inline">{mode.label}</span>
+              <span className="hidden sm:inline whitespace-nowrap">
+                {mode.label}
+              </span>
             </button>
           ))}
         </div>
