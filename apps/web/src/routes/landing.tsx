@@ -16,11 +16,513 @@ import {
   Sparkles,
   ChevronRight,
   RefreshCw,
+  Play,
+  ChevronLeft,
+  MoreHorizontal,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useInView } from "react-intersection-observer";
 import { cn } from "@/lib/utils";
 import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
+
+/**
+ * App Preview Component - Shows a realistic view of the main interface
+ */
+function AppPreview({ inView }: { inView: boolean }) {
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const dayAfter = new Date(today);
+  dayAfter.setDate(dayAfter.getDate() + 2);
+
+  const formatDay = (date: Date) => {
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    return days[date.getDay()];
+  };
+
+  const formatDate = (date: Date) => {
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    return `${months[date.getMonth()]} ${date.getDate()}`;
+  };
+
+  const tasks = {
+    today: [
+      {
+        id: 1,
+        title: "Review Q1 roadmap with team",
+        priority: "P0",
+        duration: "2h",
+        completed: false,
+        subtasks: ["Prepare slides", "Send agenda"],
+        startTime: "9:00 AM",
+      },
+      {
+        id: 2,
+        title: "Write API documentation",
+        priority: "P1",
+        duration: "1h 30m",
+        completed: false,
+        subtasks: ["Auth endpoints", "Task endpoints"],
+        inFocus: true,
+      },
+      {
+        id: 3,
+        title: "Code review: PR #247",
+        priority: "P2",
+        duration: "45m",
+        completed: true,
+      },
+      {
+        id: 4,
+        title: "Team standup",
+        priority: "P2",
+        duration: "15m",
+        completed: true,
+        startTime: "10:00 AM",
+      },
+    ],
+    tomorrow: [
+      {
+        id: 5,
+        title: "Design system updates",
+        priority: "P1",
+        duration: "3h",
+        completed: false,
+      },
+      {
+        id: 6,
+        title: "Client presentation prep",
+        priority: "P0",
+        duration: "2h",
+        completed: false,
+      },
+      {
+        id: 7,
+        title: "1:1 with Sarah",
+        priority: "P2",
+        duration: "30m",
+        completed: false,
+      },
+    ],
+    dayAfter: [
+      {
+        id: 8,
+        title: "Sprint retrospective",
+        priority: "P1",
+        duration: "1h",
+        completed: false,
+      },
+      {
+        id: 9,
+        title: "Bug fixes: mobile layout",
+        priority: "P2",
+        duration: "2h",
+        completed: false,
+      },
+    ],
+  };
+
+  const getPriorityStyles = (priority: string) => {
+    switch (priority) {
+      case "P0":
+        return "bg-red-500/15 text-red-600 dark:text-red-400";
+      case "P1":
+        return "bg-amber-500/15 text-amber-600 dark:text-amber-400";
+      case "P2":
+        return "bg-blue-500/10 text-blue-500 dark:text-blue-400";
+      default:
+        return "bg-slate-500/10 text-slate-500";
+    }
+  };
+
+  return (
+    <div
+      className={cn(
+        "mt-12 md:mt-16 transition-all duration-700 delay-200",
+        inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+      )}
+    >
+      {/* Outer glow container */}
+      <div className="relative">
+        <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 blur-3xl opacity-50 rounded-3xl" />
+
+        {/* Main preview container */}
+        <div className="relative rounded-2xl border border-border/60 bg-card/80 backdrop-blur-sm p-1.5 shadow-2xl">
+          <div className="rounded-xl border border-border/40 bg-background overflow-hidden">
+            {/* Window chrome - macOS style */}
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/40 bg-muted/30">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-3 w-3 rounded-full bg-[#ff5f57] hover:bg-[#ff5f57]/80 transition-colors" />
+                  <div className="h-3 w-3 rounded-full bg-[#febc2e] hover:bg-[#febc2e]/80 transition-colors" />
+                  <div className="h-3 w-3 rounded-full bg-[#28c840] hover:bg-[#28c840]/80 transition-colors" />
+                </div>
+                <div className="hidden sm:flex items-center gap-1.5 ml-4 px-2 py-1 rounded-md bg-muted/50">
+                  <Calendar className="h-3 w-3 text-primary" />
+                  <span className="text-[10px] font-medium text-muted-foreground">
+                    Open Sunsama
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-md bg-muted/30 text-[10px] text-muted-foreground">
+                  <Command className="h-2.5 w-2.5" />
+                  <span>K</span>
+                </div>
+              </div>
+            </div>
+
+            {/* App content */}
+            <div className="flex h-[320px] sm:h-[380px] md:h-[420px]">
+              {/* Sidebar - Backlog (hidden on mobile) */}
+              <div className="hidden md:flex flex-col w-[180px] border-r border-border/40 bg-muted/10">
+                <div className="p-3 border-b border-border/40">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      Backlog
+                    </span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                      3
+                    </span>
+                  </div>
+                </div>
+                <div className="flex-1 p-2 space-y-1.5 overflow-hidden">
+                  {[
+                    { title: "Research new framework", priority: "P3" },
+                    { title: "Update dependencies", priority: "P3" },
+                    { title: "Write blog post", priority: "P2" },
+                  ].map((task, i) => (
+                    <div
+                      key={i}
+                      className="group rounded-lg border border-border/30 bg-card/50 p-2 hover:bg-card/80 hover:border-border/50 transition-all cursor-grab"
+                    >
+                      <div className="flex items-start gap-2">
+                        <div className="mt-0.5 h-3.5 w-3.5 rounded-full border-2 border-muted-foreground/30 shrink-0" />
+                        <span className="text-[11px] text-muted-foreground leading-tight line-clamp-2">
+                          {task.title}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Main content - Day columns */}
+              <div className="flex-1 flex flex-col min-w-0">
+                {/* Toolbar */}
+                <div className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-muted/5">
+                  <div className="flex items-center gap-1">
+                    <button className="p-1 rounded hover:bg-muted/50 transition-colors">
+                      <ChevronLeft className="h-3.5 w-3.5 text-muted-foreground" />
+                    </button>
+                    <button className="px-2 py-1 rounded text-[11px] font-medium hover:bg-muted/50 transition-colors">
+                      Today
+                    </button>
+                    <button className="p-1 rounded hover:bg-muted/50 transition-colors">
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Day columns container */}
+                <div className="flex-1 flex overflow-hidden">
+                  {/* Today column */}
+                  <div className="flex-1 min-w-[160px] border-r border-border/40 flex flex-col">
+                    <div className="p-3 border-b border-border/40">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[13px] font-semibold text-primary">
+                          Today
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {formatDate(today)}
+                        </span>
+                      </div>
+                      {/* Progress bar */}
+                      <div className="h-1 rounded-full bg-muted overflow-hidden">
+                        <div className="h-full w-1/2 bg-primary rounded-full transition-all" />
+                      </div>
+                      <div className="flex items-center justify-between mt-1.5">
+                        <span className="text-[10px] text-muted-foreground">
+                          4h 30m planned
+                        </span>
+                        <span className="text-[10px] text-primary">50%</span>
+                      </div>
+                    </div>
+                    <div className="flex-1 p-2 space-y-1.5 overflow-y-auto">
+                      {tasks.today.map((task) => (
+                        <div
+                          key={task.id}
+                          className={cn(
+                            "group rounded-lg border bg-card p-2.5 transition-all cursor-pointer",
+                            task.inFocus
+                              ? "border-primary/40 bg-primary/5 ring-1 ring-primary/20"
+                              : "border-border/40 hover:border-border/60 hover:bg-card/80"
+                          )}
+                        >
+                          {task.startTime && (
+                            <div className="text-[10px] text-muted-foreground mb-1">
+                              {task.startTime}
+                            </div>
+                          )}
+                          <div className="flex items-start gap-2">
+                            <div
+                              className={cn(
+                                "mt-0.5 h-4 w-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors",
+                                task.completed
+                                  ? "border-primary bg-primary"
+                                  : "border-muted-foreground/40 group-hover:border-muted-foreground/60"
+                              )}
+                            >
+                              {task.completed && (
+                                <Check className="h-2.5 w-2.5 text-primary-foreground" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <span
+                                className={cn(
+                                  "text-[12px] leading-tight block",
+                                  task.completed &&
+                                    "line-through text-muted-foreground"
+                                )}
+                              >
+                                {task.title}
+                              </span>
+                              <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                                <span
+                                  className={cn(
+                                    "text-[9px] px-1.5 py-0.5 rounded font-medium",
+                                    getPriorityStyles(task.priority)
+                                  )}
+                                >
+                                  {task.priority}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground tabular-nums">
+                                  {task.duration}
+                                </span>
+                                {task.inFocus && (
+                                  <span className="flex items-center gap-0.5 text-[9px] text-primary font-medium">
+                                    <Timer className="h-2.5 w-2.5" />
+                                    Focus
+                                  </span>
+                                )}
+                              </div>
+                              {task.subtasks && !task.completed && (
+                                <div className="mt-2 space-y-1">
+                                  {task.subtasks
+                                    .slice(0, 2)
+                                    .map((subtask, i) => (
+                                      <div
+                                        key={i}
+                                        className="flex items-center gap-1.5"
+                                      >
+                                        <div className="h-2.5 w-2.5 rounded-sm border border-muted-foreground/30" />
+                                        <span className="text-[10px] text-muted-foreground">
+                                          {subtask}
+                                        </span>
+                                      </div>
+                                    ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      <button className="w-full flex items-center justify-center gap-1 p-2 rounded-lg border border-dashed border-border/40 text-[11px] text-muted-foreground hover:bg-muted/30 hover:border-border/60 transition-colors">
+                        <Plus className="h-3 w-3" />
+                        Add task
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Tomorrow column */}
+                  <div className="flex-1 min-w-[160px] border-r border-border/40 flex flex-col hidden sm:flex">
+                    <div className="p-3 border-b border-border/40">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[13px] font-semibold">
+                          Tomorrow
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {formatDate(tomorrow)}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground">
+                        5h 30m planned
+                      </span>
+                    </div>
+                    <div className="flex-1 p-2 space-y-1.5 overflow-y-auto">
+                      {tasks.tomorrow.map((task) => (
+                        <div
+                          key={task.id}
+                          className="group rounded-lg border border-border/40 bg-card p-2.5 hover:border-border/60 hover:bg-card/80 transition-all cursor-pointer"
+                        >
+                          <div className="flex items-start gap-2">
+                            <div className="mt-0.5 h-4 w-4 rounded-full border-2 border-muted-foreground/40 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <span className="text-[12px] leading-tight block">
+                                {task.title}
+                              </span>
+                              <div className="flex items-center gap-1.5 mt-1.5">
+                                <span
+                                  className={cn(
+                                    "text-[9px] px-1.5 py-0.5 rounded font-medium",
+                                    getPriorityStyles(task.priority)
+                                  )}
+                                >
+                                  {task.priority}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground tabular-nums">
+                                  {task.duration}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Day after column (hidden on smaller screens) */}
+                  <div className="flex-1 min-w-[160px] flex-col hidden lg:flex">
+                    <div className="p-3 border-b border-border/40">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[13px] font-semibold">
+                          {formatDay(dayAfter)}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {formatDate(dayAfter)}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground">
+                        3h planned
+                      </span>
+                    </div>
+                    <div className="flex-1 p-2 space-y-1.5 overflow-y-auto">
+                      {tasks.dayAfter.map((task) => (
+                        <div
+                          key={task.id}
+                          className="group rounded-lg border border-border/40 bg-card p-2.5 hover:border-border/60 hover:bg-card/80 transition-all cursor-pointer"
+                        >
+                          <div className="flex items-start gap-2">
+                            <div className="mt-0.5 h-4 w-4 rounded-full border-2 border-muted-foreground/40 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <span className="text-[12px] leading-tight block">
+                                {task.title}
+                              </span>
+                              <div className="flex items-center gap-1.5 mt-1.5">
+                                <span
+                                  className={cn(
+                                    "text-[9px] px-1.5 py-0.5 rounded font-medium",
+                                    getPriorityStyles(task.priority)
+                                  )}
+                                >
+                                  {task.priority}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground tabular-nums">
+                                  {task.duration}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right sidebar - Timeline (hidden on mobile) */}
+              <div className="hidden lg:flex flex-col w-[200px] border-l border-border/40 bg-muted/5">
+                <div className="p-3 border-b border-border/40">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      Timeline
+                    </span>
+                  </div>
+                </div>
+                <div className="flex-1 p-2 overflow-hidden relative">
+                  {/* Time markers */}
+                  <div className="absolute left-2 top-0 bottom-0 w-10 text-[9px] text-muted-foreground space-y-[40px] pt-1">
+                    <div>9:00</div>
+                    <div>10:00</div>
+                    <div>11:00</div>
+                    <div>12:00</div>
+                    <div>1:00</div>
+                  </div>
+                  {/* Time blocks */}
+                  <div className="ml-11 space-y-1.5 relative">
+                    <div className="h-10 rounded-lg bg-red-500/10 border-l-[3px] border-red-500 p-2">
+                      <span className="text-[10px] font-medium block truncate">
+                        Q1 Roadmap
+                      </span>
+                      <span className="text-[9px] text-muted-foreground">
+                        9:00 - 11:00
+                      </span>
+                    </div>
+                    <div className="h-6 rounded-lg bg-blue-500/10 border-l-[3px] border-blue-500 p-1.5">
+                      <span className="text-[10px] font-medium truncate">
+                        Standup
+                      </span>
+                    </div>
+                    <div className="h-14 rounded-lg bg-primary/10 border-l-[3px] border-primary p-2">
+                      <span className="text-[10px] font-medium block truncate">
+                        API Docs
+                      </span>
+                      <span className="text-[9px] text-primary">In focus</span>
+                    </div>
+                    {/* Current time indicator */}
+                    <div
+                      className="absolute left-0 right-0 flex items-center gap-1"
+                      style={{ top: "85px" }}
+                    >
+                      <div className="h-2 w-2 rounded-full bg-red-500" />
+                      <div className="flex-1 h-[1px] bg-red-500" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Feature indicators below preview */}
+      <div className="flex flex-wrap justify-center gap-2 mt-6">
+        {[
+          { icon: Layout, label: "Kanban Board" },
+          { icon: Clock, label: "Time Blocking" },
+          { icon: Timer, label: "Focus Mode" },
+          { icon: Command, label: "Command Palette" },
+        ].map((item, i) => (
+          <div
+            key={i}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border/40 bg-card/50 text-[11px] transition-all duration-300",
+              inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+            )}
+            style={{ transitionDelay: `${300 + i * 50}ms` }}
+          >
+            <item.icon className="h-3 w-3 text-primary" />
+            <span className="text-muted-foreground">{item.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /**
  * Feature card - matches app's card style
@@ -129,15 +631,23 @@ function ComparisonSection() {
           <table className="w-full text-[13px]">
             <thead>
               <tr className="border-b border-border/40 bg-muted/30">
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Feature</th>
-                <th className="px-4 py-3 font-medium text-primary text-center">Open Sunsama</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground text-center">Others</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+                  Feature
+                </th>
+                <th className="px-4 py-3 font-medium text-primary text-center">
+                  Open Sunsama
+                </th>
+                <th className="px-4 py-3 font-medium text-muted-foreground text-center">
+                  Others
+                </th>
               </tr>
             </thead>
             <tbody>
               {features.map((feature, i) => (
                 <tr key={i} className="border-b border-border/40 last:border-0">
-                  <td className="px-4 py-2.5 text-muted-foreground">{feature.name}</td>
+                  <td className="px-4 py-2.5 text-muted-foreground">
+                    {feature.name}
+                  </td>
                   <td className="px-4 py-2.5 text-center">
                     {feature.us ? (
                       <Check className="h-3.5 w-3.5 text-primary mx-auto" />
@@ -184,21 +694,45 @@ export default function LandingPage() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-0.5">
-            <Button variant="ghost" size="sm" className="h-8 px-3 text-xs" asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-3 text-xs"
+              asChild
+            >
               <Link to="/blog">Blog</Link>
             </Button>
-            <Button variant="ghost" size="sm" className="h-8 px-3 text-xs" asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-3 text-xs"
+              asChild
+            >
               <Link to="/download">Download</Link>
             </Button>
-            <Button variant="ghost" size="sm" className="h-8 px-3 text-xs" asChild>
-              <a href="https://github.com/ShadowWalker2014/open-sunsama" target="_blank" rel="noopener noreferrer">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-3 text-xs"
+              asChild
+            >
+              <a
+                href="https://github.com/ShadowWalker2014/open-sunsama"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 GitHub
               </a>
             </Button>
           </nav>
 
           <div className="flex items-center gap-1.5">
-            <Button variant="ghost" size="sm" className="h-8 px-3 text-xs" asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-3 text-xs"
+              asChild
+            >
               <Link to="/login">Sign in</Link>
             </Button>
             <Button size="sm" className="h-8 px-3 text-xs" asChild>
@@ -211,12 +745,14 @@ export default function LandingPage() {
       <main className="relative">
         {/* Hero - compact */}
         <section ref={heroRef} className="pt-16 pb-12 md:pt-24 md:pb-16">
-          <div className="container px-4 mx-auto max-w-3xl text-center">
+          <div className="container px-4 mx-auto max-w-5xl text-center">
             {/* Badge */}
             <div
               className={cn(
                 "inline-flex items-center gap-1.5 px-2.5 py-1 mb-6 rounded-md border border-border/40 bg-card/50 text-[11px] font-medium transition-all duration-300",
-                heroInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+                heroInView
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-2"
               )}
             >
               <Sparkles className="h-3 w-3 text-primary" />
@@ -227,29 +763,34 @@ export default function LandingPage() {
             <h1
               className={cn(
                 "text-2xl md:text-3xl lg:text-4xl font-semibold tracking-tight leading-tight mb-4 transition-all duration-300 delay-75",
-                heroInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+                heroInView
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-2"
               )}
             >
-              Daily planning,{" "}
-              <span className="text-primary">done right.</span>
+              Daily planning, <span className="text-primary">done right.</span>
             </h1>
 
             {/* Subheadline */}
             <p
               className={cn(
                 "text-sm md:text-[15px] text-muted-foreground max-w-lg mx-auto mb-8 leading-relaxed transition-all duration-300 delay-100",
-                heroInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+                heroInView
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-2"
               )}
             >
-              The open-source daily planner for time-blocking, focused work, 
-              and seamless AI integration.
+              The open-source daily planner for time-blocking, focused work, and
+              seamless AI integration.
             </p>
 
             {/* CTA */}
             <div
               className={cn(
                 "flex flex-col sm:flex-row gap-2 justify-center transition-all duration-300 delay-150",
-                heroInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+                heroInView
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-2"
               )}
             >
               <Button size="sm" className="h-9 px-4 text-[13px]" asChild>
@@ -258,7 +799,12 @@ export default function LandingPage() {
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </Button>
-              <Button variant="outline" size="sm" className="h-9 px-4 text-[13px]" asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 px-4 text-[13px]"
+                asChild
+              >
                 <Link to="/download">
                   <Download className="h-3.5 w-3.5" />
                   Download
@@ -266,45 +812,8 @@ export default function LandingPage() {
               </Button>
             </div>
 
-            {/* App preview - matches app card style */}
-            <div
-              className={cn(
-                "mt-12 md:mt-16 transition-all duration-500 delay-200",
-                heroInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
-              )}
-            >
-              <div className="rounded-xl border border-border/40 bg-card/50 p-1 shadow-lg">
-                <div className="rounded-lg border border-border/40 bg-background overflow-hidden">
-                  {/* Window chrome */}
-                  <div className="flex items-center gap-1.5 px-3 py-2 border-b border-border/40 bg-muted/20">
-                    <div className="h-2 w-2 rounded-full bg-muted-foreground/20" />
-                    <div className="h-2 w-2 rounded-full bg-muted-foreground/20" />
-                    <div className="h-2 w-2 rounded-full bg-muted-foreground/20" />
-                  </div>
-                  {/* Mock content */}
-                  <div className="p-4 md:p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Calendar className="h-4 w-4 text-primary" />
-                      </div>
-                      <div>
-                        <div className="h-2.5 w-24 rounded bg-muted" />
-                        <div className="h-2 w-16 rounded bg-muted/50 mt-1.5" />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="rounded-lg border border-border/40 bg-card/50 p-3">
-                          <div className="h-2 w-12 rounded bg-primary/20 mb-2" />
-                          <div className="h-2 w-full rounded bg-muted mb-1.5" />
-                          <div className="h-2 w-2/3 rounded bg-muted/50" />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* App preview - realistic app interface */}
+            <AppPreview inView={heroInView} />
           </div>
         </section>
 
@@ -382,8 +891,12 @@ export default function LandingPage() {
               ].map((stat, i) => (
                 <div key={i} className="space-y-1">
                   <stat.icon className="h-4 w-4 mx-auto text-muted-foreground/50" />
-                  <div className="text-lg md:text-xl font-semibold tracking-tight">{stat.value}</div>
-                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{stat.label}</div>
+                  <div className="text-lg md:text-xl font-semibold tracking-tight">
+                    {stat.value}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                    {stat.label}
+                  </div>
                 </div>
               ))}
             </div>
@@ -406,8 +919,17 @@ export default function LandingPage() {
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </Button>
-              <Button variant="outline" size="sm" className="h-9 px-4 text-[13px]" asChild>
-                <a href="https://github.com/ShadowWalker2014/open-sunsama" target="_blank" rel="noopener noreferrer">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 px-4 text-[13px]"
+                asChild
+              >
+                <a
+                  href="https://github.com/ShadowWalker2014/open-sunsama"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <Github className="h-3.5 w-3.5" />
                   GitHub
                 </a>
@@ -433,13 +955,22 @@ export default function LandingPage() {
               </span>
             </div>
             <nav className="flex items-center gap-4 text-[11px] text-muted-foreground">
-              <Link to="/blog" className="hover:text-foreground transition-colors">
+              <Link
+                to="/blog"
+                className="hover:text-foreground transition-colors"
+              >
                 Blog
               </Link>
-              <Link to="/privacy" className="hover:text-foreground transition-colors">
+              <Link
+                to="/privacy"
+                className="hover:text-foreground transition-colors"
+              >
                 Privacy
               </Link>
-              <Link to="/terms" className="hover:text-foreground transition-colors">
+              <Link
+                to="/terms"
+                className="hover:text-foreground transition-colors"
+              >
                 Terms
               </Link>
               <a
