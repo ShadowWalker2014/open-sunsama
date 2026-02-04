@@ -289,9 +289,11 @@ const DatePickerPopover = React.forwardRef<
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex items-center gap-1 px-2 py-1 rounded text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+          className={cn(
+            "text-sm font-medium transition-colors hover:text-foreground",
+            value ? "text-foreground" : "text-muted-foreground"
+          )}
         >
-          <Calendar className="h-3.5 w-3.5" />
           {displayValue}
         </button>
       </PopoverTrigger>
@@ -794,25 +796,21 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden [&>button]:hidden">
-        {/* Top toolbar - metadata and actions */}
-        <div className="flex items-center justify-between gap-2 px-4 py-2 border-b border-border/50 bg-muted/20">
-          {/* Left side - metadata */}
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            {/* Date picker popover */}
-            <DatePickerPopover
-              ref={datePickerRef}
-              value={task.scheduledDate}
-              onChange={handleScheduledDateChange}
-              taskTitle={task.title}
-            />
-            {plannedMins && (
-              <span className="flex items-center gap-1 px-2 py-1 rounded hover:bg-muted/50 transition-colors">
-                <CalendarClock className="h-3.5 w-3.5" />
-                {plannedMins >= 60
-                  ? `${Math.floor(plannedMins / 60)}:${(plannedMins % 60).toString().padStart(2, "0")}`
-                  : `0:${plannedMins.toString().padStart(2, "0")}`}
+        {/* Top toolbar - minimal metadata and actions */}
+        <div className="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-border/50">
+          {/* Left side - START date with label */}
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col">
+              <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">
+                Start
               </span>
-            )}
+              <DatePickerPopover
+                ref={datePickerRef}
+                value={task.scheduledDate}
+                onChange={handleScheduledDateChange}
+                taskTitle={task.title}
+              />
+            </div>
           </div>
 
           {/* Right side - action buttons */}
@@ -828,31 +826,31 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
             </button>
 
             {/* More menu */}
-            {!task.seriesId && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                  >
-                    <MoreHorizontal className="h-4 w-4" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {!task.seriesId && (
                   <DropdownMenuItem onSelect={() => setRepeatDialogOpen(true)}>
                     <Repeat className="mr-2 h-4 w-4" />
                     Repeat...
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={handleDelete}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+                )}
+                <DropdownMenuItem
+                  onSelect={handleDelete}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Focus mode button */}
             <button
@@ -875,15 +873,14 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
           </div>
         </div>
 
-        {/* Header section - title and time tracking */}
-        <div className="p-5 pb-0 space-y-4">
-          {/* Title row with checkbox */}
+        {/* Title section - full width, wraps properly */}
+        <div className="px-6 pt-5 pb-4">
           <div className="flex items-start gap-3">
             {/* Checkbox */}
             <button
               type="button"
               className={cn(
-                "mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all",
+                "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all",
                 isCompleted
                   ? "border-primary bg-primary text-primary-foreground"
                   : "border-muted-foreground/30 hover:border-primary"
@@ -893,69 +890,93 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
               {isCompleted && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
             </button>
 
-            {/* Title */}
-            <div className="flex-1 min-w-0">
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                onBlur={() => title !== task.title && handleSave()}
-                className={cn(
-                  "border-none p-0 text-xl font-semibold shadow-none focus-visible:ring-0 h-auto bg-transparent",
-                  isCompleted && "line-through text-muted-foreground"
-                )}
-                placeholder="Task title"
+            {/* Title - textarea for multi-line */}
+            <textarea
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={() => title !== task.title && handleSave()}
+              rows={1}
+              className={cn(
+                "flex-1 min-w-0 resize-none border-none p-0 text-xl font-semibold shadow-none focus:outline-none focus:ring-0 bg-transparent leading-tight",
+                isCompleted && "line-through text-muted-foreground"
+              )}
+              placeholder="Task title"
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = "auto";
+                target.style.height = target.scrollHeight + "px";
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Time tracking section - centered, clean design */}
+        <div className="px-6 pb-5 flex flex-col items-center">
+          {/* Time display */}
+          <div className="flex items-center gap-8 mb-4">
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-1">
+                Actual
+              </span>
+              <TimeDropdown
+                ref={actualTimeRef}
+                value={actualMins}
+                onChange={handleActualMinsChange}
+                placeholder="0:00"
+                dropdownHeader="Set actual time"
+                shortcutHint="E"
+                showClear
+                clearText="Clear"
+                size="lg"
+                className="font-mono text-3xl font-light text-foreground"
+              />
+            </div>
+
+            {/* Separator */}
+            <span className="text-3xl font-light text-muted-foreground/30">
+              /
+            </span>
+
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-1">
+                Planned
+              </span>
+              <TimeDropdown
+                ref={plannedTimeRef}
+                value={plannedMins}
+                onChange={handleDurationChange}
+                placeholder="0:00"
+                dropdownHeader="Set planned time"
+                shortcutHint="W"
+                showClear
+                clearText="Clear"
+                size="lg"
+                className="font-mono text-3xl font-light text-muted-foreground/50"
               />
             </div>
           </div>
 
-          {/* Time tracking section */}
-          <div className="flex items-center gap-6 py-2">
-            <div className="flex items-center gap-4">
-              <div className="flex flex-col">
-                <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-0.5">
-                  Actual
-                </span>
-                <TimeDropdown
-                  ref={actualTimeRef}
-                  value={actualMins}
-                  onChange={handleActualMinsChange}
-                  placeholder="--:--"
-                  dropdownHeader="Set actual time"
-                  shortcutHint="E"
-                  showClear
-                  clearText="Clear"
-                  size="sm"
-                  className="font-mono text-sm text-foreground"
-                />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-0.5">
-                  Planned
-                </span>
-                <TimeDropdown
-                  ref={plannedTimeRef}
-                  value={plannedMins}
-                  onChange={handleDurationChange}
-                  placeholder="--:--"
-                  dropdownHeader="Set planned time"
-                  shortcutHint="W"
-                  showClear
-                  clearText="Clear"
-                  size="sm"
-                  className="font-mono text-sm text-foreground"
-                />
-              </div>
-            </div>
+          {/* Estimated time display */}
+          {plannedMins && (
+            <p className="text-xs text-muted-foreground/60 mb-3">
+              Estimated:{" "}
+              {plannedMins >= 60 ? `${Math.floor(plannedMins / 60)}h` : ""}
+              {plannedMins % 60 > 0
+                ? `${plannedMins % 60}m`
+                : plannedMins >= 60
+                  ? ""
+                  : `${plannedMins}m`}
+            </p>
+          )}
 
-            {/* START button */}
-            <button
-              onClick={handleExpandToFocus}
-              className="flex items-center gap-1.5 h-8 px-3 rounded-md bg-[#22c55e] hover:bg-[#16a34a] text-white text-xs font-medium transition-colors"
-            >
-              <Play className="h-3 w-3 fill-current" />
-              START
-            </button>
-          </div>
+          {/* Start button - border style */}
+          <button
+            onClick={handleExpandToFocus}
+            className="flex items-center gap-2 px-4 py-2 rounded-md border border-border hover:bg-muted/50 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Play className="h-3.5 w-3.5" />
+            Start
+          </button>
         </div>
 
         {/* Main Content */}
