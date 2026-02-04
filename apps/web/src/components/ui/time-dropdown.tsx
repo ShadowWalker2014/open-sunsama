@@ -221,9 +221,11 @@ export const TimeDropdown = React.forwardRef<
           </button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-44 p-0 overflow-hidden"
+          className="w-44 p-0"
           align="center"
           onClick={(e) => e.stopPropagation()}
+          onWheel={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
         >
           {/* Header with custom input */}
           <div className="p-2 border-b">
@@ -302,8 +304,15 @@ export const TimeDropdown = React.forwardRef<
             )}
           </div>
 
-          {/* Preset options */}
-          <div className="max-h-[240px] overflow-y-auto py-1 scrollbar-thin">
+          {/* Preset options - scrollable */}
+          <div
+            className="py-1"
+            style={{
+              maxHeight: "200px",
+              overflowY: "auto",
+              overscrollBehavior: "contain",
+            }}
+          >
             {TIME_PRESETS.map((preset) => (
               <button
                 key={preset.value}

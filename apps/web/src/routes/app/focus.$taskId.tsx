@@ -175,7 +175,7 @@ export default function FocusPage() {
   }, [task, updateTask]);
 
   const handleActualMinsChange = React.useCallback(
-    (mins: number) => {
+    (mins: number | null) => {
       if (task) {
         updateTask.mutate({ id: task.id, data: { actualMins: mins } });
       }
