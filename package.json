@@ -1,7 +1,7 @@
 {
   "name": "open-sunsama",
   "description": "Open-source, AI agent friendly Sunsama alternative with direct API access",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
   "overrides": {

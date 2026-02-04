@@ -194,6 +194,51 @@ GitHub Secrets required for signing:
 - `APPLE_PASSWORD` - App-specific password (from appleid.apple.com)
 - `APPLE_TEAM_ID` - `DQVMM49PG9`
 
+### Tauri v2 Entitlements (Critical)
+
+**Key Insight:** When macOS apps are signed with **Hardened Runtime** (required for notarization), entitlements MUST be explicitly embedded during signing or the app will fail to make network requests.
+
+**Symptoms of missing entitlements:**
+
+- App works in dev mode but fails in production signed builds
+- "Login failed" or network errors in signed/notarized builds
+- `codesign -d --entitlements -` shows empty output on signed app
+
+**Required config in `tauri.conf.json`:**
+
+```json
+{
+  "bundle": {
+    "macOS": {
+      "entitlements": "./Entitlements.plist",
+      "hardenedRuntime": true
+    }
+  }
+}
+```
+
+**Required `Entitlements.plist` for network access:**
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "...">
+<plist version="1.0">
+<dict>
+    <key>com.apple.security.app-sandbox</key>
+    <false/>
+    <key>com.apple.security.network.client</key>
+    <true/>
+</dict>
+</plist>
+```
+
+**Verify entitlements are embedded:**
+
+```bash
+codesign -d --entitlements - "App.app"
+# Should show network.client = true
+```
+
 ---
 
 ## Railway Debugging
