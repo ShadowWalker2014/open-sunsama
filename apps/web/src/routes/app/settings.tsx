@@ -1,6 +1,19 @@
 import * as React from "react";
-import { User, Lock, Palette, Bell, Key, ListTodo, Terminal, ChevronRight, CalendarDays, Monitor } from "lucide-react";
+import {
+  User,
+  Lock,
+  Palette,
+  Bell,
+  Key,
+  ListTodo,
+  Terminal,
+  ChevronRight,
+  CalendarDays,
+  Monitor,
+  Repeat,
+} from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSearch, useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { calendarKeys } from "@/hooks/useCalendars";
@@ -20,15 +33,27 @@ import {
   McpSettings,
   CalendarSettings,
   DesktopSettings,
+  RoutinesSettings,
 } from "@/components/settings";
 
-type SettingsTab = "profile" | "security" | "appearance" | "tasks" | "calendars" | "notifications" | "desktop" | "api" | "mcp";
+type SettingsTab =
+  | "profile"
+  | "security"
+  | "appearance"
+  | "tasks"
+  | "routines"
+  | "calendars"
+  | "notifications"
+  | "desktop"
+  | "api"
+  | "mcp";
 
 const TABS: { id: SettingsTab; label: string; icon: React.ElementType }[] = [
   { id: "profile", label: "Profile", icon: User },
   { id: "security", label: "Security", icon: Lock },
   { id: "appearance", label: "Appearance", icon: Palette },
   { id: "tasks", label: "Tasks", icon: ListTodo },
+  { id: "routines", label: "Routines", icon: Repeat },
   { id: "calendars", label: "Calendars", icon: CalendarDays },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "desktop", label: "Desktop App", icon: Monitor },
@@ -46,6 +71,8 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
       return <AppearanceSettings />;
     case "tasks":
       return <TaskSettings />;
+    case "routines":
+      return <RoutinesSettings />;
     case "calendars":
       return <CalendarSettings />;
     case "notifications":
@@ -62,41 +89,57 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
 export default function SettingsPage() {
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
-  // Check if redirected from OAuth callback
-  const isCalendarRedirect = React.useMemo(() => {
-    const params = new URLSearchParams(window.location.search);
-    return params.get("calendar") === "connected";
-  }, []);
+  // Use TanStack Router's useSearch for proper search param handling
+  const searchParams = useSearch({ from: "/app/settings" }) as {
+    tab?: string;
+    calendar?: string;
+    provider?: string;
+  };
 
-  const [activeTab, setActiveTab] = React.useState<SettingsTab>(
-    isCalendarRedirect ? "calendars" : "profile"
-  );
+  // Determine initial tab and if this is a calendar redirect
+  const isCalendarRedirect = searchParams.calendar === "connected";
+  const initialTab = React.useMemo(() => {
+    const tabParam = searchParams.tab as SettingsTab | undefined;
+    const validTab =
+      tabParam && TABS.some((t) => t.id === tabParam) ? tabParam : null;
+    return validTab || (isCalendarRedirect ? "calendars" : "profile");
+  }, [searchParams.tab, isCalendarRedirect]);
+
+  const [activeTab, setActiveTab] = React.useState<SettingsTab>(initialTab);
   const [openSheet, setOpenSheet] = React.useState<SettingsTab | null>(
-    isMobile && isCalendarRedirect ? "calendars" : null
+    isMobile ? (initialTab !== "profile" ? initialTab : null) : null
   );
 
-  // Handle OAuth redirect - force refetch calendar data and clean up URL
-  // Use a small delay to ensure the CalendarSettings component has mounted
-  // and its queries are registered before we trigger a refetch
+  // Track if we've already handled the calendar redirect to avoid double-refetching
+  const hasHandledRedirect = React.useRef(false);
+
+  // Handle OAuth redirect - refetch calendar data and clean up URL
   React.useEffect(() => {
-    if (!isCalendarRedirect) return;
+    // Only process if there are search params to handle
+    const hasParams =
+      searchParams.tab || searchParams.calendar || searchParams.provider;
+    if (!hasParams) return;
 
-    // Small delay to allow CalendarSettings component to mount and register queries
-    const timer = setTimeout(() => {
-      // Force refetch calendar queries
-      queryClient.refetchQueries({ queryKey: calendarKeys.accounts() });
-      queryClient.refetchQueries({ queryKey: calendarKeys.calendars() });
-    }, 100);
+    // Handle OAuth redirect - force refetch calendar data
+    if (isCalendarRedirect && !hasHandledRedirect.current) {
+      hasHandledRedirect.current = true;
 
-    // Clean up URL params immediately to avoid re-triggering
-    const url = new URL(window.location.href);
-    url.searchParams.delete("calendar");
-    url.searchParams.delete("provider");
-    window.history.replaceState({}, "", url.pathname);
+      // Invalidate and refetch calendar queries immediately
+      // Using invalidateQueries ensures fresh data even if queries are already cached
+      queryClient.invalidateQueries({ queryKey: calendarKeys.accounts() });
+      queryClient.invalidateQueries({ queryKey: calendarKeys.calendars() });
+    }
 
-    return () => clearTimeout(timer);
-  }, [isCalendarRedirect, queryClient]);
+    // Clean up URL params using TanStack Router navigation
+    // This is safer than directly manipulating window.history
+    navigate({
+      to: "/app/settings",
+      search: {},
+      replace: true,
+    });
+  }, [searchParams, isCalendarRedirect, queryClient, navigate]);
 
   // Mobile layout: List of sections that open sheets
   if (isMobile) {
@@ -122,8 +165,14 @@ export default function SettingsPage() {
         </div>
 
         {/* Settings Sheet */}
-        <Sheet open={openSheet !== null} onOpenChange={(open) => !open && setOpenSheet(null)}>
-          <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+        <Sheet
+          open={openSheet !== null}
+          onOpenChange={(open) => !open && setOpenSheet(null)}
+        >
+          <SheetContent
+            side="right"
+            className="w-full sm:max-w-md overflow-y-auto"
+          >
             <SheetHeader className="mb-4">
               <SheetTitle>
                 {TABS.find((t) => t.id === openSheet)?.label}

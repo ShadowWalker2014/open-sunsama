@@ -221,6 +221,17 @@ const appSettingsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/settings",
   component: SettingsPage,
+  validateSearch: (
+    search: Record<string, unknown>
+  ): { tab?: string; calendar?: string; provider?: string } => {
+    return {
+      tab: typeof search.tab === "string" ? search.tab : undefined,
+      calendar:
+        typeof search.calendar === "string" ? search.calendar : undefined,
+      provider:
+        typeof search.provider === "string" ? search.provider : undefined,
+    };
+  },
 });
 
 const appTasksListRoute = createRoute({
