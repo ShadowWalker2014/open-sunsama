@@ -140,24 +140,28 @@ export function FocusTimer({
           />
         )}
 
-        {/* Planned time (smaller, secondary) */}
-        {plannedMins && (
-          <div className="flex items-center gap-2 text-muted-foreground/40">
-            <span className="text-2xl font-light">/</span>
-            <TimeDropdown
-              ref={plannedTimeRef}
-              value={plannedMins}
-              onChange={onPlannedMinsChange ?? (() => {})}
-              dropdownHeader="Set planned time"
-              shortcutHint="W"
-              showClear
-              clearText="Clear planned"
-              size="md"
-              disabled={!onPlannedMinsChange}
-              className="text-2xl font-light text-muted-foreground/40"
-            />
-          </div>
-        )}
+        {/* Planned time (smaller, secondary) - always render for keyboard shortcut */}
+        <div className="flex items-center gap-2 text-muted-foreground/40">
+          {plannedMins && <span className="text-2xl font-light">/</span>}
+          <TimeDropdown
+            ref={plannedTimeRef}
+            value={plannedMins}
+            onChange={onPlannedMinsChange ?? (() => {})}
+            dropdownHeader="Set planned time"
+            shortcutHint="W"
+            showClear
+            clearText="Clear planned"
+            size="md"
+            disabled={!onPlannedMinsChange}
+            className={cn(
+              "text-2xl font-light",
+              plannedMins
+                ? "text-muted-foreground/40"
+                : "text-muted-foreground/20"
+            )}
+            placeholder={plannedMins ? undefined : "Set plan"}
+          />
+        </div>
       </div>
 
       {/* Start/Stop button - large and prominent */}

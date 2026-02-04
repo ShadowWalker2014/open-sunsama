@@ -221,7 +221,7 @@ export const TimeDropdown = React.forwardRef<
           </button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-44 p-0"
+          className="w-44 p-0 overflow-hidden"
           align="center"
           onClick={(e) => e.stopPropagation()}
         >

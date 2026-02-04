@@ -23,7 +23,6 @@ import {
 } from "@dnd-kit/sortable";
 import {
   Plus,
-  Clock,
   Trash2,
   Check,
   Calendar,
@@ -63,9 +62,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from "@/components/ui";
-import { TimeDropdown } from "@/components/ui/time-dropdown";
+import {
+  TimeDropdown,
+  type TimeDropdownRef,
+} from "@/components/ui/time-dropdown";
 import { SortableSubtaskItem } from "./sortable-subtask-item";
 import { NotesField } from "./task-modal-form";
 import { TaskAttachments } from "./task-attachments";
@@ -77,18 +78,6 @@ interface TaskModalProps {
   task: Task | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}
-
-import {
-  TIME_PRESETS_NUMERIC,
-  formatTimeDisplay,
-  parseTimeInput,
-} from "@/lib/utils";
-
-// Helper to format duration for display with fallback
-function formatDurationDisplay(mins: number | null | undefined): string {
-  const formatted = formatTimeDisplay(mins);
-  return formatted || "No estimate";
 }
 
 // Priority options
@@ -103,10 +92,12 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   const [newSubtaskTitle, setNewSubtaskTitle] = React.useState("");
   const [isAddingSubtask, setIsAddingSubtask] = React.useState(false);
   const [startTime, setStartTime] = React.useState<string>("");
-  const [isCustomDuration, setIsCustomDuration] = React.useState(false);
-  const [customDurationValue, setCustomDurationValue] = React.useState("");
   const [repeatDialogOpen, setRepeatDialogOpen] = React.useState(false);
   const [actualMins, setActualMins] = React.useState<number | null>(null);
+
+  // Refs for time dropdowns (keyboard shortcuts E/W)
+  const actualTimeRef = React.useRef<TimeDropdownRef>(null);
+  const plannedTimeRef = React.useRef<TimeDropdownRef>(null);
 
   const { setHoveredTask } = useHoveredTask();
   const createTaskSeries = useCreateTaskSeries();
@@ -120,7 +111,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     return () => setHoveredTask(null);
   }, [open, task, setHoveredTask]);
 
-  // Handle F key to switch to focus mode
+  // Handle keyboard shortcuts: F for focus, E for actual time, W for planned time
   React.useEffect(() => {
     if (!open || !task) return;
 
@@ -139,6 +130,21 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
         e.preventDefault();
         onOpenChange(false);
         navigate({ to: "/app/focus/$taskId", params: { taskId: task.id } });
+        return;
+      }
+
+      // E to edit actual time
+      if (e.key === "e" || e.key === "E") {
+        e.preventDefault();
+        actualTimeRef.current?.open();
+        return;
+      }
+
+      // W to edit planned time
+      if (e.key === "w" || e.key === "W") {
+        e.preventDefault();
+        plannedTimeRef.current?.open();
+        return;
       }
     };
 
@@ -210,8 +216,6 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
       setActualMins(task.actualMins || null);
       setIsAddingSubtask(false);
       setNewSubtaskTitle("");
-      setIsCustomDuration(false);
-      setCustomDurationValue("");
     }
   }, [task]);
 
@@ -294,16 +298,6 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
         data: { endTime: newEnd },
       });
     }
-  };
-
-  // Handle custom duration submit with flexible time parsing
-  const handleCustomDurationSubmit = () => {
-    const mins = parseTimeInput(customDurationValue);
-    if (mins !== null && mins > 0) {
-      handleDurationChange(mins);
-    }
-    setIsCustomDuration(false);
-    setCustomDurationValue("");
   };
 
   // Handle actual time change
@@ -447,6 +441,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
             <div className="flex items-center gap-3 shrink-0">
               {/* Actual time */}
               <TimeDropdown
+                ref={actualTimeRef}
                 value={actualMins}
                 onChange={handleActualMinsChange}
                 label="ACTUAL"
@@ -458,6 +453,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
 
               {/* Planned time */}
               <TimeDropdown
+                ref={plannedTimeRef}
                 value={plannedMins}
                 onChange={handleDurationChange}
                 label="PLANNED"
@@ -488,7 +484,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
           {/* Series Banner - show if task is part of a recurring series */}
           {task.seriesId && <TaskSeriesBanner task={task} />}
 
-          {/* Top row: Priority + Duration inline */}
+          {/* Top row: Priority + Start Time inline */}
           <div className="flex items-center gap-4 flex-wrap">
             {/* Priority */}
             <DropdownMenu>
@@ -516,75 +512,6 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-
-            {/* Duration */}
-            {isCustomDuration ? (
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="text"
-                  value={customDurationValue}
-                  onChange={(e) => setCustomDurationValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleCustomDurationSubmit();
-                    }
-                    if (e.key === "Escape") {
-                      setIsCustomDuration(false);
-                      setCustomDurationValue("");
-                    }
-                  }}
-                  onBlur={handleCustomDurationSubmit}
-                  placeholder="30m, 1.5h"
-                  className="h-8 w-20 text-sm"
-                  autoFocus
-                />
-              </div>
-            ) : (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 gap-2 px-3"
-                  >
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">
-                      {formatDurationDisplay(plannedMins)}
-                    </span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-36">
-                  {TIME_PRESETS_NUMERIC.map((preset) => (
-                    <DropdownMenuItem
-                      key={preset.value}
-                      onClick={() => handleDurationChange(preset.value)}
-                      className={
-                        plannedMins === preset.value ? "bg-accent" : ""
-                      }
-                    >
-                      {preset.label}
-                    </DropdownMenuItem>
-                  ))}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => setIsCustomDuration(true)}>
-                    Custom...
-                  </DropdownMenuItem>
-                  {plannedMins && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => handleDurationChange(null)}
-                        className="text-muted-foreground"
-                      >
-                        Clear
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
 
             {/* Start Time - Only show if task has a time block */}
             {activeTimeBlock && (
