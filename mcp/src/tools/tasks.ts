@@ -23,6 +23,10 @@ function formatTask(task: Task): string {
     lines.push(`Estimated: ${task.estimatedMins} minutes`);
   }
 
+  if (task.actualMins != null && task.actualMins > 0) {
+    lines.push(`Actual: ${task.actualMins} minutes`);
+  }
+
   if (task.notes) {
     lines.push(`Notes: ${task.notes}`);
   }
@@ -156,7 +160,9 @@ Pagination: Use "page" and "limit" for large result sets.`,
         });
 
         if (!response.success || !response.data) {
-          return errorResponse(response.error?.message ?? "Failed to list tasks");
+          return errorResponse(
+            response.error?.message ?? "Failed to list tasks"
+          );
         }
 
         let result = formatTaskList(response.data);
@@ -285,9 +291,9 @@ Examples:
     "update_task",
     `Update an existing task. Only provide fields you want to change.
 
-You can update: title, notes, scheduledDate, estimatedMins, priority
+You can update: title, notes, scheduledDate, estimatedMins, actualMins, priority
 
-To clear a field, set it to null (for notes, scheduledDate, estimatedMins).
+To clear a field, set it to null (for notes, scheduledDate, estimatedMins, actualMins).
 To mark complete/incomplete, use the dedicated complete_task/uncomplete_task tools instead.
 
 Examples:
@@ -295,7 +301,8 @@ Examples:
 - Change priority: { "id": "task_abc123", "priority": "P1" }
 - Move to backlog: { "id": "task_abc123", "scheduledDate": null }
 - Reschedule: { "id": "task_abc123", "scheduledDate": "2024-01-20" }
-- Clear notes: { "id": "task_abc123", "notes": null }`,
+- Clear notes: { "id": "task_abc123", "notes": null }
+- Track time spent: { "id": "task_abc123", "actualMins": 45 }`,
     {
       id: z.string().describe("The unique task ID to update."),
       title: z.string().min(1).max(500).optional().describe("New task title."),
@@ -319,6 +326,13 @@ Examples:
         .nullable()
         .optional()
         .describe("New estimated time in minutes. Set to null to clear."),
+      actualMins: z
+        .number()
+        .int()
+        .nonnegative()
+        .nullable()
+        .optional()
+        .describe("Actual time spent in minutes. Set to null to clear."),
       priority: z
         .enum(["P0", "P1", "P2", "P3"])
         .optional()

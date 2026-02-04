@@ -80,7 +80,8 @@ export class ApiClient {
         success: false,
         error: {
           code: "NETWORK_ERROR",
-          message: error instanceof Error ? error.message : "Network request failed",
+          message:
+            error instanceof Error ? error.message : "Network request failed",
           statusCode: 0,
         },
       };
@@ -139,12 +140,23 @@ export class ApiClient {
     return this.request<Subtask>("POST", `/tasks/${taskId}/subtasks`, data);
   }
 
-  async updateSubtask(taskId: string, subtaskId: string, data: UpdateSubtaskInput) {
-    return this.request<Subtask>("PATCH", `/tasks/${taskId}/subtasks/${subtaskId}`, data);
+  async updateSubtask(
+    taskId: string,
+    subtaskId: string,
+    data: UpdateSubtaskInput
+  ) {
+    return this.request<Subtask>(
+      "PATCH",
+      `/tasks/${taskId}/subtasks/${subtaskId}`,
+      data
+    );
   }
 
   async deleteSubtask(taskId: string, subtaskId: string) {
-    return this.request<{ message: string }>("DELETE", `/tasks/${taskId}/subtasks/${subtaskId}`);
+    return this.request<{ message: string }>(
+      "DELETE",
+      `/tasks/${taskId}/subtasks/${subtaskId}`
+    );
   }
 
   // Time Blocks
@@ -202,6 +214,7 @@ export interface Task {
   notes: string | null;
   scheduledDate: string | null;
   estimatedMins: number | null;
+  actualMins: number | null;
   priority: TaskPriority;
   completedAt: string | null;
   position: number;
@@ -223,6 +236,7 @@ export interface UpdateTaskInput {
   notes?: string | null;
   scheduledDate?: string | null;
   estimatedMins?: number | null;
+  actualMins?: number | null;
   priority?: TaskPriority;
   completedAt?: string | null;
   position?: number;
