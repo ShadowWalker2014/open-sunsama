@@ -2,12 +2,16 @@
  * Task reminder check handler
  * Runs every minute to check for time blocks starting soon and queue reminder emails
  */
-import type PgBoss from 'pg-boss';
-import { getDb, eq, and, gte, lte } from '@open-sunsama/database';
-import { users, timeBlocks, notificationPreferences } from '@open-sunsama/database/schema';
-import { toZonedTime } from 'date-fns-tz';
-import { format, addMinutes } from 'date-fns';
-import { getPgBoss, JOBS } from '../../lib/pgboss.js';
+import type PgBoss from "pg-boss";
+import { getDb, eq, and, gte, lte } from "@open-sunsama/database";
+import {
+  users,
+  timeBlocks,
+  notificationPreferences,
+} from "@open-sunsama/database/schema";
+import { toZonedTime } from "date-fns-tz";
+import { format, addMinutes } from "date-fns";
+import { getPgBoss, JOBS } from "../../lib/pgboss.js";
 
 // Payload types
 export interface TaskReminderCheckPayload {
@@ -39,7 +43,10 @@ export async function processTaskReminderCheck(
       reminderTiming: notificationPreferences.reminderTiming,
     })
     .from(users)
-    .innerJoin(notificationPreferences, eq(notificationPreferences.userId, users.id))
+    .innerJoin(
+      notificationPreferences,
+      eq(notificationPreferences.userId, users.id)
+    )
     .where(
       and(
         eq(notificationPreferences.emailNotificationsEnabled, true),
@@ -55,7 +62,7 @@ export async function processTaskReminderCheck(
 
   // Process each user individually since they may have different reminder timings
   for (const { userId, timezone, reminderTiming } of usersWithReminders) {
-    const userTimezone = timezone || 'UTC';
+    const userTimezone = timezone || "UTC";
 
     try {
       // Get current time in user's timezone
@@ -66,9 +73,9 @@ export async function processTaskReminderCheck(
       const targetTimeStart = addMinutes(userNow, reminderTiming);
       const targetTimeEnd = addMinutes(targetTimeStart, 1);
 
-      const targetStartTimeStr = format(targetTimeStart, 'HH:mm');
-      const targetEndTimeStr = format(targetTimeEnd, 'HH:mm');
-      const targetDate = format(targetTimeStart, 'yyyy-MM-dd');
+      const targetStartTimeStr = format(targetTimeStart, "HH:mm");
+      const targetEndTimeStr = format(targetTimeEnd, "HH:mm");
+      const targetDate = format(targetTimeStart, "yyyy-MM-dd");
 
       // Query time blocks that start within the target window
       // This catches blocks starting exactly when the reminder should fire
@@ -101,6 +108,9 @@ export async function processTaskReminderCheck(
           } as SendTaskReminderPayload,
           {
             singletonKey: `task-reminder-${block.id}-${block.date}`,
+            // Prevent duplicate reminders for 24 hours - ensures only one reminder per time block per day
+            // Without this, singletonKey only checks 'created'/'active' jobs, not 'completed'
+            singletonSeconds: 86400,
             retryLimit: 3,
           }
         );
@@ -113,6 +123,8 @@ export async function processTaskReminderCheck(
   }
 
   if (remindersQueued > 0) {
-    console.log(`[Task Reminder Check] Queued ${remindersQueued} reminder emails`);
+    console.log(
+      `[Task Reminder Check] Queued ${remindersQueued} reminder emails`
+    );
   }
 }

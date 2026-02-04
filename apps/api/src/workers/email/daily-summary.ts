@@ -2,12 +2,12 @@
  * Daily summary check handler
  * Runs every minute to detect timezones hitting 6 AM and queue daily summary jobs
  */
-import type PgBoss from 'pg-boss';
-import { getDb, eq, and, isNotNull } from '@open-sunsama/database';
-import { users, notificationPreferences } from '@open-sunsama/database/schema';
-import { toZonedTime } from 'date-fns-tz';
-import { format } from 'date-fns';
-import { getPgBoss, JOBS } from '../../lib/pgboss.js';
+import type PgBoss from "pg-boss";
+import { getDb, eq, and, isNotNull } from "@open-sunsama/database";
+import { users, notificationPreferences } from "@open-sunsama/database/schema";
+import { toZonedTime } from "date-fns-tz";
+import { format } from "date-fns";
+import { getPgBoss, JOBS } from "../../lib/pgboss.js";
 
 // Payload types
 export interface DailySummaryCheckPayload {
@@ -33,12 +33,15 @@ export async function processDailySummaryCheck(
 
   // Find all unique timezones from users who have daily summary enabled
   const usersWithSummaryEnabled = await db
-    .select({ 
+    .select({
       userId: users.id,
-      timezone: users.timezone 
+      timezone: users.timezone,
     })
     .from(users)
-    .innerJoin(notificationPreferences, eq(notificationPreferences.userId, users.id))
+    .innerJoin(
+      notificationPreferences,
+      eq(notificationPreferences.userId, users.id)
+    )
     .where(
       and(
         isNotNull(users.timezone),
@@ -75,7 +78,7 @@ export async function processDailySummaryCheck(
       if (!is6AMWindow) continue;
 
       // Format today's date in this timezone
-      const todayInTz = format(zonedNow, 'yyyy-MM-dd');
+      const todayInTz = format(zonedNow, "yyyy-MM-dd");
 
       // Queue individual summary jobs for each user
       // Using singletonKey to prevent duplicate sends for the same user/date
@@ -89,20 +92,30 @@ export async function processDailySummaryCheck(
           } as SendDailySummaryPayload,
           {
             singletonKey: `daily-summary-${userId}-${todayInTz}`,
+            // Prevent duplicate emails for 24 hours - ensures only one email per user per day
+            // Without this, singletonKey only checks 'created'/'active' jobs, not 'completed'
+            singletonSeconds: 86400,
             retryLimit: 3,
           }
         );
         usersQueued++;
       }
 
-      console.log(`[Daily Summary] Queued ${userIds.length} emails for timezone ${timezone}`);
+      console.log(
+        `[Daily Summary] Queued ${userIds.length} emails for timezone ${timezone}`
+      );
     } catch (error) {
-      console.error(`[Daily Summary] Error processing timezone ${timezone}:`, error);
+      console.error(
+        `[Daily Summary] Error processing timezone ${timezone}:`,
+        error
+      );
       // Continue with other timezones
     }
   }
 
   if (usersQueued > 0) {
-    console.log(`[Daily Summary Check] Queued ${usersQueued} daily summary emails`);
+    console.log(
+      `[Daily Summary Check] Queued ${usersQueued} daily summary emails`
+    );
   }
 }
