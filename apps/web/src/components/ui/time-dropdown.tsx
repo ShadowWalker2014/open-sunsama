@@ -221,6 +221,8 @@ export const TimeDropdown = React.forwardRef<
         <PopoverContent
           className="w-44 p-0"
           align="center"
+          side="bottom"
+          sideOffset={8}
           onClick={(e) => e.stopPropagation()}
           onWheel={(e) => e.stopPropagation()}
           onTouchMove={(e) => e.stopPropagation()}
@@ -330,13 +332,13 @@ export const TimeDropdown = React.forwardRef<
             ))}
           </div>
 
-          {/* Clear option - show when showClear is true and there's a value */}
+          {/* Clear option - show when showClear is true and there's a value to clear */}
           {showClear && value !== null && value > 0 && (
             <div className="border-t p-1">
               <button
                 type="button"
                 onClick={handleClear}
-                className="w-full px-3 py-1.5 text-sm text-primary hover:bg-muted rounded transition-colors text-left"
+                className="w-full px-3 py-1.5 text-sm text-destructive hover:bg-destructive/10 rounded transition-colors text-left"
               >
                 {clearText}
               </button>

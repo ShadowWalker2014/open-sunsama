@@ -330,15 +330,15 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden">
-        {/* Header section - clean and spacious */}
-        <div className="p-8 pb-6">
-          {/* Title row with checkbox and time */}
-          <div className="flex items-start gap-4">
+        {/* Header section - spacious with separated blocks */}
+        <div className="p-6 pb-0 space-y-5">
+          {/* Title row with checkbox */}
+          <div className="flex items-start gap-3">
             {/* Checkbox */}
             <button
               type="button"
               className={cn(
-                "mt-1.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all",
+                "mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all",
                 isCompleted
                   ? "border-primary bg-primary text-primary-foreground"
                   : "border-muted-foreground/30 hover:border-primary"
@@ -355,67 +355,68 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                 onChange={(e) => setTitle(e.target.value)}
                 onBlur={() => title !== task.title && handleSave()}
                 className={cn(
-                  "border-none p-0 text-2xl font-semibold shadow-none focus-visible:ring-0 h-auto bg-transparent",
+                  "border-none p-0 text-xl font-semibold shadow-none focus-visible:ring-0 h-auto bg-transparent",
                   isCompleted && "line-through text-muted-foreground"
                 )}
                 placeholder="Task title"
               />
             </div>
+          </div>
 
-            {/* Time tracking and START - right aligned */}
-            <div className="flex items-center gap-4 shrink-0">
-              {/* Time displays */}
-              <div className="flex items-center gap-4 text-sm">
-                <div className="text-right">
-                  <div className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-0.5">
-                    Actual
-                  </div>
-                  <TimeDropdown
-                    ref={actualTimeRef}
-                    value={actualMins}
-                    onChange={handleActualMinsChange}
-                    placeholder="--:--"
-                    dropdownHeader="Set actual time"
-                    shortcutHint="E"
-                    showClear
-                    clearText="Clear"
-                    size="sm"
-                    className="font-medium text-foreground"
-                  />
-                </div>
-                <div className="text-right">
-                  <div className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-0.5">
-                    Planned
-                  </div>
-                  <TimeDropdown
-                    ref={plannedTimeRef}
-                    value={plannedMins}
-                    onChange={handleDurationChange}
-                    placeholder="--:--"
-                    dropdownHeader="Set planned time"
-                    shortcutHint="W"
-                    showClear
-                    clearText="Clear"
-                    size="sm"
-                    className="font-medium text-foreground"
-                  />
-                </div>
+          {/* Time tracking section - separate row */}
+          <div className="flex items-center justify-between gap-4 py-3 px-4 rounded-lg bg-muted/30 border border-border/50">
+            {/* Time displays */}
+            <div className="flex items-center gap-6">
+              <div className="flex flex-col">
+                <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-1">
+                  Actual
+                </span>
+                <TimeDropdown
+                  ref={actualTimeRef}
+                  value={actualMins}
+                  onChange={handleActualMinsChange}
+                  placeholder="--:--"
+                  dropdownHeader="Set actual time"
+                  shortcutHint="E"
+                  showClear
+                  clearText="Clear"
+                  size="sm"
+                  className="font-mono text-base text-foreground"
+                />
               </div>
-
-              {/* START button - Linear green */}
-              <button
-                onClick={handleExpandToFocus}
-                className="flex items-center gap-1.5 h-8 px-4 rounded-md bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-medium transition-colors"
-              >
-                <Play className="h-3.5 w-3.5 fill-current" />
-                START
-              </button>
+              <div className="w-px h-8 bg-border/50" />
+              <div className="flex flex-col">
+                <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-1">
+                  Planned
+                </span>
+                <TimeDropdown
+                  ref={plannedTimeRef}
+                  value={plannedMins}
+                  onChange={handleDurationChange}
+                  placeholder="--:--"
+                  dropdownHeader="Set planned time"
+                  shortcutHint="W"
+                  showClear
+                  clearText="Clear"
+                  size="sm"
+                  className="font-mono text-base text-foreground"
+                />
+              </div>
             </div>
+
+            {/* START button - Linear green */}
+            <button
+              onClick={handleExpandToFocus}
+              className="flex items-center gap-1.5 h-9 px-4 rounded-md bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-medium transition-colors"
+            >
+              <Play className="h-3.5 w-3.5 fill-current" />
+              START
+            </button>
           </div>
         </div>
 
-        {/* Main Content - spacious */}
-        <div className="px-8 pb-6 space-y-6 max-h-[60vh] overflow-y-auto">
+        {/* Main Content */}
+        <div className="px-6 py-5 space-y-5 max-h-[55vh] overflow-y-auto">
           {/* Series Banner */}
           {task.seriesId && <TaskSeriesBanner task={task} />}
 
@@ -504,8 +505,8 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
           <TaskAttachments taskId={task.id} />
         </div>
 
-        {/* Footer - clean separator */}
-        <div className="px-8 py-4 border-t border-border/50 flex items-center justify-between">
+        {/* Footer */}
+        <div className="px-6 py-3 border-t border-border/50 flex items-center justify-between">
           {/* More actions */}
           {!task.seriesId ? (
             <DropdownMenu>

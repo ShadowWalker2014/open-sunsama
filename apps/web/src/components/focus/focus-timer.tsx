@@ -5,7 +5,17 @@ import {
   TimeDropdown,
   type TimeDropdownRef,
 } from "@/components/ui/time-dropdown";
-import { useTimer, formatTime } from "@/hooks/useTimer";
+import { useTimer } from "@/hooks/useTimer";
+
+/**
+ * Format seconds into M:SS format (consistent with task modal time display)
+ * Always shows minutes:seconds, never hours
+ */
+function formatTimerDisplay(seconds: number): string {
+  const totalMins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${totalMins}:${secs.toString().padStart(2, "0")}`;
+}
 
 interface FocusTimerProps {
   taskId: string;
@@ -15,6 +25,8 @@ interface FocusTimerProps {
   onPlannedMinsChange?: (mins: number | null) => void;
   /** Ref to expose timer controls (toggle function) */
   timerRef?: React.RefObject<FocusTimerRef | null>;
+  /** Compact mode for inline header display */
+  compact?: boolean;
 }
 
 export interface FocusTimerRef {
@@ -34,6 +46,7 @@ export function FocusTimer({
   onActualMinsChange,
   onPlannedMinsChange,
   timerRef,
+  compact = false,
 }: FocusTimerProps) {
   const initialSeconds = (actualMins ?? 0) * 60;
 
@@ -99,10 +112,107 @@ export function FocusTimer({
     [onActualMinsChange, reset]
   );
 
+  // Compact mode: inline header with ACTUAL/PLANNED labels and START button
+  if (compact) {
+    return (
+      <div className="flex items-center gap-4 shrink-0">
+        {/* Running indicator */}
+        {isRunning && (
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+          </span>
+        )}
+
+        {/* Time displays with labels */}
+        <div className="flex items-center gap-4">
+          <div className="flex flex-col items-end">
+            <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">
+              Actual
+            </span>
+            {isRunning ? (
+              <span
+                className={cn(
+                  "text-base font-mono tabular-nums",
+                  isSignificantlyOver && "text-red-400",
+                  isOverPlanned && !isSignificantlyOver && "text-amber-400",
+                  !isOverPlanned && "text-foreground"
+                )}
+              >
+                {formatTimerDisplay(totalSeconds)}
+              </span>
+            ) : (
+              <TimeDropdown
+                ref={actualTimeRef}
+                value={displayMins > 0 ? displayMins : null}
+                onChange={handleActualTimeChange}
+                placeholder="--:--"
+                dropdownHeader="Set actual time"
+                shortcutHint="E"
+                showClear={displayMins > 0}
+                clearText="Clear"
+                size="sm"
+                className={cn(
+                  "font-mono",
+                  displaySeconds > 0
+                    ? "text-foreground"
+                    : "text-muted-foreground/50"
+                )}
+              />
+            )}
+          </div>
+
+          <div className="flex flex-col items-end">
+            <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">
+              Planned
+            </span>
+            <TimeDropdown
+              ref={plannedTimeRef}
+              value={plannedMins}
+              onChange={onPlannedMinsChange ?? (() => {})}
+              placeholder="--:--"
+              dropdownHeader="Set planned time"
+              shortcutHint="W"
+              showClear={!!plannedMins}
+              clearText="Clear"
+              size="sm"
+              disabled={!onPlannedMinsChange}
+              className="font-mono text-foreground"
+            />
+          </div>
+        </div>
+
+        {/* Start/Stop button */}
+        <button
+          onClick={isRunning ? stop : start}
+          className={cn(
+            "flex items-center justify-center gap-1.5 h-8 px-3 rounded-md text-sm font-medium transition-all",
+            isRunning
+              ? "bg-red-500/10 text-red-500 hover:bg-red-500/20"
+              : "bg-[#22c55e] text-white hover:bg-[#16a34a]"
+          )}
+        >
+          {isRunning ? (
+            <>
+              <Square className="h-3 w-3 fill-current" />
+              Stop
+            </>
+          ) : (
+            <>
+              <Play className="h-3 w-3 fill-current" />
+              START
+            </>
+          )}
+        </button>
+      </div>
+    );
+  }
+
+  // Full mode: centered large timer display
   return (
     <div className="flex flex-col items-center gap-6">
       {/* Timer display - same size for actual and planned */}
-      <div className="flex items-baseline gap-2">
+      <div className="flex items-baseline gap-3">
         {/* Running indicator */}
         {isRunning && (
           <span className="relative flex h-2.5 w-2.5 mr-1 self-center">
@@ -111,7 +221,7 @@ export function FocusTimer({
           </span>
         )}
 
-        {/* Actual time - always show, same size as planned */}
+        {/* Actual time - use TimeDropdown with transparent trigger */}
         {isRunning ? (
           <span
             className={cn(
@@ -121,53 +231,32 @@ export function FocusTimer({
               !isOverPlanned && "text-foreground"
             )}
           >
-            {formatTime(totalSeconds)}
+            {formatTimerDisplay(totalSeconds)}
           </span>
         ) : (
-          <span
+          <TimeDropdown
+            ref={actualTimeRef}
+            value={displayMins > 0 ? displayMins : null}
+            onChange={handleActualTimeChange}
+            placeholder="0:00"
+            dropdownHeader="Set actual time"
+            shortcutHint="E"
+            showClear={displayMins > 0}
+            clearText="Clear"
+            size="lg"
             className={cn(
-              "text-5xl font-light font-mono tabular-nums tracking-tight cursor-pointer hover:text-foreground transition-colors",
+              "text-5xl font-light",
               displaySeconds > 0
                 ? "text-foreground"
                 : "text-muted-foreground/50"
             )}
-            onClick={() => actualTimeRef.current?.open()}
-          >
-            {formatTime(displaySeconds)}
-          </span>
+          />
         )}
-
-        {/* Hidden dropdown for actual time editing */}
-        <TimeDropdown
-          ref={actualTimeRef}
-          value={displayMins > 0 ? displayMins : null}
-          onChange={handleActualTimeChange}
-          placeholder="0:00"
-          dropdownHeader="Set actual time"
-          shortcutHint="E"
-          showClear={displayMins > 0}
-          clearText="Clear"
-          size="lg"
-          className="hidden"
-        />
 
         {/* Separator */}
         <span className="text-5xl font-light text-muted-foreground/30">/</span>
 
-        {/* Planned time - same size as actual */}
-        <span
-          className={cn(
-            "text-5xl font-light font-mono tabular-nums tracking-tight cursor-pointer hover:text-muted-foreground/60 transition-colors",
-            plannedMins
-              ? "text-muted-foreground/40"
-              : "text-muted-foreground/30"
-          )}
-          onClick={() => plannedTimeRef.current?.open()}
-        >
-          {plannedMins ? formatTime(plannedMins * 60) : "0:00"}
-        </span>
-
-        {/* Hidden dropdown for planned time editing */}
+        {/* Planned time - use TimeDropdown with transparent trigger */}
         <TimeDropdown
           ref={plannedTimeRef}
           value={plannedMins}
@@ -179,7 +268,12 @@ export function FocusTimer({
           clearText="Clear"
           size="lg"
           disabled={!onPlannedMinsChange}
-          className="hidden"
+          className={cn(
+            "text-5xl font-light",
+            plannedMins
+              ? "text-muted-foreground/40"
+              : "text-muted-foreground/30"
+          )}
         />
       </div>
 

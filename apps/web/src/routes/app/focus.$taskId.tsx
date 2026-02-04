@@ -241,15 +241,15 @@ export default function FocusPage() {
         </div>
       </div>
 
-      {/* Main content - centered */}
-      <div className="mx-auto max-w-3xl px-6 py-12">
-        {/* Task header with checkbox and title */}
-        <div className="flex items-start gap-4 mb-8">
+      {/* Main content - centered with generous top padding */}
+      <div className="mx-auto max-w-3xl px-6 pt-16 pb-12">
+        {/* Task header row - checkbox, title, time tracking, start button */}
+        <div className="flex items-center gap-4 mb-10">
           {/* Large checkbox */}
           <button
             onClick={handleToggleComplete}
             className={cn(
-              "mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-all",
+              "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-all",
               isCompleted
                 ? "border-primary bg-primary text-primary-foreground scale-110"
                 : "border-muted-foreground/30 hover:border-primary hover:scale-105"
@@ -275,7 +275,7 @@ export default function FocusPage() {
               }}
               autoFocus
               className={cn(
-                "flex-1 text-2xl font-semibold bg-transparent border-none outline-none",
+                "flex-1 text-xl font-semibold bg-transparent border-none outline-none",
                 "focus:ring-0 placeholder:text-muted-foreground/50",
                 isCompleted && "line-through text-muted-foreground"
               )}
@@ -285,17 +285,15 @@ export default function FocusPage() {
             <h1
               onClick={() => !isCompleted && setEditingTitle(true)}
               className={cn(
-                "flex-1 text-2xl font-semibold leading-tight cursor-text",
+                "flex-1 text-xl font-semibold leading-tight cursor-text",
                 isCompleted && "line-through text-muted-foreground"
               )}
             >
               {task.title}
             </h1>
           )}
-        </div>
 
-        {/* Timer section - prominent */}
-        <div className="mb-12">
+          {/* Timer section - inline with title */}
           <FocusTimer
             taskId={task.id}
             plannedMins={task.estimatedMins}
@@ -303,6 +301,7 @@ export default function FocusPage() {
             onActualMinsChange={handleActualMinsChange}
             onPlannedMinsChange={handlePlannedMinsChange}
             timerRef={timerRef}
+            compact
           />
         </div>
 
