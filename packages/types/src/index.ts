@@ -1,9 +1,9 @@
 /**
  * Open Sunsama Shared Types Package
- * 
+ *
  * This package contains all shared TypeScript type definitions used across
  * the Open Sunsama application, including API types, domain models, and utility types.
- * 
+ *
  * @packageDocumentation
  * @module @open-sunsama/types
  */
@@ -20,7 +20,7 @@ export type {
   PaginationParams,
   Result,
   AsyncResult,
-} from './common.js';
+} from "./common.js";
 
 // Note: PaginatedResponse is exported from api.js with more detailed fields
 // The common.js version is kept for backwards compatibility
@@ -35,7 +35,7 @@ export type {
   UpdateUserInput,
   ChangePasswordInput,
   PublicUserProfile,
-} from './user.js';
+} from "./user.js";
 
 // Task types
 export type {
@@ -49,7 +49,21 @@ export type {
   TaskFilterInput,
   TaskStats,
   TaskWithMeta,
-} from './task.js';
+} from "./task.js";
+
+// Task Series (Recurring Tasks) types
+export type {
+  TaskSeries,
+  RecurrenceType,
+  DayOfWeek,
+  WeekOfMonth,
+  CreateTaskSeriesInput,
+  UpdateTaskSeriesInput,
+  CreateTaskSeriesResponse,
+  TaskSeriesWithMeta,
+  TaskSeriesFilterInput,
+  ScheduleDescription,
+} from "./task-series.js";
 
 // Subtask types
 export type {
@@ -57,7 +71,7 @@ export type {
   CreateSubtaskInput,
   UpdateSubtaskInput,
   ReorderSubtasksInput,
-} from './subtask.js';
+} from "./subtask.js";
 
 // Time block types
 export type {
@@ -71,7 +85,7 @@ export type {
   TimeBlockSummary,
   TimeBlockConflict,
   TimeBlockValidation,
-} from './time-block.js';
+} from "./time-block.js";
 
 // API key types
 export type {
@@ -85,7 +99,7 @@ export type {
   ApiKeyUsageRecord,
   ApiKeyUsageSummary,
   ApiKeyConfig,
-} from './api-key.js';
+} from "./api-key.js";
 
 // API types
 export type {
@@ -111,7 +125,7 @@ export type {
   ApiEndpoint,
   ApiResponse,
   ApiMeta,
-} from './api.js';
+} from "./api.js";
 
 // Notification types
 export type {
@@ -121,8 +135,8 @@ export type {
   ReminderTimingOption,
   RolloverDestination,
   RolloverPosition,
-} from './notification.js';
-export { REMINDER_TIMING_OPTIONS } from './notification.js';
+} from "./notification.js";
+export { REMINDER_TIMING_OPTIONS } from "./notification.js";
 
 // Attachment types
 export type {
@@ -131,7 +145,7 @@ export type {
   UpdateAttachmentInput,
   AttachmentFilterInput,
   AttachmentWithMeta,
-} from './attachment.js';
+} from "./attachment.js";
 
 // Calendar types
 export type {
@@ -142,4 +156,4 @@ export type {
   ConnectCalDavRequest,
   CalendarEventQuery,
   UpdateCalendarRequest,
-} from './calendar.js';
+} from "./calendar.js";

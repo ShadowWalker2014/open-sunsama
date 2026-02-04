@@ -2,28 +2,31 @@
  * Worker registration entry point
  * Registers all background job handlers with PG Boss
  */
-import { registerRolloverWorkers } from './rollover/index.js';
-import { registerEmailWorkers } from './email/index.js';
-import { registerCalendarSyncWorkers } from './calendar-sync/index.js';
-import { setWorkerRegistrationFn } from '../lib/pgboss.js';
+import { registerRolloverWorkers } from "./rollover/index.js";
+import { registerEmailWorkers } from "./email/index.js";
+import { registerCalendarSyncWorkers } from "./calendar-sync/index.js";
+import { registerRecurringWorkers } from "./recurring/index.js";
+import { setWorkerRegistrationFn } from "../lib/pgboss.js";
 
 /**
  * Register all workers
  * Call this during server startup
  */
 export async function registerAllWorkers(): Promise<void> {
-  console.log('[Workers] Registering all workers...');
-  
+  console.log("[Workers] Registering all workers...");
+
   // Set the registration function for automatic recovery
   setWorkerRegistrationFn(registerAllWorkers);
-  
+
   await registerRolloverWorkers();
   await registerEmailWorkers();
   await registerCalendarSyncWorkers();
-  
-  console.log('[Workers] All workers registered');
+  await registerRecurringWorkers();
+
+  console.log("[Workers] All workers registered");
 }
 
 export { registerRolloverWorkers };
 export { registerEmailWorkers };
 export { registerCalendarSyncWorkers };
+export { registerRecurringWorkers };

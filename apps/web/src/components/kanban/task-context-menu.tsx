@@ -12,8 +12,9 @@ import {
   Copy,
   Trash2,
   Archive,
+  Repeat,
 } from "lucide-react";
-import type { Task } from "@open-sunsama/types";
+import type { Task, CreateTaskSeriesInput } from "@open-sunsama/types";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -31,8 +32,10 @@ import {
 } from "@/hooks/useTasks";
 import { useAutoSchedule } from "@/hooks";
 import { useSubtasks } from "@/hooks/useSubtasks";
+import { useCreateTaskSeries } from "@/hooks/useTaskSeries";
 import { formatShortcut, SHORTCUTS } from "@/hooks/useKeyboardShortcuts";
 import { toast } from "@/hooks/use-toast";
+import { RepeatConfigPopover } from "./repeat-config-popover";
 
 interface TaskContextMenuProps {
   task: Task;
@@ -53,6 +56,10 @@ export function TaskContextMenu({
   const createTask = useCreateTask();
   const reorderTasks = useReorderTasks();
   const autoSchedule = useAutoSchedule();
+  const createTaskSeries = useCreateTaskSeries();
+
+  // State for repeat config popover
+  const [repeatPopoverOpen, setRepeatPopoverOpen] = React.useState(false);
 
   // Fetch tasks for the same date/backlog to support reordering
   const { data: tasksInSameList } = useTasks(
@@ -177,6 +184,17 @@ export function TaskContextMenu({
     });
   };
 
+  const handleRepeatSave = async (config: CreateTaskSeriesInput) => {
+    // Create a series with task details
+    await createTaskSeries.mutateAsync({
+      ...config,
+      title: task.title,
+      notes: task.notes ?? undefined,
+      priority: task.priority,
+      estimatedMins: task.estimatedMins ?? undefined,
+    });
+  };
+
   const handleDelete = async () => {
     const deletedTask = task;
 
@@ -209,14 +227,18 @@ export function TaskContextMenu({
         <ContextMenuItem onClick={handleFocus}>
           <Focus className="mr-2 h-4 w-4" />
           Focus
-          <ContextMenuShortcut>{SHORTCUTS.focus && formatShortcut(SHORTCUTS.focus)}</ContextMenuShortcut>
+          <ContextMenuShortcut>
+            {SHORTCUTS.focus && formatShortcut(SHORTCUTS.focus)}
+          </ContextMenuShortcut>
         </ContextMenuItem>
 
         {/* Add to calendar */}
         <ContextMenuItem onClick={handleAddToCalendar}>
           <Calendar className="mr-2 h-4 w-4" />
           Add to calendar
-          <ContextMenuShortcut>{SHORTCUTS.addToCalendar && formatShortcut(SHORTCUTS.addToCalendar)}</ContextMenuShortcut>
+          <ContextMenuShortcut>
+            {SHORTCUTS.addToCalendar && formatShortcut(SHORTCUTS.addToCalendar)}
+          </ContextMenuShortcut>
         </ContextMenuItem>
 
         <ContextMenuSeparator />
@@ -225,14 +247,18 @@ export function TaskContextMenu({
         <ContextMenuItem onClick={handleMoveToTop}>
           <ArrowUp className="mr-2 h-4 w-4" />
           Move to top
-          <ContextMenuShortcut>{SHORTCUTS.moveToTop && formatShortcut(SHORTCUTS.moveToTop)}</ContextMenuShortcut>
+          <ContextMenuShortcut>
+            {SHORTCUTS.moveToTop && formatShortcut(SHORTCUTS.moveToTop)}
+          </ContextMenuShortcut>
         </ContextMenuItem>
 
         {/* Move to bottom */}
         <ContextMenuItem onClick={handleMoveToBottom}>
           <ArrowDown className="mr-2 h-4 w-4" />
           Move to bottom
-          <ContextMenuShortcut>{SHORTCUTS.moveToBottom && formatShortcut(SHORTCUTS.moveToBottom)}</ContextMenuShortcut>
+          <ContextMenuShortcut>
+            {SHORTCUTS.moveToBottom && formatShortcut(SHORTCUTS.moveToBottom)}
+          </ContextMenuShortcut>
         </ContextMenuItem>
 
         <ContextMenuSeparator />
@@ -241,7 +267,10 @@ export function TaskContextMenu({
         <ContextMenuItem onClick={handleDeferToNextWeek}>
           <CalendarArrowUp className="mr-2 h-4 w-4" />
           Defer to next week
-          <ContextMenuShortcut>{SHORTCUTS.deferToNextWeek && formatShortcut(SHORTCUTS.deferToNextWeek)}</ContextMenuShortcut>
+          <ContextMenuShortcut>
+            {SHORTCUTS.deferToNextWeek &&
+              formatShortcut(SHORTCUTS.deferToNextWeek)}
+          </ContextMenuShortcut>
         </ContextMenuItem>
 
         <ContextMenuItem onClick={handleDeferToBacklog}>
@@ -263,7 +292,9 @@ export function TaskContextMenu({
               <EyeOff className="mr-2 h-4 w-4" />
             )}
             {task.subtasksHidden ? "Show subtasks" : "Hide subtasks"}
-            <ContextMenuShortcut>{SHORTCUTS.hideSubtasks && formatShortcut(SHORTCUTS.hideSubtasks)}</ContextMenuShortcut>
+            <ContextMenuShortcut>
+              {SHORTCUTS.hideSubtasks && formatShortcut(SHORTCUTS.hideSubtasks)}
+            </ContextMenuShortcut>
           </ContextMenuItem>
         )}
 
@@ -271,8 +302,36 @@ export function TaskContextMenu({
         <ContextMenuItem onClick={handleDuplicate}>
           <Copy className="mr-2 h-4 w-4" />
           Duplicate
-          <ContextMenuShortcut>{SHORTCUTS.duplicate && formatShortcut(SHORTCUTS.duplicate)}</ContextMenuShortcut>
+          <ContextMenuShortcut>
+            {SHORTCUTS.duplicate && formatShortcut(SHORTCUTS.duplicate)}
+          </ContextMenuShortcut>
         </ContextMenuItem>
+
+        {/* Repeat - only show if task is not already part of a series */}
+        {!task.seriesId && (
+          <RepeatConfigPopover
+            title={task.title}
+            initialConfig={{
+              notes: task.notes ?? undefined,
+              priority: task.priority,
+              estimatedMins: task.estimatedMins ?? undefined,
+            }}
+            onSave={handleRepeatSave}
+            open={repeatPopoverOpen}
+            onOpenChange={setRepeatPopoverOpen}
+            trigger={
+              <ContextMenuItem
+                onSelect={(e) => {
+                  e.preventDefault();
+                  setRepeatPopoverOpen(true);
+                }}
+              >
+                <Repeat className="mr-2 h-4 w-4" />
+                Repeat...
+              </ContextMenuItem>
+            }
+          />
+        )}
 
         <ContextMenuSeparator />
 
@@ -283,7 +342,9 @@ export function TaskContextMenu({
         >
           <Trash2 className="mr-2 h-4 w-4" />
           Remove from tasks
-          <ContextMenuShortcut>{SHORTCUTS.deleteTask && formatShortcut(SHORTCUTS.deleteTask)}</ContextMenuShortcut>
+          <ContextMenuShortcut>
+            {SHORTCUTS.deleteTask && formatShortcut(SHORTCUTS.deleteTask)}
+          </ContextMenuShortcut>
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>

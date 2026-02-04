@@ -1,5 +1,11 @@
 import * as React from "react";
-import { format, setHours, setMinutes, differenceInMinutes, addMinutes } from "date-fns";
+import {
+  format,
+  setHours,
+  setMinutes,
+  differenceInMinutes,
+  addMinutes,
+} from "date-fns";
 import {
   DndContext,
   closestCenter,
@@ -19,8 +25,18 @@ import { Plus, Clock, Trash2, Check, Calendar, Expand } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import type { Task, Subtask, TaskPriority } from "@open-sunsama/types";
 import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
-import { useUpdateTask, useDeleteTask, useCompleteTask } from "@/hooks/useTasks";
-import { useSubtasks, useCreateSubtask, useUpdateSubtask, useDeleteSubtask, useReorderSubtasks } from "@/hooks/useSubtasks";
+import {
+  useUpdateTask,
+  useDeleteTask,
+  useCompleteTask,
+} from "@/hooks/useTasks";
+import {
+  useSubtasks,
+  useCreateSubtask,
+  useUpdateSubtask,
+  useDeleteSubtask,
+  useReorderSubtasks,
+} from "@/hooks/useSubtasks";
 import { useHoveredTask } from "@/hooks";
 import { useTimeBlocks, useUpdateTimeBlock } from "@/hooks/useTimeBlocks";
 
@@ -38,6 +54,7 @@ import {
 import { SortableSubtaskItem } from "./sortable-subtask-item";
 import { NotesField } from "./task-modal-form";
 import { TaskAttachments } from "./task-attachments";
+import { TaskSeriesBanner } from "./task-series-banner";
 
 interface TaskModalProps {
   task: Task | null;
@@ -45,7 +62,11 @@ interface TaskModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-import { TIME_PRESETS_NUMERIC, formatTimeDisplay, parseTimeInput } from "@/lib/utils";
+import {
+  TIME_PRESETS_NUMERIC,
+  formatTimeDisplay,
+  parseTimeInput,
+} from "@/lib/utils";
 
 // Helper to format duration for display with fallback
 function formatDurationDisplay(mins: number | null | undefined): string {
@@ -82,21 +103,25 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   // Handle F key to switch to focus mode
   React.useEffect(() => {
     if (!open || !task) return;
-    
+
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ignore if typing in an input/textarea
       const target = e.target as HTMLElement;
-      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
         return;
       }
-      
+
       if (e.key === "f" || e.key === "F") {
         e.preventDefault();
         onOpenChange(false);
         navigate({ to: "/app/focus/$taskId", params: { taskId: task.id } });
       }
     };
-    
+
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open, task, onOpenChange, navigate]);
@@ -125,22 +150,23 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   const deleteTask = useDeleteTask();
   const completeTask = useCompleteTask();
   const updateTimeBlock = useUpdateTimeBlock();
-  
+
   // Fetch time blocks for this task
   const { data: timeBlocks = [] } = useTimeBlocks(
     task ? { taskId: task.id } : undefined
   );
-  
+
   // Get the first (most relevant) time block for this task
   const activeTimeBlock = React.useMemo(() => {
     if (!timeBlocks.length) return null;
     // Sort by start time and get the most recent/upcoming one
     const sorted = [...timeBlocks].sort(
-      (a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+      (a, b) =>
+        new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
     );
     return sorted[0] ?? null;
   }, [timeBlocks]);
-  
+
   // Subtask hooks
   const { data: subtasks = [] } = useSubtasks(task?.id ?? "");
   const createSubtask = useCreateSubtask();
@@ -193,22 +219,28 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   // Handle start time change
   const handleStartTimeChange = async (newStartTime: string) => {
     setStartTime(newStartTime);
-    
+
     if (!activeTimeBlock || !newStartTime) return;
-    
+
     // Parse the new start time
     const [hours, minutes] = newStartTime.split(":").map(Number);
-    if (hours === undefined || minutes === undefined || isNaN(hours) || isNaN(minutes)) return;
-    
+    if (
+      hours === undefined ||
+      minutes === undefined ||
+      isNaN(hours) ||
+      isNaN(minutes)
+    )
+      return;
+
     // Calculate duration of existing time block
     const oldStart = new Date(activeTimeBlock.startTime);
     const oldEnd = new Date(activeTimeBlock.endTime);
     const durationMins = differenceInMinutes(oldEnd, oldStart);
-    
+
     // Create new start time, keeping the same date
     const newStart = setMinutes(setHours(oldStart, hours), minutes);
     const newEnd = addMinutes(newStart, durationMins);
-    
+
     // Update the time block
     await updateTimeBlock.mutateAsync({
       id: activeTimeBlock.id,
@@ -222,7 +254,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   // Handle duration change
   const handleDurationChange = async (newDurationMins: number | null) => {
     setPlannedMins(newDurationMins);
-    
+
     // Update task's estimated time
     if (task) {
       await updateTask.mutateAsync({
@@ -230,12 +262,12 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
         data: { estimatedMins: newDurationMins },
       });
     }
-    
+
     // If there's an active time block, update its end time
     if (activeTimeBlock && newDurationMins) {
       const blockStart = new Date(activeTimeBlock.startTime);
       const newEnd = addMinutes(blockStart, newDurationMins);
-      
+
       await updateTimeBlock.mutateAsync({
         id: activeTimeBlock.id,
         data: { endTime: newEnd },
@@ -306,11 +338,11 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   const handleSubtaskDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || !task || active.id === over.id) return;
-    
+
     const oldIndex = subtasks.findIndex((item) => item.id === active.id);
     const newIndex = subtasks.findIndex((item) => item.id === over.id);
     const newOrder = arrayMove(subtasks, oldIndex, newIndex);
-    
+
     await reorderSubtasks.mutateAsync({
       taskId: task.id,
       subtaskIds: newOrder.map((st) => st.id),
@@ -382,6 +414,9 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
 
         {/* Main Content */}
         <div className="px-5 py-4 space-y-5 max-h-[60vh] overflow-y-auto">
+          {/* Series Banner - show if task is part of a recurring series */}
+          {task.seriesId && <TaskSeriesBanner task={task} />}
+
           {/* Top row: Priority + Duration inline */}
           <div className="flex items-center gap-4 flex-wrap">
             {/* Priority */}
@@ -402,7 +437,9 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                     <PriorityIcon priority={p} className="mr-2" />
                     {PRIORITY_LABELS[p]}
                     {priority === p && (
-                      <span className="ml-auto text-xs text-muted-foreground">✓</span>
+                      <span className="ml-auto text-xs text-muted-foreground">
+                        ✓
+                      </span>
                     )}
                   </DropdownMenuItem>
                 ))}
@@ -436,9 +473,15 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
             ) : (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-8 gap-2 px-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 gap-2 px-3"
+                  >
                     <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{formatDurationDisplay(plannedMins)}</span>
+                    <span className="text-sm">
+                      {formatDurationDisplay(plannedMins)}
+                    </span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-36">
@@ -446,7 +489,9 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                     <DropdownMenuItem
                       key={preset.value}
                       onClick={() => handleDurationChange(preset.value)}
-                      className={plannedMins === preset.value ? "bg-accent" : ""}
+                      className={
+                        plannedMins === preset.value ? "bg-accent" : ""
+                      }
                     >
                       {preset.label}
                     </DropdownMenuItem>
@@ -487,14 +532,22 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
           {/* Time block info - compact */}
           {activeTimeBlock && (
             <p className="text-xs text-muted-foreground -mt-2">
-              Scheduled {format(new Date(activeTimeBlock.startTime), "h:mm a")} - {format(new Date(activeTimeBlock.endTime), "h:mm a")}
+              Scheduled {format(new Date(activeTimeBlock.startTime), "h:mm a")}{" "}
+              - {format(new Date(activeTimeBlock.endTime), "h:mm a")}
             </p>
           )}
 
           {/* Subtasks Section */}
           <div className="space-y-2">
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSubtaskDragEnd}>
-              <SortableContext items={subtaskIds} strategy={verticalListSortingStrategy}>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleSubtaskDragEnd}
+            >
+              <SortableContext
+                items={subtaskIds}
+                strategy={verticalListSortingStrategy}
+              >
                 <div className="space-y-0">
                   {subtasks.map((subtask) => (
                     <SortableSubtaskItem
@@ -502,11 +555,13 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                       subtask={subtask}
                       onToggle={() => toggleSubtask(subtask)}
                       onDelete={() => handleDeleteSubtask(subtask.id)}
-                      onUpdate={(title) => updateSubtask.mutate({ 
-                        taskId: task!.id, 
-                        subtaskId: subtask.id, 
-                        data: { title } 
-                      })}
+                      onUpdate={(title) =>
+                        updateSubtask.mutate({
+                          taskId: task!.id,
+                          subtaskId: subtask.id,
+                          data: { title },
+                        })
+                      }
                     />
                   ))}
                 </div>

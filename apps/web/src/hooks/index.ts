@@ -145,3 +145,14 @@ export {
   type ConnectCalDavRequest,
   type UpdateCalendarRequest,
 } from "./useCalendars";
+export {
+  useTaskSeriesList,
+  useTaskSeries,
+  useCreateTaskSeries,
+  useUpdateTaskSeries,
+  useStopTaskSeries,
+  useDeleteTaskSeriesInstances,
+  useSyncTaskSeriesInstances,
+  useTaskSeriesInstances,
+  taskSeriesKeys,
+} from "./useTaskSeries";

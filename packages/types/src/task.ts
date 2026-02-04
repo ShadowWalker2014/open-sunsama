@@ -7,7 +7,7 @@
  * Task priority levels.
  * P0 = Critical/Urgent, P1 = High, P2 = Medium (default), P3 = Low
  */
-export type TaskPriority = 'P0' | 'P1' | 'P2' | 'P3';
+export type TaskPriority = "P0" | "P1" | "P2" | "P3";
 
 /**
  * Represents a task in the Open Sunsama system.
@@ -26,14 +26,14 @@ export interface Task {
   /** Additional notes or details about the task (optional) */
   notes: string | null;
 
-  /** 
+  /**
    * Date when the task is scheduled to be completed.
    * Format: YYYY-MM-DD (ISO 8601 date format)
    * null indicates an unscheduled/backlog task
    */
   scheduledDate: string | null;
 
-  /** 
+  /**
    * Estimated time to complete the task in minutes.
    * null indicates no estimate has been provided
    */
@@ -51,13 +51,13 @@ export interface Task {
    */
   priority: TaskPriority;
 
-  /** 
+  /**
    * Timestamp when the task was marked as completed.
    * null indicates the task is not yet completed
    */
   completedAt: Date | null;
 
-  /** 
+  /**
    * Position of the task in the list for ordering purposes.
    * Lower numbers appear first. Used for drag-and-drop reordering.
    */
@@ -68,6 +68,19 @@ export interface Task {
    * Default is false (subtasks are shown).
    */
   subtasksHidden: boolean;
+
+  /**
+   * ID of the task series this instance belongs to.
+   * Null for regular (non-recurring) tasks.
+   */
+  seriesId: string | null;
+
+  /**
+   * Instance number within the series (1, 2, 3, ...).
+   * Used for "This is the Nth instance" display.
+   * Null for regular tasks.
+   */
+  seriesInstanceNumber: number | null;
 
   /** Timestamp when the task was created */
   createdAt: Date;
@@ -87,7 +100,7 @@ export interface CreateTaskInput {
   /** Additional notes or details about the task */
   notes?: string;
 
-  /** 
+  /**
    * Date when the task should be scheduled.
    * Format: YYYY-MM-DD
    * Omit for backlog/unscheduled tasks
@@ -113,7 +126,7 @@ export interface UpdateTaskInput {
   /** Updated notes (use null to clear) */
   notes?: string | null;
 
-  /** 
+  /**
    * Updated scheduled date (use null to move to backlog).
    * Format: YYYY-MM-DD
    */
@@ -128,7 +141,7 @@ export interface UpdateTaskInput {
   /** Updated actual time spent in minutes */
   actualMins?: number | null;
 
-  /** 
+  /**
    * Set completion timestamp (use null to mark as incomplete).
    * Typically set to current Date when completing a task.
    */
@@ -146,14 +159,14 @@ export interface UpdateTaskInput {
  * Used to update positions after drag-and-drop operations.
  */
 export interface ReorderTasksInput {
-  /** 
+  /**
    * The date for which tasks are being reordered.
    * Format: YYYY-MM-DD
    * Use "backlog" for unscheduled tasks
    */
   date: string;
 
-  /** 
+  /**
    * Array of task IDs in their new order.
    * Position values will be assigned based on array index.
    */
@@ -165,14 +178,14 @@ export interface ReorderTasksInput {
  * Combines date change with optional position update.
  */
 export interface MoveTaskInput {
-  /** 
+  /**
    * Target date to move the task to.
    * Format: YYYY-MM-DD
    * Use null to move to backlog
    */
   targetDate: string | null;
 
-  /** 
+  /**
    * Position in the target date's task list.
    * If omitted, task will be added at the end.
    */
@@ -182,7 +195,7 @@ export interface MoveTaskInput {
 /**
  * Sort options for task queries.
  */
-export type TaskSortBy = 'priority' | 'position' | 'createdAt';
+export type TaskSortBy = "priority" | "position" | "createdAt";
 
 /**
  * Filter options for querying tasks.

@@ -8,23 +8,27 @@
  */
 export type WebSocketEventType =
   // Task events
-  | 'task:created'
-  | 'task:updated'
-  | 'task:deleted'
-  | 'task:completed'
-  | 'task:reordered'
+  | "task:created"
+  | "task:updated"
+  | "task:deleted"
+  | "task:completed"
+  | "task:reordered"
+  // Task series (recurring tasks) events
+  | "task-series:created"
+  | "task-series:updated"
+  | "task-series:deleted"
   // Time block events
-  | 'timeblock:created'
-  | 'timeblock:updated'
-  | 'timeblock:deleted'
+  | "timeblock:created"
+  | "timeblock:updated"
+  | "timeblock:deleted"
   // Calendar events
-  | 'calendar:account-disconnected'
-  | 'calendar:synced'
-  | 'calendar:updated'
+  | "calendar:account-disconnected"
+  | "calendar:synced"
+  | "calendar:updated"
   // User events
-  | 'user:updated'
+  | "user:updated"
   // Connection events
-  | 'connected';
+  | "connected";
 
 /**
  * Base WebSocket event structure

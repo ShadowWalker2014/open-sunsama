@@ -26,6 +26,7 @@ import TasksListPage from "./routes/app/tasks";
 import FocusPage from "./routes/app/focus.$taskId";
 import FocusCompletePage from "./routes/app/focus.complete";
 import MorePage from "./routes/app/more";
+import RoutinesPage from "./routes/app/routines";
 
 // Import feature pages
 import KanbanFeaturePage from "./routes/features/kanban";
@@ -246,6 +247,12 @@ const appMoreRoute = createRoute({
   component: MorePage,
 });
 
+const appRoutinesRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/routines",
+  component: RoutinesPage,
+});
+
 // Build the route tree
 const routeTree = rootRoute.addChildren([
   indexRoute,
@@ -273,6 +280,7 @@ const routeTree = rootRoute.addChildren([
     appFocusRoute,
     appFocusCompleteRoute,
     appMoreRoute,
+    appRoutinesRoute,
   ]),
 ]);
 

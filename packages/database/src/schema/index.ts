@@ -1,6 +1,11 @@
 // Schema exports
-export { users, usersRelations, insertUserSchema, selectUserSchema } from './users';
-export type { User, NewUser, UserPreferences } from './users';
+export {
+  users,
+  usersRelations,
+  insertUserSchema,
+  selectUserSchema,
+} from "./users";
+export type { User, NewUser, UserPreferences } from "./users";
 
 export {
   tasks,
@@ -9,8 +14,25 @@ export {
   selectTaskSchema,
   updateTaskSchema,
   TASK_PRIORITIES,
-} from './tasks';
-export type { Task, NewTask, UpdateTask, TaskPriority } from './tasks';
+} from "./tasks";
+export type { Task, NewTask, UpdateTask, TaskPriority } from "./tasks";
+
+export {
+  taskSeries,
+  taskSeriesRelations,
+  insertTaskSeriesSchema,
+  selectTaskSeriesSchema,
+  updateTaskSeriesSchema,
+  RECURRENCE_TYPES,
+  DAYS_OF_WEEK,
+} from "./task-series";
+export type {
+  TaskSeries,
+  NewTaskSeries,
+  UpdateTaskSeries,
+  RecurrenceType,
+  DayOfWeek,
+} from "./task-series";
 
 export {
   subtasks,
@@ -18,8 +40,8 @@ export {
   insertSubtaskSchema,
   selectSubtaskSchema,
   updateSubtaskSchema,
-} from './subtasks';
-export type { Subtask, NewSubtask, UpdateSubtask } from './subtasks';
+} from "./subtasks";
+export type { Subtask, NewSubtask, UpdateSubtask } from "./subtasks";
 
 export {
   timeBlocks,
@@ -27,8 +49,8 @@ export {
   insertTimeBlockSchema,
   selectTimeBlockSchema,
   updateTimeBlockSchema,
-} from './time-blocks';
-export type { TimeBlock, NewTimeBlock, UpdateTimeBlock } from './time-blocks';
+} from "./time-blocks";
+export type { TimeBlock, NewTimeBlock, UpdateTimeBlock } from "./time-blocks";
 
 export {
   apiKeys,
@@ -37,8 +59,13 @@ export {
   selectApiKeySchema,
   createApiKeySchema,
   API_KEY_SCOPES,
-} from './api-keys';
-export type { ApiKey, NewApiKey, CreateApiKeyInput, ApiKeyScope } from './api-keys';
+} from "./api-keys";
+export type {
+  ApiKey,
+  NewApiKey,
+  CreateApiKeyInput,
+  ApiKeyScope,
+} from "./api-keys";
 
 export {
   notificationPreferences,
@@ -49,37 +76,40 @@ export {
   REMINDER_TIMING_OPTIONS,
   ROLLOVER_DESTINATION_OPTIONS,
   ROLLOVER_POSITION_OPTIONS,
-} from './notification-preferences';
+} from "./notification-preferences";
 export type {
   NotificationPreferences,
   NewNotificationPreferences,
   UpdateNotificationPreferences,
   RolloverDestination,
   RolloverPosition,
-} from './notification-preferences';
+} from "./notification-preferences";
 
 export {
   attachments,
   attachmentsRelations,
   insertAttachmentSchema,
   selectAttachmentSchema,
-} from './attachments';
-export type { Attachment, NewAttachment } from './attachments';
+} from "./attachments";
+export type { Attachment, NewAttachment } from "./attachments";
 
 export {
   rolloverLogs,
   insertRolloverLogSchema,
   selectRolloverLogSchema,
-} from './rollover-log';
-export type { RolloverLog, NewRolloverLog } from './rollover-log';
+} from "./rollover-log";
+export type { RolloverLog, NewRolloverLog } from "./rollover-log";
 
 export {
   pushSubscriptions,
   pushSubscriptionsRelations,
   insertPushSubscriptionSchema,
   selectPushSubscriptionSchema,
-} from './push-subscriptions';
-export type { PushSubscription, NewPushSubscription } from './push-subscriptions';
+} from "./push-subscriptions";
+export type {
+  PushSubscription,
+  NewPushSubscription,
+} from "./push-subscriptions";
 
 export {
   calendarAccounts,
@@ -89,14 +119,14 @@ export {
   updateCalendarAccountSchema,
   CALENDAR_PROVIDERS,
   SYNC_STATUS_OPTIONS,
-} from './calendar-accounts';
+} from "./calendar-accounts";
 export type {
   CalendarAccount,
   NewCalendarAccount,
   UpdateCalendarAccount,
   CalendarProvider,
   SyncStatus,
-} from './calendar-accounts';
+} from "./calendar-accounts";
 
 export {
   calendars,
@@ -104,8 +134,8 @@ export {
   insertCalendarSchema,
   selectCalendarSchema,
   updateCalendarSchema,
-} from './calendars';
-export type { Calendar, NewCalendar, UpdateCalendar } from './calendars';
+} from "./calendars";
+export type { Calendar, NewCalendar, UpdateCalendar } from "./calendars";
 
 export {
   calendarEvents,
@@ -115,14 +145,14 @@ export {
   updateCalendarEventSchema,
   EVENT_STATUS_OPTIONS,
   RESPONSE_STATUS_OPTIONS,
-} from './calendar-events';
+} from "./calendar-events";
 export type {
   CalendarEvent,
   NewCalendarEvent,
   UpdateCalendarEvent,
   EventStatus,
   ResponseStatus,
-} from './calendar-events';
+} from "./calendar-events";
 
 export {
   releases,
@@ -130,8 +160,13 @@ export {
   selectReleaseSchema,
   updateReleaseSchema,
   RELEASE_PLATFORMS,
-} from './releases';
-export type { Release, NewRelease, UpdateRelease, ReleasePlatform } from './releases';
+} from "./releases";
+export type {
+  Release,
+  NewRelease,
+  UpdateRelease,
+  ReleasePlatform,
+} from "./releases";
 
 // Re-export relation helpers for query building
-export { relations } from 'drizzle-orm';
+export { relations } from "drizzle-orm";

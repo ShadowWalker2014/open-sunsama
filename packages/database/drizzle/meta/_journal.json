@@ -43,6 +43,13 @@
       "when": 1769818793660,
       "tag": "0005_curved_sally_floyd",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1770192969076,
+      "tag": "0006_wild_luke_cage",
+      "breakpoints": true
     }
   ]
 }
