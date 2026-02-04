@@ -70,6 +70,11 @@ export const SHORTCUTS: Record<string, ShortcutDefinition> = {
     description: "Move to backlog (while hovering)",
     category: "task",
   },
+  deferToTomorrow: {
+    key: "d",
+    description: "Defer to tomorrow (while hovering)",
+    category: "task",
+  },
   deferToNextWeek: {
     key: "Z",
     modifiers: { shift: true },
