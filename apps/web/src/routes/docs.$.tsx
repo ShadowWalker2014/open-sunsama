@@ -8,10 +8,18 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
  * Renders MDX content within the docs layout with sidebar
  */
 export default function DocPage() {
-  // The slug can be nested like "api/tasks" which TanStack Router handles as "api/tasks"
-  const { slug } = useParams({ from: "/docs/$slug" });
+  // Use splat param to capture nested paths like "api/authentication"
+  const params = useParams({ from: "/docs/$" });
+  const slug = (params as any)["_splat"] || "";
+
+  console.log("[DocPage] params:", params);
+  console.log("[DocPage] slug:", slug);
+
   const doc = getDocBySlug(slug);
   const sections = getDocsBySection();
+
+  console.log("[DocPage] doc found:", !!doc);
+  console.log("[DocPage] sections:", sections.length);
 
   // Redirect to docs landing if page not found
   if (!doc) {

@@ -42,7 +42,7 @@ import BlogPostPage from "./routes/blog.$slug";
 
 // Import docs pages
 import DocsPage from "./routes/docs";
-import DocPage from "./routes/docs.$slug";
+import DocPage from "./routes/docs.$";
 
 // Import alternative pages (competitor comparisons)
 import MotionAlternativePage from "./routes/alternative.motion";
@@ -205,7 +205,7 @@ const docsRoute = createRoute({
 
 const docsSlugRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/docs/$slug",
+  path: "/docs/$",
   component: DocPage,
 });
 
