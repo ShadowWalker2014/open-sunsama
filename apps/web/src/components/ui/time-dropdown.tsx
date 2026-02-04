@@ -16,6 +16,9 @@ const TIME_PRESETS = [
   { value: 60, label: "1 hr" },
   { value: 90, label: "1.5 hr" },
   { value: 120, label: "2 hr" },
+  { value: 240, label: "4 hr" },
+  { value: 360, label: "6 hr" },
+  { value: 480, label: "8 hr" },
 ];
 
 export interface TimeDropdownRef {
@@ -333,7 +336,7 @@ export const TimeDropdown = React.forwardRef<
           </div>
 
           {/* Clear option - show when showClear is true and there's a value to clear */}
-          {showClear && value !== null && value > 0 && (
+          {showClear && value != null && value > 0 && (
             <div className="border-t p-1">
               <button
                 type="button"
