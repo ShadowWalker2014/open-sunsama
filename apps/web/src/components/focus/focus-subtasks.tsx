@@ -102,19 +102,16 @@ export function FocusSubtasks({ taskId }: FocusSubtasksProps) {
   if (isLoading) {
     return (
       <div className="space-y-2">
-        <h3 className="text-sm font-medium text-muted-foreground">Subtasks</h3>
         <div className="animate-pulse space-y-2">
-          <div className="h-8 bg-muted rounded" />
-          <div className="h-8 bg-muted rounded" />
+          <div className="h-8 bg-muted/30 rounded" />
+          <div className="h-8 bg-muted/30 rounded" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-medium text-muted-foreground">Subtasks</h3>
-
+    <div className="space-y-2">
       {/* Subtask list with drag-and-drop */}
       {subtasks.length > 0 && (
         <DndContext
@@ -141,8 +138,10 @@ export function FocusSubtasks({ taskId }: FocusSubtasksProps) {
       )}
 
       {/* Add subtask input */}
-      <div className="flex items-center gap-2 pl-1">
-        <Plus className="h-4 w-4 text-muted-foreground shrink-0" />
+      <div className="flex items-center gap-2 py-2 px-2 -mx-2 rounded-md hover:bg-muted/30 transition-colors">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/20">
+          <Plus className="h-3 w-3 text-muted-foreground/40" />
+        </div>
         <Input
           value={newSubtaskTitle}
           onChange={(e) => setNewSubtaskTitle(e.target.value)}
@@ -153,7 +152,7 @@ export function FocusSubtasks({ taskId }: FocusSubtasksProps) {
             }
           }}
           placeholder="Add a subtask..."
-          className="border-none p-0 h-auto text-sm shadow-none focus-visible:ring-0"
+          className="border-none p-0 h-auto text-sm shadow-none focus-visible:ring-0 bg-transparent placeholder:text-muted-foreground/40"
           disabled={createSubtask.isPending}
         />
       </div>
@@ -207,14 +206,14 @@ function SortableSubtaskItem({
         <GripVertical className="h-4 w-4 text-muted-foreground" />
       </button>
 
-      {/* Checkbox */}
+      {/* Circular checkbox */}
       <button
         onClick={onToggle}
         className={cn(
-          "flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors",
+          "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all",
           isCompleted
-            ? "border-primary bg-primary text-primary-foreground"
-            : "border-muted-foreground/40 hover:border-primary"
+            ? "border-primary bg-primary text-primary-foreground scale-105"
+            : "border-muted-foreground/30 hover:border-primary hover:scale-105"
         )}
       >
         {isCompleted && <Check className="h-3 w-3" strokeWidth={3} />}

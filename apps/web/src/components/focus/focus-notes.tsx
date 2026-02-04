@@ -8,18 +8,16 @@ interface FocusNotesProps {
 
 /**
  * Notes section for focus mode using Tiptap rich text editor
+ * Clean, minimal design without section header
  */
 export function FocusNotes({ notes, onChange }: FocusNotesProps) {
   return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-medium text-muted-foreground">Notes</h3>
-      <RichTextEditor
-        value={notes}
-        onChange={onChange}
-        placeholder="Add notes about this task..."
-        minHeight="200px"
-        enableFileUpload={true}
-      />
-    </div>
+    <RichTextEditor
+      value={notes}
+      onChange={onChange}
+      placeholder="Notes..."
+      minHeight="150px"
+      enableFileUpload={true}
+    />
   );
 }

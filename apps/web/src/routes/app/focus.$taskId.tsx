@@ -1,11 +1,10 @@
 import * as React from "react";
 import { useParams, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Check, X } from "lucide-react";
 import { format } from "date-fns";
 import { useTask, useUpdateTask, useTasks } from "@/hooks/useTasks";
 import { Button } from "@/components/ui";
 import {
-  FocusHeader,
   FocusTimer,
   FocusSubtasks,
   FocusNotes,
@@ -13,10 +12,11 @@ import {
 } from "@/components/focus";
 import type { FocusTimerRef } from "@/components/focus/focus-timer";
 import { shouldIgnoreShortcut } from "@/hooks/useKeyboardShortcuts";
+import { cn } from "@/lib/utils";
 
 /**
  * Full-screen focus mode view for a single task
- * Provides distraction-free environment with timer tracking
+ * Clean, minimal design focused on the task at hand
  */
 export default function FocusPage() {
   const { taskId } = useParams({ from: "/app/focus/$taskId" });
@@ -27,6 +27,9 @@ export default function FocusPage() {
   const [notes, setNotes] = React.useState("");
   const [isCalendarOpen, setIsCalendarOpen] = React.useState(false);
   const [wasCompleted, setWasCompleted] = React.useState(false);
+  const [editingTitle, setEditingTitle] = React.useState(false);
+  const [titleValue, setTitleValue] = React.useState("");
+  const titleInputRef = React.useRef<HTMLInputElement>(null);
 
   // Timer ref to expose toggle function for keyboard shortcut
   const timerRef = React.useRef<FocusTimerRef | null>(null);
@@ -57,7 +60,7 @@ export default function FocusPage() {
         } else {
           navigate({ to: "/app/focus/complete" });
         }
-      }, 600);
+      }, 800);
       return () => clearTimeout(timer);
     }
     if (!task?.completedAt) {
@@ -66,12 +69,15 @@ export default function FocusPage() {
     return undefined;
   }, [task?.completedAt, wasCompleted, nextIncompleteTask, navigate]);
 
-  // Sync notes with task data
+  // Sync notes and title with task data
   React.useEffect(() => {
     if (task?.notes) {
       setNotes(task.notes);
     }
-  }, [task?.notes]);
+    if (task?.title) {
+      setTitleValue(task.title);
+    }
+  }, [task?.notes, task?.title]);
 
   // Handle keyboard shortcuts (Esc to close, Space to toggle timer, E/W for time editing)
   React.useEffect(() => {
@@ -151,14 +157,13 @@ export default function FocusPage() {
     };
   }, []);
 
-  const handleTitleChange = React.useCallback(
-    (title: string) => {
-      if (task) {
-        updateTask.mutate({ id: task.id, data: { title } });
-      }
-    },
-    [task, updateTask]
-  );
+  const handleTitleSave = React.useCallback(() => {
+    const trimmed = titleValue.trim();
+    if (task && trimmed && trimmed !== task.title) {
+      updateTask.mutate({ id: task.id, data: { title: trimmed } });
+    }
+    setEditingTitle(false);
+  }, [task, titleValue, updateTask]);
 
   const handleToggleComplete = React.useCallback(() => {
     if (task) {
@@ -195,7 +200,7 @@ export default function FocusPage() {
   if (isLoading) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -204,8 +209,8 @@ export default function FocusPage() {
   if (error || !task) {
     return (
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-background">
-        <p className="text-lg text-muted-foreground">Task not found</p>
-        <Button variant="outline" onClick={handleClose}>
+        <p className="text-muted-foreground">Task not found</p>
+        <Button variant="outline" size="sm" onClick={handleClose}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to tasks
         </Button>
@@ -213,43 +218,119 @@ export default function FocusPage() {
     );
   }
 
+  const isCompleted = !!task.completedAt;
+
   return (
     <div className="fixed inset-0 z-50 bg-background overflow-auto">
-      <div className="mx-auto max-w-4xl px-8 py-6">
-        {/* Header with title and close */}
-        <FocusHeader
-          title={task.title}
-          priority={task.priority}
-          isCompleted={!!task.completedAt}
-          onTitleChange={handleTitleChange}
-          onToggleComplete={handleToggleComplete}
-          onClose={handleClose}
-        />
+      {/* Top bar - minimal */}
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border/50">
+        <div className="mx-auto max-w-3xl px-6 h-12 flex items-center justify-between">
+          <button
+            onClick={handleClose}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span>Back</span>
+          </button>
+          <button
+            onClick={handleClose}
+            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
 
-        {/* Timer section */}
-        <FocusTimer
-          taskId={task.id}
-          plannedMins={task.estimatedMins}
-          actualMins={task.actualMins ?? null}
-          onActualMinsChange={handleActualMinsChange}
-          onPlannedMinsChange={handlePlannedMinsChange}
-          timerRef={timerRef}
-        />
+      {/* Main content - centered */}
+      <div className="mx-auto max-w-3xl px-6 py-12">
+        {/* Task header with checkbox and title */}
+        <div className="flex items-start gap-4 mb-8">
+          {/* Large checkbox */}
+          <button
+            onClick={handleToggleComplete}
+            className={cn(
+              "mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-all",
+              isCompleted
+                ? "border-primary bg-primary text-primary-foreground scale-110"
+                : "border-muted-foreground/30 hover:border-primary hover:scale-105"
+            )}
+          >
+            {isCompleted && <Check className="h-4 w-4" strokeWidth={2.5} />}
+          </button>
 
-        {/* Divider */}
-        <div className="border-t my-6" />
+          {/* Title - click to edit */}
+          {editingTitle ? (
+            <input
+              ref={titleInputRef}
+              type="text"
+              value={titleValue}
+              onChange={(e) => setTitleValue(e.target.value)}
+              onBlur={handleTitleSave}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleTitleSave();
+                if (e.key === "Escape") {
+                  setTitleValue(task.title);
+                  setEditingTitle(false);
+                }
+              }}
+              autoFocus
+              className={cn(
+                "flex-1 text-2xl font-semibold bg-transparent border-none outline-none",
+                "focus:ring-0 placeholder:text-muted-foreground/50",
+                isCompleted && "line-through text-muted-foreground"
+              )}
+              placeholder="Task title..."
+            />
+          ) : (
+            <h1
+              onClick={() => !isCompleted && setEditingTitle(true)}
+              className={cn(
+                "flex-1 text-2xl font-semibold leading-tight cursor-text",
+                isCompleted && "line-through text-muted-foreground"
+              )}
+            >
+              {task.title}
+            </h1>
+          )}
+        </div>
+
+        {/* Timer section - prominent */}
+        <div className="mb-12">
+          <FocusTimer
+            taskId={task.id}
+            plannedMins={task.estimatedMins}
+            actualMins={task.actualMins ?? null}
+            onActualMinsChange={handleActualMinsChange}
+            onPlannedMinsChange={handlePlannedMinsChange}
+            timerRef={timerRef}
+          />
+        </div>
 
         {/* Subtasks section */}
-        <FocusSubtasks taskId={task.id} />
-
-        {/* Divider */}
-        <div className="border-t my-6" />
+        <div className="mb-8">
+          <FocusSubtasks taskId={task.id} />
+        </div>
 
         {/* Notes section */}
-        <FocusNotes notes={notes} onChange={handleNotesChange} />
+        <div className="mb-12">
+          <FocusNotes notes={notes} onChange={handleNotesChange} />
+        </div>
 
-        {/* Spacer for scroll */}
-        <div className="h-20" />
+        {/* Keyboard hints */}
+        <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground/50">
+          <span>
+            <kbd className="px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground">
+              Space
+            </kbd>{" "}
+            timer
+          </span>
+          <span>
+            <kbd className="px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground">
+              Esc
+            </kbd>{" "}
+            close
+          </span>
+        </div>
       </div>
 
       {/* Calendar sidebar on hover */}

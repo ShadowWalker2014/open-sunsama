@@ -1,12 +1,13 @@
 import * as React from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { CheckCircle2, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
+import confetti from "canvas-confetti";
 import { useTasks } from "@/hooks/useTasks";
 
 /**
  * Completion page shown when all tasks for today are done
- * Linear-style minimal design
+ * Celebratory, minimal design with confetti
  */
 export default function FocusCompletePage() {
   const navigate = useNavigate();
@@ -15,10 +16,42 @@ export default function FocusCompletePage() {
   const today = format(new Date(), "yyyy-MM-dd");
   const { data: todayTasks = [] } = useTasks({ scheduledDate: today });
 
-  const completedCount = todayTasks.filter(t => t.completedAt).length;
-  const totalMins = todayTasks.reduce((sum, t) => sum + (t.actualMins || t.estimatedMins || 0), 0);
+  const completedCount = todayTasks.filter((t) => t.completedAt).length;
+  const totalMins = todayTasks.reduce(
+    (sum, t) => sum + (t.actualMins || t.estimatedMins || 0),
+    0
+  );
   const hours = Math.floor(totalMins / 60);
   const mins = totalMins % 60;
+
+  // Fire confetti on mount
+  React.useEffect(() => {
+    const duration = 2000;
+    const end = Date.now() + duration;
+
+    const frame = () => {
+      confetti({
+        particleCount: 3,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.7 },
+        colors: ["#10b981", "#3b82f6", "#8b5cf6", "#f59e0b"],
+      });
+      confetti({
+        particleCount: 3,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.7 },
+        colors: ["#10b981", "#3b82f6", "#8b5cf6", "#f59e0b"],
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+
+    frame();
+  }, []);
 
   // Handle Esc key to close
   React.useEffect(() => {
@@ -31,65 +64,115 @@ export default function FocusCompletePage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [navigate]);
 
+  const handleClose = () => navigate({ to: "/app" });
+
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background">
-      {/* Back button */}
-      <button
-        onClick={() => navigate({ to: "/app" })}
-        className="absolute top-6 left-6 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back
-      </button>
-
-      {/* Main content */}
-      <div className="flex flex-col items-center gap-8 text-center px-6">
-        {/* Success icon */}
-        <div className="relative">
-          <div className="absolute inset-0 bg-green-500/20 rounded-full blur-xl" />
-          <CheckCircle2 className="relative h-20 w-20 text-green-500" strokeWidth={1.5} />
+    <div className="fixed inset-0 z-50 flex flex-col bg-background overflow-hidden">
+      {/* Top bar - minimal, matching focus page */}
+      <div className="bg-background/80 backdrop-blur-sm border-b border-border/50">
+        <div className="mx-auto max-w-3xl px-6 h-12 flex items-center">
+          <button
+            onClick={handleClose}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span>Back</span>
+          </button>
         </div>
+      </div>
 
-        {/* Message */}
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">All done for today</h1>
-          <p className="text-muted-foreground">
-            You've completed all your scheduled tasks.
-          </p>
-        </div>
+      {/* Main content - centered */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6">
+        <div className="flex flex-col items-center gap-8 text-center max-w-md">
+          {/* Celebratory emoji */}
+          <span
+            className="text-7xl animate-bounce"
+            style={{ animationDuration: "2s" }}
+          >
+            🎉
+          </span>
 
-        {/* Stats */}
-        {completedCount > 0 && (
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <div className="flex flex-col items-center">
-              <span className="text-2xl font-medium text-foreground">{completedCount}</span>
-              <span>tasks</span>
-            </div>
-            {totalMins > 0 && (
-              <>
-                <div className="h-8 w-px bg-border" />
-                <div className="flex flex-col items-center">
-                  <span className="text-2xl font-medium text-foreground">
-                    {hours > 0 ? `${hours}h ${mins}m` : `${mins}m`}
-                  </span>
-                  <span>focused</span>
-                </div>
-              </>
-            )}
+          {/* Message */}
+          <div className="space-y-2">
+            <h1 className="text-3xl font-semibold tracking-tight">
+              All done for today!
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              Great work. Time to relax.
+            </p>
           </div>
-        )}
 
-        {/* Action */}
-        <button
-          onClick={() => navigate({ to: "/app" })}
-          className="mt-4 px-6 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
-        >
-          Return to Board
-        </button>
+          {/* Stats - clean horizontal layout */}
+          {completedCount > 0 && (
+            <div className="flex items-center gap-8 text-sm">
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-4xl font-light text-foreground tabular-nums">
+                  {completedCount}
+                </span>
+                <span className="text-muted-foreground/60 text-xs uppercase tracking-wider">
+                  tasks
+                </span>
+              </div>
+              {totalMins > 0 && (
+                <>
+                  <div className="h-12 w-px bg-border/50" />
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-4xl font-light text-foreground tabular-nums">
+                      {hours > 0 ? (
+                        <>
+                          {hours}
+                          <span className="text-2xl text-muted-foreground/60">
+                            h
+                          </span>{" "}
+                          {mins > 0 && (
+                            <>
+                              {mins}
+                              <span className="text-2xl text-muted-foreground/60">
+                                m
+                              </span>
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {mins}
+                          <span className="text-2xl text-muted-foreground/60">
+                            m
+                          </span>
+                        </>
+                      )}
+                    </span>
+                    <span className="text-muted-foreground/60 text-xs uppercase tracking-wider">
+                      focused
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
 
-        {/* Keyboard hint */}
-        <p className="text-xs text-muted-foreground/60">
-          Press <kbd className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground text-xs">Esc</kbd> or <kbd className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground text-xs">Enter</kbd> to return
+          {/* Action button */}
+          <button
+            onClick={handleClose}
+            className="mt-4 px-8 py-3 rounded-full bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 hover:scale-105 transition-all"
+          >
+            Return to Board
+          </button>
+        </div>
+      </div>
+
+      {/* Keyboard hints at bottom */}
+      <div className="pb-8 flex items-center justify-center">
+        <p className="text-xs text-muted-foreground/40">
+          Press{" "}
+          <kbd className="px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground">
+            Esc
+          </kbd>{" "}
+          or{" "}
+          <kbd className="px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground">
+            Enter
+          </kbd>{" "}
+          to return
         </p>
       </div>
     </div>
