@@ -6,11 +6,19 @@ import {
   shouldIgnoreShortcut,
   useHoveredTask,
 } from "@/hooks/useKeyboardShortcuts";
-import { useCompleteTask, useCreateTask, useDeleteTask, useMoveTask, useReorderTasks, useTasks, useUpdateTask } from "@/hooks/useTasks";
+import {
+  useCompleteTask,
+  useCreateTask,
+  useDeleteTask,
+  useMoveTask,
+  useReorderTasks,
+  useTasks,
+  useUpdateTask,
+} from "@/hooks/useTasks";
 import { useSubtasks, useUpdateSubtask } from "@/hooks/useSubtasks";
 import { useAutoSchedule } from "@/hooks";
 import { toast } from "@/hooks/use-toast";
-import { addDays, startOfWeek, format } from "date-fns";
+import { addDays, startOfWeek, startOfDay, format, parseISO } from "date-fns";
 import type { Task } from "@open-sunsama/types";
 
 interface TaskShortcutsHandlerProps {
@@ -35,7 +43,7 @@ export function TaskShortcutsHandler({
 }: TaskShortcutsHandlerProps) {
   const navigate = useNavigate();
   const { hoveredTask, hoveredSubtaskId } = useHoveredTask();
-  
+
   const completeTask = useCompleteTask();
   const createTask = useCreateTask();
   const deleteTask = useDeleteTask();
@@ -43,21 +51,21 @@ export function TaskShortcutsHandler({
   const updateTask = useUpdateTask();
   const updateSubtask = useUpdateSubtask();
   const autoSchedule = useAutoSchedule();
-  
+
   // Fetch tasks for the hovered task's column to enable move to top/bottom
   // Query is disabled when no task is hovered (passes undefined)
   const columnFilters = React.useMemo(() => {
     if (!hoveredTask) return undefined;
-    return hoveredTask.scheduledDate 
+    return hoveredTask.scheduledDate
       ? { scheduledDate: hoveredTask.scheduledDate }
       : { backlog: true };
   }, [hoveredTask?.id, hoveredTask?.scheduledDate]);
-  
+
   const { data: tasksInColumn } = useTasks(columnFilters);
-  
+
   // Fetch subtasks for the hovered task
   const { data: subtasks } = useSubtasks(hoveredTask?.id ?? "");
-  
+
   const reorderTasks = useReorderTasks();
 
   React.useEffect(() => {
@@ -66,9 +74,12 @@ export function TaskShortcutsHandler({
       if (shouldIgnoreShortcut(event)) return;
 
       // Navigation shortcuts (don't require hovering)
-      
+
       // Focus today (Shift + Space)
-      if (SHORTCUTS.focusToday && matchesShortcut(event, SHORTCUTS.focusToday)) {
+      if (
+        SHORTCUTS.focusToday &&
+        matchesShortcut(event, SHORTCUTS.focusToday)
+      ) {
         event.preventDefault();
         onNavigateToday();
         return;
@@ -82,21 +93,27 @@ export function TaskShortcutsHandler({
       }
 
       // Previous day (Shift + Left)
-      if (SHORTCUTS.previousDay && matchesShortcut(event, SHORTCUTS.previousDay)) {
+      if (
+        SHORTCUTS.previousDay &&
+        matchesShortcut(event, SHORTCUTS.previousDay)
+      ) {
         event.preventDefault();
         onNavigatePrevious();
         return;
       }
 
       // === Task-specific shortcuts (require hovering) ===
-      
+
       // Complete task/subtask (C)
-      if (SHORTCUTS.completeTask && matchesShortcut(event, SHORTCUTS.completeTask)) {
+      if (
+        SHORTCUTS.completeTask &&
+        matchesShortcut(event, SHORTCUTS.completeTask)
+      ) {
         event.preventDefault();
-        
+
         // Check if hovering a subtask first
         if (hoveredTask && hoveredSubtaskId && subtasks) {
-          const subtask = subtasks.find(s => s.id === hoveredSubtaskId);
+          const subtask = subtasks.find((s) => s.id === hoveredSubtaskId);
           if (subtask) {
             updateSubtask.mutate({
               taskId: hoveredTask.id,
@@ -104,13 +121,15 @@ export function TaskShortcutsHandler({
               data: { completed: !subtask.completed },
             });
             toast({
-              title: subtask.completed ? "Subtask uncompleted" : "Subtask completed",
+              title: subtask.completed
+                ? "Subtask uncompleted"
+                : "Subtask completed",
               description: `"${subtask.title}"`,
             });
             return;
           }
         }
-        
+
         // Complete the hovered task
         if (hoveredTask) {
           const isCompleted = !!hoveredTask.completedAt;
@@ -127,7 +146,10 @@ export function TaskShortcutsHandler({
       }
 
       // Delete task (Cmd + Delete/Backspace)
-      if (SHORTCUTS.deleteTask && matchesShortcut(event, SHORTCUTS.deleteTask)) {
+      if (
+        SHORTCUTS.deleteTask &&
+        matchesShortcut(event, SHORTCUTS.deleteTask)
+      ) {
         if (hoveredTask) {
           event.preventDefault();
           if (confirm(`Delete "${hoveredTask.title}"?`)) {
@@ -138,7 +160,10 @@ export function TaskShortcutsHandler({
       }
 
       // Edit estimate (E)
-      if (SHORTCUTS.editEstimate && matchesShortcut(event, SHORTCUTS.editEstimate)) {
+      if (
+        SHORTCUTS.editEstimate &&
+        matchesShortcut(event, SHORTCUTS.editEstimate)
+      ) {
         if (hoveredTask && onEditEstimate) {
           event.preventDefault();
           onEditEstimate(hoveredTask.id);
@@ -147,7 +172,10 @@ export function TaskShortcutsHandler({
       }
 
       // Move to backlog (Z)
-      if (SHORTCUTS.moveToBacklog && matchesShortcut(event, SHORTCUTS.moveToBacklog)) {
+      if (
+        SHORTCUTS.moveToBacklog &&
+        matchesShortcut(event, SHORTCUTS.moveToBacklog)
+      ) {
         if (hoveredTask && hoveredTask.scheduledDate) {
           event.preventDefault();
           moveTask.mutate({
@@ -162,11 +190,41 @@ export function TaskShortcutsHandler({
         return;
       }
 
-      // Defer to next week (Shift + Z)
-      if (SHORTCUTS.deferToNextWeek && matchesShortcut(event, SHORTCUTS.deferToNextWeek)) {
+      // Defer to tomorrow (D)
+      if (
+        SHORTCUTS.deferToTomorrow &&
+        matchesShortcut(event, SHORTCUTS.deferToTomorrow)
+      ) {
         if (hoveredTask) {
           event.preventDefault();
-          const nextMonday = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 7);
+          const currentDate = hoveredTask.scheduledDate
+            ? parseISO(hoveredTask.scheduledDate)
+            : startOfDay(new Date());
+          const tomorrow = addDays(currentDate, 1);
+          const targetDate = format(tomorrow, "yyyy-MM-dd");
+          moveTask.mutate({
+            id: hoveredTask.id,
+            targetDate,
+          });
+          toast({
+            title: "Deferred to tomorrow",
+            description: `"${hoveredTask.title}" moved to ${format(tomorrow, "MMM d")}`,
+          });
+        }
+        return;
+      }
+
+      // Defer to next week (Shift + Z)
+      if (
+        SHORTCUTS.deferToNextWeek &&
+        matchesShortcut(event, SHORTCUTS.deferToNextWeek)
+      ) {
+        if (hoveredTask) {
+          event.preventDefault();
+          const nextMonday = addDays(
+            startOfWeek(new Date(), { weekStartsOn: 1 }),
+            7
+          );
           moveTask.mutate({
             id: hoveredTask.id,
             targetDate: format(nextMonday, "yyyy-MM-dd"),
@@ -183,13 +241,19 @@ export function TaskShortcutsHandler({
       if (SHORTCUTS.focus && matchesShortcut(event, SHORTCUTS.focus)) {
         if (hoveredTask) {
           event.preventDefault();
-          navigate({ to: "/app/focus/$taskId", params: { taskId: hoveredTask.id } });
+          navigate({
+            to: "/app/focus/$taskId",
+            params: { taskId: hoveredTask.id },
+          });
         }
         return;
       }
 
       // Add to Calendar (X)
-      if (SHORTCUTS.addToCalendar && matchesShortcut(event, SHORTCUTS.addToCalendar)) {
+      if (
+        SHORTCUTS.addToCalendar &&
+        matchesShortcut(event, SHORTCUTS.addToCalendar)
+      ) {
         if (hoveredTask) {
           event.preventDefault();
           autoSchedule.mutate({ taskId: hoveredTask.id });
@@ -221,7 +285,10 @@ export function TaskShortcutsHandler({
       }
 
       // Hide subtasks (H) - toggle subtasks visibility
-      if (SHORTCUTS.hideSubtasks && matchesShortcut(event, SHORTCUTS.hideSubtasks)) {
+      if (
+        SHORTCUTS.hideSubtasks &&
+        matchesShortcut(event, SHORTCUTS.hideSubtasks)
+      ) {
         if (hoveredTask && subtasks && subtasks.length > 0) {
           event.preventDefault();
           const newHiddenState = !hoveredTask.subtasksHidden;
@@ -242,18 +309,22 @@ export function TaskShortcutsHandler({
         if (hoveredTask && tasksInColumn) {
           event.preventDefault();
           const pendingTasks = tasksInColumn
-            .filter(t => !t.completedAt)
+            .filter((t) => !t.completedAt)
             .sort((a, b) => a.position - b.position);
-          
+
           const firstTask = pendingTasks[0];
-          if (pendingTasks.length > 1 && firstTask && firstTask.id !== hoveredTask.id) {
-            const taskIds = pendingTasks.map(t => t.id);
+          if (
+            pendingTasks.length > 1 &&
+            firstTask &&
+            firstTask.id !== hoveredTask.id
+          ) {
+            const taskIds = pendingTasks.map((t) => t.id);
             const currentIndex = taskIds.indexOf(hoveredTask.id);
             if (currentIndex > 0) {
               // Move to position 0
               taskIds.splice(currentIndex, 1);
               taskIds.unshift(hoveredTask.id);
-              
+
               reorderTasks.mutate({
                 date: hoveredTask.scheduledDate || "backlog",
                 taskIds,
@@ -269,22 +340,29 @@ export function TaskShortcutsHandler({
       }
 
       // Move to bottom (Alt + Shift + Down)
-      if (SHORTCUTS.moveToBottom && matchesShortcut(event, SHORTCUTS.moveToBottom)) {
+      if (
+        SHORTCUTS.moveToBottom &&
+        matchesShortcut(event, SHORTCUTS.moveToBottom)
+      ) {
         if (hoveredTask && tasksInColumn) {
           event.preventDefault();
           const pendingTasks = tasksInColumn
-            .filter(t => !t.completedAt)
+            .filter((t) => !t.completedAt)
             .sort((a, b) => a.position - b.position);
-          
+
           const lastTask = pendingTasks[pendingTasks.length - 1];
-          if (pendingTasks.length > 1 && lastTask && lastTask.id !== hoveredTask.id) {
-            const taskIds = pendingTasks.map(t => t.id);
+          if (
+            pendingTasks.length > 1 &&
+            lastTask &&
+            lastTask.id !== hoveredTask.id
+          ) {
+            const taskIds = pendingTasks.map((t) => t.id);
             const currentIndex = taskIds.indexOf(hoveredTask.id);
             if (currentIndex < taskIds.length - 1) {
               // Move to end
               taskIds.splice(currentIndex, 1);
               taskIds.push(hoveredTask.id);
-              
+
               reorderTasks.mutate({
                 date: hoveredTask.scheduledDate || "backlog",
                 taskIds,
