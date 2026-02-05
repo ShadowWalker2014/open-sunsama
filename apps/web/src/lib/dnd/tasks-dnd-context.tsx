@@ -194,18 +194,52 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
       // When columns change, we need to move the task to the new column
       if (columnChanged) {
         const targetDate =
-          destinationColumn === "backlog" ? null : destinationColumn;
+          destinationColumn === "backlog" ? "backlog" : destinationColumn;
 
-        // Move the task to the new column
-        moveTask.mutate({
-          id: taskId,
-          targetDate,
+        // Get the destination column's tasks
+        const isDestBacklog = destinationColumn === "backlog";
+        const destQueryKey = isDestBacklog
+          ? taskKeys.list({ backlog: true })
+          : taskKeys.list({ scheduledDate: destinationColumn });
+
+        const destTasks = queryClient.getQueryData<Task[]>(destQueryKey);
+
+        // Build the new task order for the destination column
+        // Filter to only pending tasks (not completed) and exclude the moving task
+        const pendingDestTasks = (destTasks ?? [])
+          .filter((t) => !t.completedAt && t.id !== taskId)
+          .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+
+        let newTaskIds: string[];
+
+        if (overTask && overTask.id !== taskId) {
+          // Dropped on a specific task - insert at that position
+          const overIndex = pendingDestTasks.findIndex(
+            (t) => t.id === overTask.id
+          );
+
+          if (overIndex !== -1) {
+            // Insert before the target task
+            newTaskIds = [
+              ...pendingDestTasks.slice(0, overIndex).map((t) => t.id),
+              taskId,
+              ...pendingDestTasks.slice(overIndex).map((t) => t.id),
+            ];
+          } else {
+            // Target task not found in pending tasks, append to end
+            newTaskIds = [...pendingDestTasks.map((t) => t.id), taskId];
+          }
+        } else {
+          // Dropped on column background - append to end
+          newTaskIds = [...pendingDestTasks.map((t) => t.id), taskId];
+        }
+
+        // Use reorderTasks which handles both moving and positioning
+        reorderTasks.mutate({
+          date: targetDate,
+          taskIds: newTaskIds,
         });
 
-        // If dropped on a specific task in the destination column,
-        // we should reorder the task to the correct position after the move
-        // This requires fetching the tasks after the move and reordering
-        // For now, we just accept that the task will be at the end until the user reorders
         return;
       }
 
