@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Plus, Check, X, GripVertical } from "lucide-react";
+import { Plus } from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -13,11 +13,8 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
-  useSortable,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { cn } from "@/lib/utils";
-import { Button, Input } from "@/components/ui";
+import { Input } from "@/components/ui";
 import type { Subtask } from "@open-sunsama/types";
 import {
   useSubtasks,
@@ -26,6 +23,7 @@ import {
   useDeleteSubtask,
   useReorderSubtasks,
 } from "@/hooks/useSubtasks";
+import { SortableSubtaskItem } from "@/components/kanban/sortable-subtask-item";
 
 interface FocusSubtasksProps {
   taskId: string;
@@ -130,6 +128,13 @@ export function FocusSubtasks({ taskId }: FocusSubtasksProps) {
                   subtask={subtask}
                   onToggle={() => handleToggleSubtask(subtask)}
                   onDelete={() => handleDeleteSubtask(subtask.id)}
+                  onUpdate={(newTitle) =>
+                    updateSubtask.mutate({
+                      taskId,
+                      subtaskId: subtask.id,
+                      data: { title: newTitle },
+                    })
+                  }
                 />
               ))}
             </div>
@@ -156,88 +161,6 @@ export function FocusSubtasks({ taskId }: FocusSubtasksProps) {
           disabled={createSubtask.isPending}
         />
       </div>
-    </div>
-  );
-}
-
-interface SortableSubtaskItemProps {
-  subtask: Subtask;
-  onToggle: () => void;
-  onDelete: () => void;
-}
-
-function SortableSubtaskItem({
-  subtask,
-  onToggle,
-  onDelete,
-}: SortableSubtaskItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: subtask.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
-  const isCompleted = subtask.completed;
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={cn(
-        "group flex items-center gap-2 py-2 px-2 -mx-2 rounded-md",
-        "hover:bg-muted/50 transition-colors",
-        isDragging && "opacity-50 bg-muted"
-      )}
-    >
-      {/* Drag handle */}
-      <button
-        {...attributes}
-        {...listeners}
-        className="cursor-grab opacity-0 group-hover:opacity-100 transition-opacity touch-none"
-      >
-        <GripVertical className="h-4 w-4 text-muted-foreground" />
-      </button>
-
-      {/* Circular checkbox */}
-      <button
-        onClick={onToggle}
-        className={cn(
-          "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all",
-          isCompleted
-            ? "border-primary bg-primary text-primary-foreground scale-105"
-            : "border-muted-foreground/30 hover:border-primary hover:scale-105"
-        )}
-      >
-        {isCompleted && <Check className="h-3 w-3" strokeWidth={3} />}
-      </button>
-
-      {/* Title */}
-      <span
-        className={cn(
-          "flex-1 text-sm",
-          isCompleted && "line-through text-muted-foreground"
-        )}
-      >
-        {subtask.title}
-      </span>
-
-      {/* Delete button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-        onClick={onDelete}
-      >
-        <X className="h-3 w-3" />
-      </Button>
     </div>
   );
 }
