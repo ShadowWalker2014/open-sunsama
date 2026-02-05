@@ -1,9 +1,14 @@
 import * as React from "react";
 import { format } from "date-fns";
-import { Trash2, Check } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import type { TimeBlock } from "@open-sunsama/types";
-import { useUpdateTimeBlock, useDeleteTimeBlock, useTask, useSubtasks, useUpdateSubtask } from "@/hooks";
-import { cn } from "@/lib/utils";
+import {
+  useUpdateTimeBlock,
+  useDeleteTimeBlock,
+  useTask,
+  useSubtasks,
+  useUpdateSubtask,
+} from "@/hooks";
 import {
   Button,
   Sheet,
@@ -12,6 +17,7 @@ import {
   SheetTitle,
 } from "@/components/ui";
 import { PriorityBadge } from "@/components/ui/priority-badge";
+import { SubtaskItem } from "@/components/ui/subtask-item";
 import {
   TimeBlockTitleSection,
   TimeRangeSection,
@@ -43,7 +49,7 @@ export function TimeBlockDetailSheet({
 
   const updateTimeBlock = useUpdateTimeBlock();
   const deleteTimeBlock = useDeleteTimeBlock();
-  
+
   // Fetch associated task and subtasks if linked
   const { data: linkedTask } = useTask(timeBlock?.taskId ?? "");
   const { data: subtasks = [] } = useSubtasks(timeBlock?.taskId ?? "");
@@ -55,7 +61,7 @@ export function TimeBlockDetailSheet({
       setTitle(timeBlock.title);
       setNotes(timeBlock.notes ?? "");
       setColor(timeBlock.color);
-      
+
       // Format times for input fields
       const start = new Date(timeBlock.startTime);
       const end = new Date(timeBlock.endTime);
@@ -72,10 +78,10 @@ export function TimeBlockDetailSheet({
     const blockDate = new Date(timeBlock.startTime);
     const [startHour, startMin] = startTime.split(":").map(Number);
     const [endHour, endMin] = endTime.split(":").map(Number);
-    
+
     const newStartTime = new Date(blockDate);
     newStartTime.setHours(startHour ?? 0, startMin ?? 0, 0, 0);
-    
+
     const newEndTime = new Date(blockDate);
     newEndTime.setHours(endHour ?? 0, endMin ?? 0, 0, 0);
 
@@ -105,16 +111,28 @@ export function TimeBlockDetailSheet({
 
   const handleTimeBlur = () => {
     if (!timeBlock) return;
-    
-    const [currentStartHour, currentStartMin] = format(new Date(timeBlock.startTime), "HH:mm").split(":").map(Number);
-    const [currentEndHour, currentEndMin] = format(new Date(timeBlock.endTime), "HH:mm").split(":").map(Number);
+
+    const [currentStartHour, currentStartMin] = format(
+      new Date(timeBlock.startTime),
+      "HH:mm"
+    )
+      .split(":")
+      .map(Number);
+    const [currentEndHour, currentEndMin] = format(
+      new Date(timeBlock.endTime),
+      "HH:mm"
+    )
+      .split(":")
+      .map(Number);
     const [newStartHour, newStartMin] = startTime.split(":").map(Number);
     const [newEndHour, newEndMin] = endTime.split(":").map(Number);
-    
+
     // Check if times have changed
-    const startChanged = newStartHour !== currentStartHour || newStartMin !== currentStartMin;
-    const endChanged = newEndHour !== currentEndHour || newEndMin !== currentEndMin;
-    
+    const startChanged =
+      newStartHour !== currentStartHour || newStartMin !== currentStartMin;
+    const endChanged =
+      newEndHour !== currentEndHour || newEndMin !== currentEndMin;
+
     if (startChanged || endChanged) {
       handleSave();
     }
@@ -195,30 +213,21 @@ export function TimeBlockDetailSheet({
               <span className="text-xs text-muted-foreground">Subtasks</span>
               <div className="space-y-0.5">
                 {subtasks.map((subtask) => (
-                  <button
+                  <SubtaskItem
                     key={subtask.id}
-                    onClick={() => toggleSubtask(subtask.id, subtask.completed)}
-                    className="flex items-center gap-2 w-full py-1 text-left hover:bg-muted/50 rounded px-1 -mx-1 transition-colors"
-                  >
-                    <div
-                      className={cn(
-                        "h-3.5 w-3.5 shrink-0 rounded-full border flex items-center justify-center transition-colors",
-                        subtask.completed
-                          ? "bg-primary border-primary text-primary-foreground"
-                          : "border-muted-foreground/30"
-                      )}
-                    >
-                      {subtask.completed && <Check className="h-2 w-2" strokeWidth={3} />}
-                    </div>
-                    <span
-                      className={cn(
-                        "text-sm truncate",
-                        subtask.completed && "line-through text-muted-foreground"
-                      )}
-                    >
-                      {subtask.title}
-                    </span>
-                  </button>
+                    subtask={subtask}
+                    compact
+                    onToggle={() =>
+                      toggleSubtask(subtask.id, subtask.completed)
+                    }
+                    onUpdate={(newTitle) =>
+                      updateSubtask.mutate({
+                        taskId: timeBlock!.taskId!,
+                        subtaskId: subtask.id,
+                        data: { title: newTitle },
+                      })
+                    }
+                  />
                 ))}
               </div>
             </div>
