@@ -126,7 +126,16 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
         setActiveOverColumn(null);
         return;
       }
-      const targetDate = findTargetColumnDate(over.id);
+
+      // First try to get column from the over ID (for column droppables)
+      let targetDate = findTargetColumnDate(over.id);
+
+      // If over a task, get the column from the task's data
+      if (!targetDate && over.data.current?.columnId) {
+        const columnId = String(over.data.current.columnId);
+        targetDate = columnId === "backlog" ? "backlog" : columnId;
+      }
+
       setActiveOverColumn(targetDate === "backlog" ? null : targetDate);
     },
     [findTargetColumnDate]
