@@ -1,6 +1,27 @@
 import { createApi, createOpenSunsamaClient, type OpenSunsamaClient } from "@open-sunsama/api-client";
+import { isDesktop } from "./desktop";
 
 const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
+
+// Tauri HTTP plugin fetch - loaded lazily when running in desktop
+let tauriFetch: typeof globalThis.fetch | undefined;
+
+/**
+ * Get the appropriate fetch function.
+ * Uses Tauri HTTP plugin in desktop mode to bypass WebView CORS restrictions.
+ */
+async function loadTauriFetch(): Promise<typeof globalThis.fetch | undefined> {
+  if (!isDesktop()) return undefined;
+  if (tauriFetch) return tauriFetch;
+  const { fetch } = await import("@tauri-apps/plugin-http");
+  tauriFetch = fetch;
+  return tauriFetch;
+}
+
+// Eagerly load Tauri fetch if in desktop mode
+if (isDesktop()) {
+  loadTauriFetch();
+}
 
 // Get token from localStorage
 function getToken(): string | undefined {
@@ -12,10 +33,11 @@ function getToken(): string | undefined {
 let client = createOpenSunsamaClient({
   baseUrl,
   token: getToken() as string | undefined,
+  customFetch: tauriFetch,
 });
 
 // Create the typed API wrapper
-let api = createApi({ baseUrl, token: getToken() as string | undefined });
+let api = createApi({ baseUrl, token: getToken() as string | undefined, customFetch: tauriFetch });
 
 /**
  * Set the authentication token for API requests
@@ -27,9 +49,10 @@ export function setAuthToken(token: string | null): void {
   client = createOpenSunsamaClient({
     baseUrl,
     token: newToken as string | undefined,
+    customFetch: tauriFetch,
   });
   
-  api = createApi({ baseUrl, token: newToken as string | undefined });
+  api = createApi({ baseUrl, token: newToken as string | undefined, customFetch: tauriFetch });
 }
 
 /**
@@ -38,7 +61,7 @@ export function setAuthToken(token: string | null): void {
 export function getApi() {
   // Always return with current token from storage
   const token = getToken();
-  return createApi({ baseUrl, token: token as string | undefined });
+  return createApi({ baseUrl, token: token as string | undefined, customFetch: tauriFetch });
 }
 
 /**
@@ -46,7 +69,7 @@ export function getApi() {
  */
 export function getApiClient() {
   const token = getToken();
-  return createOpenSunsamaClient({ baseUrl, token: token as string | undefined });
+  return createOpenSunsamaClient({ baseUrl, token: token as string | undefined, customFetch: tauriFetch });
 }
 
 /**

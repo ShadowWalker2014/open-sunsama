@@ -43,6 +43,9 @@ export interface ApiClientConfig {
     /** Status codes to retry (default: [408, 413, 429, 500, 502, 503, 504]) */
     statusCodes?: number[];
   };
+
+  /** Custom fetch function (e.g., Tauri HTTP plugin fetch for desktop) */
+  customFetch?: typeof globalThis.fetch;
 }
 
 /**
@@ -76,6 +79,7 @@ export function createApiClient(config: ApiClientConfig): KyInstance {
     onResponse,
     onError,
     retry = {},
+    customFetch,
   } = config;
 
   // Build authorization header
@@ -92,6 +96,7 @@ export function createApiClient(config: ApiClientConfig): KyInstance {
   const client = ky.create({
     prefixUrl: baseUrl,
     timeout,
+    ...(customFetch ? { fetch: customFetch } : {}),
     retry: {
       limit: retry.limit ?? 2,
       methods: retry.methods ?? ["get"],
