@@ -45,6 +45,7 @@ import {
   Archive,
   Sun,
   CalendarArrowUp,
+  Copy,
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import type { Task, Subtask, CreateTaskSeriesInput, TaskPriority } from "@open-sunsama/types";
@@ -53,6 +54,7 @@ import {
   useUpdateTask,
   useDeleteTask,
   useCompleteTask,
+  useCreateTask,
 } from "@/hooks/useTasks";
 import {
   useSubtasks,
@@ -640,6 +642,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
 
   const deleteTask = useDeleteTask();
   const completeTask = useCompleteTask();
+  const createTask = useCreateTask();
   const updateTimeBlock = useUpdateTimeBlock();
 
   // Fetch time blocks for this task
@@ -734,6 +737,18 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
       await deleteTask.mutateAsync(task.id);
       onOpenChange(false);
     }
+  };
+
+  const handleDuplicate = async () => {
+    if (!task) return;
+    await createTask.mutateAsync({
+      title: task.title,
+      notes: task.notes ?? undefined,
+      priority: task.priority,
+      scheduledDate: task.scheduledDate ?? undefined,
+      estimatedMins: task.estimatedMins ?? undefined,
+    });
+    toast({ title: "Task duplicated" });
   };
 
   const handleToggleComplete = async () => {
@@ -859,6 +874,10 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={handleDuplicate}>
+                  <Copy className="mr-2 h-4 w-4" />
+                  Duplicate
+                </DropdownMenuItem>
                 {!task.seriesId && (
                   <DropdownMenuItem onSelect={() => setRepeatDialogOpen(true)}>
                     <Repeat className="mr-2 h-4 w-4" />

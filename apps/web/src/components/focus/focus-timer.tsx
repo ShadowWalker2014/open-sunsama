@@ -104,11 +104,11 @@ export function FocusTimer({
     [onActualMinsChange, reset]
   );
 
-  // Compact mode: inline header with minimal design
+  // Compact mode: inline header with actual / planned time
   if (compact) {
     return (
-      <div className="flex items-center gap-4 shrink-0">
-        {/* Small running indicator */}
+      <div className="flex items-center gap-3 shrink-0">
+        {/* Running indicator */}
         {isRunning && (
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -116,43 +116,61 @@ export function FocusTimer({
           </span>
         )}
 
-        {/* Actual time - smaller display, no labels */}
-        {isRunning ? (
-          <span
-            className={cn(
-              "text-base font-mono tabular-nums",
-              isSignificantlyOver && "text-red-400",
-              isOverPlanned && !isSignificantlyOver && "text-amber-400",
-              !isOverPlanned && "text-foreground"
-            )}
-          >
-            {formatTimerDisplay(totalSeconds)}
-          </span>
-        ) : (
+        {/* Time display: actual / planned */}
+        <div className="flex items-center gap-1">
+          {/* Actual time */}
+          {isRunning ? (
+            <span
+              className={cn(
+                "text-base font-mono tabular-nums",
+                isSignificantlyOver && "text-red-400",
+                isOverPlanned && !isSignificantlyOver && "text-amber-400",
+                !isOverPlanned && "text-foreground"
+              )}
+            >
+              {formatTimerDisplay(totalSeconds)}
+            </span>
+          ) : (
+            <TimeDropdown
+              ref={actualTimeRef}
+              value={displayMins > 0 ? displayMins : null}
+              onChange={handleActualTimeChange}
+              placeholder="0:00"
+              dropdownHeader="Actual time"
+              shortcutHint="E"
+              showClear={displayMins > 0}
+              clearText="Clear"
+              size="sm"
+              className={cn(
+                "font-mono",
+                displaySeconds > 0
+                  ? "text-foreground"
+                  : "text-muted-foreground/50"
+              )}
+            />
+          )}
+
+          {/* Planned time — always visible */}
+          <span className="text-muted-foreground/30 text-xs">/</span>
           <TimeDropdown
-            ref={actualTimeRef}
-            value={displayMins > 0 ? displayMins : null}
-            onChange={handleActualTimeChange}
+            ref={plannedTimeRef}
+            value={plannedMins}
+            onChange={onPlannedMinsChange ?? (() => {})}
             placeholder="0:00"
-            dropdownHeader="Set time"
-            shortcutHint="E"
-            showClear={displayMins > 0}
+            dropdownHeader="Planned time"
+            shortcutHint="W"
+            showClear={!!plannedMins}
             clearText="Clear"
             size="sm"
-            className={cn(
-              "font-mono",
-              displaySeconds > 0
-                ? "text-foreground"
-                : "text-muted-foreground/50"
-            )}
+            className="font-mono text-sm text-muted-foreground/60"
           />
-        )}
+        </div>
 
-        {/* Bordered start/stop button - minimal */}
+        {/* Start/stop button */}
         <button
           onClick={isRunning ? stop : start}
           className={cn(
-            "flex items-center justify-center gap-1.5 h-8 px-3 rounded-md border text-sm font-medium transition-all",
+            "flex items-center justify-center gap-1.5 h-8 px-3 rounded-md border text-sm font-medium transition-all cursor-pointer",
             isRunning
               ? "border-red-500/30 text-red-500 hover:bg-red-500/10"
               : "border-[#22c55e]/30 text-[#22c55e] hover:bg-[#22c55e]/10"
@@ -224,7 +242,7 @@ export function FocusTimer({
       <button
         onClick={isRunning ? stop : start}
         className={cn(
-          "flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg border text-sm font-medium transition-all w-32",
+          "flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg border text-sm font-medium transition-all w-32 cursor-pointer",
           isRunning
             ? "border-red-500/30 text-red-500 hover:bg-red-500/10"
             : "border-[#22c55e]/30 text-[#22c55e] hover:bg-[#22c55e]/10"

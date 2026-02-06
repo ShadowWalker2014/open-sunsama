@@ -1,9 +1,15 @@
 import * as React from "react";
 import { useParams, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Loader2, Check, X, Calendar } from "lucide-react";
-import { format, parse } from "date-fns";
-import { useTask, useUpdateTask, useTasks } from "@/hooks/useTasks";
-import { Button } from "@/components/ui";
+import { ArrowLeft, Loader2, Check, X, Calendar, MoreHorizontal, Trash2, Copy } from "lucide-react";
+import { format, parse, addDays, startOfWeek } from "date-fns";
+import { useTask, useUpdateTask, useTasks, useCreateTask, useDeleteTask } from "@/hooks/useTasks";
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui";
 import {
   FocusTimer,
   FocusSubtasks,
@@ -14,6 +20,8 @@ import type { FocusTimerRef } from "@/components/focus/focus-timer";
 import { shouldIgnoreShortcut } from "@/hooks/useKeyboardShortcuts";
 import { cn } from "@/lib/utils";
 import { InlinePrioritySelector } from "@/components/kanban/priority-selector";
+import { TaskSeriesBanner } from "@/components/kanban/task-series-banner";
+import { toast } from "@/hooks/use-toast";
 import type { TaskPriority } from "@open-sunsama/types";
 
 /**
@@ -81,6 +89,39 @@ export default function FocusPage() {
     }
   }, [task?.notes, task?.title]);
 
+  // --- Handlers needed by keyboard shortcuts (must be declared before useEffect) ---
+  const createTask = useCreateTask();
+  const deleteTask = useDeleteTask();
+
+  const handleScheduledDateChange = React.useCallback(
+    (newDate: string | null) => {
+      if (task) {
+        updateTask.mutate({ id: task.id, data: { scheduledDate: newDate } });
+      }
+    },
+    [task, updateTask]
+  );
+
+  const handleDelete = React.useCallback(() => {
+    if (!task) return;
+    if (confirm("Are you sure you want to delete this task?")) {
+      deleteTask.mutate(task.id);
+      navigate({ to: "/app" });
+    }
+  }, [task, deleteTask, navigate]);
+
+  const handleDuplicate = React.useCallback(() => {
+    if (!task) return;
+    createTask.mutate({
+      title: task.title,
+      notes: task.notes ?? undefined,
+      priority: task.priority,
+      scheduledDate: task.scheduledDate ?? undefined,
+      estimatedMins: task.estimatedMins ?? undefined,
+    });
+    toast({ title: "Task duplicated" });
+  }, [task, createTask]);
+
   // Handle keyboard shortcuts (Esc to close, Space to toggle timer, E/W for time editing)
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -121,10 +162,36 @@ export default function FocusPage() {
         timerRef.current?.openPlannedTimeDropdown();
         return;
       }
+
+      // D - Snooze one day
+      if (e.key === "d" || e.key === "D") {
+        e.preventDefault();
+        const tomorrow = addDays(new Date(), 1);
+        handleScheduledDateChange(format(tomorrow, "yyyy-MM-dd"));
+        toast({ title: "Snoozed one day", description: `Scheduled for ${format(tomorrow, "EEEE, MMM d")}.` });
+        return;
+      }
+
+      // Shift+Z - Move to next week
+      if ((e.key === "z" || e.key === "Z") && e.shiftKey) {
+        e.preventDefault();
+        const nextMonday = addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 7);
+        handleScheduledDateChange(format(nextMonday, "yyyy-MM-dd"));
+        toast({ title: "Moved to next week", description: `Scheduled for ${format(nextMonday, "EEEE, MMM d")}.` });
+        return;
+      }
+
+      // Z - Move to backlog
+      if ((e.key === "z" || e.key === "Z") && !e.shiftKey) {
+        e.preventDefault();
+        handleScheduledDateChange(null);
+        toast({ title: "Moved to backlog" });
+        return;
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [navigate]);
+  }, [navigate, handleScheduledDateChange]);
 
   // Auto-save notes on blur with debounce
   const saveNotesTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -243,12 +310,34 @@ export default function FocusPage() {
             <ArrowLeft className="h-3.5 w-3.5" />
             <span>Back</span>
           </button>
-          <button
-            onClick={handleClose}
-            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-0.5">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer">
+                  <MoreHorizontal className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={handleDuplicate}>
+                  <Copy className="mr-2 h-4 w-4" />
+                  Duplicate
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={handleDelete}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <button
+              onClick={handleClose}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -332,6 +421,13 @@ export default function FocusPage() {
             </>
           )}
         </div>
+
+        {/* Series banner for recurring tasks */}
+        {task.seriesId && (
+          <div className="mb-6">
+            <TaskSeriesBanner task={task} />
+          </div>
+        )}
 
         {/* Subtasks section */}
         <div className="mb-8">
