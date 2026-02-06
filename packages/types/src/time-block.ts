@@ -161,6 +161,8 @@ export interface QuickScheduleInput {
 export interface AutoScheduleInput {
   /** ID of the task to schedule */
   taskId: string;
+  /** Current time in HH:mm format - used as earliest start time for scheduling */
+  currentTime?: string;
 }
 
 /**

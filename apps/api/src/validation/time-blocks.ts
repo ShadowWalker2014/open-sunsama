@@ -136,4 +136,5 @@ export function minutesToTime(minutes: number): string {
  */
 export const autoScheduleSchema = z.object({
   taskId: uuidSchema,
+  currentTime: timeSchema.optional(),
 });

@@ -78,7 +78,14 @@ export function TaskContextMenu({
   };
 
   const handleAddToCalendar = async () => {
-    await autoSchedule.mutateAsync({ taskId: task.id });
+    const today = format(new Date(), "yyyy-MM-dd");
+    const isToday = task.scheduledDate === today || !task.scheduledDate;
+    let currentTime: string | undefined;
+    if (isToday) {
+      const now = new Date();
+      currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    }
+    await autoSchedule.mutateAsync({ taskId: task.id, currentTime });
   };
 
   const handleMoveToTop = async () => {

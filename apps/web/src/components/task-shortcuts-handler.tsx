@@ -256,7 +256,14 @@ export function TaskShortcutsHandler({
       ) {
         if (hoveredTask) {
           event.preventDefault();
-          autoSchedule.mutate({ taskId: hoveredTask.id });
+          const today = format(new Date(), "yyyy-MM-dd");
+          const isToday = hoveredTask.scheduledDate === today || !hoveredTask.scheduledDate;
+          let currentTime: string | undefined;
+          if (isToday) {
+            const now = new Date();
+            currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+          }
+          autoSchedule.mutate({ taskId: hoveredTask.id, currentTime });
           toast({
             title: "Added to calendar",
             description: `"${hoveredTask.title}"`,

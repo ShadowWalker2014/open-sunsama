@@ -28,29 +28,42 @@ const WORK_END_HOUR = 18;   // 6:00 PM
 function findNextAvailableSlot(
   existingBlocks: Array<{ startTime: string; endTime: string }>,
   durationMins: number,
-  _date: string
+  _date: string,
+  earliestStartMinutes?: number
 ): { startTime: string; endTime: string } | null {
   const workStartMinutes = WORK_START_HOUR * 60; // 540 (9:00 AM)
   const workEndMinutes = WORK_END_HOUR * 60;     // 1080 (6:00 PM)
 
-  // If no existing blocks, start at work start time
+  // Use the later of work start or the earliest requested start time
+  // Round up to next 15-minute interval for clean scheduling
+  let effectiveStart = workStartMinutes;
+  if (earliestStartMinutes !== undefined) {
+    // Round up to next 15-minute mark
+    const roundedMinutes = Math.ceil(earliestStartMinutes / 15) * 15;
+    effectiveStart = Math.max(workStartMinutes, roundedMinutes);
+  }
+
+  // If no existing blocks, start at effective start time
   if (existingBlocks.length === 0) {
-    const endMinutes = workStartMinutes + durationMins;
+    const endMinutes = effectiveStart + durationMins;
     if (endMinutes <= workEndMinutes) {
       return {
-        startTime: minutesToTime(workStartMinutes),
+        startTime: minutesToTime(effectiveStart),
         endTime: minutesToTime(endMinutes),
       };
     }
     return null; // Duration exceeds working hours
   }
 
-  // Find the first available gap
-  let currentStart = workStartMinutes;
+  // Find the first available gap starting from effectiveStart
+  let currentStart = effectiveStart;
 
   for (const block of existingBlocks) {
     const blockStartMinutes = timeToMinutes(block.startTime);
     const blockEndMinutes = timeToMinutes(block.endTime);
+
+    // Skip blocks that end before our effective start
+    if (blockEndMinutes <= effectiveStart) continue;
 
     // Check if there's a gap before this block
     if (blockStartMinutes > currentStart) {
@@ -212,7 +225,7 @@ timeBlocksRouter.post('/quick-schedule', requireScopes('time-blocks:write'), zVa
 /** POST /time-blocks/auto-schedule - Intelligently schedule a task to the next available time slot */
 timeBlocksRouter.post('/auto-schedule', requireScopes('time-blocks:write'), zValidator('json', autoScheduleSchema), async (c) => {
   const userId = c.get('userId');
-  const { taskId } = c.req.valid('json');
+  const { taskId, currentTime } = c.req.valid('json');
   const db = getDb();
 
   // Look up the task
@@ -232,8 +245,11 @@ timeBlocksRouter.post('/auto-schedule', requireScopes('time-blocks:write'), zVal
     .where(and(eq(timeBlocks.userId, userId), eq(timeBlocks.date, scheduleDate)))
     .orderBy(asc(timeBlocks.startTime));
 
+  // Convert currentTime (HH:mm) to minutes if provided
+  const earliestStartMinutes = currentTime ? timeToMinutes(currentTime) : undefined;
+
   // Find the next available slot
-  const slot = findNextAvailableSlot(existingBlocks, durationMins, scheduleDate);
+  const slot = findNextAvailableSlot(existingBlocks, durationMins, scheduleDate, earliestStartMinutes);
   if (!slot) {
     return c.json({
       success: false,
