@@ -258,7 +258,6 @@ export function TaskCardContent({
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setDurationOpen(true);
                 }}
                 className={cn(
                   "shrink-0 flex items-center gap-0.5 rounded px-1.5 py-0.5",
@@ -323,7 +322,6 @@ export function TaskCardContent({
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                setPriorityOpen(true);
               }}
               className={cn(
                 "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium",
