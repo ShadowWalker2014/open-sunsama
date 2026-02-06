@@ -254,22 +254,22 @@ export default function FocusPage() {
 
       {/* Main content - centered with generous top padding */}
       <div className="mx-auto max-w-3xl px-6 pt-16 pb-12">
-        {/* Task header row - checkbox, title, time tracking, start button */}
-        <div className="flex items-center gap-4 mb-10">
-          {/* Large checkbox */}
+        {/* Task header — checkbox + title + timer */}
+        <div className="flex items-center gap-4 mb-3">
+          {/* Checkbox */}
           <button
             onClick={handleToggleComplete}
             className={cn(
-              "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-all",
+              "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-all cursor-pointer",
               isCompleted
-                ? "border-primary bg-primary text-primary-foreground scale-110"
-                : "border-muted-foreground/30 hover:border-primary hover:scale-105"
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-muted-foreground/30 hover:border-primary"
             )}
           >
-            {isCompleted && <Check className="h-4 w-4" strokeWidth={2.5} />}
+            {isCompleted && <Check className="h-3.5 w-3.5" strokeWidth={2.5} />}
           </button>
 
-          {/* Title - click to edit */}
+          {/* Title — click to edit */}
           {editingTitle ? (
             <input
               ref={titleInputRef}
@@ -286,7 +286,7 @@ export default function FocusPage() {
               }}
               autoFocus
               className={cn(
-                "flex-1 text-xl font-semibold bg-transparent border-none outline-none",
+                "flex-1 text-2xl font-semibold bg-transparent border-none outline-none tracking-tight",
                 "focus:ring-0 placeholder:text-muted-foreground/50",
                 isCompleted && "line-through text-muted-foreground"
               )}
@@ -296,7 +296,7 @@ export default function FocusPage() {
             <h1
               onClick={() => !isCompleted && setEditingTitle(true)}
               className={cn(
-                "flex-1 text-xl font-semibold leading-tight cursor-text",
+                "flex-1 text-2xl font-semibold leading-tight cursor-text tracking-tight",
                 isCompleted && "line-through text-muted-foreground"
               )}
             >
@@ -304,7 +304,7 @@ export default function FocusPage() {
             </h1>
           )}
 
-          {/* Timer section - inline with title */}
+          {/* Timer — inline with title */}
           <FocusTimer
             taskId={task.id}
             plannedMins={task.estimatedMins}
@@ -316,17 +316,20 @@ export default function FocusPage() {
           />
         </div>
 
-        {/* Task metadata - priority and date */}
-        <div className="flex items-center gap-4 mb-8 -mt-4">
+        {/* Metadata — priority · date */}
+        <div className="flex items-center gap-1 mb-10">
           <InlinePrioritySelector
             priority={task.priority}
             onChange={handlePriorityChange}
           />
           {task.scheduledDate && (
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Calendar className="h-3.5 w-3.5" />
-              <span>{format(parse(task.scheduledDate, "yyyy-MM-dd", new Date()), "EEE, MMM d")}</span>
-            </div>
+            <>
+              <div className="w-px h-3.5 bg-border/60 mx-1" />
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Calendar className="h-3.5 w-3.5 text-muted-foreground/60" />
+                <span>{format(parse(task.scheduledDate, "yyyy-MM-dd", new Date()), "EEE, MMM d")}</span>
+              </div>
+            </>
           )}
         </div>
 

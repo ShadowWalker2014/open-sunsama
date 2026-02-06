@@ -1,6 +1,5 @@
 import type { TaskPriority } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
-import { ChevronDown } from "lucide-react";
 import {
   Button,
   Label,
@@ -57,19 +56,19 @@ interface InlinePrioritySelectorProps {
 }
 
 /**
- * Compact inline priority selector for headers.
+ * Compact inline priority selector for headers and property bars.
+ * Minimal design — no chevron, subtle hover state.
  */
 export function InlinePrioritySelector({ priority, onChange }: InlinePrioritySelectorProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-7 px-2 gap-1 text-xs font-medium hover:bg-muted">
+        <button className="flex items-center gap-1.5 h-7 px-2 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer">
           <PriorityIcon priority={priority} />
           <span>{PRIORITY_LABELS[priority]}</span>
-          <ChevronDown className="h-3 w-3 opacity-50" />
-        </Button>
+        </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-32">
+      <DropdownMenuContent align="start" className="w-32">
         {PRIORITIES.map((p) => (
           <DropdownMenuItem
             key={p}

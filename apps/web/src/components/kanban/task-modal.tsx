@@ -39,7 +39,6 @@ import {
   Expand,
   X,
   Calendar,
-  CalendarClock,
   Play,
   ChevronLeft,
   ChevronRight,
@@ -806,50 +805,55 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden [&>button]:hidden">
-        {/* Top toolbar - minimal metadata and actions */}
-        <div className="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-border/50">
-          {/* Left side - Priority + START date with labels */}
-          <div className="flex items-center gap-4">
-            <div className="flex flex-col">
-              <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">
-                Priority
-              </span>
-              <InlinePrioritySelector
-                priority={task.priority}
-                onChange={handlePriorityChange}
-              />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">
-                Start
-              </span>
-              <DatePickerPopover
-                ref={datePickerRef}
-                value={task.scheduledDate}
-                onChange={handleScheduledDateChange}
-                taskTitle={task.title}
-              />
-            </div>
-          </div>
+        {/* Title row with inline actions */}
+        <div className="flex items-start gap-3 px-6 pt-5 pb-3">
+          {/* Checkbox */}
+          <button
+            type="button"
+            className={cn(
+              "mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-all cursor-pointer",
+              isCompleted
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-muted-foreground/30 hover:border-primary"
+            )}
+            onClick={handleToggleComplete}
+          >
+            {isCompleted && <Check className="h-3 w-3" strokeWidth={3} />}
+          </button>
 
-          {/* Right side - action buttons */}
-          <div className="flex items-center gap-0.5">
-            {/* Add Subtask */}
+          {/* Title */}
+          <textarea
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onBlur={() => title !== task.title && handleSave()}
+            rows={1}
+            className={cn(
+              "flex-1 min-w-0 resize-none border-none p-0 text-lg font-semibold shadow-none focus:outline-none focus:ring-0 bg-transparent leading-snug",
+              isCompleted && "line-through text-muted-foreground"
+            )}
+            placeholder="Task title"
+            onInput={(e) => {
+              const target = e.target as HTMLTextAreaElement;
+              target.style.height = "auto";
+              target.style.height = target.scrollHeight + "px";
+            }}
+          />
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-0.5 shrink-0">
             <button
               type="button"
-              onClick={() => setIsAddingSubtask(true)}
-              className="flex items-center gap-1.5 px-2 py-1.5 rounded text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              onClick={handleExpandToFocus}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
+              title="Focus mode (F)"
             >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Subtasks</span>
+              <Expand className="h-4 w-4" />
             </button>
-
-            {/* More menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                  className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
                 >
                   <MoreHorizontal className="h-4 w-4" />
                 </button>
@@ -870,115 +874,72 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-
-            {/* Focus mode button */}
-            <button
-              type="button"
-              onClick={handleExpandToFocus}
-              className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-              title="Enter focus mode (F)"
-            >
-              <Expand className="h-4 w-4" />
-            </button>
-
-            {/* Close button */}
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
         </div>
 
-        {/* Title section - full width, wraps properly */}
-        <div className="px-6 pt-5 pb-4">
-          <div className="flex items-start gap-3">
-            {/* Checkbox */}
-            <button
-              type="button"
-              className={cn(
-                "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all",
-                isCompleted
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-muted-foreground/30 hover:border-primary"
-              )}
-              onClick={handleToggleComplete}
-            >
-              {isCompleted && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
-            </button>
-
-            {/* Title - textarea for multi-line */}
-            <textarea
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onBlur={() => title !== task.title && handleSave()}
-              rows={1}
-              className={cn(
-                "flex-1 min-w-0 resize-none border-none p-0 text-xl font-semibold shadow-none focus:outline-none focus:ring-0 bg-transparent leading-tight",
-                isCompleted && "line-through text-muted-foreground"
-              )}
-              placeholder="Task title"
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = "auto";
-                target.style.height = target.scrollHeight + "px";
-              }}
+        {/* Property bar — priority · date · time */}
+        <div className="flex items-center gap-1 px-6 pb-4">
+          <InlinePrioritySelector
+            priority={task.priority}
+            onChange={handlePriorityChange}
+          />
+          <div className="w-px h-3.5 bg-border/60 mx-1" />
+          <div className="flex items-center gap-1.5">
+            <Calendar className="h-3.5 w-3.5 text-muted-foreground/60" />
+            <DatePickerPopover
+              ref={datePickerRef}
+              value={task.scheduledDate}
+              onChange={handleScheduledDateChange}
+              taskTitle={task.title}
             />
           </div>
-        </div>
-
-        {/* Time tracking section - inline, minimal */}
-        <div className="px-6 pb-4 flex items-center gap-4">
-          {/* Actual time */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">
-              Act
-            </span>
+          <div className="w-px h-3.5 bg-border/60 mx-1" />
+          <div className="flex items-center gap-1">
             <TimeDropdown
               ref={actualTimeRef}
               value={actualMins}
               onChange={handleActualMinsChange}
               placeholder="0:00"
-              dropdownHeader="Set actual time"
+              dropdownHeader="Actual time"
               shortcutHint="E"
               showClear
               clearText="Clear"
               size="sm"
               className="font-mono text-sm text-foreground"
             />
-          </div>
-
-          {/* Separator */}
-          <span className="text-muted-foreground/30">/</span>
-
-          {/* Planned time */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">
-              Plan
-            </span>
+            <span className="text-muted-foreground/30 text-xs">/</span>
             <TimeDropdown
               ref={plannedTimeRef}
               value={plannedMins}
               onChange={handleDurationChange}
               placeholder="0:00"
-              dropdownHeader="Set planned time"
+              dropdownHeader="Planned time"
               shortcutHint="W"
               showClear
               clearText="Clear"
               size="sm"
-              className="font-mono text-sm text-muted-foreground/70"
+              className="font-mono text-sm text-muted-foreground/60"
             />
           </div>
-
-          {/* Spacer */}
           <div className="flex-1" />
-
-          {/* Start button - minimal inline */}
+          <button
+            type="button"
+            onClick={() => setIsAddingSubtask(true)}
+            className="p-1.5 rounded-md text-muted-foreground/60 hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
+            title="Add subtask"
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </button>
           <button
             onClick={handleExpandToFocus}
-            className="flex items-center gap-1.5 px-3 py-1 rounded text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            className="flex items-center gap-1.5 h-7 px-2.5 rounded-md text-xs font-medium border border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors cursor-pointer"
           >
             <Play className="h-3 w-3" />
             Start
@@ -986,7 +947,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
         </div>
 
         {/* Main Content */}
-        <div className="px-5 py-4 space-y-4 max-h-[55vh] overflow-y-auto">
+        <div className="border-t border-border/40 px-6 py-4 space-y-4 max-h-[55vh] overflow-y-auto">
           {/* Series Banner */}
           {task.seriesId && <TaskSeriesBanner task={task} />}
 
