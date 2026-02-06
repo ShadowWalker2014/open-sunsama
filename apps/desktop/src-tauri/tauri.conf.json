@@ -61,7 +61,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDI0QzQwRURGMkJEM0I3OEQKUldTTnQ5TXIzdzdFSkMvYi9XNGIxRTFlRTUvTWlPdlJqNm5TZys4cnVaWkpncWNRN0JhY1FzRlgK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDc1M0VGQzIxNDQ0MDA0RDMKUldUVEJFQkVJZncrZGIySHVwNnp4dDh1MEI5eGtONlZ6NkQyZGNwZE1Ja1V5NllhSEtyV0JDYWsK",
       "endpoints": [
         "https://api.opensunsama.com/releases/update/{{target}}/{{current_version}}"
       ]
