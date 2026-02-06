@@ -131,32 +131,36 @@ jobs:
       # macOS: Build with signing and notarization
       - name: Build Tauri app (macOS)
         if: matrix.platform == 'macos-latest'
-        uses: tauri-apps/tauri-action@v0
+        working-directory: apps/desktop
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_SIGNING_IDENTITY: ${{ steps.signing.outputs.identity }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-        with:
-          projectPath: apps/desktop
-          tauriScript: bunx tauri
-          args: ${{ matrix.args }}
+        run: bunx tauri build ${{ matrix.args }} --verbose
+
+      # macOS: Verify entitlements are embedded in the signed app
+      - name: Verify entitlements (macOS)
+        if: matrix.platform == 'macos-latest'
+        run: |
+          APP_PATH=$(find apps/desktop/src-tauri/target -name "Open Sunsama.app" -type d | head -1)
+          echo "=== Checking entitlements on: $APP_PATH ==="
+          codesign -d --entitlements - "$APP_PATH" 2>&1 || true
+          echo ""
+          echo "=== Checking entitlements on binary ==="
+          codesign -d --entitlements - "$APP_PATH/Contents/MacOS/open-sunsama-desktop" 2>&1 || true
+          echo ""
+          echo "=== Verifying signature ==="
+          codesign -vvv "$APP_PATH" 2>&1 || true
 
       # Linux/Windows: Build without Apple signing
       - name: Build Tauri app (Linux/Windows)
         if: matrix.platform != 'macos-latest'
-        uses: tauri-apps/tauri-action@v0
+        working-directory: apps/desktop
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-        with:
-          projectPath: apps/desktop
-          tauriScript: bunx tauri
-          args: ${{ matrix.args }}
+        run: bunx tauri build ${{ matrix.args }}
 
       - name: Find built file
         id: find_file
