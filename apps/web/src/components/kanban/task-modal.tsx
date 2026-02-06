@@ -48,7 +48,7 @@ import {
   CalendarArrowUp,
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
-import type { Task, Subtask, CreateTaskSeriesInput } from "@open-sunsama/types";
+import type { Task, Subtask, CreateTaskSeriesInput, TaskPriority } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import {
   useUpdateTask,
@@ -87,6 +87,7 @@ import { NotesField } from "./task-modal-form";
 import { TaskAttachments } from "./task-attachments";
 import { TaskSeriesBanner } from "./task-series-banner";
 import { RepeatConfigDialog } from "./repeat-config-popover";
+import { InlinePrioritySelector } from "./priority-selector";
 import { useCreateTaskSeries } from "@/hooks/useTaskSeries";
 
 // ============================================
@@ -524,6 +525,15 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     });
   };
 
+  // Handle priority change
+  const handlePriorityChange = async (newPriority: TaskPriority) => {
+    if (!task) return;
+    await updateTask.mutateAsync({
+      id: task.id,
+      data: { priority: newPriority },
+    });
+  };
+
   // Handle keyboard shortcuts: F for focus, E for actual time, W for planned time, D/Z/Shift+Z for date, @ for date input
   React.useEffect(() => {
     if (!open || !task) return;
@@ -798,8 +808,17 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
       <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden [&>button]:hidden">
         {/* Top toolbar - minimal metadata and actions */}
         <div className="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-border/50">
-          {/* Left side - START date with label */}
-          <div className="flex items-center gap-3">
+          {/* Left side - Priority + START date with labels */}
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col">
+              <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">
+                Priority
+              </span>
+              <InlinePrioritySelector
+                priority={task.priority}
+                onChange={handlePriorityChange}
+              />
+            </div>
             <div className="flex flex-col">
               <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">
                 Start
