@@ -5,7 +5,7 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { getDb, eq, and, asc, timeBlocks, tasks, sql } from '@open-sunsama/database';
+import { getDb, eq, and, asc, timeBlocks, tasks, users, sql } from '@open-sunsama/database';
 import { NotFoundError, uuidSchema } from '@open-sunsama/utils';
 import { auth, requireScopes, type AuthVariables } from '../middleware/auth.js';
 import {
@@ -14,48 +14,50 @@ import {
   timeToMinutes, minutesToTime,
 } from '../validation/time-blocks.js';
 
-// Working hours constants for auto-scheduling
-const WORK_START_HOUR = 9;  // 9:00 AM
-const WORK_END_HOUR = 18;   // 6:00 PM
+// Default working hours for auto-scheduling (used when user has no preference)
+const DEFAULT_WORK_START_HOUR = 9;  // 9:00 AM
+const DEFAULT_WORK_END_HOUR = 18;   // 6:00 PM
 
 /**
- * Find the next available time slot within working hours
+ * Find the next available time slot, preferring working hours.
+ * If no slot is available within working hours, schedules after the last block
+ * or after work end (whichever is later). Never returns null.
  * @param existingBlocks - Existing time blocks for the date, sorted by startTime
  * @param durationMins - Duration needed for the new block
- * @param date - The date to schedule on (YYYY-MM-DD format)
- * @returns The available slot or null if no slot available
+ * @param _date - The date to schedule on (YYYY-MM-DD format)
+ * @param earliestStartMinutes - Optional earliest start time in minutes from midnight
+ * @param workStartHour - Work day start hour (0-23)
+ * @param workEndHour - Work day end hour (0-23)
+ * @returns The available slot (always returns a valid slot)
  */
 function findNextAvailableSlot(
   existingBlocks: Array<{ startTime: string; endTime: string }>,
   durationMins: number,
   _date: string,
-  earliestStartMinutes?: number
-): { startTime: string; endTime: string } | null {
-  const workStartMinutes = WORK_START_HOUR * 60; // 540 (9:00 AM)
-  const workEndMinutes = WORK_END_HOUR * 60;     // 1080 (6:00 PM)
+  earliestStartMinutes?: number,
+  workStartHour: number = DEFAULT_WORK_START_HOUR,
+  workEndHour: number = DEFAULT_WORK_END_HOUR,
+): { startTime: string; endTime: string } {
+  const workStartMinutes = workStartHour * 60;
+  const workEndMinutes = workEndHour * 60;
 
   // Use the later of work start or the earliest requested start time
   // Round up to next 15-minute interval for clean scheduling
   let effectiveStart = workStartMinutes;
   if (earliestStartMinutes !== undefined) {
-    // Round up to next 15-minute mark
     const roundedMinutes = Math.ceil(earliestStartMinutes / 15) * 15;
     effectiveStart = Math.max(workStartMinutes, roundedMinutes);
   }
 
   // If no existing blocks, start at effective start time
   if (existingBlocks.length === 0) {
-    const endMinutes = effectiveStart + durationMins;
-    if (endMinutes <= workEndMinutes) {
-      return {
-        startTime: minutesToTime(effectiveStart),
-        endTime: minutesToTime(endMinutes),
-      };
-    }
-    return null; // Duration exceeds working hours
+    return {
+      startTime: minutesToTime(effectiveStart),
+      endTime: minutesToTime(effectiveStart + durationMins),
+    };
   }
 
-  // Find the first available gap starting from effectiveStart
+  // Try to find a gap within working hours first
   let currentStart = effectiveStart;
 
   for (const block of existingBlocks) {
@@ -83,7 +85,7 @@ function findNextAvailableSlot(
     currentStart = Math.max(currentStart, blockEndMinutes);
   }
 
-  // Check if there's space after the last block
+  // Check if there's space after the last block within working hours
   if (currentStart < workEndMinutes) {
     const endMinutes = currentStart + durationMins;
     if (endMinutes <= workEndMinutes) {
@@ -94,7 +96,17 @@ function findNextAvailableSlot(
     }
   }
 
-  return null; // No available slot
+  // No slot within working hours - schedule after the last block or after work end
+  // (whichever is later), so the task still gets scheduled
+  const lastBlockEnd = existingBlocks.length > 0
+    ? Math.max(...existingBlocks.map(b => timeToMinutes(b.endTime)))
+    : workEndMinutes;
+  const overflowStart = Math.max(currentStart, lastBlockEnd);
+
+  return {
+    startTime: minutesToTime(overflowStart),
+    endTime: minutesToTime(overflowStart + durationMins),
+  };
 }
 import { publishEvent } from '../lib/websocket/index.js';
 import { calculateCascadeShifts } from '../services/time-block-cascade.js';
@@ -245,21 +257,16 @@ timeBlocksRouter.post('/auto-schedule', requireScopes('time-blocks:write'), zVal
     .where(and(eq(timeBlocks.userId, userId), eq(timeBlocks.date, scheduleDate)))
     .orderBy(asc(timeBlocks.startTime));
 
+  // Fetch user preferences for working hours
+  const [user] = await db.select({ preferences: users.preferences }).from(users).where(eq(users.id, userId)).limit(1);
+  const workStartHour = user?.preferences?.workStartHour ?? DEFAULT_WORK_START_HOUR;
+  const workEndHour = user?.preferences?.workEndHour ?? DEFAULT_WORK_END_HOUR;
+
   // Convert currentTime (HH:mm) to minutes if provided
   const earliestStartMinutes = currentTime ? timeToMinutes(currentTime) : undefined;
 
-  // Find the next available slot
-  const slot = findNextAvailableSlot(existingBlocks, durationMins, scheduleDate, earliestStartMinutes);
-  if (!slot) {
-    return c.json({
-      success: false,
-      error: {
-        code: 'NO_AVAILABLE_SLOT',
-        message: `No available time slot found for ${durationMins} minutes on ${scheduleDate}. Working hours are ${WORK_START_HOUR}:00 to ${WORK_END_HOUR}:00.`,
-        statusCode: 409,
-      },
-    }, 409);
-  }
+  // Find the next available slot (never fails - schedules beyond working hours if needed)
+  const slot = findNextAvailableSlot(existingBlocks, durationMins, scheduleDate, earliestStartMinutes, workStartHour, workEndHour);
 
   // Get next position for this date
   const [maxPos] = await db

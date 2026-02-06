@@ -8,6 +8,8 @@ export interface UserPreferences {
   themeMode: "light" | "dark" | "system";
   colorTheme: string;
   fontFamily: string;
+  workStartHour?: number;
+  workEndHour?: number;
 }
 
 export const users = pgTable('users', {

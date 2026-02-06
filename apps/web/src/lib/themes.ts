@@ -114,12 +114,16 @@ export interface UserPreferences {
   themeMode: ThemeMode;
   colorTheme: string;
   fontFamily: FontFamily;
+  workStartHour?: number;
+  workEndHour?: number;
 }
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
   themeMode: "system",
   colorTheme: "default",
   fontFamily: "geist",
+  workStartHour: 9,
+  workEndHour: 18,
 };
 
 // CSS variable generation for a theme

@@ -29,6 +29,8 @@ export const userPreferencesSchema = z.object({
   themeMode: z.enum(["light", "dark", "system"]),
   colorTheme: z.string().min(1).max(50),
   fontFamily: z.string().min(1).max(50),
+  workStartHour: z.number().int().min(0).max(23).optional(),
+  workEndHour: z.number().int().min(0).max(23).optional(),
 });
 
 /**

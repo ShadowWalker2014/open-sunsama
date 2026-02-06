@@ -16,6 +16,12 @@ export interface UserPreferences {
 
   /** Font family identifier (e.g., "geist", "system", "inter") */
   fontFamily: string;
+
+  /** Work day start hour (0-23), defaults to 9 */
+  workStartHour?: number;
+
+  /** Work day end hour (0-23), defaults to 18 */
+  workEndHour?: number;
 }
 
 /**

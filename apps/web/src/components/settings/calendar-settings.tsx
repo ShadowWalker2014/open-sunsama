@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Loader2, Plus } from "lucide-react";
+import { Clock, Loader2, Plus } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -7,7 +7,15 @@ import {
   CardHeader,
   CardTitle,
   Button,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Label,
 } from "@/components/ui";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
 import {
   useCalendarAccounts,
   useCalendars,
@@ -21,6 +29,106 @@ import { ICloudConnectDialog } from "./icloud-connect-dialog";
 import { GoogleIcon, OutlookIcon, ICloudIcon } from "./calendar-provider-icons";
 import { AccountCard } from "./calendar-account-card";
 import { RemoveAccountDialog } from "./remove-account-dialog";
+
+function formatHour(hour: number): string {
+  if (hour === 0) return "12:00 AM";
+  if (hour === 12) return "12:00 PM";
+  if (hour < 12) return `${hour}:00 AM`;
+  return `${hour - 12}:00 PM`;
+}
+
+function WorkingHoursCard() {
+  const { user, updateUser } = useAuth();
+  const [isSaving, setIsSaving] = React.useState(false);
+
+  const workStartHour = user?.preferences?.workStartHour ?? 9;
+  const workEndHour = user?.preferences?.workEndHour ?? 18;
+
+  const handleStartChange = async (value: string) => {
+    const hour = parseInt(value, 10);
+    if (hour >= workEndHour) {
+      toast({ variant: "destructive", title: "Start time must be before end time" });
+      return;
+    }
+    setIsSaving(true);
+    await updateUser({
+      preferences: {
+        ...(user?.preferences ?? { themeMode: "system" as const, colorTheme: "default", fontFamily: "geist" }),
+        workStartHour: hour,
+        workEndHour,
+      },
+    });
+    setIsSaving(false);
+    toast({ title: "Working hours updated" });
+  };
+
+  const handleEndChange = async (value: string) => {
+    const hour = parseInt(value, 10);
+    if (hour <= workStartHour) {
+      toast({ variant: "destructive", title: "End time must be after start time" });
+      return;
+    }
+    setIsSaving(true);
+    await updateUser({
+      preferences: {
+        ...(user?.preferences ?? { themeMode: "system" as const, colorTheme: "default", fontFamily: "geist" }),
+        workStartHour,
+        workEndHour: hour,
+      },
+    });
+    setIsSaving(false);
+    toast({ title: "Working hours updated" });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Clock className="h-5 w-5" />
+          Working Hours
+        </CardTitle>
+        <CardDescription>
+          Set your working hours for auto-scheduling. Tasks will be scheduled within these hours when possible.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-end gap-4">
+          <div className="space-y-2">
+            <Label>Start time</Label>
+            <Select value={String(workStartHour)} onValueChange={handleStartChange} disabled={isSaving}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 24 }, (_, i) => (
+                  <SelectItem key={i} value={String(i)}>
+                    {formatHour(i)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <span className="pb-2 text-muted-foreground">to</span>
+          <div className="space-y-2">
+            <Label>End time</Label>
+            <Select value={String(workEndHour)} onValueChange={handleEndChange} disabled={isSaving}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 24 }, (_, i) => (
+                  <SelectItem key={i} value={String(i)}>
+                    {formatHour(i)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 /**
  * Calendar Settings Tab
@@ -98,6 +206,7 @@ export function CalendarSettings() {
 
   return (
     <>
+      <WorkingHoursCard />
       <Card>
         <CardHeader>
           <CardTitle>Calendar Integration</CardTitle>
