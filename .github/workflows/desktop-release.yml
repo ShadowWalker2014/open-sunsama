@@ -51,7 +51,7 @@ jobs:
             file_pattern: '*-setup.exe'
             bundle_path: apps/desktop/src-tauri/target/release/bundle/nsis
             updater_bundle_path: apps/desktop/src-tauri/target/release/bundle/nsis
-            updater_file_pattern: '*.nsis.zip'
+            updater_file_pattern: '*-setup.exe'
 
     runs-on: ${{ matrix.platform }}
     outputs:
@@ -203,7 +203,7 @@ jobs:
           ls -la
 
           # Find updater artifact
-          UPDATER_FILE=$(ls ${{ matrix.updater_file_pattern }} 2>/dev/null | head -1)
+          UPDATER_FILE=$(ls ${{ matrix.updater_file_pattern }} 2>/dev/null | head -1 || true)
           if [ -z "$UPDATER_FILE" ]; then
             echo "No updater file found matching pattern ${{ matrix.updater_file_pattern }}"
             echo "updater_file=" >> $GITHUB_OUTPUT
