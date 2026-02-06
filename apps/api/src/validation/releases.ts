@@ -36,8 +36,8 @@ export const createReleaseSchema = z.object({
   fileSize: z.number().int().positive('File size must be a positive integer'),
   fileName: z.string().min(1, 'File name is required'),
   sha256: z.string().length(64, 'SHA256 must be 64 characters').optional(),
-  signature: z.string().optional(),
-  updaterUrl: z.string().url('Updater URL must be a valid URL').optional(),
+  signature: z.preprocess((v) => v === '' ? undefined : v, z.string().optional()),
+  updaterUrl: z.preprocess((v) => v === '' ? undefined : v, z.string().url('Updater URL must be a valid URL').optional()),
   releaseNotes: z.string().optional(),
 });
 
