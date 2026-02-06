@@ -346,6 +346,22 @@ PG Boss has built-in recovery mechanisms:
 
 ---
 
+## Desktop Auto-Update (Tauri v2 Updater)
+
+**Ed25519 signing key:** `~/.tauri/opensunsama.key` (password: `opensunsama-updater-2026`)
+**GitHub Secrets:** `TAURI_SIGNING_PRIVATE_KEY`, `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`
+**Update endpoint:** `GET /releases/update/:target/:current_version` (returns 204 or Tauri JSON)
+
+### Critical CI/CD Notes
+
+- **VITE_API_URL MUST be set on Tauri build steps** — Tauri's `beforeBuildCommand` rebuilds the web app. If `VITE_API_URL` is missing, the desktop app defaults to `localhost:3001` instead of `api.opensunsama.com`. Always pass `VITE_API_URL` and `VITE_WS_URL` as env vars on the Tauri build step itself.
+- **Tauri HTTP plugin required** — WKWebView on macOS blocks cross-origin fetch from `tauri://` custom protocol. All API requests route through `@tauri-apps/plugin-http` (Rust-based) to bypass this. See `apps/web/src/lib/api.ts` `desktopFetch` wrapper.
+- **Signing key password cannot be empty** — GitHub Actions doesn't support empty string secrets. Use a real password.
+- **`strip = false` in Cargo.toml** — Required for `__TAURI_BUNDLE_TYPE` variable used by updater plugin.
+- **Duplicate release versions** — The API rejects duplicate version+platform combos (400). Clean up DB before re-running failed builds.
+
+---
+
 ## License
 
 Non-Commercial License. Commercial use requires enterprise license.
