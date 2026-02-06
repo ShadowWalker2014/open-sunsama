@@ -1,15 +1,23 @@
 import * as React from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getApi } from "@/lib/api";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  wsClient,
+  type TimerStartedEvent,
+  type TimerStoppedEvent,
+} from "@/lib/websocket";
+import { taskKeys } from "@/hooks/useTasks";
 
 interface TimerState {
   isRunning: boolean;
-  startedAt: number | null; // timestamp
+  startedAt: number | null; // timestamp (ms)
   accumulatedSeconds: number;
 }
 
 interface UseTimerOptions {
   taskId: string;
-  initialSeconds?: number;
-  onStop?: (totalSeconds: number) => void;
+  initialSeconds?: number; // from (actualMins ?? 0) * 60
 }
 
 interface UseTimerReturn {
@@ -20,6 +28,13 @@ interface UseTimerReturn {
   stop: () => void;
   reset: () => void;
 }
+
+/**
+ * Query key factory for timer queries
+ */
+export const timerKeys = {
+  active: () => ["tasks", "timer", "active"] as const,
+};
 
 const STORAGE_KEY_PREFIX = "focus-timer-";
 
@@ -56,55 +71,122 @@ function clearTimerState(taskId: string): void {
 }
 
 /**
- * Check if a timer is running for a task and return total seconds if so
- * Used to stop timer when task is completed from outside the focus view
- */
-export function getRunningTimerSeconds(taskId: string): number | null {
-  const state = loadTimerState(taskId);
-  if (!state || !state.isRunning) {
-    return null;
-  }
-  
-  const elapsed = state.startedAt
-    ? Math.floor((Date.now() - state.startedAt) / 1000)
-    : 0;
-  return state.accumulatedSeconds + elapsed;
-}
-
-/**
- * Stop and clear a running timer for a task
- * Returns total seconds if timer was running, null otherwise
- */
-export function stopAndClearTimer(taskId: string): number | null {
-  const totalSeconds = getRunningTimerSeconds(taskId);
-  if (totalSeconds !== null) {
-    clearTimerState(taskId);
-  }
-  return totalSeconds;
-}
-
-/**
- * Custom hook for managing a focus timer with localStorage persistence
+ * Server-authoritative focus timer hook with WebSocket sync.
+ *
+ * Server is source of truth for timer state. Client provides optimistic updates
+ * for instant UI response. WebSocket events keep multiple clients in sync.
+ *
+ * When not running: displays `initialSeconds` (from task's actualMins).
+ * When running: displays accumulated + elapsed (client-side tick from server's startedAt).
  */
 export function useTimer({
   taskId,
   initialSeconds = 0,
-  onStop,
 }: UseTimerOptions): UseTimerReturn {
+  const queryClient = useQueryClient();
+  const { isAuthenticated } = useAuth();
+
+  // Local timer state — optimistic, reconciled with server
   const [state, setState] = React.useState<TimerState>(() => {
-    // Try to restore from localStorage
+    // Try localStorage as initial hydration (offline fallback)
     const stored = loadTimerState(taskId);
-    if (stored) {
-      return stored;
-    }
+    if (stored) return stored;
     return {
       isRunning: false,
       startedAt: null,
-      accumulatedSeconds: initialSeconds,
+      accumulatedSeconds: 0,
     };
   });
 
   const [currentElapsed, setCurrentElapsed] = React.useState(0);
+  const stateRef = React.useRef(state);
+  stateRef.current = state;
+
+  // Track if we've hydrated from server to avoid overwriting with stale localStorage
+  const hydratedRef = React.useRef(false);
+
+  // Fetch active timer from server on mount
+  const { data: activeTimerTask } = useQuery({
+    queryKey: timerKeys.active(),
+    queryFn: async () => {
+      const api = getApi();
+      return await api.tasks.timerActive();
+    },
+    enabled: isAuthenticated,
+    staleTime: 30_000,
+  });
+
+  // Hydrate state from server response (server wins over localStorage)
+  React.useEffect(() => {
+    if (activeTimerTask === undefined) return; // Still loading
+
+    if (
+      activeTimerTask &&
+      activeTimerTask.id === taskId &&
+      activeTimerTask.timerStartedAt
+    ) {
+      // Server says this task has an active timer
+      const serverStartedAt = new Date(
+        activeTimerTask.timerStartedAt
+      ).getTime();
+      setState({
+        isRunning: true,
+        startedAt: serverStartedAt,
+        accumulatedSeconds: activeTimerTask.timerAccumulatedSeconds,
+      });
+      hydratedRef.current = true;
+    } else if (!hydratedRef.current && stateRef.current.isRunning) {
+      // Server says no active timer for this task, but local state thinks it's running.
+      // Reconcile: server wins (timer was stopped from another client or crashed).
+      setState((prev) => ({
+        ...prev,
+        isRunning: false,
+        startedAt: null,
+      }));
+      hydratedRef.current = true;
+    } else {
+      hydratedRef.current = true;
+    }
+  }, [activeTimerTask, taskId]);
+
+  // Subscribe to WebSocket timer events for cross-client sync
+  React.useEffect(() => {
+    const unsubscribe = wsClient.subscribe((event) => {
+      if (event.type === "timer:started") {
+        const payload = event.payload as TimerStartedEvent;
+        if (payload.taskId === taskId) {
+          // This task's timer was started (possibly from another client)
+          setState({
+            isRunning: true,
+            startedAt: new Date(payload.startedAt).getTime(),
+            accumulatedSeconds: payload.accumulatedSeconds,
+          });
+        } else if (stateRef.current.isRunning) {
+          // A different task's timer started — this one was auto-stopped by the server
+          setState({
+            isRunning: false,
+            startedAt: null,
+            accumulatedSeconds: 0,
+          });
+        }
+      } else if (event.type === "timer:stopped") {
+        const payload = event.payload as TimerStoppedEvent;
+        if (payload.taskId === taskId) {
+          // This task's timer was stopped (possibly from another client)
+          setState({
+            isRunning: false,
+            startedAt: null,
+            accumulatedSeconds: 0,
+          });
+          // Invalidate task detail to refresh actualMins in the UI
+          queryClient.invalidateQueries({
+            queryKey: taskKeys.detail(taskId),
+          });
+        }
+      }
+    });
+    return unsubscribe;
+  }, [taskId, queryClient]);
 
   // Calculate elapsed seconds since timer started
   const calculateElapsed = React.useCallback(() => {
@@ -120,61 +202,90 @@ export function useTimer({
       setCurrentElapsed(0);
       return;
     }
-
-    // Calculate initial elapsed immediately
     setCurrentElapsed(calculateElapsed());
-
     const interval = setInterval(() => {
       setCurrentElapsed(calculateElapsed());
     }, 1000);
-
     return () => clearInterval(interval);
   }, [state.isRunning, calculateElapsed]);
 
-  // Persist state to localStorage when it changes
+  // Persist state to localStorage (offline fallback)
   React.useEffect(() => {
     saveTimerState(taskId, state);
   }, [taskId, state]);
 
-  // Sync with initialSeconds when it changes (e.g., from server)
-  React.useEffect(() => {
-    if (!state.isRunning && initialSeconds > 0 && state.accumulatedSeconds === 0) {
-      setState((prev) => ({
-        ...prev,
-        accumulatedSeconds: initialSeconds,
-      }));
-    }
-  }, [initialSeconds, state.isRunning, state.accumulatedSeconds]);
-
+  // Start timer — optimistic + server API call
   const start = React.useCallback(() => {
+    // Optimistic update (instant UI response)
+    const optimisticStartedAt = Date.now();
     setState((prev) => ({
       ...prev,
       isRunning: true,
-      startedAt: Date.now(),
+      startedAt: optimisticStartedAt,
+      accumulatedSeconds: initialSeconds, // Continue from existing actualMins
     }));
-  }, []);
 
+    // Fire API call in background
+    const api = getApi();
+    api.tasks
+      .timerStart(taskId)
+      .then((result) => {
+        // Reconcile with server's authoritative timestamp
+        if (result.task.timerStartedAt) {
+          setState((prev) => ({
+            ...prev,
+            startedAt: new Date(result.task.timerStartedAt!).getTime(),
+            accumulatedSeconds: result.task.timerAccumulatedSeconds,
+          }));
+        }
+        // Invalidate queries so other views update
+        queryClient.invalidateQueries({ queryKey: timerKeys.active() });
+        if (result.stoppedTask) {
+          queryClient.invalidateQueries({
+            queryKey: taskKeys.detail(result.stoppedTask.id),
+          });
+          queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+        }
+      })
+      .catch(() => {
+        // Rollback on failure
+        setState((prev) => ({
+          ...prev,
+          isRunning: false,
+          startedAt: null,
+        }));
+      });
+  }, [taskId, initialSeconds, queryClient]);
+
+  // Stop timer — optimistic + server API call
   const stop = React.useCallback(() => {
-    setState((prev) => {
-      const elapsed = prev.startedAt
-        ? Math.floor((Date.now() - prev.startedAt) / 1000)
-        : 0;
-      const newAccumulated = prev.accumulatedSeconds + elapsed;
-
-      // Call onStop callback with total seconds
-      if (onStop) {
-        onStop(newAccumulated);
-      }
-
-      return {
-        isRunning: false,
-        startedAt: null,
-        accumulatedSeconds: newAccumulated,
-      };
+    // Optimistic update (instant UI response)
+    setState({
+      isRunning: false,
+      startedAt: null,
+      accumulatedSeconds: 0,
     });
     setCurrentElapsed(0);
-  }, [onStop]);
 
+    // Fire API call in background — server computes and saves actualMins
+    const api = getApi();
+    api.tasks
+      .timerStop(taskId)
+      .then(() => {
+        // Invalidate queries so actualMins refreshes everywhere
+        queryClient.invalidateQueries({ queryKey: timerKeys.active() });
+        queryClient.invalidateQueries({
+          queryKey: taskKeys.detail(taskId),
+        });
+        queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      })
+      .catch(() => {
+        // On failure, refetch to reconcile
+        queryClient.invalidateQueries({ queryKey: timerKeys.active() });
+      });
+  }, [taskId, queryClient]);
+
+  // Reset timer state (for manual clear)
   const reset = React.useCallback(() => {
     setState({
       isRunning: false,
@@ -185,7 +296,12 @@ export function useTimer({
     clearTimerState(taskId);
   }, [taskId]);
 
-  const totalSeconds = state.accumulatedSeconds + currentElapsed;
+  // Total seconds:
+  // - When running: accumulated + current elapsed (real-time tick)
+  // - When not running: use initialSeconds (from task's actualMins) as the display value
+  const totalSeconds = state.isRunning
+    ? state.accumulatedSeconds + currentElapsed
+    : initialSeconds;
 
   return {
     isRunning: state.isRunning,

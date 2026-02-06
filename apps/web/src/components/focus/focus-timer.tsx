@@ -50,19 +50,10 @@ export function FocusTimer({
 }: FocusTimerProps) {
   const initialSeconds = (actualMins ?? 0) * 60;
 
-  const handleStop = React.useCallback(
-    (totalSeconds: number) => {
-      // Always save the actual time, even if 0 minutes (keeps seconds in localStorage)
-      const totalMins = Math.floor(totalSeconds / 60);
-      onActualMinsChange(totalMins);
-    },
-    [onActualMinsChange]
-  );
-
+  // Server handles saving actualMins on stop — no onStop callback needed
   const { isRunning, totalSeconds, start, stop, reset } = useTimer({
     taskId,
     initialSeconds,
-    onStop: handleStop,
   });
 
   // Refs for time dropdowns
@@ -92,9 +83,10 @@ export function FocusTimer({
 
   const plannedSeconds = (plannedMins ?? 0) * 60;
 
-  // Display seconds: use timer's accumulated time, fall back to server value
-  const displaySeconds =
-    totalSeconds > 0 ? totalSeconds : (actualMins ?? 0) * 60;
+  // totalSeconds already handles the display:
+  // - When running: accumulated + elapsed (real-time tick)
+  // - When not running: initialSeconds (from actualMins)
+  const displaySeconds = totalSeconds;
   const displayMins = Math.floor(displaySeconds / 60);
 
   const isOverPlanned = displaySeconds > plannedSeconds && plannedSeconds > 0;

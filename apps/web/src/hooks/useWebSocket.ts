@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { wsClient, emitPreferencesUpdate, type WebSocketEvent, type UserEvent } from "@/lib/websocket";
 import { useAuth } from "@/hooks/useAuth";
 import { taskKeys } from "@/hooks/useTasks";
+import { timerKeys } from "@/hooks/useTimer";
 import { timeBlockKeys } from "@/hooks/useTimeBlocks";
 import { subtaskKeys } from "@/hooks/useSubtasks";
 import { calendarKeys } from "@/hooks/useCalendars";
@@ -112,8 +113,21 @@ function handleWebSocketEvent(
       break;
     }
 
+    // Timer events — invalidate active timer query and specific task detail
+    case "timer:started":
+    case "timer:stopped":
+      queryClient.invalidateQueries({ queryKey: timerKeys.active() });
+      if (event.payload && typeof event.payload === "object" && "taskId" in event.payload) {
+        const { taskId } = event.payload as { taskId: string };
+        queryClient.invalidateQueries({ queryKey: taskKeys.detail(taskId) });
+      }
+      // Also refresh task lists so actualMins badges update everywhere
+      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      break;
+
     case "connected":
-      console.log("[WS] Connection confirmed");
+      // On reconnect, refetch active timer to reconcile state
+      queryClient.invalidateQueries({ queryKey: timerKeys.active() });
       break;
 
     // Calendar events

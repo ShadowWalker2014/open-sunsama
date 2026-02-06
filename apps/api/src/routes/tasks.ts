@@ -234,10 +234,12 @@ tasksRouter.post(
     }
 
     // Start timer on target task
+    // Initialize accumulatedSeconds from existing actualMins so timer continues from previous total
     const [updatedTask] = await db
       .update(tasks)
       .set({
         timerStartedAt: new Date(),
+        timerAccumulatedSeconds: (task.actualMins ?? 0) * 60,
         updatedAt: new Date(),
       })
       .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))

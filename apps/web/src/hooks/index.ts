@@ -127,7 +127,7 @@ export {
 } from "./useKeyboardShortcuts.tsx";
 export { useTimezoneSync, getDeviceTimezone } from "./useTimezoneSync";
 export { useWebSocket } from "./useWebSocket";
-export { useTimer, formatTime, formatMins } from "./useTimer";
+export { useTimer, formatTime, formatMins, timerKeys } from "./useTimer";
 export { useIsMobile } from "./useIsMobile";
 export {
   useCalendarAccounts,

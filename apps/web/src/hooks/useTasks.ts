@@ -10,7 +10,6 @@ import { getApi } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { timeBlockKeys } from "./useTimeBlocks";
-import { stopAndClearTimer } from "./useTimer";
 
 /**
  * Query key factory for tasks
@@ -220,12 +219,7 @@ export function useCompleteTask() {
       const api = getApi();
       
       if (completed) {
-        // Stop any running timer and save actualMins before completing
-        const totalSeconds = stopAndClearTimer(id);
-        if (totalSeconds !== null) {
-          const actualMins = Math.ceil(totalSeconds / 60);
-          await api.tasks.update(id, { actualMins });
-        }
+        // Server's complete endpoint auto-stops any running timer and saves actualMins
         return await api.tasks.complete(id);
       } else {
         return await api.tasks.uncomplete(id);
