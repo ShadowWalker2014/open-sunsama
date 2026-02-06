@@ -121,6 +121,29 @@ export interface TasksApi {
    * @param ids Array of task IDs to delete
    */
   batchDelete(ids: string[], options?: RequestOptions): Promise<void>;
+
+  /**
+   * Get the currently active timer for the authenticated user
+   * @returns The task with an active timer, or null if no timer is running
+   */
+  timerActive(options?: RequestOptions): Promise<Task | null>;
+
+  /**
+   * Start the focus timer on a task (auto-stops any other running timer)
+   * @param id Task ID
+   * @returns The started task and any task that was auto-stopped
+   */
+  timerStart(
+    id: string,
+    options?: RequestOptions
+  ): Promise<{ task: Task; stoppedTask: Task | null }>;
+
+  /**
+   * Stop the focus timer on a task
+   * @param id Task ID
+   * @returns The updated task with saved actualMins
+   */
+  timerStop(id: string, options?: RequestOptions): Promise<Task>;
 }
 
 /**
@@ -269,6 +292,33 @@ export function createTasksApi(client: OpenSunsamaClient): TasksApi {
         ...options,
         searchParams: { ...options?.searchParams, ids: ids.join(",") },
       });
+    },
+
+    async timerActive(options?: RequestOptions): Promise<Task | null> {
+      const response = await client.get<ApiResponseWrapper<Task | null>>(
+        "tasks/timer/active",
+        options
+      );
+      return response.data;
+    },
+
+    async timerStart(
+      id: string,
+      options?: RequestOptions
+    ): Promise<{ task: Task; stoppedTask: Task | null }> {
+      const response = await client.post<
+        ApiResponseWrapper<Task> & { stoppedTask: Task | null }
+      >(`tasks/${id}/timer/start`, undefined, options);
+      return { task: response.data, stoppedTask: response.stoppedTask ?? null };
+    },
+
+    async timerStop(id: string, options?: RequestOptions): Promise<Task> {
+      const response = await client.post<ApiResponseWrapper<Task>>(
+        `tasks/${id}/timer/stop`,
+        undefined,
+        options
+      );
+      return response.data;
     },
   };
 }

@@ -11,6 +11,8 @@ export type WebSocketEventType =
   | "task:deleted"
   | "task:completed"
   | "task:reordered"
+  | "timer:started"
+  | "timer:stopped"
   | "timeblock:created"
   | "timeblock:updated"
   | "timeblock:deleted"
@@ -48,6 +50,17 @@ export interface UserEvent {
     colorTheme?: string;
     fontFamily?: string;
   } | null;
+}
+
+export interface TimerStartedEvent {
+  taskId: string;
+  startedAt: string;
+  accumulatedSeconds: number;
+}
+
+export interface TimerStoppedEvent {
+  taskId: string;
+  actualMins: number;
 }
 
 export interface ConnectedEvent {

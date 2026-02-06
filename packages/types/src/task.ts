@@ -82,6 +82,18 @@ export interface Task {
    */
   seriesInstanceNumber: number | null;
 
+  /**
+   * Timestamp when the focus timer was started.
+   * null indicates the timer is not currently running.
+   */
+  timerStartedAt: Date | null;
+
+  /**
+   * Accumulated seconds from previous start/stop cycles in the current session.
+   * Resets to 0 when the timer is stopped and actualMins is saved.
+   */
+  timerAccumulatedSeconds: number;
+
   /** Timestamp when the task was created */
   createdAt: Date;
 
