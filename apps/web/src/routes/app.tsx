@@ -18,6 +18,7 @@ import { GlobalShortcutsHandler } from "@/components/global-shortcuts-handler";
 import { CommandPalette } from "@/components/command-palette";
 import { AddTaskModal } from "@/components/kanban/add-task-modal";
 import { TaskModal } from "@/components/kanban/task-modal";
+import { AppUpdateBanner } from "@/components/app-update-banner";
 
 /**
  * Main app layout - requires authentication
@@ -94,6 +95,7 @@ function AppLayoutInner() {
   return (
     <>
       <div className="flex min-h-screen flex-col">
+        <AppUpdateBanner />
         <Header />
         <main className="flex-1 pb-16 lg:pb-0">
           <Outlet />

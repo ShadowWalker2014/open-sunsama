@@ -26,24 +26,32 @@ jobs:
             artifact_name: macos-arm64
             file_pattern: '*.dmg'
             bundle_path: apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/dmg
+            updater_bundle_path: apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos
+            updater_file_pattern: '*.app.tar.gz'
           - platform: macos-latest
             args: --target x86_64-apple-darwin
             name: macOS-x64
             artifact_name: macos-x64
             file_pattern: '*.dmg'
             bundle_path: apps/desktop/src-tauri/target/x86_64-apple-darwin/release/bundle/dmg
+            updater_bundle_path: apps/desktop/src-tauri/target/x86_64-apple-darwin/release/bundle/macos
+            updater_file_pattern: '*.app.tar.gz'
           - platform: ubuntu-22.04
             args: ''
             name: Linux
             artifact_name: linux
             file_pattern: '*.AppImage'
             bundle_path: apps/desktop/src-tauri/target/release/bundle/appimage
+            updater_bundle_path: apps/desktop/src-tauri/target/release/bundle/appimage
+            updater_file_pattern: '*.AppImage'
           - platform: windows-latest
             args: ''
             name: Windows
             artifact_name: windows
             file_pattern: '*-setup.exe'
             bundle_path: apps/desktop/src-tauri/target/release/bundle/nsis
+            updater_bundle_path: apps/desktop/src-tauri/target/release/bundle/nsis
+            updater_file_pattern: '*.nsis.zip'
 
     runs-on: ${{ matrix.platform }}
     outputs:
@@ -132,6 +140,7 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
         with:
           projectPath: apps/desktop
           tauriScript: bunx tauri
@@ -143,6 +152,7 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
         with:
           projectPath: apps/desktop
           tauriScript: bunx tauri
@@ -178,6 +188,35 @@ jobs:
           fi
           echo "sha256=$SHA" >> $GITHUB_OUTPUT
 
+      - name: Find updater artifact and signature
+        id: find_updater
+        shell: bash
+        run: |
+          cd "${{ matrix.updater_bundle_path }}"
+          echo "=== Updater bundle directory contents ==="
+          ls -la
+
+          # Find updater artifact
+          UPDATER_FILE=$(ls ${{ matrix.updater_file_pattern }} 2>/dev/null | head -1)
+          if [ -z "$UPDATER_FILE" ]; then
+            echo "No updater file found matching pattern ${{ matrix.updater_file_pattern }}"
+            echo "updater_file=" >> $GITHUB_OUTPUT
+            echo "signature=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "updater_file=$UPDATER_FILE" >> $GITHUB_OUTPUT
+
+          # Read signature file content
+          SIG_FILE="${UPDATER_FILE}.sig"
+          if [ -f "$SIG_FILE" ]; then
+            SIGNATURE=$(cat "$SIG_FILE")
+            echo "signature=$SIGNATURE" >> $GITHUB_OUTPUT
+            echo "Found signature file: $SIG_FILE"
+          else
+            echo "No signature file found: $SIG_FILE"
+            echo "signature=" >> $GITHUB_OUTPUT
+          fi
+
       - name: Upload to S3
         shell: bash
         env:
@@ -185,24 +224,42 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: auto
         run: |
-          aws s3 sync "${{ matrix.bundle_path }}" \
-            "s3://${{ secrets.AWS_S3_BUCKET_NAME }}/releases/v${{ steps.version.outputs.version }}" \
-            --endpoint-url "${{ secrets.AWS_ENDPOINT_URL }}"
+          S3_DEST="s3://${{ secrets.AWS_S3_BUCKET_NAME }}/releases/v${{ steps.version.outputs.version }}"
+          S3_OPTS="--endpoint-url ${{ secrets.AWS_ENDPOINT_URL }}"
+
+          # Upload regular bundle
+          aws s3 sync "${{ matrix.bundle_path }}" "$S3_DEST" $S3_OPTS
+
+          # Upload updater bundle (if different directory)
+          if [ "${{ matrix.updater_bundle_path }}" != "${{ matrix.bundle_path }}" ]; then
+            aws s3 sync "${{ matrix.updater_bundle_path }}" "$S3_DEST" $S3_OPTS
+          fi
 
       - name: Register release with API
         shell: bash
         run: |
+          # Build updater URL if updater file exists
+          UPDATER_URL=""
+          if [ -n "${{ steps.find_updater.outputs.updater_file }}" ]; then
+            UPDATER_URL="${{ env.API_URL }}/uploads/releases/v${{ steps.version.outputs.version }}/${{ steps.find_updater.outputs.updater_file }}"
+          fi
+
+          # Escape signature for JSON (replace newlines)
+          SIGNATURE=$(echo '${{ steps.find_updater.outputs.signature }}' | tr -d '\n')
+
           curl --fail -X POST "${{ env.API_URL }}/releases" \
             -H "Content-Type: application/json" \
             -H "X-Release-Secret: ${{ secrets.RELEASE_SECRET }}" \
-            -d '{
-              "version": "${{ steps.version.outputs.version }}",
-              "platform": "${{ matrix.artifact_name }}",
-              "downloadUrl": "${{ env.API_URL }}/uploads/releases/v${{ steps.version.outputs.version }}/${{ steps.find_file.outputs.file }}",
-              "fileSize": ${{ steps.find_file.outputs.size }},
-              "fileName": "${{ steps.find_file.outputs.file }}",
-              "sha256": "${{ steps.find_file.outputs.sha256 }}"
-            }'
+            -d "{
+              \"version\": \"${{ steps.version.outputs.version }}\",
+              \"platform\": \"${{ matrix.artifact_name }}\",
+              \"downloadUrl\": \"${{ env.API_URL }}/uploads/releases/v${{ steps.version.outputs.version }}/${{ steps.find_file.outputs.file }}\",
+              \"fileSize\": ${{ steps.find_file.outputs.size }},
+              \"fileName\": \"${{ steps.find_file.outputs.file }}\",
+              \"sha256\": \"${{ steps.find_file.outputs.sha256 }}\",
+              \"signature\": \"${SIGNATURE}\",
+              \"updaterUrl\": \"${UPDATER_URL}\"
+            }"
 
       - name: Upload artifacts (backup)
         uses: actions/upload-artifact@v4

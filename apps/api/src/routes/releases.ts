@@ -5,6 +5,7 @@
  * Public routes (no auth):
  * - GET /releases - List all releases
  * - GET /releases/latest - Get latest version for each platform
+ * - GET /releases/update/:target/:current_version - Tauri updater endpoint
  * - GET /releases/:platform - Get latest for specific platform
  * 
  * Protected routes:
@@ -20,6 +21,8 @@ import {
   createReleaseSchema,
   releaseFilterSchema,
   platformParamSchema,
+  tauriUpdateParamSchema,
+  TAURI_TARGET_MAP,
 } from '../validation/releases.js';
 
 const releasesRouter = new Hono();
@@ -113,6 +116,62 @@ releasesRouter.get('/latest', async (c) => {
   });
 });
 
+/** 
+ * GET /releases/update/:target/:current_version - Tauri updater endpoint
+ * Returns 204 if no update available, or Tauri-compatible JSON if update exists
+ */
+releasesRouter.get('/update/:target/:current_version', zValidator('param', tauriUpdateParamSchema), async (c) => {
+  const { target, current_version } = c.req.valid('param');
+  const platform = TAURI_TARGET_MAP[target];
+
+  if (!platform) {
+    return c.body(null, 204);
+  }
+
+  const db = getDb();
+
+  // Get the latest release for this platform
+  const [latestRelease] = await db
+    .select()
+    .from(releases)
+    .where(eq(releases.platform, platform))
+    .orderBy(desc(releases.createdAt))
+    .limit(1);
+
+  if (!latestRelease) {
+    return c.body(null, 204);
+  }
+
+  // Compare versions - if current version >= latest, no update needed
+  const currentParts = current_version.split('.').map(Number);
+  const latestParts = latestRelease.version.split('.').map(Number);
+
+  let isNewer = false;
+  for (let i = 0; i < 3; i++) {
+    if ((latestParts[i] || 0) > (currentParts[i] || 0)) {
+      isNewer = true;
+      break;
+    }
+    if ((latestParts[i] || 0) < (currentParts[i] || 0)) {
+      break;
+    }
+  }
+
+  if (!isNewer) {
+    return c.body(null, 204);
+  }
+
+  // Return Tauri-compatible update JSON
+  // Use updaterUrl (tar.gz/nsis.zip) for Tauri updater, fallback to downloadUrl
+  return c.json({
+    version: latestRelease.version,
+    url: latestRelease.updaterUrl || latestRelease.downloadUrl,
+    signature: latestRelease.signature || '',
+    pub_date: latestRelease.createdAt.toISOString(),
+    notes: latestRelease.releaseNotes || `Update to version ${latestRelease.version}`,
+  });
+});
+
 /** GET /releases/:platform - Get latest release for specific platform */
 releasesRouter.get('/:platform', zValidator('param', platformParamSchema), async (c) => {
   const { platform } = c.req.valid('param');
@@ -174,6 +233,8 @@ releasesRouter.post('/', zValidator('json', createReleaseSchema), async (c) => {
       fileSize: data.fileSize,
       fileName: data.fileName,
       sha256: data.sha256 ?? null,
+      signature: data.signature ?? null,
+      updaterUrl: data.updaterUrl ?? null,
       releaseNotes: data.releaseNotes ?? null,
     })
     .returning();

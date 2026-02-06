@@ -35,6 +35,8 @@
     "store:allow-get",
     "store:allow-set",
     "store:allow-save",
-    "store:allow-load"
+    "store:allow-load",
+    "updater:default",
+    "process:allow-restart"
   ]
 }

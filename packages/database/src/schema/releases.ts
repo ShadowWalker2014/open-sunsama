@@ -14,6 +14,8 @@ export const releases = pgTable('releases', {
   fileSize: integer('file_size').notNull(), // Size in bytes
   fileName: text('file_name').notNull(),
   sha256: text('sha256'), // Optional, for verification
+  signature: text('signature'), // Ed25519 signature for Tauri updater
+  updaterUrl: text('updater_url'), // URL for Tauri updater artifact (.tar.gz/.nsis.zip/.AppImage)
   releaseNotes: text('release_notes'), // Optional
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

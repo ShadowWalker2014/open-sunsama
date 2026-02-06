@@ -57,6 +57,13 @@
       "when": 1770231301738,
       "tag": "0007_melodic_exiles",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1770338914968,
+      "tag": "0008_simple_tag",
+      "breakpoints": true
     }
   ]
 }
