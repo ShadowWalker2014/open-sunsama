@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useParams, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Loader2, Check, X } from "lucide-react";
-import { format } from "date-fns";
+import { ArrowLeft, Loader2, Check, X, Calendar } from "lucide-react";
+import { format, parse } from "date-fns";
 import { useTask, useUpdateTask, useTasks } from "@/hooks/useTasks";
 import { Button } from "@/components/ui";
 import {
@@ -13,6 +13,8 @@ import {
 import type { FocusTimerRef } from "@/components/focus/focus-timer";
 import { shouldIgnoreShortcut } from "@/hooks/useKeyboardShortcuts";
 import { cn } from "@/lib/utils";
+import { InlinePrioritySelector } from "@/components/kanban/priority-selector";
+import type { TaskPriority } from "@open-sunsama/types";
 
 /**
  * Full-screen focus mode view for a single task
@@ -192,6 +194,15 @@ export default function FocusPage() {
     [task, updateTask]
   );
 
+  const handlePriorityChange = React.useCallback(
+    (newPriority: TaskPriority) => {
+      if (task) {
+        updateTask.mutate({ id: task.id, data: { priority: newPriority } });
+      }
+    },
+    [task, updateTask]
+  );
+
   const handleClose = React.useCallback(() => {
     navigate({ to: "/app" });
   }, [navigate]);
@@ -303,6 +314,20 @@ export default function FocusPage() {
             timerRef={timerRef}
             compact
           />
+        </div>
+
+        {/* Task metadata - priority and date */}
+        <div className="flex items-center gap-4 mb-8 -mt-4">
+          <InlinePrioritySelector
+            priority={task.priority}
+            onChange={handlePriorityChange}
+          />
+          {task.scheduledDate && (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Calendar className="h-3.5 w-3.5" />
+              <span>{format(parse(task.scheduledDate, "yyyy-MM-dd", new Date()), "EEE, MMM d")}</span>
+            </div>
+          )}
         </div>
 
         {/* Subtasks section */}
