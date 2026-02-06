@@ -52,6 +52,14 @@ export const tasks = pgTable(
      */
     seriesInstanceNumber: integer("series_instance_number"),
 
+    // Focus timer fields
+    /** Set to now() when timer starts; cleared on stop */
+    timerStartedAt: timestamp("timer_started_at"),
+    /** Total seconds accumulated across start/stop cycles for the current work session */
+    timerAccumulatedSeconds: integer("timer_accumulated_seconds")
+      .notNull()
+      .default(0),
+
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
@@ -67,6 +75,10 @@ export const tasks = pgTable(
     uniqueIndex("tasks_series_date_unique_idx")
       .on(table.seriesId, table.scheduledDate)
       .where(sql`${table.seriesId} IS NOT NULL`),
+    // Partial index for quickly finding the active timer per user
+    index("tasks_active_timer_idx")
+      .on(table.userId)
+      .where(sql`${table.timerStartedAt} IS NOT NULL`),
   ]
 );
 

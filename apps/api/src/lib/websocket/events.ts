@@ -25,6 +25,9 @@ export type WebSocketEventType =
   | "calendar:account-disconnected"
   | "calendar:synced"
   | "calendar:updated"
+  // Timer events
+  | "timer:started"
+  | "timer:stopped"
   // User events
   | "user:updated"
   // Connection events
@@ -73,6 +76,23 @@ export interface UserEvent {
     colorTheme?: string;
     fontFamily?: string;
   } | null; // Include actual preference values when preferences changed
+}
+
+/**
+ * Event payload for timer started
+ */
+export interface TimerStartedEvent {
+  taskId: string;
+  startedAt: string; // ISO 8601 timestamp
+  accumulatedSeconds: number; // seconds already accumulated before this start
+}
+
+/**
+ * Event payload for timer stopped
+ */
+export interface TimerStoppedEvent {
+  taskId: string;
+  actualMins: number; // final actualMins saved on the task
 }
 
 /**

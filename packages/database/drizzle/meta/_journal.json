@@ -64,6 +64,13 @@
       "when": 1770338914968,
       "tag": "0008_simple_tag",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1770419290510,
+      "tag": "0009_bitter_stephen_strange",
+      "breakpoints": true
     }
   ]
 }

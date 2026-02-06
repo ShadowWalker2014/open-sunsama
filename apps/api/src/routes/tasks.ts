@@ -161,6 +161,164 @@ tasksRouter.post(
   }
 );
 
+/** GET /tasks/timer/active - Get the currently active timer task */
+tasksRouter.get(
+  "/timer/active",
+  requireScopes("tasks:read"),
+  async (c) => {
+    const userId = c.get("userId");
+    const db = getDb();
+
+    const [activeTask] = await db
+      .select()
+      .from(tasks)
+      .where(and(eq(tasks.userId, userId), isNotNull(tasks.timerStartedAt)))
+      .limit(1);
+
+    return c.json({ success: true, data: activeTask ?? null });
+  }
+);
+
+/** POST /tasks/:id/timer/start - Start the focus timer for a task */
+tasksRouter.post(
+  "/:id/timer/start",
+  requireScopes("tasks:write"),
+  zValidator("param", z.object({ id: uuidSchema })),
+  async (c) => {
+    const userId = c.get("userId");
+    const { id } = c.req.valid("param");
+    const db = getDb();
+
+    // Verify task belongs to user
+    const [task] = await db
+      .select()
+      .from(tasks)
+      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+      .limit(1);
+    if (!task) throw new NotFoundError("Task", id);
+
+    let stoppedTask = null;
+
+    // Check if any other task has an active timer — auto-stop it
+    const [runningTask] = await db
+      .select()
+      .from(tasks)
+      .where(and(eq(tasks.userId, userId), isNotNull(tasks.timerStartedAt)))
+      .limit(1);
+
+    if (runningTask && runningTask.id !== id) {
+      const elapsed = Math.floor(
+        (Date.now() - runningTask.timerStartedAt!.getTime()) / 1000
+      );
+      const totalSeconds = runningTask.timerAccumulatedSeconds + elapsed;
+      const actualMins = Math.ceil(totalSeconds / 60);
+
+      const [stopped] = await db
+        .update(tasks)
+        .set({
+          actualMins,
+          timerStartedAt: null,
+          timerAccumulatedSeconds: 0,
+          updatedAt: new Date(),
+        })
+        .where(eq(tasks.id, runningTask.id))
+        .returning();
+
+      stoppedTask = stopped;
+
+      // Broadcast timer:stopped for the auto-stopped task
+      publishEvent(userId, "timer:stopped", {
+        taskId: runningTask.id,
+        actualMins,
+      });
+    }
+
+    // Start timer on target task
+    const [updatedTask] = await db
+      .update(tasks)
+      .set({
+        timerStartedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+      .returning();
+
+    // Broadcast timer:started event
+    if (updatedTask) {
+      publishEvent(userId, "timer:started", {
+        taskId: updatedTask.id,
+        startedAt: updatedTask.timerStartedAt!.toISOString(),
+        accumulatedSeconds: updatedTask.timerAccumulatedSeconds,
+      });
+    }
+
+    return c.json({ success: true, data: updatedTask, stoppedTask });
+  }
+);
+
+/** POST /tasks/:id/timer/stop - Stop the focus timer for a task */
+tasksRouter.post(
+  "/:id/timer/stop",
+  requireScopes("tasks:write"),
+  zValidator("param", z.object({ id: uuidSchema })),
+  async (c) => {
+    const userId = c.get("userId");
+    const { id } = c.req.valid("param");
+    const db = getDb();
+
+    // Verify task belongs to user and timer is running
+    const [task] = await db
+      .select()
+      .from(tasks)
+      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+      .limit(1);
+    if (!task) throw new NotFoundError("Task", id);
+
+    if (!task.timerStartedAt) {
+      return c.json(
+        {
+          success: false,
+          error: {
+            code: "BAD_REQUEST",
+            message: "Timer is not running for this task",
+            statusCode: 400,
+          },
+        },
+        400
+      );
+    }
+
+    // Calculate elapsed time
+    const elapsed = Math.floor(
+      (Date.now() - task.timerStartedAt.getTime()) / 1000
+    );
+    const totalSeconds = task.timerAccumulatedSeconds + elapsed;
+    const actualMins = Math.ceil(totalSeconds / 60);
+
+    // Update task: save actualMins, clear timer fields
+    const [updatedTask] = await db
+      .update(tasks)
+      .set({
+        actualMins,
+        timerStartedAt: null,
+        timerAccumulatedSeconds: 0,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+      .returning();
+
+    // Broadcast timer:stopped event
+    if (updatedTask) {
+      publishEvent(userId, "timer:stopped", {
+        taskId: updatedTask.id,
+        actualMins,
+      });
+    }
+
+    return c.json({ success: true, data: updatedTask });
+  }
+);
+
 /** GET /tasks/:id - Get a single task by ID */
 tasksRouter.get(
   "/:id",
@@ -287,9 +445,33 @@ tasksRouter.post(
       .limit(1);
     if (!existing) throw new NotFoundError("Task", id);
 
+    // Auto-stop timer if running
+    const updateData: Record<string, unknown> = {
+      completedAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    if (existing.timerStartedAt) {
+      const elapsed = Math.floor(
+        (Date.now() - existing.timerStartedAt.getTime()) / 1000
+      );
+      const totalSeconds = existing.timerAccumulatedSeconds + elapsed;
+      const actualMins = Math.ceil(totalSeconds / 60);
+
+      updateData.actualMins = actualMins;
+      updateData.timerStartedAt = null;
+      updateData.timerAccumulatedSeconds = 0;
+
+      // Broadcast timer:stopped before task:completed
+      publishEvent(userId, "timer:stopped", {
+        taskId: id,
+        actualMins,
+      });
+    }
+
     const [updatedTask] = await db
       .update(tasks)
-      .set({ completedAt: new Date(), updatedAt: new Date() })
+      .set(updateData)
       .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
       .returning();
 
