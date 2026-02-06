@@ -139,6 +139,8 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          VITE_API_URL: ${{ env.API_URL }}
+          VITE_WS_URL: wss://api.opensunsama.com
         run: bunx tauri build ${{ matrix.args }} --verbose
 
       # macOS: Verify entitlements are embedded in the signed app
@@ -162,6 +164,8 @@ jobs:
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          VITE_API_URL: ${{ env.API_URL }}
+          VITE_WS_URL: wss://api.opensunsama.com
         run: bunx tauri build ${{ matrix.args }}
 
       - name: Find built file
