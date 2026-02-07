@@ -13,6 +13,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { TaskTimeBadge } from "./task-time-badge";
 
 interface TaskCardContentProps {
   task: Task;
@@ -209,49 +210,11 @@ export function TaskCardContent({
 
       {/* Metadata row: Duration + Priority badges */}
       <div className="flex items-center gap-1.5 pl-6">
-        {/* Time display - only show when actual time is defined */}
-        {task.actualMins !== null &&
-          task.actualMins !== undefined &&
-          task.actualMins > 0 && (
-            <div
-              className={cn(
-                "shrink-0 flex items-center gap-0.5 rounded px-1.5 py-0.5",
-                "bg-muted/50",
-                "transition-all duration-150",
-                isCompleted && "opacity-50"
-              )}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Actual time display */}
-              <span
-                className={cn(
-                  "text-[11px] tabular-nums",
-                  task.actualMins &&
-                    task.estimatedMins &&
-                    task.actualMins > task.estimatedMins
-                    ? "text-amber-500"
-                    : "text-foreground"
-                )}
-              >
-                {formatDuration(task.actualMins)}
-              </span>
+        {/* Time display - live ticking when timer is active, static otherwise */}
+        <TaskTimeBadge task={task} isCompleted={isCompleted} />
 
-              {/* Separator and estimated - only show if estimated is set */}
-              {task.estimatedMins && (
-                <>
-                  <span className="text-muted-foreground/50 text-[11px]">
-                    /
-                  </span>
-                  <span className="text-[11px] tabular-nums text-muted-foreground">
-                    {formatDuration(task.estimatedMins)}
-                  </span>
-                </>
-              )}
-            </div>
-          )}
-
-        {/* Estimated time badge - show when no actual time but has estimate */}
-        {(!task.actualMins || task.actualMins === 0) && task.estimatedMins && (
+        {/* Estimated time badge - show when no actual time, no running timer, but has estimate */}
+        {(!task.actualMins || task.actualMins === 0) && !task.timerStartedAt && task.estimatedMins && (
           <Popover open={durationOpen} onOpenChange={setDurationOpen}>
             <PopoverTrigger asChild>
               <button

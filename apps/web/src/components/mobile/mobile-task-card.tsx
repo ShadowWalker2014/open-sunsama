@@ -4,6 +4,7 @@ import type { Task } from "@open-sunsama/types";
 import { cn, formatDuration } from "@/lib/utils";
 import { useCompleteTask } from "@/hooks/useTasks";
 import { useSubtasks } from "@/hooks/useSubtasks";
+import { useTaskTimerDisplay } from "@/components/kanban/task-time-badge";
 
 interface MobileTaskCardProps {
   task: Task;
@@ -200,35 +201,33 @@ interface MobileTaskCardWithActualTimeProps extends MobileTaskCardProps {
 export function MobileTaskCardWithActualTime({ 
   task, 
   onTaskClick,
-  actualMins 
 }: MobileTaskCardWithActualTimeProps) {
+  const { isTimerRunning, displayText } = useTaskTimerDisplay(task);
+
   return (
     <MobileTaskCardBase
       task={task}
       onTaskClick={onTaskClick}
-      renderTimeDisplay={({ isCompleted, estimatedMins }) => {
-        const hasActualTime = actualMins != null && actualMins > 0;
-        const hasEstimate = estimatedMins != null && estimatedMins > 0;
-        
-        let timeDisplay: string | null = null;
-        if (hasActualTime && hasEstimate) {
-          timeDisplay = `${formatDuration(actualMins)} / ${formatDuration(estimatedMins)}`;
-        } else if (hasEstimate) {
-          timeDisplay = formatDuration(estimatedMins);
-        } else if (hasActualTime) {
-          timeDisplay = formatDuration(actualMins);
-        }
-        
-        if (!timeDisplay) return null;
+      renderTimeDisplay={({ isCompleted }) => {
+        if (!displayText) return null;
         
         return (
           <div
             className={cn(
-              "shrink-0 text-xs tabular-nums text-muted-foreground whitespace-nowrap",
+              "shrink-0 flex items-center gap-1 text-xs tabular-nums whitespace-nowrap",
+              isTimerRunning
+                ? "text-emerald-600 dark:text-emerald-400"
+                : "text-muted-foreground",
               isCompleted && "opacity-50"
             )}
           >
-            {timeDisplay}
+            {isTimerRunning && (
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+              </span>
+            )}
+            {displayText}
           </div>
         );
       }}
