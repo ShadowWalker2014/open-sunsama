@@ -951,10 +951,10 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
           <button
             type="button"
             onClick={() => setIsAddingSubtask(true)}
-            className="p-1.5 rounded-md text-muted-foreground/60 hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
-            title="Add subtask"
+            className="flex items-center gap-1.5 h-7 px-2.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
           >
             <Plus className="h-3.5 w-3.5" />
+            <span>Add subtask</span>
           </button>
           <button
             onClick={handleExpandToFocus}
