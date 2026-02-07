@@ -248,7 +248,8 @@ export function KanbanCalendarPanel({
           <div
             ref={timelineRef}
             className={cn(
-              "relative flex-1 cursor-pointer",
+              "relative flex-1",
+              isDragging ? "cursor-grabbing" : "cursor-default",
               isToday && "bg-primary/[0.02]"
             )}
             onMouseMove={handleTimelineMouseMove}

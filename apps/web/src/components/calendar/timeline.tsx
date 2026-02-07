@@ -184,7 +184,8 @@ export function Timeline({
           <div
             ref={timelineRef}
             className={cn(
-              "relative flex-1 cursor-pointer",
+              "relative flex-1",
+              dragState ? "cursor-grabbing" : "cursor-default",
               "touch-pan-y",
               isToday && "bg-accent/5"
             )}
