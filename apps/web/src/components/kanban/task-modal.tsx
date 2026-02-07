@@ -526,6 +526,10 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     liveTask ?? ({ timerStartedAt: null, timerAccumulatedSeconds: 0, actualMins: null, estimatedMins: null } as any)
   );
 
+  // Ref for timer toggle — allows keyboard handler to call the latest toggle function
+  // without needing it in the effect's dependency array
+  const timerToggleRef = React.useRef<() => void>(() => {});
+
   // Set hovered task when modal is open so keyboard shortcuts work
   React.useEffect(() => {
     if (open && task) {
@@ -563,6 +567,19 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
         target.tagName === "TEXTAREA" ||
         target.isContentEditable
       ) {
+        return;
+      }
+
+      // Space to toggle timer (same as focus mode)
+      if (
+        (e.key === " " || e.code === "Space") &&
+        !e.shiftKey &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey
+      ) {
+        e.preventDefault();
+        timerToggleRef.current();
         return;
       }
 
@@ -774,6 +791,9 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     queryClient.invalidateQueries({ queryKey: taskKeys.detail(task.id) });
     queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
   }, [task, queryClient]);
+
+  // Keep the ref in sync so keyboard handler always calls latest version
+  timerToggleRef.current = handleTimerToggle;
 
   const handleDelete = async () => {
     if (!task) return;
