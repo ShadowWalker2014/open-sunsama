@@ -8,13 +8,16 @@ import {
 import { useTimer } from "@/hooks/useTimer";
 
 /**
- * Format seconds into M:SS format (consistent with task modal time display)
- * Always shows minutes:seconds, never hours
+ * Format seconds into H:MM:SS or M:SS format
  */
 function formatTimerDisplay(seconds: number): string {
-  const totalMins = Math.floor(seconds / 60);
+  const hours = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
-  return `${totalMins}:${secs.toString().padStart(2, "0")}`;
+  if (hours > 0) {
+    return `${hours}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  }
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
 interface FocusTimerProps {
