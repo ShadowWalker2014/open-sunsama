@@ -90,6 +90,11 @@ import { TaskSeriesBanner } from "./task-series-banner";
 import { RepeatConfigDialog } from "./repeat-config-popover";
 import { InlinePrioritySelector } from "./priority-selector";
 import { useCreateTaskSeries } from "@/hooks/useTaskSeries";
+import { useQueryClient } from "@tanstack/react-query";
+import { useTaskTimerDisplay } from "./task-time-badge";
+import { getApi } from "@/lib/api";
+import { timerKeys } from "@/hooks/useTimer";
+import { taskKeys } from "@/hooks/useTasks";
 
 // ============================================
 // DatePickerPopover Component
@@ -508,6 +513,12 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   const { setHoveredTask } = useHoveredTask();
   const createTaskSeries = useCreateTaskSeries();
   const updateTask = useUpdateTask();
+  const queryClient = useQueryClient();
+
+  // Live timer display — ticks every second when timer is active
+  const { isTimerRunning, displayText: liveTimeText, liveSeconds } = useTaskTimerDisplay(
+    task ?? ({ timerStartedAt: null, timerAccumulatedSeconds: 0, actualMins: null, estimatedMins: null } as any)
+  );
 
   // Set hovered task when modal is open so keyboard shortcuts work
   React.useEffect(() => {
@@ -687,6 +698,13 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     }
   }, [task]);
 
+  // Keep actualMins in sync when task data updates (e.g., from WebSocket timer stop)
+  React.useEffect(() => {
+    if (task && task.actualMins !== undefined) {
+      setActualMins(task.actualMins ?? null);
+    }
+  }, [task?.actualMins]);
+
   const handleSave = async () => {
     if (!task || !title.trim()) return;
     await updateTask.mutateAsync({
@@ -720,7 +738,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     }
   };
 
-  // Handle actual time change
+  // Handle actual time change (manual edit via dropdown)
   const handleActualMinsChange = async (newActualMins: number | null) => {
     setActualMins(newActualMins);
     if (task) {
@@ -730,6 +748,20 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
       });
     }
   };
+
+  // Start/stop timer from the modal
+  const handleTimerToggle = React.useCallback(async () => {
+    if (!task) return;
+    const api = getApi();
+    if (isTimerRunning) {
+      await api.tasks.timerStop(task.id);
+    } else {
+      await api.tasks.timerStart(task.id);
+    }
+    queryClient.invalidateQueries({ queryKey: timerKeys.active() });
+    queryClient.invalidateQueries({ queryKey: taskKeys.detail(task.id) });
+    queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+  }, [task, isTimerRunning, queryClient]);
 
   const handleDelete = async () => {
     if (!task) return;
@@ -921,31 +953,55 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
           </div>
           <div className="w-px h-3.5 bg-border/60 mx-1" />
           <div className="flex items-center gap-1">
-            <TimeDropdown
-              ref={actualTimeRef}
-              value={actualMins}
-              onChange={handleActualMinsChange}
-              placeholder="0:00"
-              dropdownHeader="Actual time"
-              shortcutHint="E"
-              showClear
-              clearText="Clear"
-              size="sm"
-              className="font-mono text-sm text-foreground"
-            />
-            <span className="text-muted-foreground/30 text-xs">/</span>
-            <TimeDropdown
-              ref={plannedTimeRef}
-              value={plannedMins}
-              onChange={handleDurationChange}
-              placeholder="0:00"
-              dropdownHeader="Planned time"
-              shortcutHint="W"
-              showClear
-              clearText="Clear"
-              size="sm"
-              className="font-mono text-sm text-muted-foreground/60"
-            />
+            {/* When timer is running: show live ticking time */}
+            {isTimerRunning ? (
+              <div className="flex items-center gap-1.5">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+                </span>
+                <span
+                  className={cn(
+                    "font-mono text-sm tabular-nums font-medium",
+                    task.estimatedMins && liveSeconds > task.estimatedMins * 60 * 1.5
+                      ? "text-red-500"
+                      : task.estimatedMins && liveSeconds > task.estimatedMins * 60
+                        ? "text-amber-500"
+                        : "text-emerald-600 dark:text-emerald-400"
+                  )}
+                >
+                  {liveTimeText}
+                </span>
+              </div>
+            ) : (
+              <>
+                <TimeDropdown
+                  ref={actualTimeRef}
+                  value={actualMins}
+                  onChange={handleActualMinsChange}
+                  placeholder="0:00"
+                  dropdownHeader="Actual time"
+                  shortcutHint="E"
+                  showClear
+                  clearText="Clear"
+                  size="sm"
+                  className="font-mono text-sm text-foreground"
+                />
+                <span className="text-muted-foreground/30 text-xs">/</span>
+                <TimeDropdown
+                  ref={plannedTimeRef}
+                  value={plannedMins}
+                  onChange={handleDurationChange}
+                  placeholder="0:00"
+                  dropdownHeader="Planned time"
+                  shortcutHint="W"
+                  showClear
+                  clearText="Clear"
+                  size="sm"
+                  className="font-mono text-sm text-muted-foreground/60"
+                />
+              </>
+            )}
           </div>
           <div className="flex-1" />
           <button
@@ -957,11 +1013,25 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
             <span>Add subtask</span>
           </button>
           <button
-            onClick={handleExpandToFocus}
-            className="flex items-center gap-1.5 h-7 px-2.5 rounded-md text-xs font-medium border border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors cursor-pointer"
+            onClick={handleTimerToggle}
+            className={cn(
+              "flex items-center gap-1.5 h-7 px-2.5 rounded-md text-xs font-medium border transition-colors cursor-pointer",
+              isTimerRunning
+                ? "border-red-500/30 text-red-500 hover:bg-red-500/10"
+                : "border-[#22c55e]/30 text-[#22c55e] hover:bg-[#22c55e]/10"
+            )}
           >
-            <Play className="h-3 w-3" />
-            Start
+            {isTimerRunning ? (
+              <>
+                <span className="h-2.5 w-2.5 rounded-sm bg-current" />
+                Stop
+              </>
+            ) : (
+              <>
+                <Play className="h-3 w-3 fill-current" />
+                Start
+              </>
+            )}
           </button>
         </div>
 
