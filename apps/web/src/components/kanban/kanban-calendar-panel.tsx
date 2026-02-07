@@ -23,6 +23,7 @@ interface KanbanCalendarPanelProps {
   date: Date;
   className?: string;
   onBlockClick?: (block: TimeBlockType) => void;
+  onEditBlock?: (block: TimeBlockType) => void;
   onTimeSlotClick?: (date: Date, startTime: Date, endTime: Date) => void;
   onViewTask?: (taskId: string) => void;
 }
@@ -35,6 +36,7 @@ export function KanbanCalendarPanel({
   date,
   className,
   onBlockClick,
+  onEditBlock,
   onTimeSlotClick,
   onViewTask,
 }: KanbanCalendarPanelProps) {
@@ -295,6 +297,7 @@ export function KanbanCalendarPanel({
                 key={block.id}
                 block={block}
                 onClick={() => onBlockClick?.(block)}
+                onEditBlock={() => onEditBlock?.(block)}
                 onDragStart={(e) => handleBlockDragStart(block, e)}
                 onResizeStart={(e, edge) =>
                   handleBlockResizeStart(block, edge, e)

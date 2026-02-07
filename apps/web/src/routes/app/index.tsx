@@ -63,6 +63,17 @@ export default function TasksPage() {
   };
 
   const handleBlockClick = (block: TimeBlock) => {
+    if (block.taskId) {
+      // Open task modal directly for linked blocks
+      setSelectedTaskId(block.taskId);
+    } else {
+      // Standalone block — edit time block details
+      setSelectedTimeBlock(block);
+      setTimeBlockSheetOpen(true);
+    }
+  };
+
+  const handleEditBlock = (block: TimeBlock) => {
     setSelectedTimeBlock(block);
     setTimeBlockSheetOpen(true);
   };
@@ -113,6 +124,7 @@ export default function TasksPage() {
               date={activeDate}
               className="hidden xl:flex w-[280px] flex-shrink-0"
               onBlockClick={handleBlockClick}
+              onEditBlock={handleEditBlock}
               onTimeSlotClick={handleTimeSlotClick}
               onViewTask={handleViewTask}
             />

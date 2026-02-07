@@ -16,6 +16,7 @@ interface TimeBlockContextMenuProps {
   timeBlock: TimeBlock;
   children: React.ReactNode;
   onEdit?: () => void;
+  onEditBlock?: () => void;
   onViewTask?: (taskId: string) => void;
 }
 
@@ -23,6 +24,7 @@ export function TimeBlockContextMenu({
   timeBlock,
   children,
   onEdit,
+  onEditBlock,
   onViewTask,
 }: TimeBlockContextMenuProps) {
   const deleteTimeBlock = useDeleteTimeBlock();
@@ -32,6 +34,10 @@ export function TimeBlockContextMenu({
 
   const handleEdit = () => {
     onEdit?.();
+  };
+
+  const handleEditBlock = () => {
+    onEditBlock?.();
   };
 
   const handleViewTask = () => {
@@ -69,18 +75,27 @@ export function TimeBlockContextMenu({
     <ContextMenu>
       <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
       <ContextMenuContent className="w-48">
-        {/* Edit */}
+        {/* Open Task - for linked blocks, or Edit for standalone */}
         <ContextMenuItem onClick={handleEdit}>
-          <Pencil className="mr-2 h-4 w-4" />
-          Edit
+          {hasLinkedTask ? (
+            <>
+              <Eye className="mr-2 h-4 w-4" />
+              Open Task
+            </>
+          ) : (
+            <>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit
+            </>
+          )}
           <ContextMenuShortcut>Enter</ContextMenuShortcut>
         </ContextMenuItem>
 
-        {/* View Task - only show if time block has a linked task */}
+        {/* Edit Time Block - only show for linked blocks (standalone uses Edit above) */}
         {hasLinkedTask && (
-          <ContextMenuItem onClick={handleViewTask}>
-            <Eye className="mr-2 h-4 w-4" />
-            View Task
+          <ContextMenuItem onClick={handleEditBlock}>
+            <Pencil className="mr-2 h-4 w-4" />
+            Edit Time Block
           </ContextMenuItem>
         )}
 

@@ -52,6 +52,17 @@ export default function CalendarPage() {
   };
 
   const handleBlockClick = (block: TimeBlock) => {
+    if (block.taskId) {
+      // Open task modal directly for linked blocks
+      setSelectedTaskId(block.taskId);
+    } else {
+      // Standalone block — edit time block details
+      setSelectedTimeBlock(block);
+      setTimeBlockSheetOpen(true);
+    }
+  };
+
+  const handleEditBlock = (block: TimeBlock) => {
     setSelectedTimeBlock(block);
     setTimeBlockSheetOpen(true);
   };
@@ -86,6 +97,7 @@ export default function CalendarPage() {
       <CalendarView
         onTaskClick={handleTaskClick}
         onBlockClick={handleBlockClick}
+        onEditBlock={handleEditBlock}
         onViewTask={handleViewTask}
         onTimeSlotClick={handleTimeSlotClick}
       />

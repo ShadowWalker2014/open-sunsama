@@ -11,6 +11,7 @@ import { TimeBlockContextMenu } from "./time-block-context-menu";
 interface TimeBlockProps {
   block: TimeBlockType;
   onClick?: () => void;
+  onEditBlock?: () => void;
   onDragStart?: (e: React.MouseEvent) => void;
   onResizeStart?: (e: React.MouseEvent, edge: "top" | "bottom") => void;
   onViewTask?: (taskId: string) => void;
@@ -61,6 +62,7 @@ function getBlockColors(block: TimeBlockType): {
 export function TimeBlock({
   block,
   onClick,
+  onEditBlock,
   onDragStart,
   onResizeStart,
   onViewTask,
@@ -104,6 +106,7 @@ export function TimeBlock({
     <TimeBlockContextMenu
       timeBlock={block}
       onEdit={onClick}
+      onEditBlock={onEditBlock}
       onViewTask={onViewTask}
     >
       <div
