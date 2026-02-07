@@ -67,9 +67,6 @@ export function KanbanCalendarPanel({
     },
   });
 
-  // Hover state for 30-min intervals
-  const [hoverY, setHoverY] = React.useState<number | null>(null);
-
   const hours = React.useMemo(
     () =>
       Array.from(
@@ -125,10 +122,6 @@ export function KanbanCalendarPanel({
 
     if (isDragging) {
       updateDrag(e.clientY, rect);
-    } else {
-      // Update hover position for 30-min interval markers
-      const relativeY = e.clientY - rect.top;
-      setHoverY(relativeY);
     }
   };
 
@@ -139,7 +132,6 @@ export function KanbanCalendarPanel({
   };
 
   const handleTimelineMouseLeave = () => {
-    setHoverY(null);
     // Don't cancel drag on mouse leave - let it continue
   };
 
@@ -216,21 +208,6 @@ export function KanbanCalendarPanel({
     onTimeSlotClick(date, snappedStartTime, snappedEndTime);
   };
 
-  // Calculate hover marker position (snapped to 30-min intervals)
-  const hoverMarkerY = React.useMemo(() => {
-    if (hoverY === null || isDragging) return null;
-
-    // Snap to 30-min intervals
-    const intervalHeight = HOUR_HEIGHT / 2; // 30 minutes
-    const snappedY = Math.round(hoverY / intervalHeight) * intervalHeight;
-
-    // Ensure within bounds
-    const maxY = hours.length * HOUR_HEIGHT;
-    if (snappedY < 0 || snappedY > maxY) return null;
-
-    return snappedY;
-  }, [hoverY, isDragging, hours.length]);
-
   return (
     <div
       className={cn(
@@ -299,16 +276,6 @@ export function KanbanCalendarPanel({
                 }}
               />
             ))}
-
-            {/* Hover indicator for 30-min intervals */}
-            {hoverMarkerY !== null && !isDragging && (
-              <div
-                className="absolute left-0 right-0 pointer-events-none z-20 transition-all duration-75"
-                style={{ top: hoverMarkerY }}
-              >
-                <div className="h-px border-t-2 border-dashed border-primary/40" />
-              </div>
-            )}
 
             {/* Current time indicator - thin red line with dot */}
             {currentTimePosition !== null && (
