@@ -2,7 +2,7 @@ import * as React from "react";
 import { useParams, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Loader2, Check, X, Calendar, MoreHorizontal, Trash2, Copy } from "lucide-react";
 import { format, parse, addDays, startOfWeek } from "date-fns";
-import { useTask, useUpdateTask, useTasks, useCreateTask, useDeleteTask } from "@/hooks/useTasks";
+import { useTask, useUpdateTask, useTasks, useCreateTask, useDeleteTask, useCompleteTask } from "@/hooks/useTasks";
 import {
   Button,
   DropdownMenu,
@@ -33,6 +33,7 @@ export default function FocusPage() {
   const navigate = useNavigate();
   const { data: task, isLoading, error } = useTask(taskId);
   const updateTask = useUpdateTask();
+  const completeTask = useCompleteTask();
 
   const [notes, setNotes] = React.useState("");
   const [isCalendarOpen, setIsCalendarOpen] = React.useState(false);
@@ -236,12 +237,11 @@ export default function FocusPage() {
 
   const handleToggleComplete = React.useCallback(() => {
     if (task) {
-      updateTask.mutate({
-        id: task.id,
-        data: { completedAt: task.completedAt ? null : new Date() },
-      });
+      // Use completeTask (POST /tasks/:id/complete) which auto-stops
+      // any running timer and saves actualMins on the server
+      completeTask.mutate({ id: task.id, completed: !task.completedAt });
     }
-  }, [task, updateTask]);
+  }, [task, completeTask]);
 
   const handleActualMinsChange = React.useCallback(
     (mins: number | null) => {
