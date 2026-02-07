@@ -51,6 +51,7 @@ import { useNavigate } from "@tanstack/react-router";
 import type { Task, Subtask, CreateTaskSeriesInput, TaskPriority } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import {
+  useTask,
   useUpdateTask,
   useDeleteTask,
   useCompleteTask,
@@ -515,9 +516,14 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   const updateTask = useUpdateTask();
   const queryClient = useQueryClient();
 
+  // Fetch reactive task data from query cache (updates via WebSocket + invalidation)
+  // The prop `task` is a stale snapshot; this gives us live data
+  const { data: freshTask } = useTask(task?.id ?? "");
+  const liveTask = freshTask ?? task;
+
   // Live timer display — ticks every second when timer is active
   const { isTimerRunning, displayText: liveTimeText, liveSeconds } = useTaskTimerDisplay(
-    task ?? ({ timerStartedAt: null, timerAccumulatedSeconds: 0, actualMins: null, estimatedMins: null } as any)
+    liveTask ?? ({ timerStartedAt: null, timerAccumulatedSeconds: 0, actualMins: null, estimatedMins: null } as any)
   );
 
   // Set hovered task when modal is open so keyboard shortcuts work
@@ -698,12 +704,12 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     }
   }, [task]);
 
-  // Keep actualMins in sync when task data updates (e.g., from WebSocket timer stop)
+  // Keep actualMins in sync when live task data updates (e.g., from WebSocket timer stop)
   React.useEffect(() => {
-    if (task && task.actualMins !== undefined) {
-      setActualMins(task.actualMins ?? null);
+    if (liveTask && liveTask.actualMins !== undefined) {
+      setActualMins(liveTask.actualMins ?? null);
     }
-  }, [task?.actualMins]);
+  }, [liveTask?.actualMins]);
 
   const handleSave = async () => {
     if (!task || !title.trim()) return;
