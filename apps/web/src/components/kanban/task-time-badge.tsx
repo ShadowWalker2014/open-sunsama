@@ -3,6 +3,17 @@ import type { Task } from "@open-sunsama/types";
 import { cn, formatDuration } from "@/lib/utils";
 
 /**
+ * Parse a timerStartedAt value (could be Date, ISO string, or null) to ms timestamp.
+ */
+function parseTimestamp(value: unknown): number {
+  if (!value) return 0;
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === "string") return new Date(value).getTime();
+  if (typeof value === "number") return value;
+  return 0;
+}
+
+/**
  * Lightweight hook that ticks every second when a task has an active timer.
  * Uses only the task data (timerStartedAt, timerAccumulatedSeconds) — no API calls.
  */
@@ -10,9 +21,9 @@ function useLiveTimer(task: Task): {
   isTimerRunning: boolean;
   liveSeconds: number;
 } {
-  const isTimerRunning = task.timerStartedAt !== null;
+  const isTimerRunning = task.timerStartedAt !== null && task.timerStartedAt !== undefined;
   const startedAtMs = isTimerRunning
-    ? new Date(task.timerStartedAt as unknown as string).getTime()
+    ? parseTimestamp(task.timerStartedAt)
     : 0;
 
   const [elapsed, setElapsed] = React.useState(() =>

@@ -71,6 +71,16 @@ function clearTimerState(taskId: string): void {
 }
 
 /**
+ * Parse a timerStartedAt value (could be Date object or ISO string) to ms timestamp.
+ */
+function parseTimestamp(value: unknown): number {
+  if (value instanceof Date) return value.getTime();
+  if (typeof value === "string") return new Date(value).getTime();
+  if (typeof value === "number") return value;
+  return 0;
+}
+
+/**
  * Server-authoritative focus timer hook with WebSocket sync.
  *
  * Server is source of truth for timer state. Client provides optimistic updates
@@ -102,10 +112,8 @@ export function useTimer({
   const stateRef = React.useRef(state);
   stateRef.current = state;
 
-  // Track if we've hydrated from server to avoid overwriting with stale localStorage
-  const hydratedRef = React.useRef(false);
-
-  // Fetch active timer from server on mount
+  // Fetch active timer from server on mount — NO staleTime so it always refetches
+  // This is critical: when navigating between views (modal → focus), we need fresh data
   const { data: activeTimerTask } = useQuery({
     queryKey: timerKeys.active(),
     queryFn: async () => {
@@ -113,10 +121,12 @@ export function useTimer({
       return await api.tasks.timerActive();
     },
     enabled: isAuthenticated,
-    staleTime: 30_000,
+    staleTime: 0, // Always refetch on mount to get latest timer state
   });
 
-  // Hydrate state from server response (server wins over localStorage)
+  // Hydrate state from server response — ALWAYS sync, no gating
+  // This effect runs whenever the active timer query returns new data.
+  // Server is always the source of truth.
   React.useEffect(() => {
     if (activeTimerTask === undefined) return; // Still loading
 
@@ -125,27 +135,23 @@ export function useTimer({
       activeTimerTask.id === taskId &&
       activeTimerTask.timerStartedAt
     ) {
-      // Server says this task has an active timer
-      const serverStartedAt = new Date(
-        activeTimerTask.timerStartedAt
-      ).getTime();
+      // Server says this task has an active timer — sync local state
+      const serverStartedAt = parseTimestamp(activeTimerTask.timerStartedAt);
       setState({
         isRunning: true,
         startedAt: serverStartedAt,
         accumulatedSeconds: activeTimerTask.timerAccumulatedSeconds,
       });
-      hydratedRef.current = true;
-    } else if (!hydratedRef.current && stateRef.current.isRunning) {
-      // Server says no active timer for this task, but local state thinks it's running.
-      // Reconcile: server wins (timer was stopped from another client or crashed).
-      setState((prev) => ({
-        ...prev,
-        isRunning: false,
-        startedAt: null,
-      }));
-      hydratedRef.current = true;
-    } else {
-      hydratedRef.current = true;
+    } else if (activeTimerTask === null || (activeTimerTask && activeTimerTask.id !== taskId)) {
+      // Server says no active timer for this task.
+      // Only reconcile if we locally think it's running (stale state from localStorage).
+      if (stateRef.current.isRunning) {
+        setState((prev) => ({
+          ...prev,
+          isRunning: false,
+          startedAt: null,
+        }));
+      }
     }
   }, [activeTimerTask, taskId]);
 
@@ -234,7 +240,7 @@ export function useTimer({
         if (result.task.timerStartedAt) {
           setState((prev) => ({
             ...prev,
-            startedAt: new Date(result.task.timerStartedAt!).getTime(),
+            startedAt: parseTimestamp(result.task.timerStartedAt),
             accumulatedSeconds: result.task.timerAccumulatedSeconds,
           }));
         }

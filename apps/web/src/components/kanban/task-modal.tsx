@@ -755,19 +755,25 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     }
   };
 
+  // Use ref to always read the latest isTimerRunning value (avoids stale closure)
+  const isTimerRunningRef = React.useRef(isTimerRunning);
+  isTimerRunningRef.current = isTimerRunning;
+
   // Start/stop timer from the modal
   const handleTimerToggle = React.useCallback(async () => {
     if (!task) return;
     const api = getApi();
-    if (isTimerRunning) {
+    const wasRunning = isTimerRunningRef.current;
+    if (wasRunning) {
       await api.tasks.timerStop(task.id);
     } else {
       await api.tasks.timerStart(task.id);
     }
+    // Always invalidate regardless of success — ensures UI stays in sync
     queryClient.invalidateQueries({ queryKey: timerKeys.active() });
     queryClient.invalidateQueries({ queryKey: taskKeys.detail(task.id) });
     queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
-  }, [task, isTimerRunning, queryClient]);
+  }, [task, queryClient]);
 
   const handleDelete = async () => {
     if (!task) return;
