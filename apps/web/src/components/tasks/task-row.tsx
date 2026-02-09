@@ -1,18 +1,10 @@
 import * as React from "react";
-import { Check, Clock, ChevronDown, ChevronRight, MoreHorizontal } from "lucide-react";
+import { Check, Clock, ChevronDown, ChevronRight } from "lucide-react";
 import type { Task, TaskPriority } from "@open-sunsama/types";
 import { cn, formatDuration } from "@/lib/utils";
 import { useSubtasks, useUpdateSubtask } from "@/hooks/useSubtasks";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui";
-import { useDeleteTask, useMoveTask } from "@/hooks/useTasks";
 import { useHoveredTask } from "@/hooks/useKeyboardShortcuts";
-import { useNavigate } from "@tanstack/react-router";
-import { addDays, format } from "date-fns";
+import { TaskContextMenu } from "@/components/kanban/task-context-menu";
 
 const PRIORITY_DOT_COLORS: Record<TaskPriority, string> = {
   P0: "bg-red-500",
@@ -37,9 +29,6 @@ export function TaskRow({
   const [showSubtasks, setShowSubtasks] = React.useState(false);
   const { data: subtasks = [] } = useSubtasks(task.id);
   const updateSubtask = useUpdateSubtask();
-  const deleteTask = useDeleteTask();
-  const moveTask = useMoveTask();
-  const navigate = useNavigate();
 
   // Sort subtasks by position
   const sortedSubtasks = React.useMemo(() => {
@@ -65,41 +54,20 @@ export function TaskRow({
     });
   };
 
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    await deleteTask.mutateAsync(task.id);
-  };
-
-  const handleDeferToNextWeek = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const nextWeek = addDays(new Date(), 7);
-    const dateStr = format(nextWeek, "yyyy-MM-dd");
-    await moveTask.mutateAsync({ id: task.id, targetDate: dateStr });
-  };
-
-  const handleMoveToBacklog = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    await moveTask.mutateAsync({ id: task.id, targetDate: null });
-  };
-
-  const handleFocus = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigate({ to: `/app/focus/${task.id}` });
-  };
-
   return (
-    <div
-      onMouseEnter={() => setHoveredTask(task)}
-      onMouseLeave={() => setHoveredTask(null)}
-    >
+    <TaskContextMenu task={task} onEdit={onSelect}>
       <div
-        className={cn(
-          "group flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer transition-colors",
-          "hover:bg-accent/50",
-          isCompleted && "opacity-50"
-        )}
-        onClick={onSelect}
+        onMouseEnter={() => setHoveredTask(task)}
+        onMouseLeave={() => setHoveredTask(null)}
       >
+        <div
+          className={cn(
+            "group flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer transition-colors",
+            "hover:bg-accent/50",
+            isCompleted && "opacity-50"
+          )}
+          onClick={onSelect}
+        >
         {/* Subtasks Toggle */}
         {hasSubtasks ? (
           <button
@@ -165,32 +133,6 @@ export function TaskRow({
             {formatDuration(task.estimatedMins)}
           </span>
         )}
-
-        {/* Quick Actions Menu */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              onClick={(e) => e.stopPropagation()}
-              className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 p-1 rounded hover:bg-accent"
-            >
-              <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-            <DropdownMenuItem onClick={handleFocus}>
-              Focus
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleDeferToNextWeek}>
-              Defer to next week
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleMoveToBacklog}>
-              Move to backlog
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleDelete} className="text-destructive">
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
 
       {/* Compact Subtasks List (Linear-style) */}
@@ -225,6 +167,7 @@ export function TaskRow({
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </TaskContextMenu>
   );
 }
