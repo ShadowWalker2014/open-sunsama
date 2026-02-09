@@ -521,7 +521,7 @@ export default function TasksListPage() {
         <AddTaskModal
           open={isAddModalOpen}
           onOpenChange={setIsAddModalOpen}
-          scheduledDate={null}
+          scheduledDate={todayStr}
         />
       </div>
 
