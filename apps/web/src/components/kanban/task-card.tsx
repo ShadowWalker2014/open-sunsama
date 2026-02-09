@@ -71,10 +71,6 @@ export function SortableTaskCard({
   // isOver is true when this item is being hovered by the dragged item
   const showIndicator = isOver && active?.id !== task.id;
 
-  // Get the draggable node's position for better indicator placement
-  const activeNode = active?.data?.current?.sortable?.containerNode;
-  const overNode = setNodeRef;
-
   // Determine indicator position based on where the item will be inserted
   // Improved logic that works for both same-column and cross-column drags
   const activeColumn = active?.data?.current?.columnId;
@@ -86,9 +82,9 @@ export function SortableTaskCard({
 
   if (showIndicator) {
     if (isCrossColumnDrag) {
-      // For cross-column drags, always show below the target task
-      // This indicates "insert after this task"
-      showDropIndicatorBelow = true;
+      // For cross-column drags, show above the target task
+      // This matches the "insert before" behavior in tasks-dnd-context.tsx
+      showDropIndicatorAbove = true;
     } else {
       // For same-column drags, use index-based logic
       const activeIndex = active?.data?.current?.sortable?.index ?? -1;
