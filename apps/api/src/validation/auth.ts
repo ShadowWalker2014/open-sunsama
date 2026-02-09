@@ -31,6 +31,7 @@ export const userPreferencesSchema = z.object({
   fontFamily: z.string().min(1).max(50),
   workStartHour: z.number().int().min(0).max(23).optional(),
   workEndHour: z.number().int().min(0).max(23).optional(),
+  homeTab: z.enum(["board", "tasks", "calendar"]).optional(),
 });
 
 /**

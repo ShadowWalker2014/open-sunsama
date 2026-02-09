@@ -42,6 +42,8 @@ function getStoredPreferences(): UserPreferences {
     if (stored) {
       const parsed = JSON.parse(stored);
       return {
+        ...DEFAULT_PREFERENCES,
+        ...parsed,
         themeMode: parsed.themeMode || DEFAULT_PREFERENCES.themeMode,
         colorTheme: parsed.colorTheme || DEFAULT_PREFERENCES.colorTheme,
         fontFamily: parsed.fontFamily || DEFAULT_PREFERENCES.fontFamily,
@@ -179,6 +181,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = subscribeToPreferencesUpdates((wsPreferences) => {
       // Apply preferences from WebSocket event
       const newPrefs: UserPreferences = {
+        ...preferences,
         themeMode: (wsPreferences.themeMode as ThemeMode) || preferences.themeMode,
         colorTheme: wsPreferences.colorTheme || preferences.colorTheme,
         fontFamily: (wsPreferences.fontFamily as FontFamily) || preferences.fontFamily,

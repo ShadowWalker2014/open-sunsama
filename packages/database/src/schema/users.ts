@@ -10,6 +10,7 @@ export interface UserPreferences {
   fontFamily: string;
   workStartHour?: number;
   workEndHour?: number;
+  homeTab?: "board" | "tasks" | "calendar";
 }
 
 export const users = pgTable('users', {

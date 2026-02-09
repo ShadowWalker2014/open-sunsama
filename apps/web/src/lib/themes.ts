@@ -116,6 +116,7 @@ export interface UserPreferences {
   fontFamily: FontFamily;
   workStartHour?: number;
   workEndHour?: number;
+  homeTab?: "board" | "tasks" | "calendar";
 }
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
@@ -124,6 +125,7 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   fontFamily: "geist",
   workStartHour: 9,
   workEndHour: 18,
+  homeTab: "board",
 };
 
 // CSS variable generation for a theme

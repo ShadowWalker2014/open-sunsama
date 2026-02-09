@@ -7,6 +7,12 @@
  * User's display preferences for theme and font settings.
  * Stored as JSON in the database and synced across devices.
  */
+export type HomeTabPreference = "board" | "tasks" | "calendar";
+
+/**
+ * User's display preferences for theme, font, and default home tab.
+ * Stored as JSON in the database and synced across devices.
+ */
 export interface UserPreferences {
   /** Theme mode: light, dark, or follow system preference */
   themeMode: "light" | "dark" | "system";
@@ -22,6 +28,9 @@ export interface UserPreferences {
 
   /** Work day end hour (0-23), defaults to 18 */
   workEndHour?: number;
+
+  /** Default tab when visiting /app */
+  homeTab?: HomeTabPreference;
 }
 
 /**

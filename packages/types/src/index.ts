@@ -29,6 +29,7 @@ export type {
 export type {
   User,
   UserPreferences,
+  HomeTabPreference,
   CreateUserInput,
   LoginInput,
   AuthResponse,

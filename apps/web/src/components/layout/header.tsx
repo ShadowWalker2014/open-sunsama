@@ -80,7 +80,7 @@ export function Header({ className }: HeaderProps) {
 
         {/* Navigation - Hidden on mobile (using bottom nav instead) */}
         <nav className="hidden lg:flex items-center gap-0.5">
-          <NavLink href="/app" icon={<LayoutGrid className="h-3.5 w-3.5" />}>
+          <NavLink href="/app/board" icon={<LayoutGrid className="h-3.5 w-3.5" />}>
             Board
           </NavLink>
           <NavLink href="/app/tasks" icon={<List className="h-3.5 w-3.5" />}>
@@ -245,8 +245,10 @@ function NavLink({ href, icon, children }: NavLinkProps) {
   // Check if current path matches for active state
   const isActive =
     typeof window !== "undefined" &&
-    ((href === "/app" && window.location.pathname === "/app") ||
-      (href !== "/app" && window.location.pathname.startsWith(href)));
+    ((href === "/app/board" &&
+      (window.location.pathname === "/app/board" ||
+        window.location.pathname === "/app")) ||
+      (href !== "/app/board" && window.location.pathname.startsWith(href)));
 
   return (
     <a

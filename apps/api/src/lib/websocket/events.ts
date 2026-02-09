@@ -75,6 +75,7 @@ export interface UserEvent {
     themeMode?: string;
     colorTheme?: string;
     fontFamily?: string;
+    homeTab?: "board" | "tasks" | "calendar";
   } | null; // Include actual preference values when preferences changed
 }
 
