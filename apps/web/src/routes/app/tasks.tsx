@@ -7,6 +7,7 @@ import { useCompleteTask } from "@/hooks/useTasks";
 import { TaskModal } from "@/components/kanban/task-modal";
 import { AddTaskModal } from "@/components/kanban/add-task-modal";
 import { TaskGroup } from "@/components/tasks/task-group";
+import { TasksDndProvider } from "@/lib/dnd/tasks-dnd-context";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
@@ -115,141 +116,162 @@ export default function TasksListPage() {
 
   const totalTasks = tasks.length;
 
+  // Determine date keys for each group
+  const todayStr = format(new Date(), "yyyy-MM-dd");
+  const tomorrowDate = new Date();
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const tomorrowStr = format(tomorrowDate, "yyyy-MM-dd");
+
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b px-6 py-4">
-        <div>
-          <h1 className="text-lg font-semibold">Tasks</h1>
-          <p className="text-sm text-muted-foreground">{totalTasks} tasks</p>
-        </div>
-        <Button onClick={() => setIsAddModalOpen(true)} size="sm" className="gap-1.5">
-          <Plus className="h-4 w-4" />
-          New Task
-        </Button>
-      </div>
-
-      {/* Filter Bar */}
-      <div className="flex items-center gap-4 border-b px-6 py-3">
-        {/* Search */}
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search tasks..."
-            className="w-full h-8 pl-9 pr-4 rounded-md border bg-background text-sm outline-none focus:ring-1 focus:ring-primary"
-          />
+    <TasksDndProvider>
+      <div className="flex h-[calc(100vh-3.5rem)] flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b px-6 py-4">
+          <div>
+            <h1 className="text-lg font-semibold">Tasks</h1>
+            <p className="text-sm text-muted-foreground">{totalTasks} tasks</p>
+          </div>
+          <Button onClick={() => setIsAddModalOpen(true)} size="sm" className="gap-1.5">
+            <Plus className="h-4 w-4" />
+            New Task
+          </Button>
         </div>
 
-        {/* Status Filter Pills */}
-        <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/50">
-          {(["active", "all", "completed"] as const).map((status) => (
-            <button
-              key={status}
-              onClick={() => setStatusFilter(status)}
-              className={cn(
-                "px-3 py-1 text-sm font-medium rounded-md transition-colors capitalize",
-                statusFilter === status
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {status}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Task List */}
-      <div className="flex-1 overflow-y-auto px-3 py-3">
-        {isError ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <AlertCircle className="h-8 w-8 text-destructive/70 mb-3" />
-            <p className="text-sm font-medium text-destructive">Failed to load tasks</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {error instanceof Error ? error.message : "Please try again"}
-            </p>
-            <button
-              onClick={() => refetch()}
-              className="text-xs text-muted-foreground hover:text-foreground mt-4 underline"
-            >
-              Retry
-            </button>
-          </div>
-        ) : isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
-          </div>
-        ) : totalTasks === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Search className="h-8 w-8 text-muted-foreground/50 mb-3" />
-            <p className="text-sm text-muted-foreground">No tasks found</p>
-          </div>
-        ) : (
-          <div className="max-w-3xl mx-auto space-y-1">
-            {/* Overdue */}
-            <TaskGroup
-              label="Overdue"
-              tasks={groupedTasks.overdue}
-              isOverdue
-              onSelectTask={setSelectedTask}
-              onCompleteTask={handleComplete}
+        {/* Filter Bar */}
+        <div className="flex items-center gap-4 border-b px-6 py-3">
+          {/* Search */}
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search tasks..."
+              className="w-full h-8 pl-9 pr-4 rounded-md border bg-background text-sm outline-none focus:ring-1 focus:ring-primary"
             />
+          </div>
 
-            {/* Today */}
-            <TaskGroup
-              label="Today"
-              tasks={groupedTasks.today}
-              onSelectTask={setSelectedTask}
-              onCompleteTask={handleComplete}
-            />
-
-            {/* Tomorrow */}
-            <TaskGroup
-              label="Tomorrow"
-              tasks={groupedTasks.tomorrow}
-              onSelectTask={setSelectedTask}
-              onCompleteTask={handleComplete}
-            />
-
-            {/* Future dates */}
-            {sortedFutureDates.map((dateStr) => (
-              <TaskGroup
-                key={dateStr}
-                label={formatFutureDate(dateStr)}
-                tasks={groupedTasks.future.get(dateStr) || []}
-                onSelectTask={setSelectedTask}
-                onCompleteTask={handleComplete}
-              />
+          {/* Status Filter Pills */}
+          <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/50">
+            {(["active", "all", "completed"] as const).map((status) => (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={cn(
+                  "px-3 py-1 text-sm font-medium rounded-md transition-colors capitalize",
+                  statusFilter === status
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {status}
+              </button>
             ))}
-
-            {/* No Date (Backlog) */}
-            <TaskGroup
-              label="No Date"
-              tasks={groupedTasks.noDate}
-              defaultExpanded={groupedTasks.noDate.length <= 10}
-              onSelectTask={setSelectedTask}
-              onCompleteTask={handleComplete}
-            />
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* Modals */}
-      <TaskModal
-        task={selectedTask}
-        open={selectedTask !== null}
-        onOpenChange={(open) => {
-          if (!open) setSelectedTask(null);
-        }}
-      />
-      <AddTaskModal
-        open={isAddModalOpen}
-        onOpenChange={setIsAddModalOpen}
-        scheduledDate={null}
-      />
-    </div>
+        {/* Task List */}
+        <div className="flex-1 overflow-y-auto px-3 py-3">
+          {isError ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <AlertCircle className="h-8 w-8 text-destructive/70 mb-3" />
+              <p className="text-sm font-medium text-destructive">Failed to load tasks</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {error instanceof Error ? error.message : "Please try again"}
+              </p>
+              <button
+                onClick={() => refetch()}
+                className="text-xs text-muted-foreground hover:text-foreground mt-4 underline"
+              >
+                Retry
+              </button>
+            </div>
+          ) : isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+            </div>
+          ) : totalTasks === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <Search className="h-8 w-8 text-muted-foreground/50 mb-3" />
+              <p className="text-sm text-muted-foreground">No tasks found</p>
+            </div>
+          ) : (
+            <div className="max-w-3xl mx-auto space-y-1">
+              {/* Overdue - group by date, but for reordering we'll use the first task's date */}
+              {groupedTasks.overdue.length > 0 && (
+                <TaskGroup
+                  label="Overdue"
+                  tasks={groupedTasks.overdue}
+                  isOverdue
+                  dateKey={groupedTasks.overdue[0]?.scheduledDate || "backlog"}
+                  onSelectTask={setSelectedTask}
+                  onCompleteTask={handleComplete}
+                />
+              )}
+
+              {/* Today */}
+              {groupedTasks.today.length > 0 && (
+                <TaskGroup
+                  label="Today"
+                  tasks={groupedTasks.today}
+                  dateKey={todayStr}
+                  onSelectTask={setSelectedTask}
+                  onCompleteTask={handleComplete}
+                />
+              )}
+
+              {/* Tomorrow */}
+              {groupedTasks.tomorrow.length > 0 && (
+                <TaskGroup
+                  label="Tomorrow"
+                  tasks={groupedTasks.tomorrow}
+                  dateKey={tomorrowStr}
+                  onSelectTask={setSelectedTask}
+                  onCompleteTask={handleComplete}
+                />
+              )}
+
+              {/* Future dates */}
+              {sortedFutureDates.map((dateStr) => (
+                <TaskGroup
+                  key={dateStr}
+                  label={formatFutureDate(dateStr)}
+                  tasks={groupedTasks.future.get(dateStr) || []}
+                  dateKey={dateStr}
+                  onSelectTask={setSelectedTask}
+                  onCompleteTask={handleComplete}
+                />
+              ))}
+
+              {/* No Date (Backlog) */}
+              {groupedTasks.noDate.length > 0 && (
+                <TaskGroup
+                  label="No Date"
+                  tasks={groupedTasks.noDate}
+                  dateKey="backlog"
+                  defaultExpanded={groupedTasks.noDate.length <= 10}
+                  onSelectTask={setSelectedTask}
+                  onCompleteTask={handleComplete}
+                />
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Modals */}
+        <TaskModal
+          task={selectedTask}
+          open={selectedTask !== null}
+          onOpenChange={(open) => {
+            if (!open) setSelectedTask(null);
+          }}
+        />
+        <AddTaskModal
+          open={isAddModalOpen}
+          onOpenChange={setIsAddModalOpen}
+          scheduledDate={null}
+        />
+      </div>
+    </TasksDndProvider>
   );
 }

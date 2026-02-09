@@ -2,7 +2,9 @@ import * as React from "react";
 import { ChevronRight } from "lucide-react";
 import type { Task } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
-import { TaskRow } from "./task-row";
+import { SortableTaskRow } from "./sortable-task-row";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { useReorderTasks } from "@/hooks/useTasks";
 
 export interface TaskGroupProps {
   label: string;
@@ -11,6 +13,8 @@ export interface TaskGroupProps {
   defaultExpanded?: boolean;
   onSelectTask: (task: Task) => void;
   onCompleteTask: (task: Task) => void;
+  /** Date key for this group (for reordering) - "backlog" for no date, or date string */
+  dateKey?: string;
 }
 
 export function TaskGroup({
@@ -20,12 +24,18 @@ export function TaskGroup({
   defaultExpanded = true,
   onSelectTask,
   onCompleteTask,
+  dateKey,
 }: TaskGroupProps) {
   const [isExpanded, setIsExpanded] = React.useState(defaultExpanded);
+  const reorderTasks = useReorderTasks();
 
   if (tasks.length === 0) {
     return null;
   }
+
+  // Determine the date key for reordering
+  const groupDateKey = dateKey ?? (tasks[0]?.scheduledDate || "backlog");
+  const taskIds = tasks.map((t) => t.id);
 
   return (
     <div className="mb-1">
@@ -53,14 +63,19 @@ export function TaskGroup({
       {/* Task List */}
       {isExpanded && (
         <div className="ml-3 border-l border-border/50 pl-2 mt-0.5">
-          {tasks.map((task) => (
-            <TaskRow
-              key={task.id}
-              task={task}
-              onSelect={() => onSelectTask(task)}
-              onComplete={() => onCompleteTask(task)}
-            />
-          ))}
+          <SortableContext
+            items={taskIds}
+            strategy={verticalListSortingStrategy}
+          >
+            {tasks.map((task) => (
+              <SortableTaskRow
+                key={task.id}
+                task={task}
+                onSelect={() => onSelectTask(task)}
+                onComplete={() => onCompleteTask(task)}
+              />
+            ))}
+          </SortableContext>
         </div>
       )}
     </div>
