@@ -138,6 +138,27 @@ export default function TasksListPage() {
     return null;
   }, []);
 
+  const { data, isLoading, isError, error, refetch } = useInfiniteSearchTasks({
+    query: debouncedQuery,
+    status: statusFilter,
+    limit: 200, // Fetch more since we're not virtualizing
+  });
+
+  // Flatten all pages into a single array of tasks
+  const tasks = React.useMemo(() => {
+    if (!data?.pages) return [];
+    return data.pages.flatMap((page) => page.data);
+  }, [data?.pages]);
+
+  // Group tasks by date
+  const groupedTasks = React.useMemo(() => groupTasksByDate(tasks), [tasks]);
+
+  // Determine date keys for each group
+  const todayStr = format(new Date(), "yyyy-MM-dd");
+  const tomorrowDate = new Date();
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const tomorrowStr = format(tomorrowDate, "yyyy-MM-dd");
+
   // DnD Event Handlers
   const handleDragStart = React.useCallback((event: DragStartEvent) => {
     const { active } = event;
@@ -336,21 +357,6 @@ export default function TasksListPage() {
     setActiveOverGroup(null);
   }, []);
 
-  const { data, isLoading, isError, error, refetch } = useInfiniteSearchTasks({
-    query: debouncedQuery,
-    status: statusFilter,
-    limit: 200, // Fetch more since we're not virtualizing
-  });
-
-  // Flatten all pages into a single array of tasks
-  const tasks = React.useMemo(() => {
-    if (!data?.pages) return [];
-    return data.pages.flatMap((page) => page.data);
-  }, [data?.pages]);
-
-  // Group tasks by date
-  const groupedTasks = React.useMemo(() => groupTasksByDate(tasks), [tasks]);
-
   // Get sorted future date keys
   const sortedFutureDates = React.useMemo(() => {
     return Array.from(groupedTasks.future.keys()).sort();
@@ -361,12 +367,6 @@ export default function TasksListPage() {
   };
 
   const totalTasks = tasks.length;
-
-  // Determine date keys for each group
-  const todayStr = format(new Date(), "yyyy-MM-dd");
-  const tomorrowDate = new Date();
-  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-  const tomorrowStr = format(tomorrowDate, "yyyy-MM-dd");
 
   return (
     <DndContext
