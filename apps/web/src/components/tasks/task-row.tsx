@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Check, Clock, ChevronDown, ChevronRight, GripVertical, MoreHorizontal } from "lucide-react";
+import { Check, Clock, ChevronDown, ChevronRight, MoreHorizontal } from "lucide-react";
 import type { Task, TaskPriority, Subtask } from "@open-sunsama/types";
 import { cn, formatDuration } from "@/lib/utils";
 import { useSubtasks, useUpdateSubtask, useReorderSubtasks, useDeleteSubtask } from "@/hooks/useSubtasks";
@@ -40,16 +40,12 @@ export interface TaskRowProps {
   task: Task;
   onSelect: () => void;
   onComplete: () => void;
-  dragHandleProps?: React.HTMLAttributes<HTMLElement>;
-  isDragging?: boolean;
 }
 
 export function TaskRow({ 
   task, 
   onSelect, 
   onComplete,
-  dragHandleProps,
-  isDragging = false,
 }: TaskRowProps) {
   const isCompleted = !!task.completedAt;
   const [showSubtasks, setShowSubtasks] = React.useState(false);
@@ -140,22 +136,10 @@ export function TaskRow({
         className={cn(
           "group flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors",
           "hover:bg-accent/50",
-          isCompleted && "opacity-50",
-          isDragging && "opacity-50"
+          isCompleted && "opacity-50"
         )}
         onClick={onSelect}
       >
-        {/* Drag Handle */}
-        {dragHandleProps && (
-          <div
-            {...dragHandleProps}
-            className="touch-none cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <GripVertical className="h-4 w-4 text-muted-foreground/40" />
-          </div>
-        )}
-
         {/* Subtasks Toggle */}
         {hasSubtasks ? (
           <button

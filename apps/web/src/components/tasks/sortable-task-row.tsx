@@ -11,7 +11,8 @@ export interface SortableTaskRowProps {
 }
 
 /**
- * Sortable wrapper for TaskRow that enables drag-and-drop reordering
+ * Sortable wrapper for TaskRow that enables drag-and-drop reordering.
+ * The entire row is draggable with distance-based activation (8px).
  */
 export function SortableTaskRow({
   task,
@@ -37,17 +38,15 @@ export function SortableTaskRow({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.4 : 1,
   };
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <TaskRow
         task={task}
         onSelect={onSelect}
         onComplete={onComplete}
-        dragHandleProps={{ ...attributes, ...listeners }}
-        isDragging={isDragging}
       />
     </div>
   );

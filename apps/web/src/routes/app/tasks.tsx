@@ -7,7 +7,6 @@ import { useCompleteTask } from "@/hooks/useTasks";
 import { TaskModal } from "@/components/kanban/task-modal";
 import { AddTaskModal } from "@/components/kanban/add-task-modal";
 import { TaskGroup } from "@/components/tasks/task-group";
-import { TasksDndProvider } from "@/lib/dnd/tasks-dnd-context";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
@@ -123,7 +122,6 @@ export default function TasksListPage() {
   const tomorrowStr = format(tomorrowDate, "yyyy-MM-dd");
 
   return (
-    <TasksDndProvider>
       <div className="flex h-[calc(100vh-3.5rem)] flex-col">
         {/* Header */}
         <div className="flex items-center justify-between border-b px-6 py-4">
@@ -272,6 +270,5 @@ export default function TasksListPage() {
           scheduledDate={null}
         />
       </div>
-    </TasksDndProvider>
   );
 }
