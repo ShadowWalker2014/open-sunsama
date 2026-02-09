@@ -75,6 +75,9 @@ export function useCreateTask() {
       // Invalidate and refetch task lists
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
       
+      // Also invalidate infinite search queries (used by "All Tasks" page)
+      queryClient.invalidateQueries({ queryKey: ["tasks", "search", "infinite"] });
+      
       // Optionally add the new task to the cache
       queryClient.setQueryData(taskKeys.detail(newTask.id), newTask);
       

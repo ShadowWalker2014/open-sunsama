@@ -304,8 +304,8 @@ function SortableBacklogTaskCard({
 
   if (showIndicator) {
     if (isCrossColumnDrag) {
-      // For cross-column drags, always show below the target task
-      showDropIndicatorBelow = true;
+      // Cross-column inserts happen before the hovered task.
+      showDropIndicatorAbove = true;
     } else {
       // For same-column drags, use index-based logic
       const activeIndex = active?.data?.current?.sortable?.index ?? -1;
