@@ -228,18 +228,120 @@ export function useCompleteTask() {
         return await api.tasks.uncomplete(id);
       }
     },
-    onSuccess: (updatedTask) => {
-      queryClient.setQueryData(taskKeys.detail(updatedTask.id), updatedTask);
-      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
-      // Also invalidate time blocks since task completion status changed
-      queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
+    onMutate: async ({ id, completed }) => {
+      await queryClient.cancelQueries({ queryKey: taskKeys.lists() });
+      await queryClient.cancelQueries({ queryKey: taskKeys.detail(id) });
+      await queryClient.cancelQueries({ queryKey: ["tasks", "search", "infinite"] });
+
+      const previousTask = queryClient.getQueryData<Task>(taskKeys.detail(id));
+      const previousQueries = queryClient.getQueriesData<Task[]>({
+        queryKey: taskKeys.lists(),
+      });
+      const previousInfiniteQueries = queryClient.getQueriesData({
+        queryKey: ["tasks", "search", "infinite"],
+      });
+
+      const optimisticCompletedAt = completed ? new Date() : null;
+
+      if (previousTask) {
+        queryClient.setQueryData<Task>(taskKeys.detail(id), {
+          ...previousTask,
+          completedAt: optimisticCompletedAt,
+          updatedAt: new Date(),
+        });
+      }
+
+      queryClient.setQueriesData<Task[]>(
+        { queryKey: taskKeys.lists() },
+        (old) => {
+          if (!old) return old;
+          return old.map((task) =>
+            task.id === id
+              ? { ...task, completedAt: optimisticCompletedAt, updatedAt: new Date() }
+              : task
+          );
+        }
+      );
+
+      queryClient.setQueriesData(
+        { queryKey: ["tasks", "search", "infinite"] },
+        (old: unknown) => {
+          if (!old || typeof old !== "object" || !("pages" in old)) return old;
+          const current = old as {
+            pages: Array<{ data: Task[]; meta?: unknown }>;
+            pageParams: unknown[];
+          };
+
+          return {
+            ...current,
+            pages: current.pages.map((page) => ({
+              ...page,
+              data: page.data.map((task) =>
+                task.id === id
+                  ? {
+                      ...task,
+                      completedAt: optimisticCompletedAt,
+                      updatedAt: new Date(),
+                    }
+                  : task
+              ),
+            })),
+          };
+        }
+      );
+
+      return { previousTask, previousQueries, previousInfiniteQueries, id };
     },
-    onError: (error) => {
+    onError: (error, _variables, context) => {
+      if (context?.previousTask) {
+        queryClient.setQueryData(taskKeys.detail(context.id), context.previousTask);
+      }
+      context?.previousQueries?.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
+      context?.previousInfiniteQueries?.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
       toast({
         variant: "destructive",
         title: "Failed to update task",
         description: error instanceof Error ? error.message : "Unknown error",
       });
+    },
+    onSuccess: (updatedTask) => {
+      queryClient.setQueryData(taskKeys.detail(updatedTask.id), updatedTask);
+      queryClient.setQueriesData<Task[]>(
+        { queryKey: taskKeys.lists() },
+        (old) => {
+          if (!old) return old;
+          return old.map((task) => (task.id === updatedTask.id ? updatedTask : task));
+        }
+      );
+      queryClient.setQueriesData(
+        { queryKey: ["tasks", "search", "infinite"] },
+        (old: unknown) => {
+          if (!old || typeof old !== "object" || !("pages" in old)) return old;
+          const current = old as {
+            pages: Array<{ data: Task[]; meta?: unknown }>;
+            pageParams: unknown[];
+          };
+
+          return {
+            ...current,
+            pages: current.pages.map((page) => ({
+              ...page,
+              data: page.data.map((task) =>
+                task.id === updatedTask.id ? updatedTask : task
+              ),
+            })),
+          };
+        }
+      );
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: ["tasks", "search", "infinite"] });
+      queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
     },
   });
 }
@@ -351,9 +453,13 @@ export function useReorderTasks() {
 
       // Cancel any outgoing refetches to avoid overwriting optimistic update
       await queryClient.cancelQueries({ queryKey });
+      await queryClient.cancelQueries({ queryKey: ["tasks", "search", "infinite"] });
 
       // Snapshot the previous value
       const previousTasks = queryClient.getQueryData<Task[]>(queryKey);
+      const previousInfiniteQueries = queryClient.getQueriesData({
+        queryKey: ["tasks", "search", "infinite"],
+      });
 
       // Optimistically update the cache with new positions
       if (previousTasks) {
@@ -371,14 +477,45 @@ export function useReorderTasks() {
         queryClient.setQueryData(queryKey, finalTasks);
       }
 
+      const positionByTaskId = new Map(taskIds.map((taskId, index) => [taskId, index]));
+      queryClient.setQueriesData(
+        { queryKey: ["tasks", "search", "infinite"] },
+        (old: unknown) => {
+          if (!old || typeof old !== "object" || !("pages" in old)) return old;
+          const current = old as {
+            pages: Array<{ data: Task[]; meta?: unknown }>;
+            pageParams: unknown[];
+          };
+
+          return {
+            ...current,
+            pages: current.pages.map((page) => ({
+              ...page,
+              data: page.data.map((task) => {
+                const position = positionByTaskId.get(task.id);
+                if (position === undefined) return task;
+                return {
+                  ...task,
+                  position,
+                  scheduledDate: date === "backlog" ? null : date,
+                };
+              }),
+            })),
+          };
+        }
+      );
+
       // Return context with previous value for rollback
-      return { previousTasks, date, queryKey };
+      return { previousTasks, date, queryKey, previousInfiniteQueries };
     },
     onError: (error, _variables, context) => {
       // Rollback to previous value on error
       if (context?.previousTasks && context?.queryKey) {
         queryClient.setQueryData(context.queryKey, context.previousTasks);
       }
+      context?.previousInfiniteQueries?.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
       toast({
         variant: "destructive",
         title: "Failed to reorder tasks",
@@ -392,6 +529,7 @@ export function useReorderTasks() {
         ? taskKeys.list({ backlog: true })
         : taskKeys.list({ scheduledDate: date });
       queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey: ["tasks", "search", "infinite"] });
     },
   });
 }

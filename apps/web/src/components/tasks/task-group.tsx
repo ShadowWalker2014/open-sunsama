@@ -50,15 +50,21 @@ export function TaskGroup({
   }
 
   return (
-    <div className="mb-1" ref={setNodeRef}>
+    <div
+      className={cn(
+        "mb-2 rounded-lg border border-border/60 bg-card/40",
+        isOver && "border-primary/40 bg-primary/5"
+      )}
+      ref={setNodeRef}
+    >
       {/* Group Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className={cn(
-          "flex items-center gap-2 w-full px-3 py-2 text-sm font-medium rounded-md transition-colors",
+          "flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-sm font-medium transition-colors",
           "hover:bg-accent/30",
           isOverdue && "text-red-500",
-          isOver && "bg-accent/50"
+          isOver && "bg-accent/40"
         )}
       >
         <ChevronRight
@@ -68,7 +74,7 @@ export function TaskGroup({
           )}
         />
         <span className="truncate">{label}</span>
-        <span className="text-xs text-muted-foreground font-normal ml-1">
+        <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-normal text-muted-foreground">
           {tasks.length}
         </span>
       </button>
@@ -77,7 +83,7 @@ export function TaskGroup({
       {isExpanded && (
         <div
           className={cn(
-            "ml-3 border-l border-border/50 pl-2 mt-0.5",
+            "ml-3 mt-0.5 border-l border-border/50 pl-2 pr-2 pb-2",
             isOver && "border-primary/50"
           )}
         >

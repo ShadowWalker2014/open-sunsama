@@ -23,7 +23,6 @@ import {
   DragOverlay,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates, arrayMove } from "@dnd-kit/sortable";
-import { useQueryClient } from "@tanstack/react-query";
 import { TaskRow } from "@/components/tasks/task-row";
 
 type StatusFilter = "active" | "all" | "completed";
@@ -97,17 +96,11 @@ export default function TasksListPage() {
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>("active");
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
-  const [debouncedQuery, setDebouncedQuery] = React.useState("");
   const [activeTask, setActiveTask] = React.useState<Task | null>(null);
   const [activeOverGroup, setActiveOverGroup] = React.useState<string | null>(null);
   const completeTask = useCompleteTask();
   const reorderTasks = useReorderTasks();
-  const queryClient = useQueryClient();
-
-  React.useEffect(() => {
-    const timer = setTimeout(() => setDebouncedQuery(query), 200);
-    return () => clearTimeout(timer);
-  }, [query]);
+  const deferredQuery = React.useDeferredValue(query);
 
   // DnD sensors with distance-based activation
   const sensors = useSensors(
@@ -139,7 +132,7 @@ export default function TasksListPage() {
   }, []);
 
   const { data, isLoading, isError, error, refetch } = useInfiniteSearchTasks({
-    query: debouncedQuery,
+    query: deferredQuery,
     status: statusFilter,
     limit: 200, // Fetch more since we're not virtualizing
   });
@@ -296,12 +289,6 @@ export default function TasksListPage() {
           {
             date: destinationDateKey,
             taskIds: newTaskIds,
-          },
-          {
-            onSettled: () => {
-              // Invalidate the infinite search query so UI refreshes
-              queryClient.invalidateQueries({ queryKey: ["tasks", "search", "infinite"] });
-            },
           }
         );
 
@@ -337,19 +324,13 @@ export default function TasksListPage() {
               {
                 date: dateParam,
                 taskIds: reorderedIds,
-              },
-              {
-                onSettled: () => {
-                  // Invalidate the infinite search query so UI refreshes
-                  queryClient.invalidateQueries({ queryKey: ["tasks", "search", "infinite"] });
-                },
               }
             );
           }
         }
       }
     },
-    [groupedTasks, todayStr, tomorrowStr, isGroupId, getDateKeyFromGroupId, reorderTasks, queryClient]
+    [groupedTasks, todayStr, tomorrowStr, isGroupId, getDateKeyFromGroupId, reorderTasks]
   );
 
   const handleDragCancel = React.useCallback(() => {
@@ -439,8 +420,19 @@ export default function TasksListPage() {
               </button>
             </div>
           ) : isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+            <div className="space-y-2 py-2">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="rounded-lg border border-border/60 bg-background/60 p-3"
+                >
+                  <div className="mb-2 h-4 w-28 animate-pulse rounded bg-muted" />
+                  <div className="space-y-1">
+                    <div className="h-8 animate-pulse rounded bg-muted/70" />
+                    <div className="h-8 animate-pulse rounded bg-muted/70" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : totalTasks === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">

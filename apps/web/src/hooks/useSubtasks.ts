@@ -20,14 +20,14 @@ export const subtaskKeys = {
 /**
  * Fetch subtasks for a task
  */
-export function useSubtasks(taskId: string) {
+export function useSubtasks(taskId: string, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: subtaskKeys.list(taskId),
     queryFn: async (): Promise<Subtask[]> => {
       const api = getApi();
       return await api.subtasks.list(taskId);
     },
-    enabled: !!taskId,
+    enabled: !!taskId && options?.enabled !== false,
   });
 }
 

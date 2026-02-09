@@ -27,7 +27,7 @@ export function TaskRow({
   const { setHoveredTask } = useHoveredTask();
   const isCompleted = !!task.completedAt;
   const [showSubtasks, setShowSubtasks] = React.useState(false);
-  const { data: subtasks = [] } = useSubtasks(task.id);
+  const { data: subtasks = [] } = useSubtasks(task.id, { enabled: showSubtasks });
   const updateSubtask = useUpdateSubtask();
 
   // Sort subtasks by position
