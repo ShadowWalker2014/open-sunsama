@@ -3,13 +3,28 @@ import { Search, Plus, AlertCircle } from "lucide-react";
 import { format, isToday, isTomorrow, isPast, parseISO } from "date-fns";
 import type { Task } from "@open-sunsama/types";
 import { useInfiniteSearchTasks } from "@/hooks/useInfiniteSearchTasks";
-import { useCompleteTask } from "@/hooks/useTasks";
+import { useCompleteTask, useReorderTasks } from "@/hooks/useTasks";
 import { TaskModal } from "@/components/kanban/task-modal";
 import { AddTaskModal } from "@/components/kanban/add-task-modal";
 import { TaskGroup } from "@/components/tasks/task-group";
 import { TaskShortcutsHandler } from "@/components/task-shortcuts-handler";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragStartEvent,
+  type DragOverEvent,
+  type DragEndEvent,
+  DragOverlay,
+} from "@dnd-kit/core";
+import { sortableKeyboardCoordinates, arrayMove } from "@dnd-kit/sortable";
+import { useQueryClient } from "@tanstack/react-query";
+import { TaskRow } from "@/components/tasks/task-row";
 
 type StatusFilter = "active" | "all" | "completed";
 
@@ -83,12 +98,243 @@ export default function TasksListPage() {
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
   const [debouncedQuery, setDebouncedQuery] = React.useState("");
+  const [activeTask, setActiveTask] = React.useState<Task | null>(null);
+  const [activeOverGroup, setActiveOverGroup] = React.useState<string | null>(null);
   const completeTask = useCompleteTask();
+  const reorderTasks = useReorderTasks();
+  const queryClient = useQueryClient();
 
   React.useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(query), 200);
     return () => clearTimeout(timer);
   }, [query]);
+
+  // DnD sensors with distance-based activation
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Helper to check if an ID is a group (not a task)
+  const isGroupId = React.useCallback((id: string | number | undefined): boolean => {
+    if (!id) return false;
+    const idStr = String(id);
+    return idStr.startsWith("group-");
+  }, []);
+
+  // Helper to extract dateKey from group ID
+  const getDateKeyFromGroupId = React.useCallback((id: string | number | undefined): string | null => {
+    if (!id) return null;
+    const idStr = String(id);
+    if (idStr.startsWith("group-")) {
+      return idStr.replace("group-", "") || null;
+    }
+    return null;
+  }, []);
+
+  // DnD Event Handlers
+  const handleDragStart = React.useCallback((event: DragStartEvent) => {
+    const { active } = event;
+    const task = active.data.current?.task as Task | undefined;
+    if (task) {
+      setActiveTask(task);
+      const sourceDateKey = active.data.current?.columnId as string | undefined;
+      setActiveOverGroup(sourceDateKey || null);
+    }
+  }, []);
+
+  const handleDragOver = React.useCallback((event: DragOverEvent) => {
+    const { over } = event;
+    if (!over) {
+      setActiveOverGroup(null);
+      return;
+    }
+
+    // Check if over a group droppable
+    const groupDateKey = getDateKeyFromGroupId(over.id);
+    if (groupDateKey) {
+      setActiveOverGroup(groupDateKey);
+      return;
+    }
+
+    // If over a task, get the column from the task's data
+    if (over.data.current?.columnId) {
+      const columnId = String(over.data.current.columnId);
+      setActiveOverGroup(columnId === "backlog" ? "backlog" : columnId);
+    }
+  }, [getDateKeyFromGroupId]);
+
+  const handleDragEnd = React.useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+
+      setActiveTask(null);
+      setActiveOverGroup(null);
+
+      if (!over) return;
+
+      const taskId = String(active.id);
+      const task = active.data.current?.task as Task | undefined;
+
+      if (!task) return;
+
+      const overId = String(over.id);
+
+      // Get source dateKey from drag data
+      const sourceDateKey = String(
+        active.data.current?.columnId || task.scheduledDate || "backlog"
+      );
+
+      // Determine destination dateKey
+      let destinationDateKey: string;
+      let overTask: Task | undefined;
+
+      // Check if dropped on a group or a task
+      if (isGroupId(over.id)) {
+        // Dropped on a group container - append to end
+        const groupDateKey = getDateKeyFromGroupId(over.id);
+        if (!groupDateKey) return;
+        destinationDateKey = groupDateKey;
+      } else {
+        // Dropped on another task
+        overTask = over.data.current?.task as Task | undefined;
+        destinationDateKey = String(
+          over.data.current?.columnId ?? overTask?.scheduledDate ?? "backlog"
+        );
+      }
+
+      // Check if dateKey changed
+      const dateKeyChanged = sourceDateKey !== destinationDateKey;
+      const isSameTask = taskId === overId;
+
+      // Do nothing if dropped on self in the same group
+      if (isSameTask && !dateKeyChanged) {
+        return;
+      }
+
+      // Get destination group's tasks from the grouped data
+      const getDestinationTasks = (dateKey: string): Task[] => {
+        if (dateKey === "backlog") {
+          return groupedTasks.noDate;
+        }
+        if (dateKey === todayStr) {
+          return groupedTasks.today;
+        }
+        if (dateKey === tomorrowStr) {
+          return groupedTasks.tomorrow;
+        }
+        // Check if it's in overdue (could be any past date)
+        const overdueTask = groupedTasks.overdue.find((t) => t.scheduledDate === dateKey);
+        if (overdueTask) {
+          return groupedTasks.overdue.filter((t) => t.scheduledDate === dateKey);
+        }
+        // Check future dates
+        return groupedTasks.future.get(dateKey) || [];
+      };
+
+      // When dateKey changes, we need to move the task to the new group
+      if (dateKeyChanged) {
+        const destTasks = getDestinationTasks(destinationDateKey);
+
+        // Build the new task order for the destination group
+        // Filter to only pending tasks (not completed) and exclude the moving task
+        const pendingDestTasks = destTasks
+          .filter((t) => !t.completedAt && t.id !== taskId)
+          .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+
+        let newTaskIds: string[];
+
+        if (overTask && overTask.id !== taskId && !isGroupId(over.id)) {
+          // Dropped on a specific task - insert at that position
+          const overIndex = pendingDestTasks.findIndex((t) => t.id === overTask.id);
+
+          if (overIndex !== -1) {
+            // Insert before the target task
+            newTaskIds = [
+              ...pendingDestTasks.slice(0, overIndex).map((t) => t.id),
+              taskId,
+              ...pendingDestTasks.slice(overIndex).map((t) => t.id),
+            ];
+          } else {
+            // Target task not found in pending tasks, append to end
+            newTaskIds = [...pendingDestTasks.map((t) => t.id), taskId];
+          }
+        } else {
+          // Dropped on group background - append to end
+          newTaskIds = [...pendingDestTasks.map((t) => t.id), taskId];
+        }
+
+        // Use reorderTasks which handles both moving and positioning
+        reorderTasks.mutate(
+          {
+            date: destinationDateKey,
+            taskIds: newTaskIds,
+          },
+          {
+            onSettled: () => {
+              // Invalidate the infinite search query so UI refreshes
+              queryClient.invalidateQueries({ queryKey: ["tasks", "search", "infinite"] });
+            },
+          }
+        );
+
+        return;
+      }
+
+      // Same group but different position - reorder within group
+      if (!dateKeyChanged && overTask && !isSameTask) {
+        const sourceTasks = getDestinationTasks(sourceDateKey);
+
+        // Filter to only pending tasks (not completed) before sorting/reordering
+        const pendingSourceTasks = sourceTasks
+          .filter((t) => !t.completedAt)
+          .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+
+        if (pendingSourceTasks.length > 0) {
+          // Find indices of active and over tasks in pending-only list
+          const activeIndex = pendingSourceTasks.findIndex((t) => t.id === taskId);
+          const overIndex = pendingSourceTasks.findIndex((t) => t.id === overId);
+
+          if (
+            activeIndex !== -1 &&
+            overIndex !== -1 &&
+            activeIndex !== overIndex
+          ) {
+            // Reorder using arrayMove
+            const reorderedTasks = arrayMove(pendingSourceTasks, activeIndex, overIndex);
+            const reorderedIds = reorderedTasks.map((t) => t.id);
+
+            // Call reorder API
+            const dateParam = sourceDateKey === "backlog" ? "backlog" : sourceDateKey;
+            reorderTasks.mutate(
+              {
+                date: dateParam,
+                taskIds: reorderedIds,
+              },
+              {
+                onSettled: () => {
+                  // Invalidate the infinite search query so UI refreshes
+                  queryClient.invalidateQueries({ queryKey: ["tasks", "search", "infinite"] });
+                },
+              }
+            );
+          }
+        }
+      }
+    },
+    [groupedTasks, todayStr, tomorrowStr, isGroupId, getDateKeyFromGroupId, reorderTasks, queryClient]
+  );
+
+  const handleDragCancel = React.useCallback(() => {
+    setActiveTask(null);
+    setActiveOverGroup(null);
+  }, []);
 
   const { data, isLoading, isError, error, refetch } = useInfiniteSearchTasks({
     query: debouncedQuery,
@@ -123,6 +369,14 @@ export default function TasksListPage() {
   const tomorrowStr = format(tomorrowDate, "yyyy-MM-dd");
 
   return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
+    >
       <div className="flex h-[calc(100vh-3.5rem)] flex-col">
         {/* Compact toolbar */}
         <div className="flex items-center gap-3 border-b px-4 py-2">
@@ -278,5 +532,19 @@ export default function TasksListPage() {
           scheduledDate={null}
         />
       </div>
+
+      {/* Drag Overlay */}
+      <DragOverlay dropAnimation={null}>
+        {activeTask && (
+          <div className="opacity-90 bg-background rounded-md shadow-lg border">
+            <TaskRow
+              task={activeTask}
+              onSelect={() => {}}
+              onComplete={() => {}}
+            />
+          </div>
+        )}
+      </DragOverlay>
+    </DndContext>
   );
 }
