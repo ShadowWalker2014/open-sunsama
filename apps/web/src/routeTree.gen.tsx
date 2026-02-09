@@ -20,6 +20,7 @@ import TermsPage from "./routes/terms";
 import DownloadPage from "./routes/download";
 import AppLayout from "./routes/app";
 import TasksPage from "./routes/app/index";
+import BoardPage from "./routes/app/board";
 import CalendarPage from "./routes/app/calendar";
 import SettingsPage from "./routes/app/settings";
 import TasksListPage from "./routes/app/tasks";
@@ -242,6 +243,12 @@ const appCalendarRoute = createRoute({
   component: CalendarPage,
 });
 
+const appBoardRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/board",
+  component: BoardPage,
+});
+
 const appSettingsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/settings",
@@ -311,6 +318,7 @@ const routeTree = rootRoute.addChildren([
   calendarSyncFeatureRoute,
   appRoute.addChildren([
     appIndexRoute,
+    appBoardRoute,
     appCalendarRoute,
     appSettingsRoute,
     appTasksListRoute,
