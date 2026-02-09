@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui";
 import { useDeleteTask, useMoveTask } from "@/hooks/useTasks";
+import { useHoveredTask } from "@/hooks/useKeyboardShortcuts";
 import { useNavigate } from "@tanstack/react-router";
 import { addDays, format } from "date-fns";
 
@@ -31,6 +32,7 @@ export function TaskRow({
   onSelect, 
   onComplete,
 }: TaskRowProps) {
+  const { setHoveredTask } = useHoveredTask();
   const isCompleted = !!task.completedAt;
   const [showSubtasks, setShowSubtasks] = React.useState(false);
   const { data: subtasks = [] } = useSubtasks(task.id);
@@ -86,7 +88,10 @@ export function TaskRow({
   };
 
   return (
-    <div>
+    <div
+      onMouseEnter={() => setHoveredTask(task)}
+      onMouseLeave={() => setHoveredTask(null)}
+    >
       <div
         className={cn(
           "group flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer transition-colors",

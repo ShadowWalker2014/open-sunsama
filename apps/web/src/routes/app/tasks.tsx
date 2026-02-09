@@ -7,6 +7,7 @@ import { useCompleteTask } from "@/hooks/useTasks";
 import { TaskModal } from "@/components/kanban/task-modal";
 import { AddTaskModal } from "@/components/kanban/add-task-modal";
 import { TaskGroup } from "@/components/tasks/task-group";
+import { TaskShortcutsHandler } from "@/components/task-shortcuts-handler";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
@@ -255,6 +256,14 @@ export default function TasksListPage() {
             </div>
           )}
         </div>
+
+        {/* Keyboard shortcuts */}
+        <TaskShortcutsHandler
+          onNavigateToday={() => {}}
+          onNavigateNext={() => {}}
+          onNavigatePrevious={() => {}}
+          onSelect={(task) => setSelectedTask(task)}
+        />
 
         {/* Modals */}
         <TaskModal
