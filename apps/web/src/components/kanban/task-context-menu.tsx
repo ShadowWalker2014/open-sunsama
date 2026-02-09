@@ -13,8 +13,9 @@ import {
   Trash2,
   Archive,
   Repeat,
+  Flag,
 } from "lucide-react";
-import type { Task, CreateTaskSeriesInput } from "@open-sunsama/types";
+import type { Task, CreateTaskSeriesInput, TaskPriority } from "@open-sunsama/types";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -22,6 +23,11 @@ import {
   ContextMenuSeparator,
   ContextMenuShortcut,
   ContextMenuTrigger,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  PriorityIcon,
+  PRIORITY_LABELS,
 } from "@/components/ui";
 import {
   useUpdateTask,
@@ -36,6 +42,9 @@ import { useCreateTaskSeries } from "@/hooks/useTaskSeries";
 import { formatShortcut, SHORTCUTS } from "@/hooks/useKeyboardShortcuts";
 import { toast } from "@/hooks/use-toast";
 import { RepeatConfigDialog } from "./repeat-config-popover";
+import { cn } from "@/lib/utils";
+
+const PRIORITIES: TaskPriority[] = ["P0", "P1", "P2", "P3"];
 
 interface TaskContextMenuProps {
   task: Task;
@@ -165,6 +174,18 @@ export function TaskContextMenu({
     });
   };
 
+  const handlePriorityChange = async (priority: TaskPriority) => {
+    await updateTask.mutateAsync({
+      id: task.id,
+      data: { priority },
+    });
+
+    toast({
+      title: "Priority updated",
+      description: `"${task.title}" priority set to ${PRIORITY_LABELS[priority]}.`,
+    });
+  };
+
   const handleToggleHideSubtasks = async () => {
     const newHiddenState = !task.subtasksHidden;
     await updateTask.mutateAsync({
@@ -290,6 +311,31 @@ export function TaskContextMenu({
                 formatShortcut(SHORTCUTS.moveToBacklog)}
             </ContextMenuShortcut>
           </ContextMenuItem>
+
+          <ContextMenuSeparator />
+
+          {/* Priority */}
+          <ContextMenuSub>
+            <ContextMenuSubTrigger>
+              <Flag className="mr-2 h-4 w-4" />
+              Priority
+            </ContextMenuSubTrigger>
+            <ContextMenuSubContent>
+              {PRIORITIES.map((priority) => (
+                <ContextMenuItem
+                  key={priority}
+                  onClick={() => handlePriorityChange(priority)}
+                  className={cn(
+                    "gap-2",
+                    task.priority === priority && "bg-accent"
+                  )}
+                >
+                  <PriorityIcon priority={priority} />
+                  <span>{PRIORITY_LABELS[priority]}</span>
+                </ContextMenuItem>
+              ))}
+            </ContextMenuSubContent>
+          </ContextMenuSub>
 
           <ContextMenuSeparator />
 
