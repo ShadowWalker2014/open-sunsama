@@ -124,40 +124,28 @@ export default function TasksListPage() {
 
   return (
       <div className="flex h-[calc(100vh-3.5rem)] flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b px-6 py-4">
-          <div>
-            <h1 className="text-lg font-semibold">Tasks</h1>
-            <p className="text-sm text-muted-foreground">{totalTasks} tasks</p>
-          </div>
-          <Button onClick={() => setIsAddModalOpen(true)} size="sm" className="gap-1.5">
-            <Plus className="h-4 w-4" />
-            New Task
-          </Button>
-        </div>
-
-        {/* Filter Bar */}
-        <div className="flex items-center gap-4 border-b px-6 py-3">
+        {/* Compact toolbar */}
+        <div className="flex items-center gap-3 border-b px-4 py-2">
           {/* Search */}
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search tasks..."
-              className="w-full h-8 pl-9 pr-4 rounded-md border bg-background text-sm outline-none focus:ring-1 focus:ring-primary"
+              className="w-full h-7 pl-8 pr-3 rounded-md border bg-background text-xs outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 
           {/* Status Filter Pills */}
-          <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/50">
+          <div className="flex items-center gap-0.5 p-0.5 rounded-md bg-muted/50">
             {(["active", "all", "completed"] as const).map((status) => (
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
                 className={cn(
-                  "px-3 py-1 text-sm font-medium rounded-md transition-colors capitalize",
+                  "px-2.5 py-1 text-xs font-medium rounded transition-colors capitalize cursor-pointer",
                   statusFilter === status
                     ? "bg-background text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -167,6 +155,17 @@ export default function TasksListPage() {
               </button>
             ))}
           </div>
+
+          <div className="flex-1" />
+
+          {/* Task count */}
+          <span className="text-xs text-muted-foreground">{totalTasks} tasks</span>
+
+          {/* New Task */}
+          <Button onClick={() => setIsAddModalOpen(true)} size="sm" variant="default" className="h-7 gap-1 text-xs px-2.5">
+            <Plus className="h-3.5 w-3.5" />
+            New
+          </Button>
         </div>
 
         {/* Task List */}
