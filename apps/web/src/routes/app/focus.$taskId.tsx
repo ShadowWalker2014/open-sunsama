@@ -103,13 +103,21 @@ export default function FocusPage() {
     [task, updateTask]
   );
 
+  const goBack = React.useCallback(() => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      navigate({ to: "/app" });
+    }
+  }, [navigate]);
+
   const handleDelete = React.useCallback(() => {
     if (!task) return;
     if (confirm("Are you sure you want to delete this task?")) {
       deleteTask.mutate(task.id);
-      navigate({ to: "/app" });
+      goBack();
     }
-  }, [task, deleteTask, navigate]);
+  }, [task, deleteTask, goBack]);
 
   const handleDuplicate = React.useCallback(() => {
     if (!task) return;
@@ -131,7 +139,7 @@ export default function FocusPage() {
 
       // Esc to close focus mode
       if (e.key === "Escape") {
-        navigate({ to: "/app" });
+        goBack();
         return;
       }
 
@@ -192,7 +200,7 @@ export default function FocusPage() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [navigate, handleScheduledDateChange]);
+  }, [navigate, goBack, handleScheduledDateChange]);
 
   // Auto-save notes on blur with debounce
   const saveNotesTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -271,8 +279,8 @@ export default function FocusPage() {
   );
 
   const handleClose = React.useCallback(() => {
-    navigate({ to: "/app" });
-  }, [navigate]);
+    goBack();
+  }, [goBack]);
 
   // Loading state
   if (isLoading) {

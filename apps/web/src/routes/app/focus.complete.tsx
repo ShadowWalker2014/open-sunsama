@@ -53,18 +53,26 @@ export default function FocusCompletePage() {
     frame();
   }, []);
 
+  const goBack = React.useCallback(() => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      navigate({ to: "/app" });
+    }
+  }, [navigate]);
+
   // Handle Esc key to close
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" || e.key === "Enter") {
-        navigate({ to: "/app" });
+        goBack();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [navigate]);
+  }, [goBack]);
 
-  const handleClose = () => navigate({ to: "/app" });
+  const handleClose = () => goBack();
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background overflow-hidden">
@@ -156,7 +164,7 @@ export default function FocusCompletePage() {
             onClick={handleClose}
             className="mt-4 px-8 py-3 rounded-full bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 hover:scale-105 transition-all"
           >
-            Return to Board
+            Done
           </button>
         </div>
       </div>
