@@ -1,9 +1,8 @@
 import * as React from "react";
 import { Check, Clock, ChevronDown, ChevronRight, MoreHorizontal } from "lucide-react";
-import type { Task, TaskPriority, Subtask } from "@open-sunsama/types";
+import type { Task, TaskPriority } from "@open-sunsama/types";
 import { cn, formatDuration } from "@/lib/utils";
-import { useSubtasks, useUpdateSubtask, useReorderSubtasks, useDeleteSubtask } from "@/hooks/useSubtasks";
-import { SortableSubtaskItem } from "@/components/kanban/sortable-subtask-item";
+import { useSubtasks, useUpdateSubtask } from "@/hooks/useSubtasks";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,21 +12,6 @@ import {
 import { useDeleteTask, useMoveTask } from "@/hooks/useTasks";
 import { useNavigate } from "@tanstack/react-router";
 import { addDays, format } from "date-fns";
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-  sortableKeyboardCoordinates,
-  arrayMove,
-} from "@dnd-kit/sortable";
 
 const PRIORITY_DOT_COLORS: Record<TaskPriority, string> = {
   P0: "bg-red-500",
@@ -51,8 +35,6 @@ export function TaskRow({
   const [showSubtasks, setShowSubtasks] = React.useState(false);
   const { data: subtasks = [] } = useSubtasks(task.id);
   const updateSubtask = useUpdateSubtask();
-  const reorderSubtasks = useReorderSubtasks();
-  const deleteSubtask = useDeleteSubtask();
   const deleteTask = useDeleteTask();
   const moveTask = useMoveTask();
   const navigate = useNavigate();
@@ -64,34 +46,6 @@ export function TaskRow({
 
   const hasSubtasks = sortedSubtasks.length > 0;
   const completedSubtasksCount = sortedSubtasks.filter((s) => s.completed).length;
-  const allSubtasksCompleted = hasSubtasks && completedSubtasksCount === sortedSubtasks.length;
-
-  // DnD sensors for subtasks
-  const subtaskSensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        delay: 100,
-        tolerance: 5,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  const handleSubtaskDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    const oldIndex = sortedSubtasks.findIndex((s) => s.id === active.id);
-    const newIndex = sortedSubtasks.findIndex((s) => s.id === over.id);
-
-    if (oldIndex !== -1 && newIndex !== -1) {
-      const reordered = arrayMove(sortedSubtasks, oldIndex, newIndex);
-      const subtaskIds = reordered.map((s) => s.id);
-      reorderSubtasks.mutate({ taskId: task.id, subtaskIds });
-    }
-  };
 
   const handleToggleSubtasks = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -100,8 +54,9 @@ export function TaskRow({
     }
   };
 
-  const handleSubtaskToggle = async (subtaskId: string, completed: boolean) => {
-    await updateSubtask.mutateAsync({ 
+  const handleSubtaskToggle = (e: React.MouseEvent, subtaskId: string, completed: boolean) => {
+    e.stopPropagation();
+    updateSubtask.mutate({ 
       taskId: task.id, 
       subtaskId, 
       data: { completed: !completed } 
@@ -131,10 +86,10 @@ export function TaskRow({
   };
 
   return (
-    <div className="mb-0.5">
+    <div>
       <div
         className={cn(
-          "group flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors",
+          "group flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer transition-colors",
           "hover:bg-accent/50",
           isCompleted && "opacity-50"
         )}
@@ -233,32 +188,36 @@ export function TaskRow({
         </DropdownMenu>
       </div>
 
-      {/* Subtasks List */}
+      {/* Compact Subtasks List (Linear-style) */}
       {showSubtasks && hasSubtasks && (
-        <div className="ml-8 mt-0.5">
-          <DndContext
-            sensors={subtaskSensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleSubtaskDragEnd}
-          >
-            <SortableContext
-              items={sortedSubtasks.map((s) => s.id)}
-              strategy={verticalListSortingStrategy}
+        <div className="ml-[3.25rem] pb-1">
+          {sortedSubtasks.map((subtask) => (
+            <div
+              key={subtask.id}
+              className="flex items-center gap-2 py-[3px] group/subtask"
+              onClick={(e) => e.stopPropagation()}
             >
-              <div className="space-y-0.5">
-                {sortedSubtasks.map((subtask) => (
-                  <SortableSubtaskItem
-                    key={subtask.id}
-                    subtask={subtask}
-                    onToggle={() => handleSubtaskToggle(subtask.id, subtask.completed)}
-                    onDelete={() => {
-                      deleteSubtask.mutate({ taskId: task.id, subtaskId: subtask.id });
-                    }}
-                  />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
+              <button
+                onClick={(e) => handleSubtaskToggle(e, subtask.id, subtask.completed)}
+                className={cn(
+                  "flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border transition-colors cursor-pointer",
+                  subtask.completed
+                    ? "border-primary/60 bg-primary/60 text-primary-foreground"
+                    : "border-muted-foreground/30 hover:border-primary"
+                )}
+              >
+                {subtask.completed && <Check className="h-2 w-2" strokeWidth={3} />}
+              </button>
+              <span
+                className={cn(
+                  "text-xs text-muted-foreground truncate",
+                  subtask.completed && "line-through opacity-50"
+                )}
+              >
+                {subtask.title}
+              </span>
+            </div>
+          ))}
         </div>
       )}
     </div>
