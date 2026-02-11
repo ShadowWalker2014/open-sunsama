@@ -5,6 +5,7 @@ import { cn, formatDuration } from "@/lib/utils";
 import { useCompleteTask } from "@/hooks/useTasks";
 import { useSubtasks } from "@/hooks/useSubtasks";
 import { useTaskTimerDisplay } from "@/components/kanban/task-time-badge";
+import { PriorityDot, PriorityTag } from "@/components/ui/priority-badge";
 
 interface MobileTaskCardProps {
   task: Task;
@@ -132,22 +133,32 @@ function MobileTaskCardBase({
       
       {/* Content area */}
       <div className="flex-1 min-w-0 py-0.5">
-        {/* Task title - max 2 lines with truncation */}
-        <p
-          className={cn(
-            "text-[15px] leading-snug line-clamp-2 break-words",
-            isCompleted && "line-through text-muted-foreground"
-          )}
-        >
-          {task.title}
-        </p>
+        {/* Task title with priority dot */}
+        <div className="flex items-start gap-1.5">
+          <PriorityDot
+            priority={task.priority}
+            size="sm"
+            className={cn("mt-[7px] shrink-0", isCompleted && "opacity-40")}
+          />
+          <p
+            className={cn(
+              "text-[15px] leading-snug line-clamp-2 break-words",
+              isCompleted && "line-through text-muted-foreground"
+            )}
+          >
+            {task.title}
+          </p>
+        </div>
         
         {/* Metadata row */}
-        {metadataItems.length > 0 && (
-          <div className="flex items-center gap-1.5 mt-1">
-            <p className="text-xs text-muted-foreground truncate">
-              {metadataItems.join(" • ")}
-            </p>
+        {(metadataItems.length > 0 || task.priority === "P0" || task.priority === "P1") && (
+          <div className="flex items-center gap-1.5 mt-1 ml-[14px]">
+            <PriorityTag priority={task.priority} showIcon className="shrink-0" />
+            {metadataItems.length > 0 && (
+              <p className="text-xs text-muted-foreground truncate">
+                {metadataItems.join(" • ")}
+              </p>
+            )}
           </div>
         )}
       </div>
