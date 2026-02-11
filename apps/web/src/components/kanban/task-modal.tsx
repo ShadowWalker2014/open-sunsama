@@ -519,6 +519,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
       const timer = setTimeout(() => { lastTaskRef.current = null; }, 300);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [open]);
 
   // Refs for time dropdowns (keyboard shortcuts E/W)
