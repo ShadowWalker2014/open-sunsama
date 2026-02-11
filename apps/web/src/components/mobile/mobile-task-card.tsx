@@ -5,7 +5,19 @@ import { cn, formatDuration } from "@/lib/utils";
 import { useCompleteTask } from "@/hooks/useTasks";
 import { useSubtasks } from "@/hooks/useSubtasks";
 import { useTaskTimerDisplay } from "@/components/kanban/task-time-badge";
-import { PriorityDot, PriorityTag } from "@/components/ui/priority-badge";
+import type { TaskPriority } from "@open-sunsama/types";
+
+const PRIORITY_CHECKBOX_BORDER: Record<TaskPriority, string> = {
+  P0: "border-red-500",
+  P1: "border-orange-500",
+  P2: "border-muted-foreground/40",
+  P3: "border-muted-foreground/30",
+};
+
+const PRIORITY_PILL_STYLE: Record<string, string> = {
+  P0: "bg-red-500/15 text-red-600 dark:text-red-400",
+  P1: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+};
 
 interface MobileTaskCardProps {
   task: Task;
@@ -83,10 +95,12 @@ function MobileTaskCardBase({
     onTaskClick(task);
   };
   
+  const hasSubtasks = subtaskCount > 0;
+
   return (
     <div
       className={cn(
-        "flex items-start gap-3 px-4 py-3 min-h-[48px]",
+        "flex items-center gap-3 px-4 h-12",
         "border-b border-border/30",
         "active:bg-muted/50 transition-colors",
         "cursor-pointer select-none touch-manipulation"
@@ -101,9 +115,9 @@ function MobileTaskCardBase({
         }
       }}
     >
-      {/* Large circular checkbox - 20px with 44px touch target */}
+      {/* Checkbox with priority-colored border */}
       <div
-        className="shrink-0 flex items-center justify-center w-11 h-11 -ml-2 -my-1"
+        className="shrink-0 flex items-center justify-center w-11 h-11 -ml-2"
         onClick={handleToggleComplete}
         onTouchEnd={(e) => {
           e.preventDefault();
@@ -124,47 +138,45 @@ function MobileTaskCardBase({
             "flex items-center justify-center w-5 h-5 rounded-full border-2 transition-all",
             isCompleted
               ? "border-primary bg-primary text-primary-foreground"
-              : "border-muted-foreground/40"
+              : PRIORITY_CHECKBOX_BORDER[task.priority]
           )}
         >
           {isCompleted && <Check className="h-3 w-3" strokeWidth={3} />}
         </div>
       </div>
       
-      {/* Content area */}
-      <div className="flex-1 min-w-0 py-0.5">
-        {/* Task title with priority dot */}
-        <div className="flex items-start gap-1.5">
-          <PriorityDot
-            priority={task.priority}
-            size="sm"
-            className={cn("mt-[7px] shrink-0", isCompleted && "opacity-40")}
-          />
-          <p
+      {/* Title - single line, truncated */}
+      <p
+        className={cn(
+          "flex-1 min-w-0 text-[15px] truncate",
+          isCompleted && "line-through text-muted-foreground"
+        )}
+      >
+        {task.title}
+      </p>
+
+      {/* Right side: metadata chips */}
+      <div className="shrink-0 flex items-center gap-1.5">
+        {/* Subtask count */}
+        {hasSubtasks && (
+          <span className="text-[11px] text-muted-foreground/70 tabular-nums">
+            {completedSubtaskCount}/{subtaskCount}
+          </span>
+        )}
+        {/* Priority pill - only P0/P1 */}
+        {(task.priority === "P0" || task.priority === "P1") && (
+          <span
             className={cn(
-              "text-[15px] leading-snug line-clamp-2 break-words",
-              isCompleted && "line-through text-muted-foreground"
+              "text-[10px] font-semibold rounded px-1.5 py-0.5 leading-none",
+              PRIORITY_PILL_STYLE[task.priority]
             )}
           >
-            {task.title}
-          </p>
-        </div>
-        
-        {/* Metadata row */}
-        {(metadataItems.length > 0 || task.priority === "P0" || task.priority === "P1") && (
-          <div className="flex items-center gap-1.5 mt-1 ml-[14px]">
-            <PriorityTag priority={task.priority} showIcon className="shrink-0" />
-            {metadataItems.length > 0 && (
-              <p className="text-xs text-muted-foreground truncate">
-                {metadataItems.join(" • ")}
-              </p>
-            )}
-          </div>
+            {task.priority}
+          </span>
         )}
+        {/* Time */}
+        {renderTimeDisplay({ isCompleted, estimatedMins: task.estimatedMins })}
       </div>
-      
-      {/* Time display - delegated to render prop */}
-      {renderTimeDisplay({ isCompleted, estimatedMins: task.estimatedMins })}
     </div>
   );
 }
