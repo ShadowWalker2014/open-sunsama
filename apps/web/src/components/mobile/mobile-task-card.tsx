@@ -1,11 +1,10 @@
 import * as React from "react";
-import { Check } from "lucide-react";
-import type { Task } from "@open-sunsama/types";
+import { Check, ChevronDown } from "lucide-react";
+import type { Task, TaskPriority } from "@open-sunsama/types";
 import { cn, formatDuration } from "@/lib/utils";
 import { useCompleteTask } from "@/hooks/useTasks";
-import { useSubtasks } from "@/hooks/useSubtasks";
+import { useSubtasks, useUpdateSubtask } from "@/hooks/useSubtasks";
 import { useTaskTimerDisplay } from "@/components/kanban/task-time-badge";
-import type { TaskPriority } from "@open-sunsama/types";
 
 const PRIORITY_CHECKBOX_BORDER: Record<TaskPriority, string> = {
   P0: "border-red-500",
@@ -66,25 +65,14 @@ function MobileTaskCardBase({
   renderTimeDisplay,
 }: MobileTaskCardBaseProps) {
   const completeTask = useCompleteTask();
+  const updateSubtask = useUpdateSubtask();
   const { data: subtasks } = useSubtasks(task.id);
+  const [subtasksExpanded, setSubtasksExpanded] = React.useState(false);
   
   const isCompleted = !!task.completedAt;
   const subtaskCount = subtasks?.length ?? 0;
   const completedSubtaskCount = subtasks?.filter((s) => s.completed).length ?? 0;
-  
-  // Build metadata items
-  const metadataItems: string[] = [];
-  
-  // Subtask count
-  if (subtaskCount > 0) {
-    metadataItems.push(`${completedSubtaskCount}/${subtaskCount} subtasks`);
-  }
-  
-  // Relative date from last update
-  const relativeDate = formatRelativeDate(task.updatedAt);
-  if (relativeDate && relativeDate !== "Today") {
-    metadataItems.push(relativeDate);
-  }
+  const hasSubtasks = subtaskCount > 0;
   
   const handleToggleComplete = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
@@ -94,89 +82,151 @@ function MobileTaskCardBase({
   const handleCardClick = () => {
     onTaskClick(task);
   };
-  
-  const hasSubtasks = subtaskCount > 0;
+
+  const handleSubtaskToggle = (subtaskId: string, currentCompleted: boolean) => {
+    updateSubtask.mutate({
+      taskId: task.id,
+      subtaskId,
+      data: { completed: !currentCompleted },
+    });
+  };
 
   return (
-    <div
-      className={cn(
-        "flex items-center gap-3 px-4 h-12",
-        "border-b border-border/30",
-        "active:bg-muted/50 transition-colors",
-        "cursor-pointer select-none touch-manipulation"
-      )}
-      onClick={handleCardClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          handleCardClick();
-        }
-      }}
-    >
-      {/* Checkbox with priority-colored border */}
+    <div className="border-b border-border/30">
+      {/* Main row */}
       <div
-        className="shrink-0 flex items-center justify-center w-11 h-11 -ml-2"
-        onClick={handleToggleComplete}
-        onTouchEnd={(e) => {
-          e.preventDefault();
-          handleToggleComplete(e);
-        }}
-        role="checkbox"
-        aria-checked={isCompleted}
+        className={cn(
+          "flex items-center gap-3 px-4 h-12",
+          "active:bg-muted/50 transition-colors",
+          "cursor-pointer select-none touch-manipulation"
+        )}
+        onClick={handleCardClick}
+        role="button"
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            handleToggleComplete(e as unknown as React.MouseEvent);
+            handleCardClick();
           }
         }}
       >
+        {/* Checkbox with priority-colored border */}
         <div
-          className={cn(
-            "flex items-center justify-center w-5 h-5 rounded-full border-2 transition-all",
-            isCompleted
-              ? "border-primary bg-primary text-primary-foreground"
-              : PRIORITY_CHECKBOX_BORDER[task.priority]
-          )}
+          className="shrink-0 flex items-center justify-center w-11 h-11 -ml-2"
+          onClick={handleToggleComplete}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            handleToggleComplete(e);
+          }}
+          role="checkbox"
+          aria-checked={isCompleted}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              handleToggleComplete(e as unknown as React.MouseEvent);
+            }
+          }}
         >
-          {isCompleted && <Check className="h-3 w-3" strokeWidth={3} />}
-        </div>
-      </div>
-      
-      {/* Title - single line, truncated */}
-      <p
-        className={cn(
-          "flex-1 min-w-0 text-[15px] truncate",
-          isCompleted && "line-through text-muted-foreground"
-        )}
-      >
-        {task.title}
-      </p>
-
-      {/* Right side: metadata chips */}
-      <div className="shrink-0 flex items-center gap-1.5">
-        {/* Subtask count */}
-        {hasSubtasks && (
-          <span className="text-[11px] text-muted-foreground/70 tabular-nums">
-            {completedSubtaskCount}/{subtaskCount}
-          </span>
-        )}
-        {/* Priority pill - only P0/P1 */}
-        {(task.priority === "P0" || task.priority === "P1") && (
-          <span
+          <div
             className={cn(
-              "text-[10px] font-semibold rounded px-1.5 py-0.5 leading-none",
-              PRIORITY_PILL_STYLE[task.priority]
+              "flex items-center justify-center w-5 h-5 rounded-full border-2 transition-all",
+              isCompleted
+                ? "border-primary bg-primary text-primary-foreground"
+                : PRIORITY_CHECKBOX_BORDER[task.priority]
             )}
           >
-            {task.priority}
-          </span>
-        )}
-        {/* Time */}
-        {renderTimeDisplay({ isCompleted, estimatedMins: task.estimatedMins })}
+            {isCompleted && <Check className="h-3 w-3" strokeWidth={3} />}
+          </div>
+        </div>
+        
+        {/* Title - single line, truncated */}
+        <p
+          className={cn(
+            "flex-1 min-w-0 text-[15px] truncate",
+            isCompleted && "line-through text-muted-foreground"
+          )}
+        >
+          {task.title}
+        </p>
+
+        {/* Right side: metadata chips */}
+        <div className="shrink-0 flex items-center gap-1.5">
+          {/* Subtask toggle chip */}
+          {hasSubtasks && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setSubtasksExpanded((v) => !v);
+              }}
+              className={cn(
+                "flex items-center gap-0.5 text-[11px] tabular-nums rounded-md px-1.5 py-0.5 transition-colors",
+                subtasksExpanded
+                  ? "bg-muted text-foreground"
+                  : "text-muted-foreground/70 hover:text-muted-foreground"
+              )}
+            >
+              {completedSubtaskCount}/{subtaskCount}
+              <ChevronDown
+                className={cn(
+                  "h-3 w-3 transition-transform duration-150",
+                  subtasksExpanded && "rotate-180"
+                )}
+              />
+            </button>
+          )}
+          {/* Priority pill - only P0/P1 */}
+          {(task.priority === "P0" || task.priority === "P1") && (
+            <span
+              className={cn(
+                "text-[10px] font-semibold rounded px-1.5 py-0.5 leading-none",
+                PRIORITY_PILL_STYLE[task.priority]
+              )}
+            >
+              {task.priority}
+            </span>
+          )}
+          {/* Time */}
+          {renderTimeDisplay({ isCompleted, estimatedMins: task.estimatedMins })}
+        </div>
       </div>
+
+      {/* Expandable subtask list */}
+      {subtasksExpanded && hasSubtasks && subtasks && (
+        <div className="px-4 pb-2 pl-[60px] space-y-0.5">
+          {subtasks.map((subtask) => (
+            <div
+              key={subtask.id}
+              className="flex items-center gap-2 py-1 rounded-md active:bg-muted/30 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSubtaskToggle(subtask.id, subtask.completed);
+              }}
+            >
+              <div
+                className={cn(
+                  "flex items-center justify-center h-4 w-4 shrink-0 rounded-full transition-colors",
+                  subtask.completed
+                    ? "bg-primary/60"
+                    : "border border-muted-foreground/40"
+                )}
+              >
+                {subtask.completed && (
+                  <Check className="h-2.5 w-2.5 text-primary-foreground" strokeWidth={3} />
+                )}
+              </div>
+              <span
+                className={cn(
+                  "text-sm text-muted-foreground truncate",
+                  subtask.completed && "line-through opacity-50"
+                )}
+              >
+                {subtask.title}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
