@@ -19,6 +19,7 @@ import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
+  TooltipProvider,
 } from "@/components/ui";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
@@ -241,24 +242,26 @@ export function AddTaskModal({
               >
                 Cancel
               </Button>
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <Button
-                    type="submit"
-                    size="sm"
-                    className="h-8"
-                    disabled={!title.trim() || createTask.isPending || createSubtask.isPending}
-                  >
-                    {createTask.isPending || createSubtask.isPending ? "Creating..." : "Create"}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="flex items-center gap-1.5">
-                  <span>Create task</span>
-                  <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded border border-zinc-700 bg-zinc-800 px-1.5 font-mono text-[10px] font-medium text-zinc-300 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
-                    ⌘↵
-                  </kbd>
-                </TooltipContent>
-              </Tooltip>
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="submit"
+                      size="sm"
+                      className="h-8"
+                      disabled={!title.trim() || createTask.isPending || createSubtask.isPending}
+                    >
+                      {createTask.isPending || createSubtask.isPending ? "Creating..." : "Create"}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="flex items-center gap-1.5">
+                    <span>Create task</span>
+                    <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded border border-zinc-700 bg-zinc-800 px-1.5 font-mono text-[10px] font-medium text-zinc-300 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+                      ⌘↵
+                    </kbd>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </DialogFooter>
         </form>
