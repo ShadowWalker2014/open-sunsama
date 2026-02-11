@@ -91,10 +91,11 @@ export function TaskGroup({
             items={taskIds}
             strategy={verticalListSortingStrategy}
           >
-            {tasks.map((task) => (
+            {tasks.map((task, idx) => (
               <SortableTaskRow
                 key={task.id}
                 task={task}
+                originalIndex={idx}
                 onSelect={() => onSelectTask(task)}
                 onComplete={() => onCompleteTask(task)}
               />
