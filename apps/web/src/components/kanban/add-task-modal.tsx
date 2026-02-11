@@ -16,6 +16,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
 } from "@/components/ui";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
@@ -43,6 +46,7 @@ export function AddTaskModal({
   const createTask = useCreateTask();
   const createSubtask = useCreateSubtask();
   const titleInputRef = React.useRef<HTMLInputElement>(null);
+  const formRef = React.useRef<HTMLFormElement>(null);
 
   // Focus title input when modal opens
   React.useEffect(() => {
@@ -60,6 +64,19 @@ export function AddTaskModal({
       setPriority("P2");
       setSubtasks([]);
     }
+  }, [open]);
+
+  // Cmd+Enter / Ctrl+Enter to submit
+  React.useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        formRef.current?.requestSubmit();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -96,7 +113,7 @@ export function AddTaskModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md p-0 gap-0 overflow-hidden">
-        <form onSubmit={handleSubmit}>
+        <form ref={formRef} onSubmit={handleSubmit}>
           {/* Header - Title input */}
           <div className="px-4 pt-4 pb-3 border-b">
             <Input
@@ -208,24 +225,41 @@ export function AddTaskModal({
           </div>
 
           {/* Footer */}
-          <DialogFooter className="px-4 py-3 border-t bg-muted/20 flex-row justify-end gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-8"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              size="sm"
-              className="h-8"
-              disabled={!title.trim() || createTask.isPending || createSubtask.isPending}
-            >
-              {createTask.isPending || createSubtask.isPending ? "Creating..." : "Create"}
-            </Button>
+          <DialogFooter className="px-4 py-3 border-t bg-muted/20 flex-row justify-between items-center gap-2">
+            <span className="text-xs text-muted-foreground/50 hidden sm:inline-flex items-center gap-1">
+              <kbd className="inline-flex h-5 select-none items-center rounded border bg-muted px-1 font-mono text-[10px] font-medium">⌘</kbd>
+              <kbd className="inline-flex h-5 select-none items-center rounded border bg-muted px-1 font-mono text-[10px] font-medium">↵</kbd>
+              <span className="ml-0.5">to create</span>
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-8"
+                onClick={() => onOpenChange(false)}
+              >
+                Cancel
+              </Button>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    className="h-8"
+                    disabled={!title.trim() || createTask.isPending || createSubtask.isPending}
+                  >
+                    {createTask.isPending || createSubtask.isPending ? "Creating..." : "Create"}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="flex items-center gap-1.5">
+                  <span>Create task</span>
+                  <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded border border-zinc-700 bg-zinc-800 px-1.5 font-mono text-[10px] font-medium text-zinc-300 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+                    ⌘↵
+                  </kbd>
+                </TooltipContent>
+              </Tooltip>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>
