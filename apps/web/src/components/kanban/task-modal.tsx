@@ -504,6 +504,22 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   const [isAddingSubtask, setIsAddingSubtask] = React.useState(false);
   const [repeatDialogOpen, setRepeatDialogOpen] = React.useState(false);
   const [actualMins, setActualMins] = React.useState<number | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
+
+  // Keep a ref to the last non-null task so the Dialog can still render content
+  // during its close animation (after task prop becomes null)
+  const lastTaskRef = React.useRef<Task | null>(null);
+  if (task) {
+    lastTaskRef.current = task;
+  }
+  // Clear stale ref when Dialog finishes closing
+  React.useEffect(() => {
+    if (!open) {
+      // Wait for close animation to finish before clearing
+      const timer = setTimeout(() => { lastTaskRef.current = null; }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
 
   // Refs for time dropdowns (keyboard shortcuts E/W)
   const actualTimeRef = React.useRef<TimeDropdownRef>(null);
@@ -718,6 +734,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
       setActualMins(task.actualMins || null);
       setIsAddingSubtask(false);
       setNewSubtaskTitle("");
+      setShowDeleteConfirm(false);
     }
   }, [task]);
 
@@ -795,12 +812,17 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   // Keep the ref in sync so keyboard handler always calls latest version
   timerToggleRef.current = handleTimerToggle;
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!task) return;
-    if (confirm("Are you sure you want to delete this task?")) {
-      await deleteTask.mutateAsync(task.id);
-      onOpenChange(false);
-    }
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    const taskToDelete = task ?? lastTaskRef.current;
+    if (!taskToDelete) return;
+    setShowDeleteConfirm(false);
+    await deleteTask.mutateAsync(taskToDelete.id);
+    onOpenChange(false);
   };
 
   const handleDuplicate = async () => {
@@ -862,22 +884,26 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
 
   const subtaskIds = subtasks.map((st) => st.id);
 
-  if (!task) return null;
+  // Use the live task for rendering, falling back to lastTaskRef during close animation
+  const renderTask = task ?? lastTaskRef.current;
+
+  // If no task data at all (never opened), render nothing
+  if (!renderTask) return null;
 
   const handleExpandToFocus = () => {
-    if (!task) return;
+    if (!renderTask) return;
     onOpenChange(false);
-    navigate({ to: "/app/focus/$taskId", params: { taskId: task.id } });
+    navigate({ to: "/app/focus/$taskId", params: { taskId: renderTask.id } });
   };
 
   const handleRepeatSave = async (config: CreateTaskSeriesInput) => {
-    if (!task) return;
+    if (!renderTask) return;
     await createTaskSeries.mutateAsync({
       ...config,
-      title: task.title,
-      notes: task.notes ?? undefined,
-      priority: task.priority,
-      estimatedMins: task.estimatedMins ?? undefined,
+      title: renderTask.title,
+      notes: renderTask.notes ?? undefined,
+      priority: renderTask.priority,
+      estimatedMins: renderTask.estimatedMins ?? undefined,
     });
   };
 
@@ -904,7 +930,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
           <textarea
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            onBlur={() => title !== task.title && handleSave()}
+            onBlur={() => title !== renderTask.title && handleSave()}
             rows={1}
             className={cn(
               "flex-1 min-w-0 resize-none border-none p-0 text-lg font-semibold shadow-none focus:outline-none focus:ring-0 bg-transparent leading-snug",
@@ -942,7 +968,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                   <Copy className="mr-2 h-4 w-4" />
                   Duplicate
                 </DropdownMenuItem>
-                {!task.seriesId && (
+                {!renderTask.seriesId && (
                   <DropdownMenuItem onSelect={() => setRepeatDialogOpen(true)}>
                     <Repeat className="mr-2 h-4 w-4" />
                     Repeat...
@@ -970,7 +996,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
         {/* Property bar — priority · date · time */}
         <div className="flex items-center gap-1 px-6 pb-4">
           <InlinePrioritySelector
-            priority={task.priority}
+            priority={renderTask.priority}
             onChange={handlePriorityChange}
           />
           <div className="w-px h-3.5 bg-border/60 mx-1" />
@@ -978,9 +1004,9 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
             <Calendar className="h-3.5 w-3.5 text-muted-foreground/60" />
             <DatePickerPopover
               ref={datePickerRef}
-              value={task.scheduledDate}
+              value={renderTask.scheduledDate}
               onChange={handleScheduledDateChange}
-              taskTitle={task.title}
+              taskTitle={renderTask.title}
             />
           </div>
           <div className="w-px h-3.5 bg-border/60 mx-1" />
@@ -993,11 +1019,11 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
                 </span>
                 <span
-                  className={cn(
+                    className={cn(
                     "font-mono text-sm tabular-nums font-medium",
-                    task.estimatedMins && liveSeconds > task.estimatedMins * 60 * 1.5
+                    renderTask.estimatedMins && liveSeconds > renderTask.estimatedMins * 60 * 1.5
                       ? "text-red-500"
-                      : task.estimatedMins && liveSeconds > task.estimatedMins * 60
+                      : renderTask.estimatedMins && liveSeconds > renderTask.estimatedMins * 60
                         ? "text-amber-500"
                         : "text-emerald-600 dark:text-emerald-400"
                   )}
@@ -1070,7 +1096,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
         {/* Main Content */}
         <div className="border-t border-border/40 px-6 py-4 space-y-4 max-h-[55vh] overflow-y-auto">
           {/* Series Banner */}
-          {task.seriesId && <TaskSeriesBanner task={task} />}
+          {renderTask.seriesId && <TaskSeriesBanner task={renderTask} />}
 
           {/* Subtasks Section */}
           <div className="space-y-3">
@@ -1092,7 +1118,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                       onDelete={() => handleDeleteSubtask(subtask.id)}
                       onUpdate={(newTitle) =>
                         updateSubtask.mutate({
-                          taskId: task!.id,
+                          taskId: renderTask.id,
                           subtaskId: subtask.id,
                           data: { title: newTitle },
                         })
@@ -1150,30 +1176,58 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
               notes={description}
               onChange={setDescription}
               onBlur={() => {
-                if (description !== (task.notes || "")) handleSave();
+                if (description !== (renderTask.notes || "")) handleSave();
               }}
               minHeight="150px"
             />
           </div>
 
           {/* Attachments */}
-          <TaskAttachments taskId={task.id} />
+          <TaskAttachments taskId={renderTask.id} />
         </div>
       </DialogContent>
 
       {/* Repeat Config Dialog */}
-      {task && !task.seriesId && (
+      {renderTask && !renderTask.seriesId && (
         <RepeatConfigDialog
-          title={task.title}
+          title={renderTask.title}
           initialConfig={{
-            notes: task.notes ?? undefined,
-            priority: task.priority,
-            estimatedMins: task.estimatedMins ?? undefined,
+            notes: renderTask.notes ?? undefined,
+            priority: renderTask.priority,
+            estimatedMins: renderTask.estimatedMins ?? undefined,
           }}
           onSave={handleRepeatSave}
           open={repeatDialogOpen}
           onOpenChange={setRepeatDialogOpen}
         />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
+          <div className="bg-background rounded-lg border shadow-lg p-6 max-w-sm mx-4 space-y-4">
+            <div>
+              <h3 className="text-base font-semibold">Delete task</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Are you sure you want to delete this task? This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-3 py-1.5 text-sm font-medium rounded-md hover:bg-muted transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className="px-3 py-1.5 text-sm font-medium rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </Dialog>
   );
