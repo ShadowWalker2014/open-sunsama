@@ -1148,7 +1148,9 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                     }
                   }}
                   onBlur={() => {
-                    if (!newSubtaskTitle.trim()) {
+                    if (newSubtaskTitle.trim()) {
+                      addSubtask();
+                    } else {
                       setIsAddingSubtask(false);
                     }
                   }}

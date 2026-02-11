@@ -77,6 +77,7 @@ export function SubtaskList({
               addSubtask();
             }
           }}
+          onBlur={addSubtask}
           placeholder="Add a subtask..."
           className="border-none p-0 h-auto text-sm shadow-none focus-visible:ring-0"
         />
