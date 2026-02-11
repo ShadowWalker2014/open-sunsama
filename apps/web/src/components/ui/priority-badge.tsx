@@ -5,11 +5,11 @@ import { cn } from "@/lib/utils";
 import type { TaskPriority } from "@open-sunsama/types";
 
 /**
- * Linear-style priority indicators
- * P0 (Urgent): Red background, white text - always visible
- * P1 (High): Orange/amber background - always visible  
- * P2 (Medium): Hidden by default (default priority, keep it clean)
- * P3 (Low): Hidden by default (very subtle)
+ * Priority color palette (consistent across all views):
+ * P0 (Urgent): Red
+ * P1 (High): Orange
+ * P2 (Medium): Blue
+ * P3 (Low): Gray
  */
 
 const priorityBadgeVariants = cva(
@@ -19,7 +19,7 @@ const priorityBadgeVariants = cva(
       priority: {
         P0: "bg-red-500/15 text-red-600 dark:text-red-400",
         P1: "bg-orange-500/15 text-orange-600 dark:text-orange-400",
-        P2: "bg-slate-500/10 text-slate-500 dark:text-slate-400",
+        P2: "bg-blue-500/10 text-blue-500 dark:text-blue-400",
         P3: "bg-slate-400/10 text-slate-400 dark:text-slate-500",
       },
       size: {
@@ -42,7 +42,7 @@ const priorityDotVariants = cva(
       priority: {
         P0: "bg-red-500",
         P1: "bg-orange-500",
-        P2: "bg-slate-400",
+        P2: "bg-blue-500",
         P3: "bg-slate-300 dark:bg-slate-600",
       },
       size: {
@@ -68,8 +68,8 @@ const priorityTagVariants = cva(
     variants: {
       priority: {
         P0: "bg-red-500 text-white",
-        P1: "bg-amber-500/90 text-white",
-        P2: "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300",
+        P1: "bg-orange-500 text-white",
+        P2: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
         P3: "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500",
       },
     },
@@ -182,7 +182,7 @@ export function PriorityIcon({
   const colorClasses: Record<TaskPriority, string> = {
     P0: "bg-red-500",
     P1: "bg-orange-500",
-    P2: "bg-slate-400",
+    P2: "bg-blue-500",
     P3: "bg-slate-300 dark:bg-slate-500",
   };
 
@@ -257,9 +257,9 @@ export function PriorityLabel({
 }) {
   const styleClasses: Record<TaskPriority, string> = {
     P0: "bg-red-500/15 text-red-600 dark:text-red-400",
-    P1: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+    P1: "bg-orange-500/15 text-orange-600 dark:text-orange-400",
     P2: "bg-blue-500/10 text-blue-500 dark:text-blue-400",
-    P3: "bg-slate-500/10 text-slate-500 dark:text-slate-400",
+    P3: "bg-slate-400/10 text-slate-400 dark:text-slate-500",
   };
 
   return (

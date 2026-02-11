@@ -10,13 +10,13 @@ import type { TaskPriority } from "@open-sunsama/types";
 const PRIORITY_CHECKBOX_BORDER: Record<TaskPriority, string> = {
   P0: "border-red-500",
   P1: "border-orange-500",
-  P2: "border-muted-foreground/40",
+  P2: "border-blue-500",
   P3: "border-muted-foreground/30",
 };
 
 const PRIORITY_PILL_STYLE: Record<string, string> = {
   P0: "bg-red-500/15 text-red-600 dark:text-red-400",
-  P1: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  P1: "bg-orange-500/15 text-orange-600 dark:text-orange-400",
 };
 
 interface MobileTaskCardProps {
