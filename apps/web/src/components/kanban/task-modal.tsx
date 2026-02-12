@@ -1209,17 +1209,20 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
 
     </Dialog>
 
-    {/* Delete confirmation rendered via portal outside Radix Dialog tree
-        so it isn't blocked by Dialog's focus trap and event interception */}
+    {/* Delete confirmation rendered via portal outside Radix Dialog tree.
+        Uses onPointerDown instead of onClick because Radix Dialog's FocusScope
+        traps focus at the document level — it intercepts between pointerdown
+        and click, yanking focus back into the dialog before click fires.
+        onPointerDown fires before the focus trap kicks in. */}
     {showDeleteConfirm &&
       createPortal(
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
-          onClick={() => setShowDeleteConfirm(false)}
+          onPointerDown={() => setShowDeleteConfirm(false)}
         >
           <div
             className="bg-background rounded-lg border shadow-lg p-6 max-w-sm mx-4 space-y-4"
-            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
           >
             <div>
               <h3 className="text-base font-semibold">Delete task</h3>
@@ -1229,14 +1232,14 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
             </div>
             <div className="flex justify-end gap-2">
               <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="px-3 py-1.5 text-sm font-medium rounded-md hover:bg-muted transition-colors cursor-pointer"
+                onPointerDown={() => setShowDeleteConfirm(false)}
+                className="px-3 py-1.5 text-sm font-medium rounded-md hover:bg-muted active:bg-muted transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
-                onClick={handleDeleteConfirm}
-                className="px-3 py-1.5 text-sm font-medium rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors cursor-pointer"
+                onPointerDown={handleDeleteConfirm}
+                className="px-3 py-1.5 text-sm font-medium rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90 active:bg-destructive/80 transition-colors cursor-pointer"
               >
                 Delete
               </button>
