@@ -1,6 +1,6 @@
 {
   "name": "@open-sunsama/expo-mobile",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "private": true,
   "main": "expo-router/entry",
   "expo": {
