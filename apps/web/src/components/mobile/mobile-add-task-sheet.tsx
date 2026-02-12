@@ -43,14 +43,17 @@ export function MobileAddTaskSheet({
   const inputRef = React.useRef<HTMLInputElement>(null);
   const createTask = useCreateTask();
 
-  // Animate in after mount
+  // Animate in and focus input immediately
   React.useEffect(() => {
     if (open) {
-      // Small delay to trigger CSS transition
       requestAnimationFrame(() => {
         requestAnimationFrame(() => setVisible(true));
       });
-      setTimeout(() => inputRef.current?.focus(), 200);
+      // Focus quickly so keyboard comes up right away
+      setTimeout(() => {
+        inputRef.current?.focus();
+        inputRef.current?.click();
+      }, 50);
     } else {
       setVisible(false);
     }
@@ -97,10 +100,8 @@ export function MobileAddTaskSheet({
       priority,
     });
 
-    // Reset for next task (keep sheet open for rapid entry)
-    setTitle("");
-    setPriority("P2");
-    inputRef.current?.focus();
+    // Dismiss sheet after creating
+    onOpenChange(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

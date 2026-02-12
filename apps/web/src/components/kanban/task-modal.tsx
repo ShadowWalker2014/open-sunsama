@@ -1,4 +1,5 @@
 import * as React from "react";
+import { createPortal } from "react-dom";
 import {
   format,
   addMinutes,
@@ -909,6 +910,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden [&>button]:hidden">
         {/* Title row with inline actions */}
@@ -1205,10 +1207,20 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
         />
       )}
 
-      {/* Delete Confirmation Dialog */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-          <div className="bg-background rounded-lg border shadow-lg p-6 max-w-sm mx-4 space-y-4">
+    </Dialog>
+
+    {/* Delete confirmation rendered via portal outside Radix Dialog tree
+        so it isn't blocked by Dialog's focus trap and event interception */}
+    {showDeleteConfirm &&
+      createPortal(
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
+          onClick={() => setShowDeleteConfirm(false)}
+        >
+          <div
+            className="bg-background rounded-lg border shadow-lg p-6 max-w-sm mx-4 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div>
               <h3 className="text-base font-semibold">Delete task</h3>
               <p className="text-sm text-muted-foreground mt-1">
@@ -1218,20 +1230,21 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-3 py-1.5 text-sm font-medium rounded-md hover:bg-muted transition-colors"
+                className="px-3 py-1.5 text-sm font-medium rounded-md hover:bg-muted transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDeleteConfirm}
-                className="px-3 py-1.5 text-sm font-medium rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+                className="px-3 py-1.5 text-sm font-medium rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors cursor-pointer"
               >
                 Delete
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
-    </Dialog>
+    </>
   );
 }
