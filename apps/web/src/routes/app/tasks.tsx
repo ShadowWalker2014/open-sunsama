@@ -24,6 +24,8 @@ import {
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates, arrayMove } from "@dnd-kit/sortable";
 import { TaskRow } from "@/components/tasks/task-row";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { MobileTaskListView } from "@/components/mobile";
 
 type StatusFilter = "active" | "all" | "completed";
 
@@ -92,6 +94,16 @@ function formatFutureDate(dateStr: string): string {
 }
 
 export default function TasksListPage() {
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return <MobileTaskListView />;
+  }
+
+  return <TasksListPageDesktop />;
+}
+
+function TasksListPageDesktop() {
   const [query, setQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>("active");
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
