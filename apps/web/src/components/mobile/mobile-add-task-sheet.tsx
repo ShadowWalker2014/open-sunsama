@@ -1,10 +1,9 @@
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { Send } from "lucide-react";
 import type { TaskPriority } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { useCreateTask } from "@/hooks/useTasks";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Input } from "@/components/ui";
 
 const PRIORITY_COLORS: Record<TaskPriority, string> = {
   P0: "bg-red-500 text-white",
@@ -29,8 +28,8 @@ interface MobileAddTaskSheetProps {
 }
 
 /**
- * Minimal bottom sheet for quickly adding tasks on mobile.
- * Slides up from the bottom with just a title input, priority chips, and send button.
+ * Custom bottom sheet for mobile task creation that stays above the virtual keyboard.
+ * Uses visualViewport API to detect keyboard height and position itself correctly.
  */
 export function MobileAddTaskSheet({
   open,
@@ -39,13 +38,21 @@ export function MobileAddTaskSheet({
 }: MobileAddTaskSheetProps) {
   const [title, setTitle] = React.useState("");
   const [priority, setPriority] = React.useState<TaskPriority>("P2");
+  const [bottomOffset, setBottomOffset] = React.useState(0);
+  const [visible, setVisible] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const createTask = useCreateTask();
 
-  // Focus input when sheet opens
+  // Animate in after mount
   React.useEffect(() => {
     if (open) {
-      setTimeout(() => inputRef.current?.focus(), 150);
+      // Small delay to trigger CSS transition
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setVisible(true));
+      });
+      setTimeout(() => inputRef.current?.focus(), 200);
+    } else {
+      setVisible(false);
     }
   }, [open]);
 
@@ -54,7 +61,31 @@ export function MobileAddTaskSheet({
     if (!open) {
       setTitle("");
       setPriority("P2");
+      setBottomOffset(0);
     }
+  }, [open]);
+
+  // Track keyboard via visualViewport
+  React.useEffect(() => {
+    if (!open) return;
+
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const handleResize = () => {
+      // Difference between layout viewport and visual viewport = keyboard height
+      const keyboardHeight = window.innerHeight - vv.height - vv.offsetTop;
+      setBottomOffset(Math.max(0, keyboardHeight));
+    };
+
+    vv.addEventListener("resize", handleResize);
+    vv.addEventListener("scroll", handleResize);
+    handleResize();
+
+    return () => {
+      vv.removeEventListener("resize", handleResize);
+      vv.removeEventListener("scroll", handleResize);
+    };
   }, [open]);
 
   const handleSubmit = async () => {
@@ -79,60 +110,82 @@ export function MobileAddTaskSheet({
     }
   };
 
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="bottom"
-        className="px-4 pb-8 pt-3 rounded-t-2xl max-h-[40vh] [&>button]:hidden"
+  if (!open) return null;
+
+  return createPortal(
+    <>
+      {/* Backdrop */}
+      <div
+        className={cn(
+          "fixed inset-0 z-50 bg-black/50 transition-opacity duration-200",
+          visible ? "opacity-100" : "opacity-0"
+        )}
+        onClick={() => onOpenChange(false)}
+      />
+
+      {/* Sheet panel */}
+      <div
+        className={cn(
+          "fixed inset-x-0 z-50 bg-background border-t rounded-t-2xl shadow-lg",
+          "transition-transform duration-200 ease-out",
+          visible ? "translate-y-0" : "translate-y-full"
+        )}
+        style={{ bottom: bottomOffset }}
       >
         {/* Drag handle */}
-        <div className="flex justify-center mb-3">
+        <div className="flex justify-center pt-3 pb-2">
           <div className="w-8 h-1 rounded-full bg-muted-foreground/20" />
         </div>
 
-        {/* Title input row */}
-        <div className="flex items-center gap-2">
-          <Input
-            ref={inputRef}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="What needs to be done?"
-            className="flex-1 border-none p-0 text-base shadow-none focus-visible:ring-0 h-10 bg-transparent"
-          />
-          <button
-            onClick={handleSubmit}
-            disabled={!title.trim() || createTask.isPending}
-            className={cn(
-              "shrink-0 flex items-center justify-center w-9 h-9 rounded-full transition-all",
-              title.trim()
-                ? "bg-primary text-primary-foreground active:scale-95"
-                : "bg-muted text-muted-foreground"
-            )}
-          >
-            <Send className="h-4 w-4" />
-          </button>
-        </div>
-
-        {/* Priority chips */}
-        <div className="flex items-center gap-2 mt-3">
-          <span className="text-xs text-muted-foreground mr-1">Priority</span>
-          {PRIORITIES.map((p) => (
+        <div className="px-4 pb-6">
+          {/* Title input row */}
+          <div className="flex items-center gap-2">
+            <input
+              ref={inputRef}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="What needs to be done?"
+              className="flex-1 text-base bg-transparent outline-none placeholder:text-muted-foreground/50 h-10"
+              autoComplete="off"
+              autoCorrect="off"
+              enterKeyHint="send"
+            />
             <button
-              key={p}
-              onClick={() => setPriority(p)}
+              onClick={handleSubmit}
+              disabled={!title.trim() || createTask.isPending}
               className={cn(
-                "h-7 px-2.5 rounded-full text-xs font-medium transition-all",
-                priority === p
-                  ? cn(PRIORITY_COLORS[p], "ring-2 ring-offset-2 ring-offset-background", PRIORITY_RING[p])
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+                "shrink-0 flex items-center justify-center w-9 h-9 rounded-full transition-all",
+                title.trim()
+                  ? "bg-primary text-primary-foreground active:scale-95"
+                  : "bg-muted text-muted-foreground"
               )}
             >
-              {p}
+              <Send className="h-4 w-4" />
             </button>
-          ))}
+          </div>
+
+          {/* Priority chips */}
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-xs text-muted-foreground mr-1">Priority</span>
+            {PRIORITIES.map((p) => (
+              <button
+                key={p}
+                onClick={() => setPriority(p)}
+                className={cn(
+                  "h-7 px-2.5 rounded-full text-xs font-medium transition-all",
+                  priority === p
+                    ? cn(PRIORITY_COLORS[p], "ring-2 ring-offset-2 ring-offset-background", PRIORITY_RING[p])
+                    : "bg-muted text-muted-foreground"
+                )}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </div>
+    </>,
+    document.body
   );
 }
