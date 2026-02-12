@@ -198,7 +198,7 @@ releasesRouter.get('/:platform', zValidator('param', platformParamSchema), async
   });
 });
 
-/** POST /releases - Create a new release */
+/** POST /releases - Create or update a release (upsert) */
 releasesRouter.post('/', zValidator('json', createReleaseSchema), async (c) => {
   // Verify release secret
   await verifyReleaseAuth(c);
@@ -214,9 +214,23 @@ releasesRouter.post('/', zValidator('json', createReleaseSchema), async (c) => {
     .limit(1);
 
   if (existing) {
-    throw new ValidationError('Release already exists', {
-      version: [`Release ${data.version} for ${data.platform} already exists`],
-    });
+    // Upsert: update existing release with new data
+    const [updated] = await db
+      .update(releases)
+      .set({
+        downloadUrl: data.downloadUrl,
+        fileSize: data.fileSize,
+        fileName: data.fileName,
+        sha256: data.sha256 ?? null,
+        signature: data.signature ?? null,
+        updaterUrl: data.updaterUrl ?? null,
+        releaseNotes: data.releaseNotes ?? null,
+        updatedAt: new Date(),
+      })
+      .where(eq(releases.id, existing.id))
+      .returning();
+
+    return c.json({ success: true, data: updated });
   }
 
   // Generate release ID

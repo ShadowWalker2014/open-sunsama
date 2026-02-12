@@ -65,3 +65,4 @@ grep -r '"version":' package.json apps/*/package.json apps/*/src-tauri/tauri.con
 | Version | Date | Notes |
 |---------|------|-------|
 | v1.0.0 | 2026-01-30 | Initial release |
+| v1.0.7 | 2026-02-11 | Desktop release build |
