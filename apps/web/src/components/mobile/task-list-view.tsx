@@ -34,7 +34,7 @@ import { useTasks, useReorderTasks } from "@/hooks/useTasks";
 import { MobileTaskCardWithActualTime } from "./mobile-task-card";
 import { SortableMobileTaskCard } from "./sortable-mobile-task-card";
 import { TaskModal } from "@/components/kanban/task-modal";
-import { AddTaskModal } from "@/components/kanban/add-task-modal";
+import { MobileAddTaskSheet } from "./mobile-add-task-sheet";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -337,8 +337,8 @@ export function MobileTaskListView({ date, className }: MobileTaskListViewProps)
         }}
       />
       
-      {/* Add task modal */}
-      <AddTaskModal
+      {/* Add task bottom sheet */}
+      <MobileAddTaskSheet
         open={isAddModalOpen}
         onOpenChange={setIsAddModalOpen}
         scheduledDate={dateString}
