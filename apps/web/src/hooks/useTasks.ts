@@ -34,7 +34,7 @@ export function useTasks(filters?: TaskFilterInput) {
     queryFn: async () => {
       const api = getApi();
       // Use high limit for single-day queries to prevent truncation
-      const effectiveFilters = filters?.scheduledDate 
+      const effectiveFilters = filters?.scheduledDate
         ? { ...filters, limit: filters.limit ?? 200 }
         : filters;
       const response = await api.tasks.list(effectiveFilters);
@@ -74,13 +74,15 @@ export function useCreateTask() {
     onSuccess: (newTask) => {
       // Invalidate and refetch task lists
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
-      
+
       // Also invalidate infinite search queries (used by "All Tasks" page)
-      queryClient.invalidateQueries({ queryKey: ["tasks", "search", "infinite"] });
-      
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", "search", "infinite"],
+      });
+
       // Optionally add the new task to the cache
       queryClient.setQueryData(taskKeys.detail(newTask.id), newTask);
-      
+
       toast({
         title: "Task created",
         description: `"${newTask.title}" has been created.`,
@@ -103,7 +105,13 @@ export function useUpdateTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateTaskInput }): Promise<Task> => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: UpdateTaskInput;
+    }): Promise<Task> => {
       const api = getApi();
       return await api.tasks.update(id, data);
     },
@@ -185,16 +193,18 @@ export function useDeleteTask() {
     onSuccess: (deletedId) => {
       // Remove from cache
       queryClient.removeQueries({ queryKey: taskKeys.detail(deletedId) });
-      
+
       // Invalidate all task lists
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
-      
+
       // Also invalidate infinite search queries (used by "All Tasks" page)
-      queryClient.invalidateQueries({ queryKey: ["tasks", "search", "infinite"] });
-      
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", "search", "infinite"],
+      });
+
       // Also invalidate time blocks since they may reference this task
       queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
-      
+
       toast({
         title: "Task deleted",
         description: "The task has been deleted.",
@@ -218,9 +228,15 @@ export function useCompleteTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, completed }: { id: string; completed: boolean }): Promise<Task> => {
+    mutationFn: async ({
+      id,
+      completed,
+    }: {
+      id: string;
+      completed: boolean;
+    }): Promise<Task> => {
       const api = getApi();
-      
+
       if (completed) {
         // Server's complete endpoint auto-stops any running timer and saves actualMins
         return await api.tasks.complete(id);
@@ -231,7 +247,9 @@ export function useCompleteTask() {
     onMutate: async ({ id, completed }) => {
       await queryClient.cancelQueries({ queryKey: taskKeys.lists() });
       await queryClient.cancelQueries({ queryKey: taskKeys.detail(id) });
-      await queryClient.cancelQueries({ queryKey: ["tasks", "search", "infinite"] });
+      await queryClient.cancelQueries({
+        queryKey: ["tasks", "search", "infinite"],
+      });
 
       const previousTask = queryClient.getQueryData<Task>(taskKeys.detail(id));
       const previousQueries = queryClient.getQueriesData<Task[]>({
@@ -257,7 +275,11 @@ export function useCompleteTask() {
           if (!old) return old;
           return old.map((task) =>
             task.id === id
-              ? { ...task, completedAt: optimisticCompletedAt, updatedAt: new Date() }
+              ? {
+                  ...task,
+                  completedAt: optimisticCompletedAt,
+                  updatedAt: new Date(),
+                }
               : task
           );
         }
@@ -294,7 +316,10 @@ export function useCompleteTask() {
     },
     onError: (error, _variables, context) => {
       if (context?.previousTask) {
-        queryClient.setQueryData(taskKeys.detail(context.id), context.previousTask);
+        queryClient.setQueryData(
+          taskKeys.detail(context.id),
+          context.previousTask
+        );
       }
       context?.previousQueries?.forEach(([queryKey, data]) => {
         queryClient.setQueryData(queryKey, data);
@@ -314,7 +339,9 @@ export function useCompleteTask() {
         { queryKey: taskKeys.lists() },
         (old) => {
           if (!old) return old;
-          return old.map((task) => (task.id === updatedTask.id ? updatedTask : task));
+          return old.map((task) =>
+            task.id === updatedTask.id ? updatedTask : task
+          );
         }
       );
       queryClient.setQueriesData(
@@ -340,7 +367,9 @@ export function useCompleteTask() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: ["tasks", "search", "infinite"] });
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", "search", "infinite"],
+      });
       queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
     },
   });
@@ -365,7 +394,7 @@ export function useMoveTask() {
     }): Promise<Task> => {
       const api = getApi();
       return await api.tasks.update(id, {
-        scheduledDate: targetDate ?? undefined,
+        scheduledDate: targetDate, // Pass null directly to clear scheduledDate (move to backlog)
         position,
       });
     },
@@ -447,13 +476,15 @@ export function useReorderTasks() {
     onMutate: async ({ date, taskIds }) => {
       // Determine the correct query key based on whether it's backlog or a date
       const isBacklog = date === "backlog";
-      const queryKey = isBacklog 
+      const queryKey = isBacklog
         ? taskKeys.list({ backlog: true })
         : taskKeys.list({ scheduledDate: date });
 
       // Cancel any outgoing refetches to avoid overwriting optimistic update
       await queryClient.cancelQueries({ queryKey });
-      await queryClient.cancelQueries({ queryKey: ["tasks", "search", "infinite"] });
+      await queryClient.cancelQueries({
+        queryKey: ["tasks", "search", "infinite"],
+      });
 
       // Snapshot the previous value
       const previousTasks = queryClient.getQueryData<Task[]>(queryKey);
@@ -471,13 +502,17 @@ export function useReorderTasks() {
           .filter((t): t is Task => t !== null);
 
         // Include any tasks not in taskIds (e.g., completed tasks) at the end
-        const tasksNotInOrder = previousTasks.filter((t) => !taskIds.includes(t.id));
+        const tasksNotInOrder = previousTasks.filter(
+          (t) => !taskIds.includes(t.id)
+        );
         const finalTasks = [...reorderedTasks, ...tasksNotInOrder];
 
         queryClient.setQueryData(queryKey, finalTasks);
       }
 
-      const positionByTaskId = new Map(taskIds.map((taskId, index) => [taskId, index]));
+      const positionByTaskId = new Map(
+        taskIds.map((taskId, index) => [taskId, index])
+      );
       queryClient.setQueriesData(
         { queryKey: ["tasks", "search", "infinite"] },
         (old: unknown) => {
@@ -525,11 +560,13 @@ export function useReorderTasks() {
     onSettled: (_data, _error, { date }) => {
       // Always refetch after error or success to ensure server state
       const isBacklog = date === "backlog";
-      const queryKey = isBacklog 
+      const queryKey = isBacklog
         ? taskKeys.list({ backlog: true })
         : taskKeys.list({ scheduledDate: date });
       queryClient.invalidateQueries({ queryKey });
-      queryClient.invalidateQueries({ queryKey: ["tasks", "search", "infinite"] });
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", "search", "infinite"],
+      });
     },
   });
 }
