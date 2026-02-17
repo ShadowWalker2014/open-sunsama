@@ -49,7 +49,12 @@ import {
   Copy,
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
-import type { Task, Subtask, CreateTaskSeriesInput, TaskPriority } from "@open-sunsama/types";
+import type {
+  Task,
+  Subtask,
+  CreateTaskSeriesInput,
+  TaskPriority,
+} from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import {
   useTask,
@@ -517,7 +522,9 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   React.useEffect(() => {
     if (!open) {
       // Wait for close animation to finish before clearing
-      const timer = setTimeout(() => { lastTaskRef.current = null; }, 300);
+      const timer = setTimeout(() => {
+        lastTaskRef.current = null;
+      }, 300);
       return () => clearTimeout(timer);
     }
     return undefined;
@@ -540,8 +547,18 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   const liveTask = freshTask ?? task;
 
   // Live timer display — ticks every second when timer is active
-  const { isTimerRunning, displayText: liveTimeText, liveSeconds } = useTaskTimerDisplay(
-    liveTask ?? ({ timerStartedAt: null, timerAccumulatedSeconds: 0, actualMins: null, estimatedMins: null } as any)
+  const {
+    isTimerRunning,
+    displayText: liveTimeText,
+    liveSeconds,
+  } = useTaskTimerDisplay(
+    liveTask ??
+      ({
+        timerStartedAt: null,
+        timerAccumulatedSeconds: 0,
+        actualMins: null,
+        estimatedMins: null,
+      } as any)
   );
 
   // Ref for timer toggle — allows keyboard handler to call the latest toggle function
@@ -747,6 +764,22 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     }
   }, [liveTask?.actualMins]);
 
+  // Debounced autosave for notes - saves 1 second after user stops typing
+  React.useEffect(() => {
+    if (!task || !open) return;
+    // Only autosave if notes actually changed from server value
+    if (description === (task.notes || "")) return;
+
+    const timeoutId = setTimeout(() => {
+      updateTask.mutate({
+        id: task.id,
+        data: { notes: description || null },
+      });
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [description, task, open, updateTask]);
+
   const handleSave = async () => {
     if (!task || !title.trim()) return;
     await updateTask.mutateAsync({
@@ -911,343 +944,347 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
 
   return (
     <>
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden [&>button]:hidden">
-        {/* Title row with inline actions */}
-        <div className="flex items-start gap-3 px-6 pt-5 pb-3">
-          {/* Checkbox */}
-          <button
-            type="button"
-            className={cn(
-              "mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-all cursor-pointer",
-              isCompleted
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-muted-foreground/30 hover:border-primary"
-            )}
-            onClick={handleToggleComplete}
-          >
-            {isCompleted && <Check className="h-3 w-3" strokeWidth={3} />}
-          </button>
-
-          {/* Title */}
-          <textarea
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onBlur={() => title !== renderTask.title && handleSave()}
-            rows={1}
-            className={cn(
-              "flex-1 min-w-0 resize-none border-none p-0 text-lg font-semibold shadow-none focus:outline-none focus:ring-0 bg-transparent leading-snug",
-              isCompleted && "line-through text-muted-foreground"
-            )}
-            placeholder="Task title"
-            onInput={(e) => {
-              const target = e.target as HTMLTextAreaElement;
-              target.style.height = "auto";
-              target.style.height = target.scrollHeight + "px";
-            }}
-          />
-
-          {/* Action buttons */}
-          <div className="flex items-center gap-0.5 shrink-0">
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden [&>button]:hidden">
+          {/* Title row with inline actions */}
+          <div className="flex items-start gap-3 px-6 pt-5 pb-3">
+            {/* Checkbox */}
             <button
               type="button"
-              onClick={handleExpandToFocus}
-              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
-              title="Focus mode (F)"
+              className={cn(
+                "mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-all cursor-pointer",
+                isCompleted
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-muted-foreground/30 hover:border-primary"
+              )}
+              onClick={handleToggleComplete}
             >
-              <Expand className="h-4 w-4" />
+              {isCompleted && <Check className="h-3 w-3" strokeWidth={3} />}
             </button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onSelect={handleDuplicate}>
-                  <Copy className="mr-2 h-4 w-4" />
-                  Duplicate
-                </DropdownMenuItem>
-                {!renderTask.seriesId && (
-                  <DropdownMenuItem onSelect={() => setRepeatDialogOpen(true)}>
-                    <Repeat className="mr-2 h-4 w-4" />
-                    Repeat...
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem
-                  onSelect={handleDelete}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <button
-              type="button"
-              onClick={() => onOpenChange(false)}
-              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
 
-        {/* Property bar — priority · date · time */}
-        <div className="flex items-center gap-1 px-6 pb-4">
-          <InlinePrioritySelector
-            priority={renderTask.priority}
-            onChange={handlePriorityChange}
-          />
-          <div className="w-px h-3.5 bg-border/60 mx-1" />
-          <div className="flex items-center gap-1.5">
-            <Calendar className="h-3.5 w-3.5 text-muted-foreground/60" />
-            <DatePickerPopover
-              ref={datePickerRef}
-              value={renderTask.scheduledDate}
-              onChange={handleScheduledDateChange}
-              taskTitle={renderTask.title}
-            />
-          </div>
-          <div className="w-px h-3.5 bg-border/60 mx-1" />
-          <div className="flex items-center gap-1">
-            {/* When timer is running: show live ticking time */}
-            {isTimerRunning ? (
-              <div className="flex items-center gap-1.5">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
-                </span>
-                <span
-                    className={cn(
-                    "font-mono text-sm tabular-nums font-medium",
-                    renderTask.estimatedMins && liveSeconds > renderTask.estimatedMins * 60 * 1.5
-                      ? "text-red-500"
-                      : renderTask.estimatedMins && liveSeconds > renderTask.estimatedMins * 60
-                        ? "text-amber-500"
-                        : "text-emerald-600 dark:text-emerald-400"
-                  )}
-                >
-                  {liveTimeText}
-                </span>
-              </div>
-            ) : (
-              <>
-                <TimeDropdown
-                  ref={actualTimeRef}
-                  value={actualMins}
-                  onChange={handleActualMinsChange}
-                  placeholder="0:00"
-                  dropdownHeader="Actual time"
-                  shortcutHint="E"
-                  showClear
-                  clearText="Clear"
-                  size="sm"
-                  className="font-mono text-sm text-foreground"
-                />
-                <span className="text-muted-foreground/30 text-xs">/</span>
-                <TimeDropdown
-                  ref={plannedTimeRef}
-                  value={plannedMins}
-                  onChange={handleDurationChange}
-                  placeholder="0:00"
-                  dropdownHeader="Planned time"
-                  shortcutHint="W"
-                  showClear
-                  clearText="Clear"
-                  size="sm"
-                  className="font-mono text-sm text-muted-foreground/60"
-                />
-              </>
-            )}
-          </div>
-          <div className="flex-1" />
-          <button
-            type="button"
-            onClick={() => setIsAddingSubtask(true)}
-            className="flex items-center gap-1.5 h-7 px-2.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>Add subtask</span>
-          </button>
-          <button
-            onClick={handleTimerToggle}
-            className={cn(
-              "flex items-center gap-1.5 h-7 px-2.5 rounded-md text-xs font-medium border transition-colors cursor-pointer",
-              isTimerRunning
-                ? "border-red-500/30 text-red-500 hover:bg-red-500/10"
-                : "border-[#22c55e]/30 text-[#22c55e] hover:bg-[#22c55e]/10"
-            )}
-          >
-            {isTimerRunning ? (
-              <>
-                <span className="h-2.5 w-2.5 rounded-sm bg-current" />
-                Stop
-              </>
-            ) : (
-              <>
-                <Play className="h-3 w-3 fill-current" />
-                Start
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* Main Content */}
-        <div className="border-t border-border/40 px-6 py-4 space-y-4 max-h-[55vh] overflow-y-auto">
-          {/* Series Banner */}
-          {renderTask.seriesId && <TaskSeriesBanner task={renderTask} />}
-
-          {/* Subtasks Section */}
-          <div className="space-y-3">
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleSubtaskDragEnd}
-            >
-              <SortableContext
-                items={subtaskIds}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="space-y-1">
-                  {subtasks.map((subtask) => (
-                    <SortableSubtaskItem
-                      key={subtask.id}
-                      subtask={subtask}
-                      onToggle={() => toggleSubtask(subtask)}
-                      onDelete={() => handleDeleteSubtask(subtask.id)}
-                      onUpdate={(newTitle) =>
-                        updateSubtask.mutate({
-                          taskId: renderTask.id,
-                          subtaskId: subtask.id,
-                          data: { title: newTitle },
-                        })
-                      }
-                    />
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
-
-            {/* Add Subtask input */}
-            {isAddingSubtask && (
-              <div className="flex items-center gap-3 py-2 pl-1">
-                <div className="h-4 w-4 shrink-0 rounded border border-dashed border-muted-foreground/30" />
-                <Input
-                  value={newSubtaskTitle}
-                  onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      addSubtask();
-                    }
-                    if (e.key === "Escape") {
-                      setNewSubtaskTitle("");
-                      setIsAddingSubtask(false);
-                    }
-                  }}
-                  onBlur={() => {
-                    if (newSubtaskTitle.trim()) {
-                      addSubtask();
-                    } else {
-                      setIsAddingSubtask(false);
-                    }
-                  }}
-                  placeholder="Add subtask..."
-                  className="flex-1 border-none p-0 h-auto text-sm shadow-none focus-visible:ring-0 bg-transparent"
-                  autoFocus
-                />
-              </div>
-            )}
-
-            {/* Show add button only when not adding and no subtasks */}
-            {!isAddingSubtask && subtasks.length === 0 && (
-              <button
-                onClick={() => setIsAddingSubtask(true)}
-                className="flex items-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Add subtask</span>
-              </button>
-            )}
-          </div>
-
-          {/* Notes Section */}
-          <div>
-            <NotesField
-              notes={description}
-              onChange={setDescription}
-              onBlur={() => {
-                if (description !== (renderTask.notes || "")) handleSave();
+            {/* Title */}
+            <textarea
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={() => title !== renderTask.title && handleSave()}
+              rows={1}
+              className={cn(
+                "flex-1 min-w-0 resize-none border-none p-0 text-lg font-semibold shadow-none focus:outline-none focus:ring-0 bg-transparent leading-snug",
+                isCompleted && "line-through text-muted-foreground"
+              )}
+              placeholder="Task title"
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = "auto";
+                target.style.height = target.scrollHeight + "px";
               }}
-              minHeight="150px"
             />
+
+            {/* Action buttons */}
+            <div className="flex items-center gap-0.5 shrink-0">
+              <button
+                type="button"
+                onClick={handleExpandToFocus}
+                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
+                title="Focus mode (F)"
+              >
+                <Expand className="h-4 w-4" />
+              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onSelect={handleDuplicate}>
+                    <Copy className="mr-2 h-4 w-4" />
+                    Duplicate
+                  </DropdownMenuItem>
+                  {!renderTask.seriesId && (
+                    <DropdownMenuItem
+                      onSelect={() => setRepeatDialogOpen(true)}
+                    >
+                      <Repeat className="mr-2 h-4 w-4" />
+                      Repeat...
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem
+                    onSelect={handleDelete}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
-          {/* Attachments */}
-          <TaskAttachments taskId={renderTask.id} />
-        </div>
-      </DialogContent>
+          {/* Property bar — priority · date · time */}
+          <div className="flex items-center gap-1 px-6 pb-4">
+            <InlinePrioritySelector
+              priority={renderTask.priority}
+              onChange={handlePriorityChange}
+            />
+            <div className="w-px h-3.5 bg-border/60 mx-1" />
+            <div className="flex items-center gap-1.5">
+              <Calendar className="h-3.5 w-3.5 text-muted-foreground/60" />
+              <DatePickerPopover
+                ref={datePickerRef}
+                value={renderTask.scheduledDate}
+                onChange={handleScheduledDateChange}
+                taskTitle={renderTask.title}
+              />
+            </div>
+            <div className="w-px h-3.5 bg-border/60 mx-1" />
+            <div className="flex items-center gap-1">
+              {/* When timer is running: show live ticking time */}
+              {isTimerRunning ? (
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+                  </span>
+                  <span
+                    className={cn(
+                      "font-mono text-sm tabular-nums font-medium",
+                      renderTask.estimatedMins &&
+                        liveSeconds > renderTask.estimatedMins * 60 * 1.5
+                        ? "text-red-500"
+                        : renderTask.estimatedMins &&
+                            liveSeconds > renderTask.estimatedMins * 60
+                          ? "text-amber-500"
+                          : "text-emerald-600 dark:text-emerald-400"
+                    )}
+                  >
+                    {liveTimeText}
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <TimeDropdown
+                    ref={actualTimeRef}
+                    value={actualMins}
+                    onChange={handleActualMinsChange}
+                    placeholder="0:00"
+                    dropdownHeader="Actual time"
+                    shortcutHint="E"
+                    showClear
+                    clearText="Clear"
+                    size="sm"
+                    className="font-mono text-sm text-foreground"
+                  />
+                  <span className="text-muted-foreground/30 text-xs">/</span>
+                  <TimeDropdown
+                    ref={plannedTimeRef}
+                    value={plannedMins}
+                    onChange={handleDurationChange}
+                    placeholder="0:00"
+                    dropdownHeader="Planned time"
+                    shortcutHint="W"
+                    showClear
+                    clearText="Clear"
+                    size="sm"
+                    className="font-mono text-sm text-muted-foreground/60"
+                  />
+                </>
+              )}
+            </div>
+            <div className="flex-1" />
+            <button
+              type="button"
+              onClick={() => setIsAddingSubtask(true)}
+              className="flex items-center gap-1.5 h-7 px-2.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Add subtask</span>
+            </button>
+            <button
+              onClick={handleTimerToggle}
+              className={cn(
+                "flex items-center gap-1.5 h-7 px-2.5 rounded-md text-xs font-medium border transition-colors cursor-pointer",
+                isTimerRunning
+                  ? "border-red-500/30 text-red-500 hover:bg-red-500/10"
+                  : "border-[#22c55e]/30 text-[#22c55e] hover:bg-[#22c55e]/10"
+              )}
+            >
+              {isTimerRunning ? (
+                <>
+                  <span className="h-2.5 w-2.5 rounded-sm bg-current" />
+                  Stop
+                </>
+              ) : (
+                <>
+                  <Play className="h-3 w-3 fill-current" />
+                  Start
+                </>
+              )}
+            </button>
+          </div>
 
-      {/* Repeat Config Dialog */}
-      {renderTask && !renderTask.seriesId && (
-        <RepeatConfigDialog
-          title={renderTask.title}
-          initialConfig={{
-            notes: renderTask.notes ?? undefined,
-            priority: renderTask.priority,
-            estimatedMins: renderTask.estimatedMins ?? undefined,
-          }}
-          onSave={handleRepeatSave}
-          open={repeatDialogOpen}
-          onOpenChange={setRepeatDialogOpen}
-        />
-      )}
+          {/* Main Content */}
+          <div className="border-t border-border/40 px-6 py-4 space-y-4 max-h-[55vh] overflow-y-auto">
+            {/* Series Banner */}
+            {renderTask.seriesId && <TaskSeriesBanner task={renderTask} />}
 
-    </Dialog>
+            {/* Subtasks Section */}
+            <div className="space-y-3">
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleSubtaskDragEnd}
+              >
+                <SortableContext
+                  items={subtaskIds}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-1">
+                    {subtasks.map((subtask) => (
+                      <SortableSubtaskItem
+                        key={subtask.id}
+                        subtask={subtask}
+                        onToggle={() => toggleSubtask(subtask)}
+                        onDelete={() => handleDeleteSubtask(subtask.id)}
+                        onUpdate={(newTitle) =>
+                          updateSubtask.mutate({
+                            taskId: renderTask.id,
+                            subtaskId: subtask.id,
+                            data: { title: newTitle },
+                          })
+                        }
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
 
-    {/* Delete confirmation rendered via portal outside Radix Dialog tree.
+              {/* Add Subtask input */}
+              {isAddingSubtask && (
+                <div className="flex items-center gap-3 py-2 pl-1">
+                  <div className="h-4 w-4 shrink-0 rounded border border-dashed border-muted-foreground/30" />
+                  <Input
+                    value={newSubtaskTitle}
+                    onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        addSubtask();
+                      }
+                      if (e.key === "Escape") {
+                        setNewSubtaskTitle("");
+                        setIsAddingSubtask(false);
+                      }
+                    }}
+                    onBlur={() => {
+                      if (newSubtaskTitle.trim()) {
+                        addSubtask();
+                      } else {
+                        setIsAddingSubtask(false);
+                      }
+                    }}
+                    placeholder="Add subtask..."
+                    className="flex-1 border-none p-0 h-auto text-sm shadow-none focus-visible:ring-0 bg-transparent"
+                    autoFocus
+                  />
+                </div>
+              )}
+
+              {/* Show add button only when not adding and no subtasks */}
+              {!isAddingSubtask && subtasks.length === 0 && (
+                <button
+                  onClick={() => setIsAddingSubtask(true)}
+                  className="flex items-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Add subtask</span>
+                </button>
+              )}
+            </div>
+
+            {/* Notes Section */}
+            <div>
+              <NotesField
+                notes={description}
+                onChange={setDescription}
+                onBlur={() => {
+                  if (description !== (renderTask.notes || "")) handleSave();
+                }}
+                minHeight="150px"
+              />
+            </div>
+
+            {/* Attachments */}
+            <TaskAttachments taskId={renderTask.id} />
+          </div>
+        </DialogContent>
+
+        {/* Repeat Config Dialog */}
+        {renderTask && !renderTask.seriesId && (
+          <RepeatConfigDialog
+            title={renderTask.title}
+            initialConfig={{
+              notes: renderTask.notes ?? undefined,
+              priority: renderTask.priority,
+              estimatedMins: renderTask.estimatedMins ?? undefined,
+            }}
+            onSave={handleRepeatSave}
+            open={repeatDialogOpen}
+            onOpenChange={setRepeatDialogOpen}
+          />
+        )}
+      </Dialog>
+
+      {/* Delete confirmation rendered via portal outside Radix Dialog tree.
         Uses onPointerDown instead of onClick because Radix Dialog's FocusScope
         traps focus at the document level — it intercepts between pointerdown
         and click, yanking focus back into the dialog before click fires.
         onPointerDown fires before the focus trap kicks in. */}
-    {showDeleteConfirm &&
-      createPortal(
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
-          onPointerDown={() => setShowDeleteConfirm(false)}
-        >
+      {showDeleteConfirm &&
+        createPortal(
           <div
-            className="bg-background rounded-lg border shadow-lg p-6 max-w-sm mx-4 space-y-4"
-            onPointerDown={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
+            onPointerDown={() => setShowDeleteConfirm(false)}
           >
-            <div>
-              <h3 className="text-base font-semibold">Delete task</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Are you sure you want to delete this task? This action cannot be undone.
-              </p>
+            <div
+              className="bg-background rounded-lg border shadow-lg p-6 max-w-sm mx-4 space-y-4"
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              <div>
+                <h3 className="text-base font-semibold">Delete task</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Are you sure you want to delete this task? This action cannot
+                  be undone.
+                </p>
+              </div>
+              <div className="flex justify-end gap-2">
+                <button
+                  onPointerDown={() => setShowDeleteConfirm(false)}
+                  className="px-3 py-1.5 text-sm font-medium rounded-md hover:bg-muted active:bg-muted transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onPointerDown={handleDeleteConfirm}
+                  className="px-3 py-1.5 text-sm font-medium rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90 active:bg-destructive/80 transition-colors cursor-pointer"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
-            <div className="flex justify-end gap-2">
-              <button
-                onPointerDown={() => setShowDeleteConfirm(false)}
-                className="px-3 py-1.5 text-sm font-medium rounded-md hover:bg-muted active:bg-muted transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onPointerDown={handleDeleteConfirm}
-                className="px-3 py-1.5 text-sm font-medium rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90 active:bg-destructive/80 transition-colors cursor-pointer"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 }

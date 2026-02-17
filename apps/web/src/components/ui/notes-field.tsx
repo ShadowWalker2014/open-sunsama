@@ -16,18 +16,36 @@ interface NotesFieldProps {
  * Shows rendered HTML content when not editing, Tiptap editor when editing.
  * Used by both task modal and time block editor for consistent UX.
  */
-export function NotesField({ 
-  notes, 
-  onChange, 
+export function NotesField({
+  notes,
+  onChange,
   onBlur,
   placeholder = "Add notes...",
   minHeight = "60px",
 }: NotesFieldProps) {
   const [isEditing, setIsEditing] = React.useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // Handle blur with relatedTarget check to avoid premature close
+  // when clicking toolbar buttons inside the editor
+  const handleBlur = React.useCallback(
+    (e: React.FocusEvent) => {
+      // Check if the new focus target is still within this component
+      const relatedTarget = e.relatedTarget as Node | null;
+      if (containerRef.current?.contains(relatedTarget)) {
+        // Focus is still inside the editor (e.g., clicked toolbar button)
+        return;
+      }
+      // Focus left the component - save and close
+      onBlur();
+      setIsEditing(false);
+    },
+    [onBlur]
+  );
 
   if (isEditing) {
     return (
-      <div onBlur={() => { onBlur(); setIsEditing(false); }}>
+      <div ref={containerRef} onBlur={handleBlur}>
         <RichTextEditor
           value={notes}
           onChange={onChange}
