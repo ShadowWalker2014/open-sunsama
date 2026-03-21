@@ -1,8 +1,8 @@
 import * as React from "react";
-import { ChevronDown, Clock } from "lucide-react";
+import { ChevronDown, Clock, ArrowUp, ArrowDown } from "lucide-react";
 import type { TaskPriority } from "@open-sunsama/types";
 import { cn, TIME_PRESETS, formatTimeDisplayCompact } from "@/lib/utils";
-import { useCreateTask } from "@/hooks/useTasks";
+import { useCreateTask, useTasks, useReorderTasks } from "@/hooks/useTasks";
 import { useCreateSubtask } from "@/hooks/useSubtaskMutations";
 import {
   Dialog,
@@ -27,16 +27,22 @@ import { SubtaskList, type Subtask } from "./subtask-list";
 
 const PRIORITIES: TaskPriority[] = ["P0", "P1", "P2", "P3"];
 
+export type AddPosition = "top" | "bottom";
+
 interface AddTaskModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   scheduledDate?: string | null;
+  addPosition?: AddPosition;
+  onAddPositionChange?: (position: AddPosition) => void;
 }
 
 export function AddTaskModal({
   open,
   onOpenChange,
   scheduledDate,
+  addPosition = "bottom",
+  onAddPositionChange,
 }: AddTaskModalProps) {
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
@@ -46,8 +52,14 @@ export function AddTaskModal({
 
   const createTask = useCreateTask();
   const createSubtask = useCreateSubtask();
+  const reorderTasks = useReorderTasks();
   const titleInputRef = React.useRef<HTMLInputElement>(null);
   const formRef = React.useRef<HTMLFormElement>(null);
+
+  // Fetch existing tasks for the date so we can reorder after adding to top
+  const { data: existingTasks } = useTasks(
+    scheduledDate ? { scheduledDate } : undefined
+  );
 
   // Focus title input when modal opens
   React.useEffect(() => {
@@ -67,18 +79,32 @@ export function AddTaskModal({
     }
   }, [open]);
 
-  // Cmd+Enter / Ctrl+Enter to submit
+  // Keyboard shortcuts when modal is open
   React.useEffect(() => {
     if (!open) return;
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd+Enter / Ctrl+Enter to submit
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
         e.preventDefault();
         formRef.current?.requestSubmit();
+        return;
+      }
+      // Alt+ArrowUp → add to top
+      if (e.altKey && e.key === "ArrowUp") {
+        e.preventDefault();
+        onAddPositionChange?.("top");
+        return;
+      }
+      // Alt+ArrowDown → add to bottom
+      if (e.altKey && e.key === "ArrowDown") {
+        e.preventDefault();
+        onAddPositionChange?.("bottom");
+        return;
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open]);
+  }, [open, onAddPositionChange]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,12 +130,27 @@ export function AddTaskModal({
       );
     }
 
+    // Reorder to top if requested and we have a scheduled date
+    if (addPosition === "top" && scheduledDate) {
+      const currentTaskIds = (existingTasks ?? [])
+        .filter((t) => !t.completedAt && t.id !== newTask.id)
+        .sort((a, b) => a.position - b.position)
+        .map((t) => t.id);
+
+      await reorderTasks.mutateAsync({
+        date: scheduledDate,
+        taskIds: [newTask.id, ...currentTaskIds],
+      });
+    }
+
     onOpenChange(false);
   };
 
   const handleTimeSelect = (value: string) => {
     setEstimatedMins(value);
   };
+
+  const isAddingToTop = addPosition === "top";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -227,12 +268,60 @@ export function AddTaskModal({
 
           {/* Footer */}
           <DialogFooter className="px-4 py-3 border-t bg-muted/20 flex-row justify-between items-center gap-2">
-            <span className="text-xs text-muted-foreground/50 hidden sm:inline-flex items-center gap-1">
-              <kbd className="inline-flex h-5 select-none items-center rounded border bg-muted px-1 font-mono text-[10px] font-medium">⌘</kbd>
-              <kbd className="inline-flex h-5 select-none items-center rounded border bg-muted px-1 font-mono text-[10px] font-medium">↵</kbd>
-              <span className="ml-0.5">to create</span>
-            </span>
+            {/* Left: keyboard hints */}
+            <div className="hidden sm:flex items-center gap-2.5">
+              <span className="text-xs text-muted-foreground/50 inline-flex items-center gap-1">
+                <kbd className="inline-flex h-5 select-none items-center rounded border bg-muted px-1 font-mono text-[10px] font-medium">⌘</kbd>
+                <kbd className="inline-flex h-5 select-none items-center rounded border bg-muted px-1 font-mono text-[10px] font-medium">↵</kbd>
+                <span className="ml-0.5">create</span>
+              </span>
+              {onAddPositionChange && (
+                <span className="text-xs text-muted-foreground/40 inline-flex items-center gap-1">
+                  <kbd className="inline-flex h-5 select-none items-center rounded border bg-muted px-1 font-mono text-[10px] font-medium">⌥</kbd>
+                  <kbd className="inline-flex h-5 select-none items-center rounded border bg-muted px-1 font-mono text-[10px] font-medium">↑↓</kbd>
+                  <span className="ml-0.5">position</span>
+                </span>
+              )}
+            </div>
+
+            {/* Right: position toggle + actions */}
             <div className="flex items-center gap-2">
+              {/* Position toggle button */}
+              {onAddPositionChange && (
+                <TooltipProvider delayDuration={0}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className={cn(
+                          "h-8 w-8 p-0",
+                          isAddingToTop && "border-primary/60 bg-primary/5 text-primary"
+                        )}
+                        onClick={() =>
+                          onAddPositionChange(isAddingToTop ? "bottom" : "top")
+                        }
+                      >
+                        {isAddingToTop ? (
+                          <ArrowUp className="h-3.5 w-3.5" />
+                        ) : (
+                          <ArrowDown className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="flex flex-col items-start gap-0.5 text-xs">
+                      <span className="font-medium">
+                        {isAddingToTop ? "Adding to top" : "Adding to bottom"}
+                      </span>
+                      <span className="text-muted-foreground">
+                        Click or <kbd className="font-mono">⌥↑</kbd>/<kbd className="font-mono">⌥↓</kbd> to toggle
+                      </span>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+
               <Button
                 type="button"
                 variant="ghost"
