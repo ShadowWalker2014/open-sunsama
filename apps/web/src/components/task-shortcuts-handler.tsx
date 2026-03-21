@@ -10,7 +10,6 @@ import {
   useCompleteTask,
   useCreateTask,
   useDeleteTask,
-  useMoveTask,
   useReorderTasks,
   useTasks,
   useUpdateTask,
@@ -47,7 +46,6 @@ export function TaskShortcutsHandler({
   const completeTask = useCompleteTask();
   const createTask = useCreateTask();
   const deleteTask = useDeleteTask();
-  const moveTask = useMoveTask();
   const updateTask = useUpdateTask();
   const updateSubtask = useUpdateSubtask();
   const autoSchedule = useAutoSchedule();
@@ -178,14 +176,17 @@ export function TaskShortcutsHandler({
       ) {
         if (hoveredTask && hoveredTask.scheduledDate) {
           event.preventDefault();
-          moveTask.mutate({
-            id: hoveredTask.id,
-            targetDate: null,
-          });
-          toast({
-            title: "Moved to backlog",
-            description: `"${hoveredTask.title}"`,
-          });
+          updateTask.mutate(
+            { id: hoveredTask.id, data: { scheduledDate: null } },
+            {
+              onSuccess: () => {
+                toast({
+                  title: "Moved to backlog",
+                  description: `"${hoveredTask.title}"`,
+                });
+              },
+            }
+          );
         }
         return;
       }
@@ -202,14 +203,17 @@ export function TaskShortcutsHandler({
             : startOfDay(new Date());
           const tomorrow = addDays(currentDate, 1);
           const targetDate = format(tomorrow, "yyyy-MM-dd");
-          moveTask.mutate({
-            id: hoveredTask.id,
-            targetDate,
-          });
-          toast({
-            title: "Deferred to tomorrow",
-            description: `"${hoveredTask.title}" moved to ${format(tomorrow, "MMM d")}`,
-          });
+          updateTask.mutate(
+            { id: hoveredTask.id, data: { scheduledDate: targetDate } },
+            {
+              onSuccess: () => {
+                toast({
+                  title: "Deferred to tomorrow",
+                  description: `"${hoveredTask.title}" moved to ${format(tomorrow, "MMM d")}`,
+                });
+              },
+            }
+          );
         }
         return;
       }
@@ -225,14 +229,20 @@ export function TaskShortcutsHandler({
             startOfWeek(new Date(), { weekStartsOn: 1 }),
             7
           );
-          moveTask.mutate({
-            id: hoveredTask.id,
-            targetDate: format(nextMonday, "yyyy-MM-dd"),
-          });
-          toast({
-            title: "Deferred to next week",
-            description: `"${hoveredTask.title}"`,
-          });
+          updateTask.mutate(
+            {
+              id: hoveredTask.id,
+              data: { scheduledDate: format(nextMonday, "yyyy-MM-dd") },
+            },
+            {
+              onSuccess: () => {
+                toast({
+                  title: "Deferred to next week",
+                  description: `"${hoveredTask.title}"`,
+                });
+              },
+            }
+          );
         }
         return;
       }
@@ -400,7 +410,6 @@ export function TaskShortcutsHandler({
     completeTask,
     createTask,
     deleteTask,
-    moveTask,
     updateTask,
     updateSubtask,
     reorderTasks,
