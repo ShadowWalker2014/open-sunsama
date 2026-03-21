@@ -144,9 +144,11 @@ export function TaskContextMenu({
   };
 
   const handleDeferToNextWeek = async () => {
-    // Calculate next Monday
-    const today = new Date();
-    const nextMonday = addDays(startOfWeek(today, { weekStartsOn: 1 }), 7);
+    // Calculate next Monday relative to the task's current scheduled date
+    const referenceDate = task.scheduledDate
+      ? new Date(task.scheduledDate + "T00:00:00")
+      : new Date();
+    const nextMonday = addDays(startOfWeek(referenceDate, { weekStartsOn: 1 }), 7);
     const nextMondayStr = format(nextMonday, "yyyy-MM-dd");
 
     await updateTask.mutateAsync({

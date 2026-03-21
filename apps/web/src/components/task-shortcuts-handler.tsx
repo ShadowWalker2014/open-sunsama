@@ -225,8 +225,12 @@ export function TaskShortcutsHandler({
       ) {
         if (hoveredTask) {
           event.preventDefault();
+          // Use the task's scheduled date as reference, not today's date
+          const referenceDate = hoveredTask.scheduledDate
+            ? parseISO(hoveredTask.scheduledDate)
+            : new Date();
           const nextMonday = addDays(
-            startOfWeek(new Date(), { weekStartsOn: 1 }),
+            startOfWeek(referenceDate, { weekStartsOn: 1 }),
             7
           );
           updateTask.mutate(
@@ -238,7 +242,7 @@ export function TaskShortcutsHandler({
               onSuccess: () => {
                 toast({
                   title: "Deferred to next week",
-                  description: `"${hoveredTask.title}"`,
+                  description: `"${hoveredTask.title}" → ${format(nextMonday, "MMM d")}`,
                 });
               },
             }
