@@ -212,9 +212,19 @@ cd open-sunsama
 # Install dependencies
 bun install
 
-# Configure environment
+# Step 1 - Configure root .env (shared config)
 cp .env.example .env
-# Edit .env with your DATABASE_URL
+
+# Step 2 - Configure API .env (api specific config)
+cp apps/api/.env.example apps/api/.env
+
+# Generate required secrets
+# Run these commands and paste output into both .env files:
+#   JWT_SECRET          → openssl rand -base64 32
+#   CALENDAR_ENCRYPTION_KEY → openssl rand -hex 32
+
+# For Google Calendar integration
+# Follow the setup guide: docs/google-calendar-setup.md
 
 # Run database migrations
 bun run db:push
