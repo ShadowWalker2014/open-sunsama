@@ -2,7 +2,6 @@ import * as React from "react";
 import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import type { Subtask } from "@open-sunsama/types";
 import { getApi } from "@/lib/api";
-import { subtaskKeys } from "./useSubtasks";
 
 /**
  * Per-render coalescing batcher for `GET /tasks/:id/subtasks`.
@@ -11,12 +10,25 @@ import { subtaskKeys } from "./useSubtasks";
  * `useSubtasks(task.id)`. Without this, every card fires its own roundtrip
  * — 30+ requests fan out and Tiptap, the editor chunk, and the kanban data
  * all get queued behind them on the same connection. We instead funnel
- * those reads into a single `POST /tasks/subtasks-batch` request and
- * distribute the result into per-task query caches that the
- * `useSubtasks(taskId)` callers already subscribe to.
+ * those reads into a single `POST /tasks/subtasks-batch` request and feed
+ * each `useSubtasks(taskId)` caller's queryFn promise the right slice.
  *
  * Coalescing window: a microtask. Anything that registers within the same
- * synchronous render pass joins the same batch.
+ * synchronous render pass (or React Query refetch tick) joins the same
+ * batch.
+ *
+ * Design notes:
+ * - We do NOT short-circuit on cached data. React Query already skips
+ *   `queryFn` entirely when cached data is fresh (within staleTime), and
+ *   when it doesn't skip — e.g. the WebSocket layer just invalidated the
+ *   query for a cross-device update — we want a real network fetch.
+ * - We do NOT call `queryClient.setQueryData` from the batch resolution.
+ *   Doing so races with optimistic mutations: a mutation's `onMutate`
+ *   calls `cancelQueries(...)` which signals queries to ignore their
+ *   in-flight result, but a direct `setQueryData` write bypasses that
+ *   guard and clobbers the optimistic snapshot. Resolving the per-entry
+ *   promises is enough — React Query takes care of writing the cache for
+ *   each subscriber that's still active.
  */
 
 type Resolve = (subtasks: Subtask[]) => void;
@@ -30,17 +42,7 @@ class SubtasksBatcher {
   private pending = new Map<string, PendingEntry[]>();
   private flushScheduled = false;
 
-  constructor(private queryClient: QueryClient) {}
-
   fetch(taskId: string): Promise<Subtask[]> {
-    // Return any cached data immediately — the React Query layer already
-    // dedupes once data is in the cache, but we still need to honour an
-    // explicit `enabled: false → true` transition where no cache exists.
-    const cached = this.queryClient.getQueryData<Subtask[]>(
-      subtaskKeys.list(taskId)
-    );
-    if (cached) return Promise.resolve(cached);
-
     return new Promise<Subtask[]>((resolve, reject) => {
       const entries = this.pending.get(taskId);
       if (entries) {
@@ -74,9 +76,6 @@ class SubtasksBatcher {
 
       for (const [taskId, entries] of pendingSnapshot) {
         const subtasks = grouped[taskId] ?? [];
-        // Seed the per-task cache so any future `useSubtasks(taskId)`
-        // mount finds data immediately.
-        this.queryClient.setQueryData(subtaskKeys.list(taskId), subtasks);
         for (const entry of entries) entry.resolve(subtasks);
       }
     } catch (err) {
@@ -94,7 +93,7 @@ export function useSubtasksBatcher(): SubtasksBatcher {
   return React.useMemo(() => {
     let batcher = batchersByQueryClient.get(queryClient);
     if (!batcher) {
-      batcher = new SubtasksBatcher(queryClient);
+      batcher = new SubtasksBatcher();
       batchersByQueryClient.set(queryClient, batcher);
     }
     return batcher;
