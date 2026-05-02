@@ -46,6 +46,27 @@ export function prefetchTaskModal(): Promise<unknown> {
   return importTaskModal();
 }
 
+/**
+ * Loading shell shown while the modal chunk downloads on first interaction.
+ * Prevents the "click did nothing" feeling on slow networks — the user sees
+ * a dimmed overlay immediately, then Tiptap takes over once both chunks land.
+ */
+function TaskModalLoadingShell({ open }: { open: boolean }) {
+  if (!open) return null;
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/40 backdrop-blur-sm"
+      aria-hidden="true"
+    >
+      <div className="w-[min(640px,90vw)] rounded-lg border bg-background p-6 shadow-lg">
+        <div className="h-3 w-48 animate-pulse rounded bg-muted" />
+        <div className="mt-3 h-2 w-full max-w-md animate-pulse rounded bg-muted/60" />
+        <div className="mt-2 h-2 w-3/4 animate-pulse rounded bg-muted/40" />
+      </div>
+    </div>
+  );
+}
+
 export function TaskModal(props: TaskModalProps) {
   // The modal is dormant most of the time. We sidestep both the module
   // download and the React reconciliation cost by not mounting anything
@@ -60,7 +81,7 @@ export function TaskModal(props: TaskModalProps) {
   }
 
   return (
-    <React.Suspense fallback={null}>
+    <React.Suspense fallback={<TaskModalLoadingShell open={props.open} />}>
       <LazyTaskModal {...props} />
     </React.Suspense>
   );

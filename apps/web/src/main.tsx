@@ -12,9 +12,15 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { useTimezoneSync } from "@/hooks/useTimezoneSync";
 import { persister, shouldPersistQueryFn } from "@/lib/query-persister";
+import { installChunkErrorRecovery } from "@/lib/chunk-error-recovery";
 import { routeTree } from "./routeTree.gen.tsx";
 
 import "./index.css";
+
+// Recover from stale-deploy chunk loads (vite:preloadError) before any
+// component tree mounts so a failed `React.lazy(...)` triggers exactly one
+// soft reload instead of crashing the app.
+installChunkErrorRecovery();
 
 /**
  * Component that syncs user timezone with the server

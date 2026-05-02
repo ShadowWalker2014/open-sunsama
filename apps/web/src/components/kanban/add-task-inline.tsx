@@ -2,7 +2,12 @@ import * as React from "react";
 import { Plus, ArrowUp, ArrowDown } from "lucide-react";
 import { Button, ShortcutHint, Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { AddTaskModal, type AddPosition } from "./add-task-modal.lazy";
+import {
+  AddTaskModal,
+  prefetchAddTaskModal,
+  type AddPosition,
+} from "./add-task-modal.lazy";
+import { prefetchRichTextEditor } from "@/components/ui/rich-text-editor.lazy";
 
 const POSITION_STORAGE_KEY = "open-sunsama:add-task-position";
 
@@ -50,7 +55,14 @@ export function AddTaskInline({ scheduledDate, className, compact }: AddTaskInli
             "justify-start gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50 group",
             compact ? "h-7 px-2 text-xs" : "flex-1 h-9 gap-2"
           )}
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            void prefetchAddTaskModal();
+            void prefetchRichTextEditor();
+            setIsModalOpen(true);
+          }}
+          onMouseEnter={() => {
+            void prefetchAddTaskModal();
+          }}
         >
           <Plus className={compact ? "h-3.5 w-3.5" : "h-4 w-4"} />
           <span>Add task</span>
