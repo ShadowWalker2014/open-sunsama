@@ -78,6 +78,13 @@
       "when": 1777721999830,
       "tag": "0010_busy_celestials",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1777723799233,
+      "tag": "0011_bitter_squadron_supreme",
+      "breakpoints": true
     }
   ]
 }

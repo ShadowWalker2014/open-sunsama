@@ -1,27 +1,38 @@
-import { pgTable, uuid, varchar, timestamp, integer, date } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, timestamp, integer, date, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import { users } from './users';
 import { tasks } from './tasks';
 
-export const timeBlocks = pgTable('time_blocks', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  taskId: uuid('task_id').references(() => tasks.id, { onDelete: 'set null' }),
-  title: varchar('title', { length: 255 }).notNull(),
-  description: varchar('description', { length: 1000 }),
-  date: date('date').notNull(),
-  startTime: varchar('start_time', { length: 5 }).notNull(), // HH:MM format
-  endTime: varchar('end_time', { length: 5 }).notNull(), // HH:MM format
-  durationMins: integer('duration_mins').notNull(),
-  color: varchar('color', { length: 7 }).default('#3B82F6'), // Hex color
-  position: integer('position').notNull().default(0),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+export const timeBlocks = pgTable(
+  'time_blocks',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    taskId: uuid('task_id').references(() => tasks.id, { onDelete: 'set null' }),
+    title: varchar('title', { length: 255 }).notNull(),
+    description: varchar('description', { length: 1000 }),
+    date: date('date').notNull(),
+    startTime: varchar('start_time', { length: 5 }).notNull(), // HH:MM format
+    endTime: varchar('end_time', { length: 5 }).notNull(), // HH:MM format
+    durationMins: integer('duration_mins').notNull(),
+    color: varchar('color', { length: 7 }).default('#3B82F6'), // Hex color
+    position: integer('position').notNull().default(0),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    // Time-block listings filter by `(user_id, date)` (calendar view) or
+    // `(user_id, taskId)` (task modal). The user_id+date composite index
+    // covers both common range queries; the task_id index covers the
+    // modal's "all blocks for this task" lookup.
+    userDateIdx: index('time_blocks_user_date_idx').on(table.userId, table.date),
+    taskIdIdx: index('time_blocks_task_id_idx').on(table.taskId),
+  })
+);
 
 export const timeBlocksRelations = relations(timeBlocks, ({ one }) => ({
   user: one(users, {

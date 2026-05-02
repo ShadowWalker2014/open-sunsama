@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, timestamp, boolean, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
@@ -13,38 +13,50 @@ export type CalendarProvider = (typeof CALENDAR_PROVIDERS)[number];
 export const SYNC_STATUS_OPTIONS = ['idle', 'syncing', 'error'] as const;
 export type SyncStatus = (typeof SYNC_STATUS_OPTIONS)[number];
 
-export const calendarAccounts = pgTable('calendar_accounts', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  provider: varchar('provider', { length: 20 }).notNull(), // 'google' | 'outlook' | 'icloud'
-  providerAccountId: varchar('provider_account_id', { length: 255 }).notNull(),
-  email: varchar('email', { length: 255 }).notNull(),
+export const calendarAccounts = pgTable(
+  'calendar_accounts',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    provider: varchar('provider', { length: 20 }).notNull(), // 'google' | 'outlook' | 'icloud'
+    providerAccountId: varchar('provider_account_id', { length: 255 }).notNull(),
+    email: varchar('email', { length: 255 }).notNull(),
 
-  // Encrypted OAuth tokens (AES-256-GCM)
-  accessTokenEncrypted: text('access_token_encrypted'),
-  refreshTokenEncrypted: text('refresh_token_encrypted'),
-  tokenExpiresAt: timestamp('token_expires_at'),
+    // Encrypted OAuth tokens (AES-256-GCM)
+    accessTokenEncrypted: text('access_token_encrypted'),
+    refreshTokenEncrypted: text('refresh_token_encrypted'),
+    tokenExpiresAt: timestamp('token_expires_at'),
 
-  // CalDAV credentials (iCloud) - encrypted
-  caldavPasswordEncrypted: text('caldav_password_encrypted'),
-  caldavUrl: varchar('caldav_url', { length: 500 }),
+    // CalDAV credentials (iCloud) - encrypted
+    caldavPasswordEncrypted: text('caldav_password_encrypted'),
+    caldavUrl: varchar('caldav_url', { length: 500 }),
 
-  // Sync state
-  syncToken: varchar('sync_token', { length: 500 }), // For incremental sync
-  lastSyncedAt: timestamp('last_synced_at'),
-  syncStatus: varchar('sync_status', { length: 20 }).default('idle'), // 'idle' | 'syncing' | 'error'
-  syncError: text('sync_error'),
+    // Sync state
+    syncToken: varchar('sync_token', { length: 500 }), // For incremental sync
+    lastSyncedAt: timestamp('last_synced_at'),
+    syncStatus: varchar('sync_status', { length: 20 }).default('idle'), // 'idle' | 'syncing' | 'error'
+    syncError: text('sync_error'),
 
-  // Webhook subscription tracking
-  webhookSubscriptionId: varchar('webhook_subscription_id', { length: 500 }),
-  webhookExpiresAt: timestamp('webhook_expires_at'),
+    // Webhook subscription tracking
+    webhookSubscriptionId: varchar('webhook_subscription_id', { length: 500 }),
+    webhookExpiresAt: timestamp('webhook_expires_at'),
 
-  isActive: boolean('is_active').notNull().default(true),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+    isActive: boolean('is_active').notNull().default(true),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    // Calendar accounts are listed per user. The webhook handler also
+    // looks up by webhook_subscription_id when an inbound notification
+    // arrives.
+    userIdIdx: index('calendar_accounts_user_id_idx').on(table.userId),
+    webhookSubIdx: index('calendar_accounts_webhook_sub_idx').on(
+      table.webhookSubscriptionId
+    ),
+  })
+);
 
 export const calendarAccountsRelations = relations(calendarAccounts, ({ one, many }) => ({
   user: one(users, {

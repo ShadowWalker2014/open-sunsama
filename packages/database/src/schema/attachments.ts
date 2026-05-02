@@ -1,23 +1,33 @@
-import { pgTable, uuid, varchar, integer, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, integer, timestamp, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import { users } from './users';
 import { tasks } from './tasks';
 
-export const attachments = pgTable('attachments', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  taskId: uuid('task_id').references(() => tasks.id, { onDelete: 'cascade' }),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  url: varchar('url', { length: 500 }).notNull(),
-  filename: varchar('filename', { length: 255 }).notNull(),
-  contentType: varchar('content_type', { length: 100 }).notNull(),
-  size: integer('size').notNull(),
-  s3Key: varchar('s3_key', { length: 500 }).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-});
+export const attachments = pgTable(
+  'attachments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    taskId: uuid('task_id').references(() => tasks.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    url: varchar('url', { length: 500 }).notNull(),
+    filename: varchar('filename', { length: 255 }).notNull(),
+    contentType: varchar('content_type', { length: 100 }).notNull(),
+    size: integer('size').notNull(),
+    s3Key: varchar('s3_key', { length: 500 }).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    // Per-task attachment fetches use `WHERE task_id = ?`; user-scoped
+    // listings use `WHERE user_id = ?`. Both were sequential scans
+    // without a foreign-key index.
+    taskIdIdx: index('attachments_task_id_idx').on(table.taskId),
+    userIdIdx: index('attachments_user_id_idx').on(table.userId),
+  })
+);
 
 export const attachmentsRelations = relations(attachments, ({ one }) => ({
   user: one(users, {
