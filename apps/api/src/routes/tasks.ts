@@ -14,7 +14,9 @@ import {
   isNotNull,
   desc,
   asc,
+  inArray,
   tasks,
+  subtasks,
   sql,
   notificationPreferences,
 } from "@open-sunsama/database";
@@ -96,9 +98,36 @@ tasksRouter.get(
       .limit(filters.limit)
       .offset(offset);
 
+    // Optionally inline subtasks. The kanban range prefetch turns this on
+    // so the client can hydrate every visible day's task cards plus their
+    // subtask previews in a single round-trip — no follow-up
+    // `subtasks-batch` call needed.
+    let withSubtasks: Array<typeof results[number] & { subtasks?: unknown[] }> =
+      results;
+    if (filters.includeSubtasks === "true" && results.length > 0) {
+      const ids = results.map((t) => t.id);
+      const allSubtasks = await db
+        .select()
+        .from(subtasks)
+        .where(inArray(subtasks.taskId, ids))
+        .orderBy(asc(subtasks.position), asc(subtasks.createdAt));
+
+      const byTaskId = new Map<string, typeof allSubtasks>();
+      for (const id of ids) byTaskId.set(id, []);
+      for (const s of allSubtasks) {
+        const list = byTaskId.get(s.taskId);
+        if (list) list.push(s);
+      }
+
+      withSubtasks = results.map((t) => ({
+        ...t,
+        subtasks: byTaskId.get(t.id) ?? [],
+      }));
+    }
+
     return c.json({
       success: true,
-      data: results,
+      data: withSubtasks,
       meta: {
         page: filters.page,
         limit: filters.limit,

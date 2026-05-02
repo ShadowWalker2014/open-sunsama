@@ -1,10 +1,15 @@
 import * as React from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Task } from "@open-sunsama/types";
+import type { Task, Subtask } from "@open-sunsama/types";
 import { addDays, format, subDays } from "date-fns";
 import { getApi } from "@/lib/api";
-import { taskKeys } from "@/hooks/useTasks";
+import { taskKeys, subtaskKeys } from "@/lib/query-keys";
 import { useAuth } from "@/hooks/useAuth";
+
+// The shape the server returns when `includeSubtasks=true` is set. The
+// canonical Task type doesn't carry a `subtasks` field — we strip it back
+// out before seeding the per-day caches so consumers see plain Tasks.
+type TaskWithSubtasks = Task & { subtasks?: Subtask[] };
 
 /**
  * The number of days to prefetch in each direction around the current
@@ -105,16 +110,32 @@ export function useKanbanRangePrefetch(options: RangePrefetchOptions = {}) {
 
   const query = useQuery({
     queryKey,
-    queryFn: async (): Promise<{ tasks: Task[]; truncated: boolean }> => {
+    queryFn: async (): Promise<{
+      tasks: Task[];
+      subtasksByTaskId: Map<string, Subtask[]>;
+      truncated: boolean;
+    }> => {
       const api = getApi();
       const response = await api.tasks.list({
         scheduledDateFrom: fromString,
         scheduledDateTo: toString,
         limit: RANGE_FETCH_LIMIT,
+        includeSubtasks: true,
       });
-      const tasks = response.data ?? [];
-      const total = response.meta?.total ?? tasks.length;
-      return { tasks, truncated: total > tasks.length };
+      const raw = (response.data ?? []) as TaskWithSubtasks[];
+      const total = response.meta?.total ?? raw.length;
+
+      // Strip subtasks off the task object before we put it in the per-day
+      // cache. We seed the subtask caches separately below.
+      const tasks: Task[] = [];
+      const subtasksByTaskId = new Map<string, Subtask[]>();
+      for (const t of raw) {
+        const { subtasks: embedded, ...rest } = t;
+        tasks.push(rest as Task);
+        if (embedded) subtasksByTaskId.set(t.id, embedded);
+      }
+
+      return { tasks, subtasksByTaskId, truncated: total > tasks.length };
     },
     enabled: isAuthenticated,
     staleTime: 30_000,
@@ -186,6 +207,19 @@ export function useKanbanRangePrefetch(options: RangePrefetchOptions = {}) {
       }
 
       queryClient.setQueryData(cacheKey, tasks);
+    }
+
+    // Seed the per-task subtask caches too, so the kanban's subtask
+    // batcher never has to fire — `useSubtasks(taskId)` will read from
+    // these fresh cache entries (within the 60s default staleTime).
+    for (const [taskId, list] of data.subtasksByTaskId) {
+      const cacheKey = subtaskKeys.list(taskId);
+      const existing = queryClient.getQueryData<Subtask[]>(cacheKey);
+      // Don't clobber a list that contains an in-flight optimistic insert.
+      if (existing && existing.some((s) => s.id.startsWith("optimistic-"))) {
+        continue;
+      }
+      queryClient.setQueryData(cacheKey, list);
     }
   }, [data, queryClient, queryKey, bufferDays, centerString]);
 

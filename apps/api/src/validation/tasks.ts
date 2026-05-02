@@ -55,6 +55,10 @@ export const taskFilterSchema = z.object({
   sortBy: sortBySchema.optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(500).default(50),
+  // Inline-include the subtasks for each task. Used by the kanban range
+  // prefetch so we don't have to fire a follow-up `subtasks-batch` request
+  // for tasks the client already has in hand.
+  includeSubtasks: z.enum(['true', 'false']).optional(),
 });
 
 /**

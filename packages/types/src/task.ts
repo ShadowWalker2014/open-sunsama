@@ -243,6 +243,13 @@ export interface TaskFilterInput {
 
   /** Filter by priority level */
   priority?: TaskPriority;
+
+  /**
+   * If true, the server inlines each task's subtasks into the response as
+   * a `subtasks: Subtask[]` field on each task. Used by the kanban range
+   * prefetch to avoid a follow-up `subtasks-batch` request.
+   */
+  includeSubtasks?: boolean;
 }
 
 /**
