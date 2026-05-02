@@ -16,6 +16,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useSearch } from "@/hooks/useSearch";
 import { useTheme } from "@/hooks/useTheme";
+import { prefetchCommandPalette } from "@/components/command-palette/command-palette.lazy";
 import { cn, getAvatarUrl } from "@/lib/utils";
 import {
   Button,
@@ -99,7 +100,16 @@ export function Header({ className }: HeaderProps) {
 
         {/* Search Button */}
         <button
-          onClick={openSearch}
+          onClick={() => {
+            void prefetchCommandPalette();
+            openSearch();
+          }}
+          onMouseEnter={() => {
+            void prefetchCommandPalette();
+          }}
+          onFocus={() => {
+            void prefetchCommandPalette();
+          }}
           className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded border border-border/40 bg-muted/30 hover:bg-muted transition-colors text-xs text-muted-foreground mr-2"
         >
           <Search className="h-3.5 w-3.5" />
