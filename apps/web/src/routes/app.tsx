@@ -13,9 +13,15 @@ import {
 } from "@/hooks/useKeyboardShortcuts";
 import { SearchProvider, useSearch } from "@/hooks/useSearch";
 import { useWebSocket } from "@/hooks/useWebSocket";
-import { ShortcutsModal } from "@/components/ui/shortcuts-modal";
+import {
+  ShortcutsModal,
+  prefetchShortcutsModal,
+} from "@/components/ui/shortcuts-modal.lazy";
 import { GlobalShortcutsHandler } from "@/components/global-shortcuts-handler";
-import { CommandPalette } from "@/components/command-palette";
+import {
+  CommandPalette,
+  prefetchCommandPalette,
+} from "@/components/command-palette/command-palette.lazy";
 import {
   AddTaskModal,
   prefetchAddTaskModal,
@@ -117,6 +123,8 @@ function AppLayoutInner() {
       void prefetchRichTextEditor();
       void prefetchTaskModal();
       void prefetchAddTaskModal();
+      void prefetchCommandPalette();
+      void prefetchShortcutsModal();
     };
     if (typeof win.requestIdleCallback === "function") {
       const id = win.requestIdleCallback(warmAll, { timeout: 4000 });

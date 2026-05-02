@@ -24,7 +24,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Kbd } from "@/components/ui/shortcuts-modal";
+import { Kbd } from "@/components/ui/kbd";
 import type { Command } from "./commands";
 
 const ICON_MAP: Record<string, LucideIcon> = {
