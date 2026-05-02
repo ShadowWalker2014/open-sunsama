@@ -69,6 +69,17 @@ export interface SubtasksApi {
    * @returns The updated subtask
    */
   toggle(taskId: string, subtaskId: string, options?: RequestOptions): Promise<Subtask>;
+
+  /**
+   * Fetch subtasks for many tasks in one request, grouped by task id.
+   * Used by the kanban view to avoid one round-trip per visible card.
+   * @param taskIds Array of task IDs to fetch subtasks for
+   * @returns Map of taskId → subtasks (in position/createdAt order)
+   */
+  batchList(
+    taskIds: string[],
+    options?: RequestOptions
+  ): Promise<Record<string, Subtask[]>>;
 }
 
 // API response wrapper type
@@ -156,6 +167,17 @@ export function createSubtasksApi(client: OpenSunsamaClient): SubtasksApi {
       }
       // Toggle completion status
       return this.update(taskId, subtaskId, { completed: !subtask.completed }, options);
+    },
+
+    async batchList(
+      taskIds: string[],
+      options?: RequestOptions
+    ): Promise<Record<string, Subtask[]>> {
+      if (taskIds.length === 0) return {};
+      const response = await client.post<
+        ApiResponseWrapper<Record<string, Subtask[]>>
+      >("tasks/subtasks-batch", { taskIds }, options);
+      return response.data ?? {};
     },
   };
 }

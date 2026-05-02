@@ -4,7 +4,17 @@
  */
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { getDb, eq, and, asc, subtasks, tasks, sql } from '@open-sunsama/database';
+import { z } from 'zod';
+import {
+  getDb,
+  eq,
+  and,
+  asc,
+  inArray,
+  subtasks,
+  tasks,
+  sql,
+} from '@open-sunsama/database';
 import { NotFoundError } from '@open-sunsama/utils';
 import { auth, requireScopes, type AuthVariables } from '../middleware/auth.js';
 import {
@@ -27,6 +37,63 @@ async function verifyTaskOwnership(db: ReturnType<typeof getDb>, taskId: string,
   if (!task) throw new NotFoundError('Task', taskId);
   return task;
 }
+
+/**
+ * POST /tasks/subtasks-batch — Fetch subtasks for many tasks at once.
+ *
+ * The kanban shows N task cards visible at once and previously each card
+ * fired its own GET /tasks/:id/subtasks. This endpoint returns subtasks
+ * for every supplied taskId in one round-trip, grouped by taskId, so the
+ * client can hydrate the entire view from a single request.
+ *
+ * Static path is intentionally registered before any `/:taskId/...` route
+ * so Hono's matcher resolves the static segment first.
+ */
+const batchListSchema = z.object({
+  taskIds: z.array(z.string().uuid()).max(500),
+});
+subtasksRouter.post(
+  '/subtasks-batch',
+  requireScopes('tasks:read'),
+  zValidator('json', batchListSchema),
+  async (c) => {
+    const userId = c.get('userId');
+    const { taskIds } = c.req.valid('json');
+    const db = getDb();
+
+    if (taskIds.length === 0) {
+      return c.json({ success: true, data: {} as Record<string, unknown[]> });
+    }
+
+    // Only return subtasks for tasks the requester actually owns. We do
+    // this with a single join rather than two queries so a malicious or
+    // mistaken caller can't probe ownership by ID.
+    const rows = await db
+      .select({
+        subtask: subtasks,
+      })
+      .from(subtasks)
+      .innerJoin(tasks, eq(subtasks.taskId, tasks.id))
+      .where(
+        and(
+          eq(tasks.userId, userId),
+          inArray(subtasks.taskId, taskIds)
+        )
+      )
+      .orderBy(asc(subtasks.position), asc(subtasks.createdAt));
+
+    const grouped: Record<string, typeof rows[number]['subtask'][]> = {};
+    for (const id of taskIds) {
+      grouped[id] = [];
+    }
+    for (const row of rows) {
+      const list = grouped[row.subtask.taskId];
+      if (list) list.push(row.subtask);
+    }
+
+    return c.json({ success: true, data: grouped });
+  }
+);
 
 /** GET /tasks/:taskId/subtasks - List subtasks for a task */
 subtasksRouter.get(
