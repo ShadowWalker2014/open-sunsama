@@ -6,7 +6,7 @@ import type {
 } from "@open-sunsama/types";
 import { getApi } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
-import { subtaskKeys } from "./useSubtasks";
+import { subtaskKeys } from "@/lib/query-keys";
 
 /**
  * Create a subtask. Optimistically inserts a placeholder so the new row

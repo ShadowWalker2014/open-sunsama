@@ -51,16 +51,25 @@ export function useTimeBlock(id: string) {
   });
 }
 
-// Re-export all mutations for backwards compatibility
+// Re-export mutations for backwards compatibility. We import each one
+// from its actual source module rather than chaining through
+// useTimeBlockMutations — useTimeBlockMutations itself re-exports the
+// timer mutations from useTimeBlockTimer, while useTimeBlockTimer imports
+// useUpdateTimeBlock from useTimeBlockMutations. Going through the chain
+// produces a chunk-level cycle that Rollup warns about. Splitting the
+// re-export so this file references each defining module directly cuts
+// the cycle.
 export {
   useCreateTimeBlock,
   useUpdateTimeBlock,
   useDeleteTimeBlock,
   useQuickSchedule,
   useAutoSchedule,
+} from "./useTimeBlockMutations";
+export {
   useStartTimeBlock,
   useStopTimeBlock,
   useResizeTimeBlock,
   useCascadeResizeTimeBlock,
   useMoveTimeBlock,
-} from "./useTimeBlockMutations";
+} from "./useTimeBlockTimer";
