@@ -8,17 +8,10 @@ import type {
 } from "@open-sunsama/types";
 import { getApiClient } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
+import { calendarKeys } from "@/lib/query-keys";
 
-/**
- * Query key factory for calendar data
- */
-export const calendarKeys = {
-  all: ["calendars"] as const,
-  accounts: () => [...calendarKeys.all, "accounts"] as const,
-  calendars: () => [...calendarKeys.all, "list"] as const,
-  events: (from: string, to: string) =>
-    [...calendarKeys.all, "events", from, to] as const,
-};
+// Canonical key factory lives in lib/query-keys; re-exported for callers.
+export { calendarKeys };
 
 /**
  * Fetch all connected calendar accounts

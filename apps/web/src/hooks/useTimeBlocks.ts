@@ -1,18 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import type { TimeBlockFilterInput } from "@open-sunsama/types";
 import { getApi } from "@/lib/api";
+import { timeBlockKeys } from "@/lib/query-keys";
 
-/**
- * Query key factory for time blocks
- */
-export const timeBlockKeys = {
-  all: ["timeBlocks"] as const,
-  lists: () => [...timeBlockKeys.all, "list"] as const,
-  list: (filters: TimeBlockFilterInput) =>
-    [...timeBlockKeys.lists(), filters] as const,
-  details: () => [...timeBlockKeys.all, "detail"] as const,
-  detail: (id: string) => [...timeBlockKeys.details(), id] as const,
-};
+// Re-export so existing `import { timeBlockKeys } from "./useTimeBlocks"`
+// callers keep working while the canonical source lives in lib/query-keys.
+export { timeBlockKeys };
 
 /**
  * Fetch all time blocks with optional filters

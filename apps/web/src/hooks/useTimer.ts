@@ -7,7 +7,11 @@ import {
   type TimerStartedEvent,
   type TimerStoppedEvent,
 } from "@/lib/websocket";
-import { taskKeys } from "@/hooks/useTasks";
+import { taskKeys, timerKeys } from "@/lib/query-keys";
+
+// Re-export so existing `import { timerKeys } from "@/hooks/useTimer"`
+// callers keep working while the canonical source lives in lib/query-keys.
+export { timerKeys };
 
 interface TimerState {
   isRunning: boolean;
@@ -28,13 +32,6 @@ interface UseTimerReturn {
   stop: () => void;
   reset: () => void;
 }
-
-/**
- * Query key factory for timer queries
- */
-export const timerKeys = {
-  active: () => ["tasks", "timer", "active"] as const,
-};
 
 const STORAGE_KEY_PREFIX = "focus-timer-";
 

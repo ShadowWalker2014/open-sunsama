@@ -1,21 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import type { Subtask } from "@open-sunsama/types";
 import { useSubtasksBatcher } from "./useSubtasksBatcher";
+import { subtaskKeys } from "@/lib/query-keys";
 
 // Re-export types for convenience
 export type { Subtask };
 export type { CreateSubtaskInput, UpdateSubtaskInput } from "@open-sunsama/types";
 
-/**
- * Query key factory for subtasks
- */
-export const subtaskKeys = {
-  all: ["subtasks"] as const,
-  lists: () => [...subtaskKeys.all, "list"] as const,
-  list: (taskId: string) => [...subtaskKeys.lists(), taskId] as const,
-  details: () => [...subtaskKeys.all, "detail"] as const,
-  detail: (id: string) => [...subtaskKeys.details(), id] as const,
-};
+// Re-export the canonical key factory.
+export { subtaskKeys };
 
 /**
  * Fetch subtasks for a task.
