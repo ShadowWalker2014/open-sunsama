@@ -7,6 +7,8 @@ import {
 } from "@/hooks/useKeyboardShortcuts";
 import { useSearch } from "@/hooks/useSearch";
 import { toast } from "@/hooks/use-toast";
+import { prefetchCommandPalette } from "@/components/command-palette/command-palette.lazy";
+import { prefetchShortcutsModal } from "@/components/ui/shortcuts-modal.lazy";
 
 interface GlobalShortcutsHandlerProps {
   onAddTask: () => void;
@@ -29,6 +31,9 @@ export function GlobalShortcutsHandler({ onAddTask }: GlobalShortcutsHandlerProp
       // Show shortcuts modal (Shift + ?)
       if (SHORTCUTS.showShortcuts && matchesShortcut(event, SHORTCUTS.showShortcuts)) {
         event.preventDefault();
+        // Kick the chunk download in flight before React commits the open
+        // state — by the time Suspense suspends, the module is loading.
+        void prefetchShortcutsModal();
         setShowShortcutsModal(true);
         return;
       }
@@ -36,6 +41,7 @@ export function GlobalShortcutsHandler({ onAddTask }: GlobalShortcutsHandlerProp
       // Search/Command Palette (Cmd+K)
       if (SHORTCUTS.search && matchesShortcut(event, SHORTCUTS.search)) {
         event.preventDefault();
+        void prefetchCommandPalette();
         openSearch();
         return;
       }

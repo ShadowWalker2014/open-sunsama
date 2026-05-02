@@ -39,6 +39,34 @@ export function prefetchCommandPalette(): Promise<unknown> {
   return importCommandPalette();
 }
 
+/**
+ * Loading shell shown while the palette chunk downloads on first ⌘K. We
+ * mimic the palette's positioning + dialog framing so the user sees an
+ * immediate response instead of a "did the keystroke register?" pause on
+ * slow connections.
+ */
+function CommandPaletteLoadingShell({ open }: { open: boolean }) {
+  if (!open) return null;
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center bg-background/40 pt-[15vh] backdrop-blur-sm"
+      aria-hidden="true"
+    >
+      <div className="w-[min(640px,90vw)] rounded-lg border bg-popover p-4 shadow-lg">
+        <div className="flex items-center gap-2">
+          <div className="h-4 w-4 animate-pulse rounded bg-muted" />
+          <div className="h-3 w-32 animate-pulse rounded bg-muted/70" />
+        </div>
+        <div className="mt-3 space-y-2">
+          <div className="h-2 w-3/4 animate-pulse rounded bg-muted/40" />
+          <div className="h-2 w-2/3 animate-pulse rounded bg-muted/40" />
+          <div className="h-2 w-1/2 animate-pulse rounded bg-muted/40" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function CommandPalette(props: CommandPaletteProps) {
   // The palette is dormant on every page view that doesn't hit ⌘K. Skip
   // mounting (and downloading) the chunk until it's actually opened, then
@@ -49,7 +77,7 @@ export function CommandPalette(props: CommandPaletteProps) {
   if (!seenOpenRef.current) return null;
 
   return (
-    <React.Suspense fallback={null}>
+    <React.Suspense fallback={<CommandPaletteLoadingShell open={props.open} />}>
       <LazyCommandPalette {...props} />
     </React.Suspense>
   );
