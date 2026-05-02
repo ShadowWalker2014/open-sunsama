@@ -7,6 +7,7 @@ import { useCompleteTask, useUpdateTask } from "@/hooks/useTasks";
 import { useSubtasks, useUpdateSubtask } from "@/hooks/useSubtasks";
 import { TaskContextMenu } from "./task-context-menu";
 import { TaskCardContent } from "./task-card-content";
+import { prefetchTaskModal } from "./task-modal.lazy";
 
 interface TaskCardProps {
   task: Task;
@@ -108,9 +109,24 @@ export function SortableTaskCard({
   const handleClick = (e: React.MouseEvent) => {
     if (!dragging) {
       e.stopPropagation();
+      // Kick off the modal chunk download synchronously with the click —
+      // by the time React commits the open state, the chunk is in flight.
+      void prefetchTaskModal();
       onSelect(task);
     }
   };
+
+  // Prefetch on hover so even slow connections feel instant when the user
+  // commits to clicking. `prefetchTaskModal` is idempotent and cached.
+  const handleHoverChangeWithPrefetch = React.useCallback(
+    (hovered: boolean) => {
+      if (hovered) {
+        void prefetchTaskModal();
+      }
+      setIsHovered(hovered);
+    },
+    []
+  );
 
   return (
     <TaskContextMenu task={task} onEdit={() => onSelect(task)}>
@@ -134,7 +150,7 @@ export function SortableTaskCard({
           isDragging={externalDragging}
           onToggleComplete={handleToggleComplete}
           onClick={handleClick}
-          onHoverChange={setIsHovered}
+          onHoverChange={handleHoverChangeWithPrefetch}
           subtasks={subtasks}
           onToggleSubtask={handleToggleSubtask}
           subtasksHidden={task.subtasksHidden}
@@ -190,9 +206,20 @@ export function TaskCard({
   const handleClick = (e: React.MouseEvent) => {
     if (!externalDragging) {
       e.stopPropagation();
+      void prefetchTaskModal();
       onSelect(task);
     }
   };
+
+  const handleHoverChangeWithPrefetch = React.useCallback(
+    (hovered: boolean) => {
+      if (hovered) {
+        void prefetchTaskModal();
+      }
+      setIsHovered(hovered);
+    },
+    []
+  );
 
   return (
     <TaskCardContent
@@ -202,7 +229,7 @@ export function TaskCard({
       isDragging={externalDragging}
       onToggleComplete={handleToggleComplete}
       onClick={handleClick}
-      onHoverChange={setIsHovered}
+      onHoverChange={handleHoverChangeWithPrefetch}
       subtasks={subtasks}
       onToggleSubtask={handleToggleSubtask}
       subtasksHidden={task.subtasksHidden}
