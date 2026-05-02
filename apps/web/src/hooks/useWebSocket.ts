@@ -1,6 +1,11 @@
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { wsClient, emitPreferencesUpdate, type WebSocketEvent, type UserEvent } from "@/lib/websocket";
+import {
+  wsClient,
+  emitPreferencesUpdate,
+  type WebSocketEvent,
+  type UserEvent,
+} from "@/lib/websocket";
 import { useAuth } from "@/hooks/useAuth";
 import { taskKeys } from "@/hooks/useTasks";
 import { timerKeys } from "@/hooks/useTimer";
@@ -9,19 +14,94 @@ import { subtaskKeys } from "@/hooks/useSubtasks";
 import { calendarKeys } from "@/hooks/useCalendars";
 
 /**
- * Hook that manages WebSocket connection and query invalidation
+ * Debounced invalidation queue.
+ *
+ * The server fans out a websocket event to every connected client of the
+ * authenticated user — including the originating client whose mutation just
+ * fired. Without coalescing, a fast typist editing a task title would trigger
+ * one refetch per keystroke. We collect invalidations during a short window
+ * and flush them together, so the user sees the effect of their optimistic
+ * update without a flicker on every echo.
+ */
+class InvalidationBatcher {
+  private timer: ReturnType<typeof setTimeout> | null = null;
+  private keys = new Map<string, readonly unknown[]>();
+  private taskDetails = new Set<string>();
+  private subtaskTasks = new Set<string>();
+  private timeBlockDetails = new Set<string>();
+
+  constructor(
+    private getQueryClient: () => ReturnType<typeof useQueryClient>,
+    private delayMs = 150
+  ) {}
+
+  schedule(key: readonly unknown[]) {
+    this.keys.set(JSON.stringify(key), key);
+    this.arm();
+  }
+
+  scheduleTaskDetail(taskId: string) {
+    this.taskDetails.add(taskId);
+    this.arm();
+  }
+
+  scheduleSubtasksFor(taskId: string) {
+    this.subtaskTasks.add(taskId);
+    this.arm();
+  }
+
+  scheduleTimeBlockDetail(timeBlockId: string) {
+    this.timeBlockDetails.add(timeBlockId);
+    this.arm();
+  }
+
+  private arm() {
+    if (this.timer) return;
+    this.timer = setTimeout(() => this.flush(), this.delayMs);
+  }
+
+  private flush() {
+    this.timer = null;
+    const qc = this.getQueryClient();
+    for (const key of this.keys.values()) {
+      qc.invalidateQueries({ queryKey: key });
+    }
+    this.keys.clear();
+    for (const taskId of this.taskDetails) {
+      qc.invalidateQueries({ queryKey: taskKeys.detail(taskId) });
+    }
+    this.taskDetails.clear();
+    for (const taskId of this.subtaskTasks) {
+      qc.invalidateQueries({ queryKey: subtaskKeys.list(taskId) });
+    }
+    this.subtaskTasks.clear();
+    for (const id of this.timeBlockDetails) {
+      qc.invalidateQueries({ queryKey: timeBlockKeys.detail(id) });
+    }
+    this.timeBlockDetails.clear();
+  }
+}
+
+/**
+ * Hook that manages WebSocket connection and query invalidation.
  *
  * Automatically connects when authenticated and disconnects on logout.
- * Listens for realtime events and invalidates relevant TanStack Query caches.
+ * Listens for realtime events and invalidates relevant TanStack Query caches,
+ * coalescing rapid bursts of events (e.g. echoes of local mutations) to
+ * minimise refetch traffic.
  */
 export function useWebSocket(): void {
   const { token, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const connectedRef = useRef(false);
   const tokenRef = useRef<string | null>(null);
+  const batcherRef = useRef<InvalidationBatcher | null>(null);
+
+  if (!batcherRef.current) {
+    batcherRef.current = new InvalidationBatcher(() => queryClient);
+  }
 
   useEffect(() => {
-    // Disconnect if not authenticated
     if (!isAuthenticated || !token) {
       if (connectedRef.current) {
         wsClient.disconnect();
@@ -31,17 +111,16 @@ export function useWebSocket(): void {
       return;
     }
 
-    // Connect if not already connected with this token
     if (!connectedRef.current || tokenRef.current !== token) {
       wsClient.connect(token);
       connectedRef.current = true;
       tokenRef.current = token;
     }
 
-    // Always subscribe to events (subscription is independent of connection state)
-    // This ensures handlers are re-added after effect cleanup (e.g., HMR, queryClient change)
+    const batcher = batcherRef.current!;
+
     const unsubscribe = wsClient.subscribe((event: WebSocketEvent) => {
-      handleWebSocketEvent(event, queryClient);
+      handleWebSocketEvent(event, queryClient, batcher);
     });
 
     return () => {
@@ -50,62 +129,51 @@ export function useWebSocket(): void {
   }, [isAuthenticated, token, queryClient]);
 }
 
-/**
- * Handle incoming WebSocket events by invalidating relevant query caches
- */
 function handleWebSocketEvent(
   event: WebSocketEvent,
-  queryClient: ReturnType<typeof useQueryClient>
+  queryClient: ReturnType<typeof useQueryClient>,
+  batcher: InvalidationBatcher
 ): void {
-  console.log("[WS] Event received:", event.type, event.payload);
-
   switch (event.type) {
-    // Task events
     case "task:created":
     case "task:updated":
     case "task:deleted":
     case "task:completed":
     case "task:reordered":
-      // Invalidate all task lists to refetch
-      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
-      
-      // Also invalidate infinite search queries (used by "All Tasks" page)
-      queryClient.invalidateQueries({ queryKey: ["tasks", "search", "infinite"] });
+      batcher.schedule(taskKeys.lists());
+      batcher.schedule(["tasks", "search", "infinite"]);
 
-      // For individual task changes, also invalidate the specific task and its subtasks
       if (event.payload && typeof event.payload === "object" && "taskId" in event.payload) {
         const { taskId } = event.payload as { taskId: string };
-        queryClient.invalidateQueries({ queryKey: taskKeys.detail(taskId) });
-        // Subtask changes also emit task:updated, so invalidate subtasks too
-        queryClient.invalidateQueries({ queryKey: subtaskKeys.list(taskId) });
+        batcher.scheduleTaskDetail(taskId);
+        batcher.scheduleSubtasksFor(taskId);
       }
 
-      // Cross-invalidate time blocks when tasks are deleted/updated/completed
-      // This ensures calendar view refreshes when linked tasks change
-      if (event.type === "task:deleted" || event.type === "task:updated" || event.type === "task:completed") {
-        queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
+      if (
+        event.type === "task:deleted" ||
+        event.type === "task:updated" ||
+        event.type === "task:completed"
+      ) {
+        batcher.schedule(timeBlockKeys.lists());
       }
       break;
 
-    // Time block events
     case "timeblock:created":
     case "timeblock:updated":
     case "timeblock:deleted":
-      // Invalidate all time block lists
-      queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
-
-      if (event.payload && typeof event.payload === "object" && "timeBlockId" in event.payload) {
+      batcher.schedule(timeBlockKeys.lists());
+      if (
+        event.payload &&
+        typeof event.payload === "object" &&
+        "timeBlockId" in event.payload
+      ) {
         const { timeBlockId } = event.payload as { timeBlockId: string };
-        queryClient.invalidateQueries({
-          queryKey: timeBlockKeys.detail(timeBlockId),
-        });
+        batcher.scheduleTimeBlockDetail(timeBlockId);
       }
       break;
 
-    // User events
     case "user:updated": {
       queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
-      // Emit preferences update for realtime theme sync across devices
       const userPayload = event.payload as UserEvent;
       if (userPayload.preferences) {
         emitPreferencesUpdate(userPayload.preferences);
@@ -113,30 +181,27 @@ function handleWebSocketEvent(
       break;
     }
 
-    // Timer events — invalidate active timer query and specific task detail
     case "timer:started":
     case "timer:stopped":
+      // Timer events are user-perceptible state changes; invalidate
+      // immediately so focus mode stays in sync without delay.
       queryClient.invalidateQueries({ queryKey: timerKeys.active() });
       if (event.payload && typeof event.payload === "object" && "taskId" in event.payload) {
         const { taskId } = event.payload as { taskId: string };
         queryClient.invalidateQueries({ queryKey: taskKeys.detail(taskId) });
       }
-      // Also refresh task lists so actualMins badges update everywhere
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
       break;
 
     case "connected":
-      // On reconnect, refetch active timer to reconcile state
       queryClient.invalidateQueries({ queryKey: timerKeys.active() });
       break;
 
-    // Calendar events
     case "calendar:synced":
     case "calendar:account-disconnected":
     case "calendar:updated":
-      // Force refetch all calendar-related queries (refetch ignores staleTime)
-      queryClient.refetchQueries({ queryKey: calendarKeys.accounts() });
-      queryClient.refetchQueries({ queryKey: calendarKeys.calendars() });
+      // calendarKeys.all is the prefix for accounts/list/events, so this
+      // single refetch covers all three sub-trees.
       queryClient.refetchQueries({ queryKey: calendarKeys.all });
       break;
   }

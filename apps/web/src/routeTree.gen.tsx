@@ -6,47 +6,17 @@ import {
   createRoute,
   redirect,
   Outlet,
+  lazyRouteComponent,
 } from "@tanstack/react-router";
 import { Toaster } from "./components/ui/toaster";
 
-// Import route components
-import LandingPage from "./routes/landing";
+// Auth pages — these are the entry points for unauthenticated users, so we
+// keep them eager. Everything else (marketing, docs, blog, comparison pages,
+// in-app sub-pages) is split into its own chunk via lazyRouteComponent so the
+// /app boot bundle stays small.
 import LoginPage from "./routes/login";
 import RegisterPage from "./routes/register";
-import ForgotPasswordPage from "./routes/forgot-password";
-import ResetPasswordPage from "./routes/reset-password";
-import PrivacyPage from "./routes/privacy";
-import TermsPage from "./routes/terms";
-import DownloadPage from "./routes/download";
 import AppLayout from "./routes/app";
-import TasksPage from "./routes/app/index";
-import BoardPage from "./routes/app/board";
-import CalendarPage from "./routes/app/calendar";
-import SettingsPage from "./routes/app/settings";
-import TasksListPage from "./routes/app/tasks";
-import FocusPage from "./routes/app/focus.$taskId";
-import FocusCompletePage from "./routes/app/focus.complete";
-import MorePage from "./routes/app/more";
-import RoutinesPage from "./routes/app/routines";
-
-// Import feature pages
-import KanbanFeaturePage from "./routes/features/kanban";
-import TimeBlockingFeaturePage from "./routes/features/time-blocking";
-import FocusModeFeaturePage from "./routes/features/focus-mode";
-import AIIntegrationFeaturePage from "./routes/features/ai-integration";
-import CommandPaletteFeaturePage from "./routes/features/command-palette";
-import CalendarSyncFeaturePage from "./routes/features/calendar-sync";
-
-// Import blog pages
-import BlogPage from "./routes/blog";
-import BlogPostPage from "./routes/blog.$slug";
-
-// Import docs pages
-import DocsPage from "./routes/docs";
-import DocPage from "./routes/docs.$";
-
-// Import alternative pages (competitor comparisons)
-import MotionAlternativePage from "./routes/alternative.motion";
 
 // Create root route
 const rootRoute = createRootRoute({
@@ -64,7 +34,7 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
-  component: LandingPage,
+  component: lazyRouteComponent(() => import("./routes/landing")),
   beforeLoad: () => {
     const token = localStorage.getItem("open_sunsama_token");
 
@@ -98,13 +68,13 @@ const registerRoute = createRoute({
 const forgotPasswordRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/forgot-password",
-  component: ForgotPasswordPage,
+  component: lazyRouteComponent(() => import("./routes/forgot-password")),
 });
 
 const resetPasswordRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/reset-password",
-  component: ResetPasswordPage,
+  component: lazyRouteComponent(() => import("./routes/reset-password")),
   validateSearch: (search: Record<string, unknown>) => {
     return {
       token: typeof search.token === "string" ? search.token : "",
@@ -115,61 +85,69 @@ const resetPasswordRoute = createRoute({
 const privacyRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/privacy",
-  component: PrivacyPage,
+  component: lazyRouteComponent(() => import("./routes/privacy")),
 });
 
 const termsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/terms",
-  component: TermsPage,
+  component: lazyRouteComponent(() => import("./routes/terms")),
 });
 
 const downloadRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/download",
-  component: DownloadPage,
+  component: lazyRouteComponent(() => import("./routes/download")),
 });
 
 const kanbanFeatureRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/features/kanban",
-  component: KanbanFeaturePage,
+  component: lazyRouteComponent(() => import("./routes/features/kanban")),
 });
 
 const timeBlockingFeatureRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/features/time-blocking",
-  component: TimeBlockingFeaturePage,
+  component: lazyRouteComponent(
+    () => import("./routes/features/time-blocking")
+  ),
 });
 
 const focusModeFeatureRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/features/focus-mode",
-  component: FocusModeFeaturePage,
+  component: lazyRouteComponent(() => import("./routes/features/focus-mode")),
 });
 
 const aiIntegrationFeatureRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/features/ai-integration",
-  component: AIIntegrationFeaturePage,
+  component: lazyRouteComponent(
+    () => import("./routes/features/ai-integration")
+  ),
 });
 
 const commandPaletteFeatureRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/features/command-palette",
-  component: CommandPaletteFeaturePage,
+  component: lazyRouteComponent(
+    () => import("./routes/features/command-palette")
+  ),
 });
 
 const calendarSyncFeatureRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/features/calendar-sync",
-  component: CalendarSyncFeaturePage,
+  component: lazyRouteComponent(
+    () => import("./routes/features/calendar-sync")
+  ),
 });
 
 const blogRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/blog",
-  component: BlogPage,
+  component: lazyRouteComponent(() => import("./routes/blog")),
   validateSearch: (
     search: Record<string, unknown>
   ): { tag?: string; page?: number; q?: string } => {
@@ -189,13 +167,13 @@ const blogRoute = createRoute({
 const blogPostRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/blog/$slug",
-  component: BlogPostPage,
+  component: lazyRouteComponent(() => import("./routes/blog.$slug")),
 });
 
 const motionAlternativeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/alternative/motion",
-  component: MotionAlternativePage,
+  component: lazyRouteComponent(() => import("./routes/alternative.motion")),
 });
 
 // Docs parent route - just renders Outlet for children
@@ -209,14 +187,14 @@ const docsRoute = createRoute({
 const docsIndexRoute = createRoute({
   getParentRoute: () => docsRoute,
   path: "/",
-  component: DocsPage,
+  component: lazyRouteComponent(() => import("./routes/docs")),
 });
 
 // Splat route for nested doc paths like /docs/getting-started or /docs/api/authentication
 const docsSplatRoute = createRoute({
   getParentRoute: () => docsRoute,
   path: "$",
-  component: DocPage,
+  component: lazyRouteComponent(() => import("./routes/docs.$")),
 });
 
 const appRoute = createRoute({
@@ -234,25 +212,25 @@ const appRoute = createRoute({
 const appIndexRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/",
-  component: TasksPage,
+  component: lazyRouteComponent(() => import("./routes/app/index")),
 });
 
 const appCalendarRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/calendar",
-  component: CalendarPage,
+  component: lazyRouteComponent(() => import("./routes/app/calendar")),
 });
 
 const appBoardRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/board",
-  component: BoardPage,
+  component: lazyRouteComponent(() => import("./routes/app/board")),
 });
 
 const appSettingsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/settings",
-  component: SettingsPage,
+  component: lazyRouteComponent(() => import("./routes/app/settings")),
   validateSearch: (
     search: Record<string, unknown>
   ): { tab?: string; calendar?: string; provider?: string } => {
@@ -269,31 +247,31 @@ const appSettingsRoute = createRoute({
 const appTasksListRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/tasks",
-  component: TasksListPage,
+  component: lazyRouteComponent(() => import("./routes/app/tasks")),
 });
 
 const appFocusRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/focus/$taskId",
-  component: FocusPage,
+  component: lazyRouteComponent(() => import("./routes/app/focus.$taskId")),
 });
 
 const appFocusCompleteRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/focus/complete",
-  component: FocusCompletePage,
+  component: lazyRouteComponent(() => import("./routes/app/focus.complete")),
 });
 
 const appMoreRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/more",
-  component: MorePage,
+  component: lazyRouteComponent(() => import("./routes/app/more")),
 });
 
 const appRoutinesRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/routines",
-  component: RoutinesPage,
+  component: lazyRouteComponent(() => import("./routes/app/routines")),
 });
 
 // Build the route tree

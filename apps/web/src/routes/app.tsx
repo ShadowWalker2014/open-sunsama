@@ -22,9 +22,14 @@ import { AppUpdateBanner } from "@/components/app-update-banner";
 
 /**
  * Main app layout - requires authentication
+ *
+ * The presence of a token (set in beforeLoad on the route) is the gate to
+ * rendering the shell; the /auth/me request happens in the background and
+ * does not block first paint. If the token turns out to be invalid, useAuth
+ * clears it and the redirect effect below kicks in.
  */
 export default function AppLayout() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
 
   // Redirect to login if not authenticated
@@ -34,8 +39,10 @@ export default function AppLayout() {
     }
   }, [isAuthenticated, isLoading, navigate]);
 
-  // Show loading state while checking auth
-  if (isLoading) {
+  // Only show the skeleton on a true cold start: token present, no cached
+  // user, no in-flight result yet. With localStorage seeding this is rare
+  // and brief.
+  if (isLoading && !user) {
     return (
       <div className="flex min-h-screen flex-col">
         <div className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
