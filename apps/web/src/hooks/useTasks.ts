@@ -71,28 +71,102 @@ export function useCreateTask() {
       const api = getApi();
       return await api.tasks.create(data);
     },
-    onSuccess: (newTask) => {
-      // Invalidate and refetch task lists
-      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+    onMutate: async (data) => {
+      // Optimistically inject a placeholder task so the UI updates instantly.
+      await queryClient.cancelQueries({ queryKey: taskKeys.lists() });
 
-      // Also invalidate infinite search queries (used by "All Tasks" page)
-      queryClient.invalidateQueries({
-        queryKey: ["tasks", "search", "infinite"],
+      const previousQueries = queryClient.getQueriesData<Task[]>({
+        queryKey: taskKeys.lists(),
       });
 
-      // Optionally add the new task to the cache
-      queryClient.setQueryData(taskKeys.detail(newTask.id), newTask);
+      const tempId = `optimistic-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const now = new Date();
+      const optimisticTask: Task = {
+        id: tempId,
+        userId: "",
+        title: data.title,
+        notes: data.notes ?? null,
+        scheduledDate: data.scheduledDate ?? null,
+        estimatedMins: data.estimatedMins ?? null,
+        actualMins: 0,
+        priority: data.priority ?? "P2",
+        position: Number.MAX_SAFE_INTEGER,
+        completedAt: null,
+        subtasksHidden: false,
+        seriesId: null,
+        seriesInstanceNumber: null,
+        timerStartedAt: null,
+        timerAccumulatedSeconds: 0,
+        createdAt: now,
+        updatedAt: now,
+      };
 
-      toast({
-        title: "Task created",
-        description: `"${newTask.title}" has been created.`,
+      // Walk each cached list and inject only into the ones whose filter
+      // matches this task's date / backlog status.
+      previousQueries.forEach(([key, data2]) => {
+        if (!data2) return;
+        const filter = key[2] as
+          | { scheduledDate?: string; backlog?: boolean; completed?: boolean }
+          | undefined;
+        if (!filter) return;
+        if (filter.completed === true) return;
+        const matchesDate =
+          filter.scheduledDate &&
+          filter.scheduledDate === data.scheduledDate;
+        const matchesBacklog = filter.backlog === true && !data.scheduledDate;
+        if (matchesDate || matchesBacklog) {
+          queryClient.setQueryData<Task[]>(key, [...data2, optimisticTask]);
+        }
       });
+
+      queryClient.setQueryData(taskKeys.detail(tempId), optimisticTask);
+
+      return { previousQueries, tempId };
     },
-    onError: (error) => {
+    onError: (error, _data, context) => {
+      context?.previousQueries?.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
+      });
+      if (context?.tempId) {
+        queryClient.removeQueries({
+          queryKey: taskKeys.detail(context.tempId),
+        });
+      }
       toast({
         variant: "destructive",
         title: "Failed to create task",
         description: error instanceof Error ? error.message : "Unknown error",
+      });
+    },
+    onSuccess: (newTask, _data, context) => {
+      // Replace optimistic placeholder with real server task.
+      if (context?.tempId) {
+        queryClient.removeQueries({
+          queryKey: taskKeys.detail(context.tempId),
+        });
+        queryClient.setQueriesData<Task[]>(
+          { queryKey: taskKeys.lists() },
+          (old) => {
+            if (!old) return old;
+            const idx = old.findIndex((t) => t.id === context.tempId);
+            if (idx === -1) return old;
+            const next = old.slice();
+            next[idx] = newTask;
+            return next;
+          }
+        );
+      }
+      queryClient.setQueryData(taskKeys.detail(newTask.id), newTask);
+
+      // Refresh "All Tasks" infinite search once — that view does its own
+      // pagination so a targeted setQueryData isn't worth it here.
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", "search", "infinite"],
+      });
+
+      toast({
+        title: "Task created",
+        description: `"${newTask.title}" has been created.`,
       });
     },
   });
@@ -166,20 +240,24 @@ export function useUpdateTask() {
       });
     },
     onSuccess: (updatedTask) => {
-      // Update with actual server data
+      // Update with actual server data. We deliberately do not invalidate
+      // lists here — the optimistic update + this setQueryData already
+      // produces the canonical state, and the WebSocket echo will reconcile
+      // any server-side derived fields via the batched invalidator.
       queryClient.setQueryData(taskKeys.detail(updatedTask.id), updatedTask);
-    },
-    onSettled: () => {
-      // Always refetch to ensure server state
-      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
-      // Also invalidate time blocks since task data may have changed
-      queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
+      queryClient.setQueriesData<Task[]>(
+        { queryKey: taskKeys.lists() },
+        (old) => {
+          if (!old) return old;
+          return old.map((t) => (t.id === updatedTask.id ? updatedTask : t));
+        }
+      );
     },
   });
 }
 
 /**
- * Delete a task
+ * Delete a task with an optimistic removal so the card vanishes immediately.
  */
 export function useDeleteTask() {
   const queryClient = useQueryClient();
@@ -190,31 +268,74 @@ export function useDeleteTask() {
       await api.tasks.delete(id);
       return id;
     },
-    onSuccess: (deletedId) => {
-      // Remove from cache
-      queryClient.removeQueries({ queryKey: taskKeys.detail(deletedId) });
-
-      // Invalidate all task lists
-      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
-
-      // Also invalidate infinite search queries (used by "All Tasks" page)
-      queryClient.invalidateQueries({
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: taskKeys.lists() });
+      await queryClient.cancelQueries({
         queryKey: ["tasks", "search", "infinite"],
       });
 
-      // Also invalidate time blocks since they may reference this task
-      queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
-
-      toast({
-        title: "Task deleted",
-        description: "The task has been deleted.",
+      const previousQueries = queryClient.getQueriesData<Task[]>({
+        queryKey: taskKeys.lists(),
       });
+      const previousInfinite = queryClient.getQueriesData({
+        queryKey: ["tasks", "search", "infinite"],
+      });
+      const previousDetail = queryClient.getQueryData<Task>(
+        taskKeys.detail(id)
+      );
+
+      queryClient.setQueriesData<Task[]>(
+        { queryKey: taskKeys.lists() },
+        (old) => (old ? old.filter((t) => t.id !== id) : old)
+      );
+      queryClient.setQueriesData(
+        { queryKey: ["tasks", "search", "infinite"] },
+        (old: unknown) => {
+          if (!old || typeof old !== "object" || !("pages" in old)) return old;
+          const current = old as {
+            pages: Array<{ data: Task[]; meta?: unknown }>;
+            pageParams: unknown[];
+          };
+          return {
+            ...current,
+            pages: current.pages.map((page) => ({
+              ...page,
+              data: page.data.filter((t) => t.id !== id),
+            })),
+          };
+        }
+      );
+      queryClient.removeQueries({ queryKey: taskKeys.detail(id) });
+
+      return { previousQueries, previousInfinite, previousDetail, id };
     },
-    onError: (error) => {
+    onError: (error, _id, context) => {
+      context?.previousQueries?.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
+      });
+      context?.previousInfinite?.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
+      });
+      if (context?.previousDetail && context.id) {
+        queryClient.setQueryData(
+          taskKeys.detail(context.id),
+          context.previousDetail
+        );
+      }
       toast({
         variant: "destructive",
         title: "Failed to delete task",
         description: error instanceof Error ? error.message : "Unknown error",
+      });
+    },
+    onSuccess: () => {
+      // Time blocks may reference this task (calendar shows the title);
+      // a single targeted invalidation keeps the calendar honest. The WS
+      // echo also covers cross-device.
+      queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
+      toast({
+        title: "Task deleted",
+        description: "The task has been deleted.",
       });
     },
   });
@@ -365,13 +486,6 @@ export function useCompleteTask() {
         }
       );
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
-      queryClient.invalidateQueries({
-        queryKey: ["tasks", "search", "infinite"],
-      });
-      queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
-    },
   });
 }
 
@@ -444,12 +558,6 @@ export function useMoveTask() {
         title: "Failed to move task",
         description: _error instanceof Error ? _error.message : "Unknown error",
       });
-    },
-    onSettled: () => {
-      // Invalidate all task lists to ensure server state
-      queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
-      // Also invalidate time blocks since task schedule changed
-      queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
     },
   });
 }
@@ -555,17 +663,6 @@ export function useReorderTasks() {
         variant: "destructive",
         title: "Failed to reorder tasks",
         description: error instanceof Error ? error.message : "Unknown error",
-      });
-    },
-    onSettled: (_data, _error, { date }) => {
-      // Always refetch after error or success to ensure server state
-      const isBacklog = date === "backlog";
-      const queryKey = isBacklog
-        ? taskKeys.list({ backlog: true })
-        : taskKeys.list({ scheduledDate: date });
-      queryClient.invalidateQueries({ queryKey });
-      queryClient.invalidateQueries({
-        queryKey: ["tasks", "search", "infinite"],
       });
     },
   });

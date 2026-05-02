@@ -1,6 +1,7 @@
 import * as React from "react";
 import type { Task } from "@open-sunsama/types";
 import { useKanbanDates } from "@/hooks/useKanbanDates";
+import { useKanbanRangePrefetch } from "@/hooks/useKanbanRangePrefetch";
 import { useTasksDnd } from "@/lib/dnd/tasks-dnd-context";
 import { DayColumn } from "./day-column";
 import { TaskModal } from "./task-modal";
@@ -44,6 +45,14 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
     handleScroll,
     firstVisibleDate,
   } = useKanbanDates({ containerRef, isDragging });
+
+  // Prefetch the entire visible date range in one request. Each DayColumn
+  // also calls useTasks({ scheduledDate }) — but because this hook seeds
+  // those per-day caches as soon as the range query resolves, the columns
+  // render immediately instead of waterfalling 30+ parallel requests.
+  useKanbanRangePrefetch({
+    centerDate: firstVisibleDate ?? new Date(),
+  });
 
   // Notify parent of first visible date changes
   React.useEffect(() => {
