@@ -154,7 +154,12 @@ export interface TasksApi {
  * Maps frontend filter names to API query parameter names
  */
 function filtersToSearchParams(
-  filters?: TaskFilterInput & { priority?: string; limit?: number; page?: number }
+  filters?: TaskFilterInput & {
+    priority?: string;
+    limit?: number;
+    page?: number;
+    includeSubtasks?: boolean;
+  }
 ): Record<string, string | number | boolean | undefined> {
   if (!filters) return {};
 
@@ -176,6 +181,11 @@ function filtersToSearchParams(
     limit: filters.limit,
     // Page number for pagination
     page: filters.page,
+    // Inline-include subtasks per task in the response
+    includeSubtasks:
+      filters.includeSubtasks !== undefined
+        ? String(filters.includeSubtasks)
+        : undefined,
   };
 }
 
