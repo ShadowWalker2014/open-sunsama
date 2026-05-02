@@ -30,7 +30,7 @@ import {
   TaskModal,
   prefetchTaskModal,
 } from "@/components/kanban/task-modal.lazy";
-import { AppUpdateBanner } from "@/components/app-update-banner";
+import { AppUpdateBanner } from "@/components/app-update-banner.lazy";
 import { prefetchRichTextEditor } from "@/components/ui/rich-text-editor.lazy";
 
 /**
