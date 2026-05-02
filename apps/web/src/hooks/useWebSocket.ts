@@ -7,11 +7,13 @@ import {
   type UserEvent,
 } from "@/lib/websocket";
 import { useAuth } from "@/hooks/useAuth";
-import { taskKeys } from "@/hooks/useTasks";
-import { timerKeys } from "@/hooks/useTimer";
-import { timeBlockKeys } from "@/hooks/useTimeBlocks";
-import { subtaskKeys } from "@/hooks/useSubtasks";
-import { calendarKeys } from "@/hooks/useCalendars";
+import {
+  taskKeys,
+  timerKeys,
+  timeBlockKeys,
+  subtaskKeys,
+  calendarKeys,
+} from "@/lib/query-keys";
 
 /**
  * Debounced invalidation queue.

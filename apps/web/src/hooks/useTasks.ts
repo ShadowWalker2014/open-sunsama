@@ -9,18 +9,13 @@ import type {
 import { getApi } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { timeBlockKeys } from "./useTimeBlocks";
+import { taskKeys, timeBlockKeys } from "@/lib/query-keys";
 
-/**
- * Query key factory for tasks
- */
-export const taskKeys = {
-  all: ["tasks"] as const,
-  lists: () => [...taskKeys.all, "list"] as const,
-  list: (filters: TaskFilterInput) => [...taskKeys.lists(), filters] as const,
-  details: () => [...taskKeys.all, "detail"] as const,
-  detail: (id: string) => [...taskKeys.details(), id] as const,
-};
+// Canonical task keys live in lib/query-keys so the WebSocket listener
+// (mounted at the app shell) can import only the keys without dragging
+// every task mutation into the boot bundle. Re-exported here for callers
+// that already import from this module.
+export { taskKeys };
 
 /**
  * Filter shape used as the third element of `taskKeys.list(...)`. Different
