@@ -5,7 +5,7 @@ import type { Task } from "@open-sunsama/types";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useSearchTasks } from "@/hooks/useSearchTasks";
 import { useCreateTask } from "@/hooks/useTasks";
-import { Kbd } from "@/components/ui/shortcuts-modal";
+import { Kbd } from "@/components/ui/kbd";
 import { COMMANDS } from "./commands";
 import { TASK_COMMANDS } from "./task-commands";
 import { MCP_COMMANDS } from "./mcp-commands";

@@ -113,7 +113,11 @@ export {
 } from "./popover";
 export { FileIcon, getFileTypeColor } from "./file-icon";
 export { Lightbox } from "./lightbox";
-export { ShortcutsModal, Kbd } from "./shortcuts-modal";
+// `ShortcutsModal` is intentionally NOT re-exported here — consumers must
+// import from `./shortcuts-modal.lazy` (or the eager file when they truly
+// need the synchronous module). Re-exporting it from this barrel pulled
+// the modal into the boot bundle of every consumer of `@/components/ui`.
+export { Kbd } from "./kbd";
 export { ShortcutHint } from "./shortcut-hint";
 export {
   Tooltip,

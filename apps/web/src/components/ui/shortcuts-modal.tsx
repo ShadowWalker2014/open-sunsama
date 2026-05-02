@@ -6,7 +6,10 @@ import {
   formatShortcut,
   type ShortcutDefinition,
 } from "@/hooks/useKeyboardShortcuts";
-import { cn } from "@/lib/utils";
+import { Kbd } from "@/components/ui/kbd";
+
+// Re-export for backwards compatibility — Kbd lives in its own file now.
+export { Kbd };
 
 interface ShortcutsModalProps {
   open: boolean;
@@ -92,26 +95,3 @@ function ShortcutRow({ shortcut }: { shortcut: ShortcutDefinition }) {
   );
 }
 
-// Keyboard key badge component
-function Kbd({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <kbd
-      className={cn(
-        "inline-flex h-5 min-w-[20px] items-center justify-center rounded border border-border bg-muted px-1.5",
-        "text-[11px] font-medium text-muted-foreground",
-        className
-      )}
-    >
-      {children}
-    </kbd>
-  );
-}
-
-// Export Kbd for use elsewhere
-export { Kbd };
