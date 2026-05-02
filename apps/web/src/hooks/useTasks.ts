@@ -23,6 +23,120 @@ export const taskKeys = {
 };
 
 /**
+ * Filter shape used as the third element of `taskKeys.list(...)`. Different
+ * call-sites pass different `limit` / sort options, but the only fields we
+ * care about for routing optimistic moves are `scheduledDate`,
+ * `scheduledDateFrom/To`, and `backlog`.
+ */
+type ListFilter = {
+  scheduledDate?: string | null;
+  scheduledDateFrom?: string;
+  scheduledDateTo?: string;
+  backlog?: boolean;
+  completed?: boolean;
+  priority?: string;
+};
+
+/**
+ * Decide whether a list query's filter would include a task scheduled to
+ * `targetDate` (null = backlog). Returns:
+ *   - "dest" when the filter scopes to that date / backlog / matching range
+ *   - "skip" when the filter rules the task out (e.g. completed-only)
+ *   - "neutral" when the filter is broad ("all") — the task may live there
+ *     too but the cache might also be holding tasks for OTHER dates, so we
+ *     should treat it as a source if it currently has the task and as a
+ *     destination if it doesn't (we'll insert in either case so the
+ *     consumer sees the new state).
+ */
+function classifyListForTarget(
+  filter: ListFilter | undefined,
+  targetDate: string | null
+): "dest" | "skip" | "neutral" {
+  if (!filter) return "neutral";
+  if (filter.completed === true) return "skip";
+
+  if (filter.backlog === true) {
+    return targetDate === null ? "dest" : "skip";
+  }
+
+  // `scheduledDate: null` is the explicit-backlog form used by some mobile
+  // call sites — semantically equivalent to `backlog: true`.
+  if (filter.scheduledDate === null) {
+    return targetDate === null ? "dest" : "skip";
+  }
+
+  if (filter.scheduledDate !== undefined) {
+    return filter.scheduledDate === targetDate ? "dest" : "skip";
+  }
+
+  if (
+    filter.scheduledDateFrom !== undefined &&
+    filter.scheduledDateTo !== undefined
+  ) {
+    if (targetDate === null) return "skip";
+    return targetDate >= filter.scheduledDateFrom &&
+      targetDate <= filter.scheduledDateTo
+      ? "dest"
+      : "skip";
+  }
+
+  return "neutral";
+}
+
+/**
+ * Apply an "insert this task into every matching destination cache, drop
+ * it from every other cache that currently holds it" reconciliation across
+ * all task-list caches. Used by `useMoveTask`, `useUpdateTask` (when
+ * `scheduledDate` changes), and `useReorderTasks` for cross-column drags.
+ */
+function applyOptimisticMove(
+  queryClient: ReturnType<typeof useQueryClient>,
+  previousQueries: Array<[readonly unknown[], Task[] | undefined]>,
+  taskId: string,
+  nextTask: Task,
+  targetDate: string | null
+) {
+  let insertedAnywhere = false;
+
+  previousQueries.forEach(([key, list]) => {
+    if (!list) return;
+    const filter = key[2] as ListFilter | undefined;
+    const classification = classifyListForTarget(filter, targetDate);
+    const hadTask = list.some((t) => t.id === taskId);
+
+    if (classification === "dest") {
+      insertedAnywhere = true;
+      if (hadTask) {
+        queryClient.setQueryData<Task[]>(
+          key,
+          list.map((t) => (t.id === taskId ? nextTask : t))
+        );
+      } else {
+        queryClient.setQueryData<Task[]>(key, [...list, nextTask]);
+      }
+    } else if (classification === "skip" && hadTask) {
+      queryClient.setQueryData<Task[]>(
+        key,
+        list.filter((t) => t.id !== taskId)
+      );
+    } else if (classification === "neutral" && hadTask) {
+      // The cache is broad — replace the task in place so its fields are
+      // up to date.
+      queryClient.setQueryData<Task[]>(
+        key,
+        list.map((t) => (t.id === taskId ? nextTask : t))
+      );
+    }
+  });
+
+  // If no existing cache classified as a destination, the destination
+  // DayColumn / Sidebar will fetch on its own when it mounts. We don't
+  // synthesize a phantom cache because we can't predict the consumer's
+  // exact query key (limits etc.).
+  return insertedAnywhere;
+}
+
+/**
  * Fetch all tasks with optional filters
  * Uses a high limit (200) for single-day queries to prevent truncation
  */
@@ -218,38 +332,63 @@ export function useUpdateTask() {
       return await api.tasks.update(id, data);
     },
     onMutate: async ({ id, data }) => {
-      // Cancel outgoing refetches to avoid overwriting optimistic update
       await queryClient.cancelQueries({ queryKey: taskKeys.lists() });
       await queryClient.cancelQueries({ queryKey: taskKeys.detail(id) });
 
-      // Snapshot previous values for rollback
       const previousTask = queryClient.getQueryData<Task>(taskKeys.detail(id));
       const previousQueries = queryClient.getQueriesData<Task[]>({
         queryKey: taskKeys.lists(),
       });
 
-      // Optimistically update the task detail cache
-      if (previousTask) {
-        queryClient.setQueryData<Task>(taskKeys.detail(id), {
-          ...previousTask,
-          ...data,
-          updatedAt: new Date(),
-        });
+      // Build the optimistic next-task representation. We strip undefined
+      // values from `data` so callers passing `{ priority: undefined }` to
+      // mean "no change" don't accidentally clobber the existing field.
+      const cleanedPatch: Partial<Task> = {};
+      for (const [k, v] of Object.entries(data)) {
+        if (v !== undefined) {
+          (cleanedPatch as Record<string, unknown>)[k] = v;
+        }
       }
 
-      // Optimistically update all list caches
-      queryClient.setQueriesData<Task[]>(
-        { queryKey: taskKeys.lists() },
-        (old) => {
-          if (!old) return old;
-          return old.map((task) => {
-            if (task.id === id) {
-              return { ...task, ...data, updatedAt: new Date() };
-            }
-            return task;
-          });
-        }
-      );
+      const baseTask: Task | undefined =
+        previousTask ??
+        (previousQueries
+          .map(([, list]) => list?.find((t) => t.id === id))
+          .find((t): t is Task => t !== undefined));
+
+      const nextTask: Task | null = baseTask
+        ? ({ ...baseTask, ...cleanedPatch, updatedAt: new Date() } as Task)
+        : null;
+
+      if (nextTask) {
+        queryClient.setQueryData<Task>(taskKeys.detail(id), nextTask);
+      }
+
+      // If scheduledDate is part of the patch, the task moves between list
+      // caches — drop it from its source list and inject it into the
+      // destination list. Otherwise just update it in place wherever it
+      // currently lives.
+      const isMovingDate =
+        Object.prototype.hasOwnProperty.call(data, "scheduledDate");
+
+      if (isMovingDate && nextTask) {
+        const targetDate = data.scheduledDate ?? null;
+        applyOptimisticMove(
+          queryClient,
+          previousQueries,
+          id,
+          nextTask,
+          targetDate
+        );
+      } else if (nextTask) {
+        queryClient.setQueriesData<Task[]>(
+          { queryKey: taskKeys.lists() },
+          (old) => {
+            if (!old) return old;
+            return old.map((task) => (task.id === id ? nextTask : task));
+          }
+        );
+      }
 
       return { previousTask, previousQueries };
     },
@@ -549,20 +688,37 @@ export function useMoveTask() {
         queryKey: taskKeys.lists(),
       });
 
-      queryClient.setQueriesData<Task[]>(
-        { queryKey: taskKeys.lists() },
-        (old) => {
-          if (!old) return old;
-          return old.map((task) => {
-            if (task.id !== id) return task;
-            return {
-              ...task,
-              scheduledDate: targetDate,
-              ...(position !== undefined ? { position } : {}),
-            };
-          });
+      // Find the task wherever it currently lives.
+      let movedTask: Task | undefined;
+      for (const [, list] of previousQueries) {
+        if (!list) continue;
+        const found = list.find((t) => t.id === id);
+        if (found) {
+          movedTask = found;
+          break;
         }
-      );
+      }
+      const detailTask = queryClient.getQueryData<Task>(taskKeys.detail(id));
+      const sourceTask = movedTask ?? detailTask;
+
+      const updatedTask = sourceTask
+        ? {
+            ...sourceTask,
+            scheduledDate: targetDate,
+            ...(position !== undefined ? { position } : {}),
+          }
+        : null;
+
+      if (updatedTask) {
+        applyOptimisticMove(
+          queryClient,
+          previousQueries,
+          id,
+          updatedTask,
+          targetDate
+        );
+        queryClient.setQueryData(taskKeys.detail(id), updatedTask);
+      }
 
       return { previousQueries };
     },
@@ -594,8 +750,13 @@ export function useMoveTask() {
 }
 
 /**
- * Reorder tasks within a date or backlog
- * Uses optimistic updates for smooth drag-and-drop experience
+ * Reorder tasks within a date or backlog.
+ *
+ * The server's reorder endpoint also handles moving tasks between dates —
+ * any task in `taskIds` whose `scheduledDate` differs from `date` is moved
+ * server-side. To make cross-column DnD feel instant we mirror that on the
+ * client: tasks that aren't already in the destination cache are pulled
+ * from whichever source cache currently holds them.
  */
 export function useReorderTasks() {
   const queryClient = useQueryClient();
@@ -607,48 +768,107 @@ export function useReorderTasks() {
     }: {
       date: string; // "backlog" for backlog tasks, or "YYYY-MM-DD" for scheduled tasks
       taskIds: string[];
-    }): Promise<void> => {
+    }): Promise<Task[]> => {
       const api = getApi();
       const input: ReorderTasksInput = { date, taskIds };
-      await api.tasks.reorder(input);
+      return await api.tasks.reorder(input);
     },
     onMutate: async ({ date, taskIds }) => {
-      // Determine the correct query key based on whether it's backlog or a date
       const isBacklog = date === "backlog";
-      const queryKey = isBacklog
-        ? taskKeys.list({ backlog: true })
-        : taskKeys.list({ scheduledDate: date });
+      const targetScheduledDate: string | null = isBacklog ? null : date;
 
-      // Cancel any outgoing refetches to avoid overwriting optimistic update
-      await queryClient.cancelQueries({ queryKey });
+      await queryClient.cancelQueries({ queryKey: taskKeys.lists() });
       await queryClient.cancelQueries({
         queryKey: ["tasks", "search", "infinite"],
       });
 
-      // Snapshot the previous value
-      const previousTasks = queryClient.getQueryData<Task[]>(queryKey);
+      const previousQueries = queryClient.getQueriesData<Task[]>({
+        queryKey: taskKeys.lists(),
+      });
       const previousInfiniteQueries = queryClient.getQueriesData({
         queryKey: ["tasks", "search", "infinite"],
       });
 
-      // Optimistically update the cache with new positions
-      if (previousTasks) {
-        const reorderedTasks = taskIds
-          .map((id, index) => {
-            const task = previousTasks.find((t) => t.id === id);
-            return task ? { ...task, position: index } : null;
-          })
-          .filter((t): t is Task => t !== null);
+      // Build a lookup of every task currently visible in any list cache so
+      // we can resolve tasks that the destination cache may not yet know
+      // about (i.e. ones being dragged in from another column).
+      const taskById = new Map<string, Task>();
+      for (const [, list] of previousQueries) {
+        if (!list) continue;
+        for (const t of list) {
+          if (!taskById.has(t.id)) taskById.set(t.id, t);
+        }
+      }
+      const taskIdSet = new Set(taskIds);
 
-        // Include any tasks not in taskIds (e.g., completed tasks) at the end
-        const tasksNotInOrder = previousTasks.filter(
-          (t) => !taskIds.includes(t.id)
-        );
-        const finalTasks = [...reorderedTasks, ...tasksNotInOrder];
-
-        queryClient.setQueryData(queryKey, finalTasks);
+      // For each task being reordered: walk every list cache and route the
+      // updated record into the matching destination caches, drop it from
+      // any other cache that still has it. We also rebuild every
+      // destination cache so the *order* matches `taskIds` exactly.
+      const updatedById = new Map<string, Task>();
+      for (let i = 0; i < taskIds.length; i++) {
+        const id = taskIds[i];
+        if (!id) continue;
+        const existing = taskById.get(id);
+        if (!existing) continue;
+        const next: Task = {
+          ...existing,
+          position: i,
+          scheduledDate: targetScheduledDate,
+        };
+        updatedById.set(id, next);
       }
 
+      previousQueries.forEach(([key, list]) => {
+        if (!list) return;
+        const filter = key[2] as ListFilter | undefined;
+        const classification = classifyListForTarget(
+          filter,
+          targetScheduledDate
+        );
+
+        if (classification === "dest") {
+          // Rebuild this cache: ordered taskIds first, then any tasks the
+          // cache already had that aren't part of the reorder (e.g.
+          // completed tasks pinned at the end).
+          const ordered: Task[] = [];
+          for (const id of taskIds) {
+            const t = updatedById.get(id);
+            if (t) ordered.push(t);
+          }
+          const tail = list.filter((t) => !taskIdSet.has(t.id));
+          queryClient.setQueryData<Task[]>(key, [...ordered, ...tail]);
+        } else if (classification === "skip") {
+          // This cache rules out the destination — make sure none of the
+          // moved tasks linger here.
+          const filtered = list.filter((t) => !taskIdSet.has(t.id));
+          if (filtered.length !== list.length) {
+            queryClient.setQueryData<Task[]>(key, filtered);
+          }
+        } else {
+          // Neutral / broad cache — replace tasks in place so their fields
+          // are accurate.
+          let mutated = false;
+          const next = list.map((t) => {
+            const replacement = updatedById.get(t.id);
+            if (replacement) {
+              mutated = true;
+              return replacement;
+            }
+            return t;
+          });
+          if (mutated) {
+            queryClient.setQueryData<Task[]>(key, next);
+          }
+        }
+      });
+
+      // Update detail caches too.
+      for (const [id, t] of updatedById) {
+        queryClient.setQueryData(taskKeys.detail(id), t);
+      }
+
+      // Mirror the change in any infinite-search caches.
       const positionByTaskId = new Map(
         taskIds.map((taskId, index) => [taskId, index])
       );
@@ -671,7 +891,7 @@ export function useReorderTasks() {
                 return {
                   ...task,
                   position,
-                  scheduledDate: date === "backlog" ? null : date,
+                  scheduledDate: targetScheduledDate,
                 };
               }),
             })),
@@ -679,16 +899,19 @@ export function useReorderTasks() {
         }
       );
 
-      // Return context with previous value for rollback
-      return { previousTasks, date, queryKey, previousInfiniteQueries };
+      return {
+        previousQueries,
+        previousInfiniteQueries,
+        targetScheduledDate,
+        taskIds,
+      };
     },
     onError: (error, _variables, context) => {
-      // Rollback to previous value on error
-      if (context?.previousTasks && context?.queryKey) {
-        queryClient.setQueryData(context.queryKey, context.previousTasks);
-      }
-      context?.previousInfiniteQueries?.forEach(([queryKey, data]) => {
-        queryClient.setQueryData(queryKey, data);
+      context?.previousQueries?.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
+      });
+      context?.previousInfiniteQueries?.forEach(([key, data]) => {
+        queryClient.setQueryData(key, data);
       });
       toast({
         variant: "destructive",
@@ -696,13 +919,30 @@ export function useReorderTasks() {
         description: error instanceof Error ? error.message : "Unknown error",
       });
     },
-    onSuccess: (_data, _variables, context) => {
-      // The server may renumber positions across all tasks in this bucket
-      // (including completed ones), and our optimistic math only renumbers
-      // the ones the user dragged. Refetch the affected list so the cache
-      // reflects the server's authoritative position values.
-      if (context?.queryKey) {
-        queryClient.invalidateQueries({ queryKey: context.queryKey });
+    onSuccess: (serverTasks, _variables, context) => {
+      // The server returns the canonical task list for the destination
+      // bucket. Distribute it to every cache that classifies as a
+      // destination for the target date / backlog, then update detail
+      // caches.
+      if (!Array.isArray(serverTasks)) return;
+      const targetDate = context?.targetScheduledDate ?? null;
+      const allListKeys = queryClient.getQueriesData<Task[]>({
+        queryKey: taskKeys.lists(),
+      });
+      allListKeys.forEach(([key, list]) => {
+        const filter = key[2] as ListFilter | undefined;
+        if (classifyListForTarget(filter, targetDate) !== "dest") return;
+        // Preserve any tasks that the cache had which aren't part of the
+        // server response (e.g. completed tasks the reorder doesn't touch
+        // when called with only pending taskIds).
+        const movedIds = new Set(serverTasks.map((t) => t.id));
+        const tail = (list ?? []).filter(
+          (t) => !movedIds.has(t.id) && !context?.taskIds.includes(t.id)
+        );
+        queryClient.setQueryData<Task[]>(key, [...serverTasks, ...tail]);
+      });
+      for (const t of serverTasks) {
+        queryClient.setQueryData(taskKeys.detail(t.id), t);
       }
     },
   });

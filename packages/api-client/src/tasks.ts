@@ -70,10 +70,13 @@ export interface TasksApi {
   delete(id: string, options?: RequestOptions): Promise<void>;
 
   /**
-   * Reorder tasks within a specific date
+   * Reorder tasks within a specific date.
+   * Also handles moving tasks between dates — the server updates each
+   * affected task's `scheduledDate` to the supplied date.
    * @param input Reorder data with date and task IDs in order
+   * @returns The full set of tasks belonging to the target date after reorder
    */
-  reorder(input: ReorderTasksInput, options?: RequestOptions): Promise<void>;
+  reorder(input: ReorderTasksInput, options?: RequestOptions): Promise<Task[]>;
 
   /**
    * Mark a task as complete
@@ -245,8 +248,13 @@ export function createTasksApi(client: OpenSunsamaClient): TasksApi {
     async reorder(
       input: ReorderTasksInput,
       options?: RequestOptions
-    ): Promise<void> {
-      await client.post<ApiResponseWrapper<void>>("tasks/reorder", input, options);
+    ): Promise<Task[]> {
+      const response = await client.post<ApiResponseWrapper<Task[]>>(
+        "tasks/reorder",
+        input,
+        options
+      );
+      return response.data ?? [];
     },
 
     async complete(id: string, options?: RequestOptions): Promise<Task> {
