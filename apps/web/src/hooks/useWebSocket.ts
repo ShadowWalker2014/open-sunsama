@@ -200,8 +200,8 @@ function handleWebSocketEvent(
     case "calendar:synced":
     case "calendar:account-disconnected":
     case "calendar:updated":
-      queryClient.refetchQueries({ queryKey: calendarKeys.accounts() });
-      queryClient.refetchQueries({ queryKey: calendarKeys.calendars() });
+      // calendarKeys.all is the prefix for accounts/list/events, so this
+      // single refetch covers all three sub-trees.
       queryClient.refetchQueries({ queryKey: calendarKeys.all });
       break;
   }

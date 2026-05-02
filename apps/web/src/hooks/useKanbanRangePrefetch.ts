@@ -14,6 +14,13 @@ import { useAuth } from "@/hooks/useAuth";
 const PREFETCH_BUFFER_DAYS = 14;
 
 /**
+ * Upper bound on a single range fetch. We refuse to seed when the API hits
+ * this limit, because some days inside the range will be silently truncated
+ * and seeding would hide tasks from the user.
+ */
+const RANGE_FETCH_LIMIT = 1000;
+
+/**
  * Per-day cache key used by `DayColumn` (`useTasks({ scheduledDate, limit: 200 })`).
  * We reproduce it here so we can seed the cache by hand from the range query.
  */
@@ -44,71 +51,74 @@ interface RangePrefetchOptions {
 export function useKanbanRangePrefetch(options: RangePrefetchOptions = {}) {
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
-  const center = options.centerDate ?? new Date();
-  const bufferDays = options.bufferDays ?? PREFETCH_BUFFER_DAYS;
 
-  const fromDate = subDays(center, bufferDays);
-  const toDate = addDays(center, bufferDays);
-  const fromString = format(fromDate, "yyyy-MM-dd");
-  const toString = format(toDate, "yyyy-MM-dd");
+  // Stabilise the center reference. Callers often pass `firstVisibleDate ??
+  // new Date()` directly, which allocates a new Date object on every render.
+  // We bucket to the YYYY-MM-DD string so the rest of the hook depends on
+  // a stable primitive and React Query's cache key never churns.
+  const rawCenter = options.centerDate ?? null;
+  const centerString = React.useMemo(() => {
+    return format(rawCenter ?? new Date(), "yyyy-MM-dd");
+  }, [
+    rawCenter ? format(rawCenter, "yyyy-MM-dd") : null,
+  ]);
+
+  const bufferDays = options.bufferDays ?? PREFETCH_BUFFER_DAYS;
+  const fromString = React.useMemo(() => {
+    const center = new Date(centerString + "T00:00:00");
+    return format(subDays(center, bufferDays), "yyyy-MM-dd");
+  }, [centerString, bufferDays]);
+  const toString = React.useMemo(() => {
+    const center = new Date(centerString + "T00:00:00");
+    return format(addDays(center, bufferDays), "yyyy-MM-dd");
+  }, [centerString, bufferDays]);
+
+  const queryKey = React.useMemo(
+    () =>
+      [
+        ...taskKeys.lists(),
+        "range",
+        { from: fromString, to: toString },
+      ] as const,
+    [fromString, toString]
+  );
 
   const query = useQuery({
-    queryKey: [
-      ...taskKeys.lists(),
-      "range",
-      { from: fromString, to: toString },
-    ],
-    queryFn: async (): Promise<Task[]> => {
+    queryKey,
+    queryFn: async (): Promise<{ tasks: Task[]; truncated: boolean }> => {
       const api = getApi();
       const response = await api.tasks.list({
         scheduledDateFrom: fromString,
         scheduledDateTo: toString,
-        limit: 1000,
+        limit: RANGE_FETCH_LIMIT,
       });
-      return response.data ?? [];
+      const tasks = response.data ?? [];
+      const total = response.meta?.total ?? tasks.length;
+      return { tasks, truncated: total > tasks.length };
     },
     enabled: isAuthenticated,
     staleTime: 30_000,
   });
 
-  // When the range query resolves, group the result by scheduledDate and
-  // populate the per-day caches that DayColumn already subscribes to.
-  // We use the version-stable string representation of the data length+ids
-  // to avoid re-running this effect on object-identity churn alone.
   const data = query.data;
-  const fingerprint = React.useMemo(() => {
-    if (!data) return null;
-    let fp = "";
-    for (const t of data) {
-      fp += t.id + ":" + (t.updatedAt instanceof Date ? t.updatedAt.toISOString() : String(t.updatedAt)) + "|";
-    }
-    return fp;
-  }, [data]);
 
   React.useEffect(() => {
     if (!data) return;
+    // If the API truncated the range we cannot trust the per-day projections;
+    // skip seeding and let DayColumn fall back to its own per-day fetches.
+    if (data.truncated) return;
 
     const byDate = new Map<string, Task[]>();
-    for (const task of data) {
+    for (const task of data.tasks) {
       if (!task.scheduledDate) continue;
       const arr = byDate.get(task.scheduledDate);
-      if (arr) {
-        arr.push(task);
-      } else {
-        byDate.set(task.scheduledDate, [task]);
-      }
+      if (arr) arr.push(task);
+      else byDate.set(task.scheduledDate, [task]);
     }
 
-    // Seed every day inside the range, even empty ones, so DayColumn doesn't
-    // fall back to an isLoading state. We deliberately overwrite existing
-    // per-day caches here UNLESS the per-day cache contains an optimistic
-    // task (we'd lose the user's pending insert) or its query state shows
-    // a recent fetch that's newer than the range data we just received.
-    const rangeFetchedAt = queryClient.getQueryState([
-      ...taskKeys.lists(),
-      "range",
-      { from: format(subDays(center, bufferDays), "yyyy-MM-dd"), to: format(addDays(center, bufferDays), "yyyy-MM-dd") },
-    ])?.dataUpdatedAt ?? Date.now();
+    const rangeFetchedAt =
+      queryClient.getQueryState(queryKey)?.dataUpdatedAt ?? Date.now();
+    const center = new Date(centerString + "T00:00:00");
 
     for (let i = -bufferDays; i <= bufferDays; i++) {
       const d = addDays(center, i);
@@ -117,25 +127,26 @@ export function useKanbanRangePrefetch(options: RangePrefetchOptions = {}) {
       const cacheKey = dayCacheKey(key);
       const existing = queryClient.getQueryData<Task[]>(cacheKey);
 
+      // Never clobber an in-flight optimistic insert.
       if (existing && existing.some((t) => t.id.startsWith("optimistic-"))) {
         continue;
       }
 
+      // If the per-day query already has data fetched after the range
+      // started, trust it — it's more specific and may include reconciled
+      // mutations that haven't echoed back through this range fetch yet.
       const dayState = queryClient.getQueryState(cacheKey);
-      // If a per-day query already has data fetched AFTER the range query,
-      // trust it instead — it's more specific and may include fresher
-      // optimistic-update reconciliations.
       if (
+        existing &&
         dayState?.dataUpdatedAt &&
-        dayState.dataUpdatedAt > rangeFetchedAt &&
-        existing
+        dayState.dataUpdatedAt >= rangeFetchedAt
       ) {
         continue;
       }
 
       queryClient.setQueryData(cacheKey, tasks);
     }
-  }, [fingerprint, data, queryClient, bufferDays, center]);
+  }, [data, queryClient, queryKey, bufferDays, centerString]);
 
   return query;
 }

@@ -102,19 +102,47 @@ export function useCreateTask() {
       };
 
       // Walk each cached list and inject only into the ones whose filter
-      // matches this task's date / backlog status.
+      // matches this task's date / backlog status. An empty filter ({}) is
+      // treated as "all tasks" — those get the insert too. Any list filtered
+      // to completed-only or to a non-matching priority is skipped.
       previousQueries.forEach(([key, data2]) => {
         if (!data2) return;
         const filter = key[2] as
-          | { scheduledDate?: string; backlog?: boolean; completed?: boolean }
+          | {
+              scheduledDate?: string;
+              scheduledDateFrom?: string;
+              scheduledDateTo?: string;
+              backlog?: boolean;
+              completed?: boolean;
+              priority?: string;
+            }
           | undefined;
         if (!filter) return;
         if (filter.completed === true) return;
+        // If a priority filter is set and this task doesn't match, skip.
+        if (filter.priority && filter.priority !== (data.priority ?? "P2")) {
+          return;
+        }
+
+        const filterIsEmpty =
+          filter.scheduledDate === undefined &&
+          filter.scheduledDateFrom === undefined &&
+          filter.scheduledDateTo === undefined &&
+          filter.backlog === undefined;
+
         const matchesDate =
-          filter.scheduledDate &&
+          filter.scheduledDate !== undefined &&
           filter.scheduledDate === data.scheduledDate;
+        const matchesRange =
+          filter.scheduledDateFrom !== undefined &&
+          filter.scheduledDateTo !== undefined &&
+          data.scheduledDate !== undefined &&
+          data.scheduledDate !== null &&
+          data.scheduledDate >= filter.scheduledDateFrom &&
+          data.scheduledDate <= filter.scheduledDateTo;
         const matchesBacklog = filter.backlog === true && !data.scheduledDate;
-        if (matchesDate || matchesBacklog) {
+
+        if (filterIsEmpty || matchesDate || matchesRange || matchesBacklog) {
           queryClient.setQueryData<Task[]>(key, [...data2, optimisticTask]);
         }
       });
@@ -512,7 +540,7 @@ export function useMoveTask() {
         position,
       });
     },
-    onMutate: async ({ id, targetDate }) => {
+    onMutate: async ({ id, targetDate, position }) => {
       // Cancel outgoing refetches to avoid overwriting optimistic update
       await queryClient.cancelQueries({ queryKey: taskKeys.lists() });
 
@@ -521,30 +549,20 @@ export function useMoveTask() {
         queryKey: taskKeys.lists(),
       });
 
-      // Find the task being moved from any cache
-      let movedTask: Task | undefined;
-      previousQueries.forEach(([, data]) => {
-        if (data) {
-          const found = data.find((t) => t.id === id);
-          if (found) movedTask = found;
+      queryClient.setQueriesData<Task[]>(
+        { queryKey: taskKeys.lists() },
+        (old) => {
+          if (!old) return old;
+          return old.map((task) => {
+            if (task.id !== id) return task;
+            return {
+              ...task,
+              scheduledDate: targetDate,
+              ...(position !== undefined ? { position } : {}),
+            };
+          });
         }
-      });
-
-      if (movedTask) {
-        // Optimistically update all relevant caches
-        queryClient.setQueriesData<Task[]>(
-          { queryKey: taskKeys.lists() },
-          (old) => {
-            if (!old) return old;
-            return old.map((task) => {
-              if (task.id === id) {
-                return { ...task, scheduledDate: targetDate };
-              }
-              return task;
-            });
-          }
-        );
-      }
+      );
 
       return { previousQueries };
     },
@@ -558,6 +576,19 @@ export function useMoveTask() {
         title: "Failed to move task",
         description: _error instanceof Error ? _error.message : "Unknown error",
       });
+    },
+    onSuccess: (movedTask) => {
+      // Reconcile with the server-authoritative task. Importantly, this
+      // populates the source/target lists with the canonical position the
+      // server picked when only `targetDate` was provided.
+      queryClient.setQueryData(taskKeys.detail(movedTask.id), movedTask);
+      queryClient.setQueriesData<Task[]>(
+        { queryKey: taskKeys.lists() },
+        (old) => {
+          if (!old) return old;
+          return old.map((t) => (t.id === movedTask.id ? movedTask : t));
+        }
+      );
     },
   });
 }
@@ -664,6 +695,15 @@ export function useReorderTasks() {
         title: "Failed to reorder tasks",
         description: error instanceof Error ? error.message : "Unknown error",
       });
+    },
+    onSuccess: (_data, _variables, context) => {
+      // The server may renumber positions across all tasks in this bucket
+      // (including completed ones), and our optimistic math only renumbers
+      // the ones the user dragged. Refetch the affected list so the cache
+      // reflects the server's authoritative position values.
+      if (context?.queryKey) {
+        queryClient.invalidateQueries({ queryKey: context.queryKey });
+      }
     },
   });
 }

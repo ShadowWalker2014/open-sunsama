@@ -93,5 +93,4 @@ export function clearApiClient(): void {
   api = createApi({ baseUrl, customFetch });
 }
 
-export { api, client };
 export type { OpenSunsamaClient };
