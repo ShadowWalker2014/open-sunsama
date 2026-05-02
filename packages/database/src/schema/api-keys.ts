@@ -1,24 +1,34 @@
-import { pgTable, uuid, varchar, timestamp, boolean, text } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, timestamp, boolean, text, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import { users } from './users';
 
-export const apiKeys = pgTable('api_keys', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  name: varchar('name', { length: 255 }).notNull(),
-  keyHash: varchar('key_hash', { length: 255 }).notNull(),
-  keyPrefix: varchar('key_prefix', { length: 12 }).notNull(), // First 8 chars for identification
-  scopes: text('scopes').array(), // Array of permission scopes
-  lastUsedAt: timestamp('last_used_at'),
-  expiresAt: timestamp('expires_at'),
-  isActive: boolean('is_active').notNull().default(true),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+export const apiKeys = pgTable(
+  'api_keys',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: varchar('name', { length: 255 }).notNull(),
+    keyHash: varchar('key_hash', { length: 255 }).notNull(),
+    keyPrefix: varchar('key_prefix', { length: 12 }).notNull(), // First 8 chars for identification
+    scopes: text('scopes').array(), // Array of permission scopes
+    lastUsedAt: timestamp('last_used_at'),
+    expiresAt: timestamp('expires_at'),
+    isActive: boolean('is_active').notNull().default(true),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    userIdIdx: index('api_keys_user_id_idx').on(table.userId),
+    // Auth uses the prefix to look up keys before constant-time comparing
+    // the hash. An index on the prefix turns each request from O(rows)
+    // into O(log rows).
+    keyPrefixIdx: index('api_keys_key_prefix_idx').on(table.keyPrefix),
+  })
+);
 
 export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
   user: one(users, {
