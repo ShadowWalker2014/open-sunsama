@@ -153,8 +153,8 @@ export interface OpenSunsamaHooks {
   ) => ReturnType<typeof useMutation<void, ApiError, string>>;
 
   useReorderTasks: (
-    options?: UseMutationOptions<void, ApiError, ReorderTasksInput>
-  ) => ReturnType<typeof useMutation<void, ApiError, ReorderTasksInput>>;
+    options?: UseMutationOptions<Task[], ApiError, ReorderTasksInput>
+  ) => ReturnType<typeof useMutation<Task[], ApiError, ReorderTasksInput>>;
 
   useCompleteTask: (
     options?: UseMutationOptions<Task, ApiError, string>

@@ -28,6 +28,26 @@ function dayCacheKey(dateString: string) {
   return taskKeys.list({ scheduledDate: dateString, limit: 200 });
 }
 
+/**
+ * Cheap reference check by id+updatedAt to avoid re-seeding caches that
+ * already hold the equivalent data.
+ */
+function tasksAreEqual(a: Task[], b: Task[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    const x = a[i];
+    const y = b[i];
+    if (!x || !y) return false;
+    if (x.id !== y.id) return false;
+    const xu = x.updatedAt;
+    const yu = y.updatedAt;
+    const xt = xu instanceof Date ? xu.getTime() : String(xu);
+    const yt = yu instanceof Date ? yu.getTime() : String(yu);
+    if (xt !== yt) return false;
+  }
+  return true;
+}
+
 interface RangePrefetchOptions {
   /**
    * Center date for the prefetch window. Defaults to today.
@@ -101,12 +121,28 @@ export function useKanbanRangePrefetch(options: RangePrefetchOptions = {}) {
   });
 
   const data = query.data;
+  const seededFingerprintRef = React.useRef<string | null>(null);
 
   React.useEffect(() => {
     if (!data) return;
     // If the API truncated the range we cannot trust the per-day projections;
     // skip seeding and let DayColumn fall back to its own per-day fetches.
     if (data.truncated) return;
+
+    // Cheap fingerprint of the response. If the same set of (id, updatedAt)
+    // tuples comes back again — typical when React Query revalidates and
+    // the data hasn't actually changed — we skip the seeding loop entirely
+    // so we don't churn the per-day cache references and re-render every
+    // mounted DayColumn.
+    let fingerprint = centerString + ":";
+    for (const t of data.tasks) {
+      fingerprint += t.id;
+      const u = t.updatedAt;
+      fingerprint +=
+        "@" + (u instanceof Date ? u.getTime() : String(u)) + "|";
+    }
+    if (fingerprint === seededFingerprintRef.current) return;
+    seededFingerprintRef.current = fingerprint;
 
     const byDate = new Map<string, Task[]>();
     for (const task of data.tasks) {
@@ -141,6 +177,11 @@ export function useKanbanRangePrefetch(options: RangePrefetchOptions = {}) {
         dayState?.dataUpdatedAt &&
         dayState.dataUpdatedAt >= rangeFetchedAt
       ) {
+        continue;
+      }
+
+      // Skip writes that wouldn't actually change the cache contents.
+      if (existing && tasksAreEqual(existing, tasks)) {
         continue;
       }
 
