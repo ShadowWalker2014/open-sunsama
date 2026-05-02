@@ -71,6 +71,13 @@
       "when": 1770419290510,
       "tag": "0009_bitter_stephen_strange",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1777721999830,
+      "tag": "0010_busy_celestials",
+      "breakpoints": true
     }
   ]
 }
