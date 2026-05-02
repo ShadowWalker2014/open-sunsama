@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS "subtasks_task_id_idx" ON "subtasks" USING btree ("task_id");
