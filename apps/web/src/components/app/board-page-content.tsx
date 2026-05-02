@@ -7,7 +7,7 @@ import { MobileBacklogSheet } from "@/components/layout/mobile-backlog-sheet";
 import { MobileTaskListView } from "@/components/mobile";
 import { TasksDndProvider } from "@/lib/dnd/tasks-dnd-context";
 import { TaskShortcutsHandler } from "@/components/task-shortcuts-handler";
-import { TaskModal } from "@/components/kanban/task-modal";
+import { TaskModal } from "@/components/kanban/task-modal.lazy";
 import { TimeBlockDetailSheet } from "@/components/calendar/time-block-detail-sheet";
 import { CreateTimeBlockDialog } from "@/components/calendar/create-time-block-dialog";
 import { useTask, useIsMobile } from "@/hooks";

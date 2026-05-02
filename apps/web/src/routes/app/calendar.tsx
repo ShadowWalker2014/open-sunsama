@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { Task, TimeBlock } from "@open-sunsama/types";
 import { CalendarView } from "@/components/calendar";
-import { TaskModal } from "@/components/kanban/task-modal";
+import { TaskModal } from "@/components/kanban/task-modal.lazy";
 import { TimeBlockDetailSheet } from "@/components/calendar/time-block-detail-sheet";
 import { CreateTimeBlockDialog } from "@/components/calendar/create-time-block-dialog";
 import { useTask } from "@/hooks";

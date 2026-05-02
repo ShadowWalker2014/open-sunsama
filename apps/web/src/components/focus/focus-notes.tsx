@@ -1,5 +1,5 @@
 import * as React from "react";
-import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { RichTextEditor } from "@/components/ui/rich-text-editor.lazy";
 
 interface FocusNotesProps {
   notes: string;

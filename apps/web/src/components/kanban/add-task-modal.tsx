@@ -21,7 +21,7 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "@/components/ui";
-import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { RichTextEditor } from "@/components/ui/rich-text-editor.lazy";
 import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
 import { SubtaskList, type Subtask } from "./subtask-list";
 

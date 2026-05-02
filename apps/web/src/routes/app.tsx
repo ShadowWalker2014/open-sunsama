@@ -16,9 +16,16 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 import { ShortcutsModal } from "@/components/ui/shortcuts-modal";
 import { GlobalShortcutsHandler } from "@/components/global-shortcuts-handler";
 import { CommandPalette } from "@/components/command-palette";
-import { AddTaskModal } from "@/components/kanban/add-task-modal";
-import { TaskModal } from "@/components/kanban/task-modal";
+import {
+  AddTaskModal,
+  prefetchAddTaskModal,
+} from "@/components/kanban/add-task-modal.lazy";
+import {
+  TaskModal,
+  prefetchTaskModal,
+} from "@/components/kanban/task-modal.lazy";
 import { AppUpdateBanner } from "@/components/app-update-banner";
+import { prefetchRichTextEditor } from "@/components/ui/rich-text-editor.lazy";
 
 /**
  * Main app layout - requires authentication
@@ -95,7 +102,41 @@ function AppLayoutInner() {
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = React.useState(false);
 
+  // Warm the Tiptap chunk during browser idle time. The first time the user
+  // hits Cmd+K → Add Task, or opens a task modal, the editor module is
+  // already on disk and mounts without network roundtrip.
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const win = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    let cancelled = false;
+    const warmAll = () => {
+      if (cancelled) return;
+      void prefetchRichTextEditor();
+      void prefetchTaskModal();
+      void prefetchAddTaskModal();
+    };
+    if (typeof win.requestIdleCallback === "function") {
+      const id = win.requestIdleCallback(warmAll, { timeout: 4000 });
+      return () => {
+        cancelled = true;
+        win.cancelIdleCallback?.(id);
+      };
+    }
+    const id = window.setTimeout(warmAll, 1500);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(id);
+    };
+  }, []);
+
   const handleAddTask = React.useCallback(() => {
+    // Trigger the prefetches synchronously — by the time the modal opens
+    // and Suspense suspends, the chunks are already in flight.
+    void prefetchAddTaskModal();
+    void prefetchRichTextEditor();
     setIsAddTaskModalOpen(true);
   }, []);
 

@@ -54,6 +54,14 @@ export default defineConfig({
     reportCompressedSize: false,
     rollupOptions: {
       output: {
+        // Avoid Rollup's default behaviour of injecting side-effect
+        // `import "./other-chunk.js"` statements into entry chunks for
+        // every transitive dynamic dependency. Without this, the route
+        // chunk for /app pulled in the Tiptap chunk synchronously even
+        // though the only path to Tiptap is a dynamic import behind the
+        // task-modal Suspense boundary. Disabling the hoist forces the
+        // dynamic import to actually fire on demand.
+        hoistTransitiveImports: false,
         // Manual chunk strategy: keep the React+Router+Query trio in a single
         // "vendor" chunk that's cached aggressively across deploys, and pull
         // out the heavy editor/dnd/icon libraries into their own chunks so
@@ -61,13 +69,28 @@ export default defineConfig({
         manualChunks(id) {
           if (!id.includes("node_modules")) return undefined;
 
+          // Be specific about which `react` modules go in react-core —
+          // a naive `/react/` includes() match also captures `@tiptap/react`
+          // and other libraries with a /react/ segment, which sucks them
+          // into react-core and creates a chunk cycle with their original
+          // package family.
           if (
-            id.includes("/react/") ||
-            id.includes("/react-dom/") ||
-            id.includes("/scheduler/") ||
-            id.includes("/react-helmet-async/")
+            id.includes("/node_modules/react/") ||
+            id.includes("/node_modules/react-dom/") ||
+            id.includes("/node_modules/scheduler/")
           ) {
             return "react-core";
+          }
+          if (
+            id.includes("/react-helmet-async/") ||
+            id.includes("/react-fast-compare/") ||
+            id.includes("/invariant/") ||
+            id.includes("/shallowequal/")
+          ) {
+            // react-helmet-async pulls a few small utility modules. Keeping
+            // them out of react-core breaks the radix/tiptap/router cycle
+            // (those libraries don't depend on helmet at all).
+            return "helmet";
           }
           if (id.includes("@tanstack/react-router")) return "tanstack-router";
           if (
@@ -78,8 +101,15 @@ export default defineConfig({
             return "tanstack-query";
           }
           if (id.includes("@tanstack/react-virtual")) return "virtual";
-          if (id.includes("@tiptap/")) return "tiptap";
-          if (id.includes("prosemirror-")) return "tiptap";
+          if (
+            id.includes("@tiptap/") ||
+            id.includes("/prosemirror-") ||
+            id.includes("/orderedmap/") ||
+            id.includes("/rope-sequence/") ||
+            id.includes("/w3c-keyname/")
+          ) {
+            return "tiptap";
+          }
           if (id.includes("@dnd-kit/")) return "dnd";
           if (id.includes("@radix-ui/")) return "radix";
           if (id.includes("date-fns")) return "date-fns";

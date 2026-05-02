@@ -14,8 +14,8 @@ import { TaskContextMenu } from "@/components/kanban/task-context-menu";
 import { useTasksDnd } from "@/lib/dnd/tasks-dnd-context";
 import { cn } from "@/lib/utils";
 import { Button, ScrollArea, Skeleton } from "@/components/ui";
-import { AddTaskModal } from "@/components/kanban/add-task-modal";
-import { TaskModal } from "@/components/kanban/task-modal";
+import { AddTaskModal } from "@/components/kanban/add-task-modal.lazy";
+import { TaskModal } from "@/components/kanban/task-modal.lazy";
 
 const SIDEBAR_COLLAPSED_KEY = "open-sunsama-sidebar-collapsed";
 

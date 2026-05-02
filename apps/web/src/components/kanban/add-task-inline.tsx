@@ -2,7 +2,7 @@ import * as React from "react";
 import { Plus, ArrowUp, ArrowDown } from "lucide-react";
 import { Button, ShortcutHint, Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { AddTaskModal, type AddPosition } from "./add-task-modal";
+import { AddTaskModal, type AddPosition } from "./add-task-modal.lazy";
 
 const POSITION_STORAGE_KEY = "open-sunsama:add-task-position";
 
