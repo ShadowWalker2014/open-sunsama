@@ -8,7 +8,7 @@ import type {
 } from "@open-sunsama/types";
 import { getApi } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
-import { timeBlockKeys } from "./useTimeBlocks";
+import { timeBlockKeys } from "@/lib/query-keys";
 
 /**
  * Create a new time block
@@ -184,11 +184,8 @@ export function useAutoSchedule() {
   });
 }
 
-// Re-export timer-related mutations
-export {
-  useStartTimeBlock,
-  useStopTimeBlock,
-  useResizeTimeBlock,
-  useCascadeResizeTimeBlock,
-  useMoveTimeBlock,
-} from "./useTimeBlockTimer";
+// Timer-related mutations are owned by ./useTimeBlockTimer and are
+// re-exported from ./useTimeBlocks (the public barrel for this domain).
+// We deliberately do NOT re-export them from here — useTimeBlockTimer
+// imports useUpdateTimeBlock from this file, and re-exporting through
+// here would create a chunk-level cycle.
