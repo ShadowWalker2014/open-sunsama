@@ -33,7 +33,7 @@ import { cn, formatDuration } from "@/lib/utils";
 import { useTasks, useReorderTasks } from "@/hooks/useTasks";
 import { MobileTaskCardWithActualTime } from "./mobile-task-card";
 import { SortableMobileTaskCard } from "./sortable-mobile-task-card";
-import { TaskModal } from "@/components/kanban/task-modal";
+import { TaskModal } from "@/components/kanban/task-modal.lazy";
 import { MobileAddTaskSheet } from "./mobile-add-task-sheet";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";

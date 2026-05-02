@@ -64,10 +64,20 @@ export default defineConfig({
           if (
             id.includes("/react/") ||
             id.includes("/react-dom/") ||
-            id.includes("/scheduler/") ||
-            id.includes("/react-helmet-async/")
+            id.includes("/scheduler/")
           ) {
             return "react-core";
+          }
+          if (
+            id.includes("/react-helmet-async/") ||
+            id.includes("/react-fast-compare/") ||
+            id.includes("/invariant/") ||
+            id.includes("/shallowequal/")
+          ) {
+            // react-helmet-async pulls a few small utility modules. Keeping
+            // them out of react-core breaks the radix/tiptap/router cycle
+            // (those libraries don't depend on helmet at all).
+            return "helmet";
           }
           if (id.includes("@tanstack/react-router")) return "tanstack-router";
           if (

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui";
-import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { RichTextEditor } from "@/components/ui/rich-text-editor.lazy";
 import { HtmlContent } from "@/components/ui/html-content";
 
 interface DescriptionFieldProps {

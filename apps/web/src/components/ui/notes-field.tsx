@@ -1,6 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { RichTextEditor } from "@/components/ui/rich-text-editor.lazy";
 import { HtmlContent } from "@/components/ui/html-content";
 
 interface NotesFieldProps {
