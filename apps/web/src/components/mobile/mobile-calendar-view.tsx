@@ -31,7 +31,9 @@ import {
   useCalendarEvents,
   useCalendars,
   useCalendarAccounts,
+  useUpdateCalendarEvent,
 } from "@/hooks/useCalendars";
+import { useMobileTouchDrag } from "./use-mobile-touch-drag";
 import {
   HOUR_HEIGHT,
   TIMELINE_START_HOUR,
@@ -172,6 +174,25 @@ export function MobileCalendarView({
     }
     return m;
   }, [calendarsList, calendarAccounts]);
+
+  // Long-press-to-drag for external events. Same write-back path the
+  // desktop uses — useUpdateCalendarEvent handles optimistic update +
+  // rollback + cross-range invalidation.
+  const updateCalendarEvent = useUpdateCalendarEvent();
+  const touchDrag = useMobileTouchDrag({
+    onCommit: (eventId, startTime, endTime) => {
+      updateCalendarEvent.mutate({
+        id: eventId,
+        rangeFrom: fromDate,
+        rangeTo: toDate,
+        patch: {
+          startTime,
+          endTime,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
+      });
+    },
+  });
 
   // Bucket events into timed (drawn on timeline) and all-day (banner).
   const { timedEvents, allDayEvents } = React.useMemo(() => {
@@ -409,6 +430,10 @@ export function MobileCalendarView({
           {/* Timeline Content */}
           <div
             ref={timelineRef}
+            // `data-mobile-timeline` lets the touch-drag hook find
+            // this element via element.closest() so it can compute
+            // pixel-to-time math against the right rect.
+            data-mobile-timeline
             className={cn(
               "relative flex-1",
               "touch-pan-y",
@@ -459,19 +484,81 @@ export function MobileCalendarView({
               </div>
             )}
 
-            {/* External calendar events (drawn behind time blocks) */}
+            {/* External calendar events (drawn behind time blocks).
+                Wrapped so we can install touch handlers without
+                changing ExternalEvent's contract. The wrapper
+                intentionally contributes nothing to layout — its
+                pointer-events stay default and clicks pass through
+                to the chip's own handler (which respects
+                justEndedDrag). */}
             {!isLoading &&
-              timedEvents.map((event) => (
-                <ExternalEvent
-                  key={event.id}
-                  event={event}
-                  displayDate={selectedDate}
-                  layout={
-                    itemLayouts.get(`event:${event.id}`) ?? DEFAULT_LAYOUT
-                  }
-                  onClick={() => handleExternalEventClick(event)}
-                />
-              ))}
+              timedEvents.map((event) => {
+                const canEdit =
+                  !(calendarReadOnlyById.get(event.calendarId) ?? true) &&
+                  !event.isAllDay;
+                const isThisDragging =
+                  touchDrag.dragState?.eventId === event.id;
+                return (
+                  <div
+                    key={event.id}
+                    className={cn(
+                      "contents",
+                      isThisDragging && "[&>*]:opacity-60 [&>*]:scale-[1.02] [&>*]:shadow-lg [&>*]:transition-transform"
+                    )}
+                    onTouchStart={
+                      canEdit
+                        ? (e) =>
+                            touchDrag.handleTouchStart(
+                              event.id,
+                              selectedDate,
+                              new Date(event.startTime),
+                              new Date(event.endTime),
+                              e
+                            )
+                        : undefined
+                    }
+                    onTouchMove={canEdit ? touchDrag.handleTouchMove : undefined}
+                    onTouchEnd={canEdit ? touchDrag.handleTouchEnd : undefined}
+                  >
+                    <ExternalEvent
+                      event={event}
+                      displayDate={selectedDate}
+                      layout={
+                        itemLayouts.get(`event:${event.id}`) ?? DEFAULT_LAYOUT
+                      }
+                      onClick={() => handleExternalEventClick(event)}
+                      justEndedDrag={touchDrag.justEndedDrag}
+                    />
+                  </div>
+                );
+              })}
+
+            {/* Live drop preview during touch drag — dashed outline at
+                the new position with the new time range label. */}
+            {touchDrag.dragState && (() => {
+              const previewTop = calculateYFromTime(
+                touchDrag.dragState.previewStart
+              );
+              const previewMins =
+                (touchDrag.dragState.previewEnd.getTime() -
+                  touchDrag.dragState.previewStart.getTime()) /
+                60000;
+              const previewHeight = (previewMins / 60) * HOUR_HEIGHT;
+              return (
+                <div
+                  className="absolute inset-x-1 z-30 rounded border-2 border-dashed border-primary bg-primary/10 pointer-events-none flex items-start justify-start px-1.5 py-0.5"
+                  style={{
+                    top: `${previewTop}px`,
+                    height: `${Math.max(previewHeight, 16)}px`,
+                  }}
+                >
+                  <span className="text-[10px] font-semibold text-primary">
+                    {format(touchDrag.dragState.previewStart, "h:mm a")} –{" "}
+                    {format(touchDrag.dragState.previewEnd, "h:mm a")}
+                  </span>
+                </div>
+              );
+            })()}
 
             {/* Time blocks */}
             {!isLoading &&
