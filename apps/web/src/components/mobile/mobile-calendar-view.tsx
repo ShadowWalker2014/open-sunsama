@@ -485,12 +485,12 @@ export function MobileCalendarView({
             )}
 
             {/* External calendar events (drawn behind time blocks).
-                Wrapped so we can install touch handlers without
-                changing ExternalEvent's contract. The wrapper
-                intentionally contributes nothing to layout — its
-                pointer-events stay default and clicks pass through
-                to the chip's own handler (which respects
-                justEndedDrag). */}
+                Touch handlers go directly on the chip's root via
+                ExternalEvent's `onTouchStart`/etc props — earlier
+                we used a `display: contents` wrapper but Safari ≤
+                iOS 15 has known bugs with pointer/touch events on
+                `display: contents` elements. Wiring through the
+                chip's root avoids the wrapper entirely. */}
             {!isLoading &&
               timedEvents.map((event) => {
                 const canEdit =
@@ -499,12 +499,16 @@ export function MobileCalendarView({
                 const isThisDragging =
                   touchDrag.dragState?.eventId === event.id;
                 return (
-                  <div
+                  <ExternalEvent
                     key={event.id}
-                    className={cn(
-                      "contents",
-                      isThisDragging && "[&>*]:opacity-60 [&>*]:scale-[1.02] [&>*]:shadow-lg [&>*]:transition-transform"
-                    )}
+                    event={event}
+                    displayDate={selectedDate}
+                    layout={
+                      itemLayouts.get(`event:${event.id}`) ?? DEFAULT_LAYOUT
+                    }
+                    onClick={() => handleExternalEventClick(event)}
+                    justEndedDrag={touchDrag.justEndedDrag}
+                    isTouchDragging={isThisDragging}
                     onTouchStart={
                       canEdit
                         ? (e) =>
@@ -519,17 +523,7 @@ export function MobileCalendarView({
                     }
                     onTouchMove={canEdit ? touchDrag.handleTouchMove : undefined}
                     onTouchEnd={canEdit ? touchDrag.handleTouchEnd : undefined}
-                  >
-                    <ExternalEvent
-                      event={event}
-                      displayDate={selectedDate}
-                      layout={
-                        itemLayouts.get(`event:${event.id}`) ?? DEFAULT_LAYOUT
-                      }
-                      onClick={() => handleExternalEventClick(event)}
-                      justEndedDrag={touchDrag.justEndedDrag}
-                    />
-                  </div>
+                  />
                 );
               })}
 
