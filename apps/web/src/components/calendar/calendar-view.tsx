@@ -382,10 +382,16 @@ export function CalendarView({
       }
       // Radix open overlays are tagged with `data-state="open"`. If
       // any modal-style overlay is mounted-and-open, swallow the
-      // shortcut.
+      // shortcut. We cover dialog (Sheet/Dialog), alertdialog
+      // (confirm prompts), AND menu (ContextMenu / DropdownMenu) —
+      // without the menu match, right-clicking a time block to open
+      // its context menu and then pressing a letter shortcut would
+      // silently switch the calendar view behind the open menu.
       if (
         document.querySelector(
-          '[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"]'
+          '[role="dialog"][data-state="open"], ' +
+          '[role="alertdialog"][data-state="open"], ' +
+          '[role="menu"][data-state="open"]'
         )
       ) {
         return;

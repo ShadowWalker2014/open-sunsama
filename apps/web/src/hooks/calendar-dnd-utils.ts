@@ -79,6 +79,19 @@ export function calculateTaskDropPreview(
 }
 
 /**
+ * The lowest start-of-minute slot the timeline allows. Set to
+ * (TIMELINE_END_HOUR + 1) so dragging an event to "midnight tomorrow"
+ * is forbidden — without this clamp, dragging a 4h event past 23:00
+ * silently produces an event that crosses midnight onto the next day,
+ * persisting on a date the user wasn't viewing.
+ */
+const TIMELINE_END_MINUTE = (TIMELINE_END_HOUR + 1) * 60; // 24 * 60 = 1440
+
+function minutesFromMidnight(d: Date): number {
+  return d.getHours() * 60 + d.getMinutes();
+}
+
+/**
  * Calculate preview for moving a time block
  */
 export function calculateMovePreview(
@@ -90,12 +103,22 @@ export function calculateMovePreview(
     new Date(block.endTime),
     new Date(block.startTime)
   );
-  
+
   const originalTop = calculateYFromTime(new Date(block.startTime));
   const newTop = Math.max(0, originalTop + deltaY);
-  
+
   const rawStartTime = calculateTimeFromY(newTop, baseDate);
-  const startTime = snapToInterval(rawStartTime);
+  let startTime = snapToInterval(rawStartTime);
+
+  // Clamp the start so the entire event still fits inside the day.
+  // Without this, a 4h event dragged past 20:00 would silently roll
+  // onto the next day's date.
+  const startMins = minutesFromMidnight(startTime);
+  const maxStartMins = TIMELINE_END_MINUTE - originalDuration;
+  if (startMins > maxStartMins) {
+    const overflow = startMins - maxStartMins;
+    startTime = addMinutes(startTime, -overflow);
+  }
   const endTime = addMinutes(startTime, originalDuration);
 
   const top = calculateYFromTime(startTime);
@@ -137,7 +160,16 @@ export function calculateResizePreview(
     const newBottom = originalBottom + deltaY;
     const rawEndTime = calculateTimeFromY(newBottom, baseDate);
     endTime = snapToInterval(rawEndTime);
-    
+
+    // Clamp end so it can't spill past midnight onto the next day.
+    const endMins = minutesFromMidnight(endTime);
+    if (endMins === 0 && endTime.getDate() !== originalStart.getDate()) {
+      // Crossed into next day — pull back to end-of-day.
+      endTime = addMinutes(originalStart, TIMELINE_END_MINUTE - minutesFromMidnight(originalStart));
+    } else if (endMins > TIMELINE_END_MINUTE) {
+      endTime = addMinutes(endTime, -(endMins - TIMELINE_END_MINUTE));
+    }
+
     // Ensure minimum duration
     const duration = differenceInMinutes(endTime, startTime);
     if (duration < MIN_BLOCK_DURATION) {
