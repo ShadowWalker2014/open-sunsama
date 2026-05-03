@@ -197,6 +197,9 @@ export function CalendarView({
   const savePreferences = useSavePreferences();
   const setViewMode = React.useCallback(
     (mode: CalendarViewMode) => {
+      // No-op short-circuit: pressing the same view's key (e.g. "d"
+      // when already on day) shouldn't fire a redundant PATCH.
+      if (mode === viewModeRef.current) return;
       // Mark the user as having interacted so a late /auth/me push
       // can't clobber this pick (see the seed effect for context).
       userInteractedRef.current = true;
