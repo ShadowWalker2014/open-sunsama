@@ -297,9 +297,9 @@ calendarOAuthRouter.get(
               { timeMin, timeMax }
             );
 
-            // Upsert events and delete removed ones
-            await upsertEvents(userId, syncResult.events, enabledCalendars);
-            await deleteRemovedEvents(userId, syncResult.deleted);
+            // Upsert events (per-calendar attribution) and delete removed
+            await upsertEvents(userId, syncResult.perCalendar);
+            await deleteRemovedEvents(userId, syncResult.perCalendar);
 
             // Update sync status to idle
             await updateSyncStatus(accountId, "idle", syncResult.nextSyncToken);
@@ -308,12 +308,12 @@ calendarOAuthRouter.get(
             publishSyncEvent(
               userId,
               accountId,
-              syncResult.events.length,
-              syncResult.deleted.length
+              syncResult.totalEvents,
+              syncResult.totalDeleted
             );
 
             console.log(
-              `[Calendar OAuth] Initial sync completed for ${providerName} account: ${syncResult.events.length} events`
+              `[Calendar OAuth] Initial sync completed for ${providerName} account: ${syncResult.totalEvents} events`
             );
           } catch (syncErr) {
             const syncMessage =
