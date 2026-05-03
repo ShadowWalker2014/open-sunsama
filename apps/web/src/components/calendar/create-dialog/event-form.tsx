@@ -20,7 +20,7 @@ import {
   SelectItem,
 } from "@/components/ui";
 
-const PROVIDERS_WITH_WRITE_BACK = new Set(["google"]);
+const PROVIDERS_WITH_WRITE_BACK = new Set(["google", "outlook"]);
 
 /**
  * Calendar event sub-form for the create dialog. Picks among the
