@@ -8,7 +8,7 @@ import {
 } from "date-fns";
 import type { CalendarEvent } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
-import { ExternalLink, CalendarDays } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import {
   calculateYFromTime,
   HOUR_HEIGHT,
@@ -90,11 +90,13 @@ export function ExternalEvent({
   const isCompact = height < 48;
   const isVeryCompact = height < 28;
 
-  const handleClick = () => {
-    // Open external link in new tab if available
-    if (event.htmlLink) {
-      window.open(event.htmlLink, "_blank", "noopener,noreferrer");
-    }
+  const handleClick = (e: React.MouseEvent) => {
+    // Stop the event from bubbling up to the timeline's "click empty
+    // slot to create a time block" handler — without this, clicking an
+    // event ALSO opened the create-time-block dialog.
+    e.stopPropagation();
+    // Delegate to the parent — typically opens an in-app detail sheet
+    // rather than redirecting to the provider's web UI.
     onClick?.();
   };
 
@@ -121,10 +123,11 @@ export function ExternalEvent({
             onClick={handleClick}
             role="button"
             tabIndex={0}
-            aria-label={`External event: ${event.title} from ${format(startTime, "h:mm a")} to ${format(endTime, "h:mm a")}`}
+            aria-label={`Calendar event: ${event.title} from ${format(startTime, "h:mm a")} to ${format(endTime, "h:mm a")}`}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
-                handleClick();
+                e.stopPropagation();
+                onClick?.();
               }
             }}
           >
@@ -146,9 +149,10 @@ export function ExternalEvent({
                 )}>
                   {event.title}
                 </p>
-                {event.htmlLink && !isCompact && (
-                  <ExternalLink className="h-3 w-3 flex-shrink-0 text-muted-foreground ml-auto" />
-                )}
+                {/* `htmlLink` is intentionally not surfaced here as a
+                    "click to open" affordance — clicking the event opens
+                    the in-app detail sheet. The detail sheet has an
+                    explicit "Open in Google Calendar" action. */}
               </div>
 
               {/* Time range - muted text, hide if too compact */}
@@ -222,10 +226,8 @@ export function AllDayEvent({
   const color = getEventColor(event);
   const calendarName = event.calendar?.name || "External Calendar";
 
-  const handleClick = () => {
-    if (event.htmlLink) {
-      window.open(event.htmlLink, "_blank", "noopener,noreferrer");
-    }
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     onClick?.();
   };
 
@@ -249,15 +251,13 @@ export function AllDayEvent({
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
-                handleClick();
+                e.stopPropagation();
+                onClick?.();
               }
             }}
           >
             <CalendarDays className="h-3 w-3 flex-shrink-0 text-muted-foreground" />
             <span className="truncate text-foreground/80">{event.title}</span>
-            {event.htmlLink && (
-              <ExternalLink className="h-3 w-3 flex-shrink-0 text-muted-foreground ml-auto" />
-            )}
           </div>
         </TooltipTrigger>
         <TooltipContent side="bottom">

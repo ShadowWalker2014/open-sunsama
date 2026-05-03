@@ -35,6 +35,11 @@ interface AddTaskModalProps {
   scheduledDate?: string | null;
   addPosition?: AddPosition;
   onAddPositionChange?: (position: AddPosition) => void;
+  /**
+   * Pre-populate the title field on open. Used by the calendar event
+   * detail sheet's "Create task from event" action.
+   */
+  initialTitle?: string;
 }
 
 export function AddTaskModal({
@@ -43,12 +48,21 @@ export function AddTaskModal({
   scheduledDate,
   addPosition = "bottom",
   onAddPositionChange,
+  initialTitle,
 }: AddTaskModalProps) {
-  const [title, setTitle] = React.useState("");
+  const [title, setTitle] = React.useState(initialTitle ?? "");
   const [description, setDescription] = React.useState("");
   const [estimatedMins, setEstimatedMins] = React.useState<string>("");
   const [priority, setPriority] = React.useState<TaskPriority>("P2");
   const [subtasks, setSubtasks] = React.useState<Subtask[]>([]);
+
+  // When opening with a pre-filled title (e.g. "Create task from event"),
+  // sync the title state every time the modal opens.
+  React.useEffect(() => {
+    if (open && initialTitle !== undefined) {
+      setTitle(initialTitle);
+    }
+  }, [open, initialTitle]);
 
   const createTask = useCreateTask();
   const createSubtask = useCreateSubtask();

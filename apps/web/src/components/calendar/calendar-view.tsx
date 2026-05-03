@@ -6,7 +6,7 @@ import {
   startOfDay,
   endOfDay,
 } from "date-fns";
-import type { Task, TimeBlock } from "@open-sunsama/types";
+import type { Task, TimeBlock, CalendarEvent } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import {
   useTasks,
@@ -21,6 +21,11 @@ import { Timeline } from "./timeline";
 import { UnscheduledTasksPanel } from "./unscheduled-tasks";
 import { DragOverlay } from "./drag-overlay";
 import { CalendarViewToolbar } from "./calendar-view-toolbar";
+import { CalendarEventDetailSheet } from "./calendar-event-detail-sheet";
+import {
+  AddTaskModal,
+  prefetchAddTaskModal,
+} from "@/components/kanban/add-task-modal.lazy";
 
 interface CalendarViewProps {
   initialDate?: Date;
@@ -221,6 +226,52 @@ export function CalendarView({
 
   const isLoading = isLoadingTasks || isLoadingBlocks;
 
+  // External calendar event interaction. Clicking an event opens an
+  // in-app detail sheet — replacing the previous (broken) behaviour
+  // where the click both opened the provider's web UI in a new tab AND
+  // bubbled to the timeline's create-time-block dialog.
+  const [selectedExternalEvent, setSelectedExternalEvent] =
+    React.useState<CalendarEvent | null>(null);
+  const [externalEventSheetOpen, setExternalEventSheetOpen] =
+    React.useState(false);
+
+  const handleExternalEventClick = React.useCallback((event: CalendarEvent) => {
+    setSelectedExternalEvent(event);
+    setExternalEventSheetOpen(true);
+  }, []);
+
+  const handleExternalEventSheetOpenChange = React.useCallback(
+    (next: boolean) => {
+      setExternalEventSheetOpen(next);
+      if (!next) {
+        // Defer the state clear so the closing animation can finish.
+        setTimeout(() => setSelectedExternalEvent(null), 200);
+      }
+    },
+    []
+  );
+
+  // "Create task from event" hands the user off to the AddTaskModal
+  // pre-filled with the event's title and date.
+  const [taskFromEventOpen, setTaskFromEventOpen] = React.useState(false);
+  const [taskFromEventSeed, setTaskFromEventSeed] = React.useState<{
+    title: string;
+    scheduledDate: string;
+  } | null>(null);
+
+  const handleCreateTaskFromEvent = React.useCallback(
+    (event: CalendarEvent) => {
+      const start = new Date(event.startTime);
+      setTaskFromEventSeed({
+        title: event.title,
+        scheduledDate: format(start, "yyyy-MM-dd"),
+      });
+      void prefetchAddTaskModal();
+      setTaskFromEventOpen(true);
+    },
+    []
+  );
+
   return (
     <div className={cn("flex h-full flex-col", className)}>
       {/* Header / Toolbar - Responsive */}
@@ -258,6 +309,7 @@ export function CalendarView({
           onTimelineMouseMove={handleTimelineMouseMove}
           onTimelineMouseUp={handleTimelineMouseUp}
           onTimelineMouseLeave={handleTimelineMouseLeave}
+          onExternalEventClick={handleExternalEventClick}
           {...(onBlockClick ? { onBlockClick } : {})}
           {...(onEditBlock ? { onEditBlock } : {})}
           {...(onViewTask ? { onViewTask } : {})}
@@ -267,6 +319,25 @@ export function CalendarView({
 
       {/* Drag Overlay */}
       <DragOverlay dragState={dragState} dropPreview={dropPreview} />
+
+      {/* External calendar event detail sheet */}
+      <CalendarEventDetailSheet
+        event={selectedExternalEvent}
+        open={externalEventSheetOpen}
+        onOpenChange={handleExternalEventSheetOpenChange}
+        onCreateTask={handleCreateTaskFromEvent}
+      />
+
+      {/* Add task modal pre-filled from a calendar event */}
+      <AddTaskModal
+        open={taskFromEventOpen}
+        onOpenChange={(next) => {
+          setTaskFromEventOpen(next);
+          if (!next) setTaskFromEventSeed(null);
+        }}
+        scheduledDate={taskFromEventSeed?.scheduledDate}
+        initialTitle={taskFromEventSeed?.title}
+      />
     </div>
   );
 }
