@@ -120,7 +120,7 @@ export function CalendarItem({
           value={calendar.color}
           disabled={isUpdating}
           onChange={(c) => onSetColor(c)}
-          onReset={() => onSetColor(null)}
+          onClear={() => onSetColor(null)}
         />
         <span className={cn("text-sm", !calendar.isEnabled && "text-muted-foreground")}>
           {calendar.name}

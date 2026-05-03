@@ -107,6 +107,46 @@ calendarsRouter.patch(
       throw new NotFoundError('Calendar', id);
     }
 
+    // Server-side guard: a read-only calendar can't be the default
+    // target for new events (the API would 409 on the next create).
+    // The settings UI already disables this button (per PR #33), but
+    // any non-UI client (mobile, MCP, scripted) would otherwise be
+    // able to set it and produce confusing failures down the line.
+    if (
+      updates.isDefaultForEvents === true &&
+      calendar.isReadOnly
+    ) {
+      return c.json(
+        {
+          success: false,
+          error: {
+            code: 'CALENDAR_READ_ONLY',
+            message:
+              "Read-only calendars can't be the default for new events.",
+          },
+        },
+        409
+      );
+    }
+    // Same guard for tasks default — can't put your tasks under a
+    // read-only calendar either.
+    if (
+      updates.isDefaultForTasks === true &&
+      calendar.isReadOnly
+    ) {
+      return c.json(
+        {
+          success: false,
+          error: {
+            code: 'CALENDAR_READ_ONLY',
+            message:
+              "Read-only calendars can't be the default for tasks.",
+          },
+        },
+        409
+      );
+    }
+
     // If setting as default for events, clear other defaults first
     if (updates.isDefaultForEvents === true) {
       await db
