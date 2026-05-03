@@ -34,6 +34,7 @@ import {
   useUpdateCalendarEvent,
 } from "@/hooks/useCalendars";
 import { useMobileTouchDrag } from "./use-mobile-touch-drag";
+import { PROVIDERS_WITH_WRITE_BACK } from "@/lib/calendar-providers";
 import {
   HOUR_HEIGHT,
   TIMELINE_START_HOUR,
@@ -57,7 +58,8 @@ import {
 import { UnscheduledTasksDrawer } from "./mobile-unscheduled-drawer";
 
 const DEFAULT_LAYOUT: LayoutResult = { lane: 0, columnCount: 1 };
-const PROVIDERS_WITH_WRITE_BACK = new Set(["google", "outlook", "icloud"]);
+// Imported from the central source so adding a new provider is a
+// one-line change in one place.
 
 interface MobileCalendarViewProps {
   /** Initial date to display */
