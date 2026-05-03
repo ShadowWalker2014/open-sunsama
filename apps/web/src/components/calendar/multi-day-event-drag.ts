@@ -127,8 +127,14 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
     []
   );
 
+  // The mousemove handler reads the live state via `dragStateRef`, so
+  // we don't need to re-bind document listeners on every state tick
+  // (which fires ~60Hz during a drag). Gating the dep on a boolean
+  // means we only bind/unbind at drag start and drag end, even though
+  // the handler still observes the latest state inside.
+  const isDragging = dragState !== null;
   React.useEffect(() => {
-    if (!dragState) return;
+    if (!isDragging) return;
     const handleMove = (e: MouseEvent) => {
       const ds = dragStateRef.current;
       if (!ds) return;
@@ -334,7 +340,7 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
       document.removeEventListener("mouseup", handleUp);
       document.removeEventListener("keydown", handleEscape);
     };
-  }, [dragState]);
+  }, [isDragging]);
 
   return {
     dragState,
