@@ -1,23 +1,24 @@
 import * as React from "react";
 import { format } from "date-fns";
-import { Clock, ListTodo } from "lucide-react";
-import { useCreateTimeBlock, useTasks } from "@/hooks";
+import { Clock, Calendar as CalendarIcon } from "lucide-react";
 import {
-  Button,
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  Input,
-  Label,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
 } from "@/components/ui";
+import { TimeBlockForm } from "./create-dialog/time-block-form";
+import { EventForm } from "./create-dialog/event-form";
 
 interface CreateTimeBlockDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** The date for which to create the time block */
+  /** The date for which to create the time block / event */
   date: Date;
   /** Pre-filled start time */
   startTime: Date;
@@ -25,9 +26,13 @@ interface CreateTimeBlockDialogProps {
   endTime: Date;
 }
 
+type CreateMode = "time-block" | "event";
+
 /**
- * Dialog for quickly creating a new time block when clicking on an empty slot.
- * Allows setting a title and optionally associating a task.
+ * Dialog for creating a time block OR a calendar event from an empty
+ * time slot. Tabs let the user pick which kind to create — the time
+ * block path is the default (it's the app's primary motion), the
+ * calendar-event path writes through to the connected provider.
  */
 export function CreateTimeBlockDialog({
   open,
@@ -36,163 +41,59 @@ export function CreateTimeBlockDialog({
   startTime,
   endTime,
 }: CreateTimeBlockDialogProps) {
-  const [title, setTitle] = React.useState("");
-  const [selectedTaskId, setSelectedTaskId] = React.useState<string | null>(null);
-  const [showTaskList, setShowTaskList] = React.useState(false);
+  const [mode, setMode] = React.useState<CreateMode>("time-block");
 
-  const createTimeBlock = useCreateTimeBlock();
-  
-  // Fetch unscheduled tasks for today that could be associated
-  const dateString = format(date, "yyyy-MM-dd");
-  const { data: tasks = [] } = useTasks({ scheduledDate: dateString, limit: 200 });
-
-  // Filter to incomplete tasks
-  const availableTasks = tasks.filter((task) => !task.completedAt);
-
-  // Reset form when dialog opens/closes
+  // Reset mode when the dialog re-opens — most users want time block by
+  // default; sticky-on-event would surprise the next session.
   React.useEffect(() => {
-    if (open) {
-      setTitle("");
-      setSelectedTaskId(null);
-      setShowTaskList(false);
-    }
+    if (open) setMode("time-block");
   }, [open]);
-
-  // Update title when task is selected
-  React.useEffect(() => {
-    if (selectedTaskId) {
-      const task = availableTasks.find((t) => t.id === selectedTaskId);
-      if (task) {
-        setTitle(task.title);
-      }
-    }
-  }, [selectedTaskId, availableTasks]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!title.trim()) return;
-
-    await createTimeBlock.mutateAsync({
-      title: title.trim(),
-      startTime,
-      endTime,
-      taskId: selectedTaskId ?? undefined,
-    });
-
-    onOpenChange(false);
-  };
-
-  const handleTaskSelect = (taskId: string) => {
-    setSelectedTaskId(taskId === selectedTaskId ? null : taskId);
-    setShowTaskList(false);
-  };
-
-  const selectedTask = selectedTaskId
-    ? availableTasks.find((t) => t.id === selectedTaskId)
-    : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[460px]">
         <DialogHeader>
-          <DialogTitle>Create Time Block</DialogTitle>
+          <DialogTitle>Create</DialogTitle>
           <DialogDescription>
-            Schedule a new time block for {format(date, "EEEE, MMMM d")}
+            {format(date, "EEEE, MMMM d")} · {format(startTime, "h:mm a")} –{" "}
+            {format(endTime, "h:mm a")}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Time Display */}
-          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
-            <Clock className="h-4 w-4" />
-            <span>
-              {format(startTime, "h:mm a")} - {format(endTime, "h:mm a")}
-            </span>
-          </div>
+        <Tabs
+          value={mode}
+          onValueChange={(v) => setMode(v as CreateMode)}
+          className="w-full"
+        >
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="time-block">
+              <Clock className="mr-2 h-3.5 w-3.5" />
+              Time block
+            </TabsTrigger>
+            <TabsTrigger value="event">
+              <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+              Calendar event
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Title Input */}
-          <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="What are you working on?"
-              autoFocus
+          <TabsContent value="time-block" className="mt-4">
+            <TimeBlockForm
+              date={date}
+              startTime={startTime}
+              endTime={endTime}
+              onClose={() => onOpenChange(false)}
             />
-          </div>
+          </TabsContent>
 
-          {/* Task Association */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <ListTodo className="h-4 w-4" />
-              Link to Task (Optional)
-            </Label>
-            
-            {selectedTask ? (
-              <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2">
-                <span className="text-sm truncate">{selectedTask.title}</span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedTaskId(null);
-                    setTitle("");
-                  }}
-                >
-                  Remove
-                </Button>
-              </div>
-            ) : (
-              <div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="w-full justify-start"
-                  onClick={() => setShowTaskList(!showTaskList)}
-                >
-                  {availableTasks.length > 0
-                    ? "Select a task..."
-                    : "No tasks available"}
-                </Button>
-
-                {showTaskList && availableTasks.length > 0 && (
-                  <div className="mt-2 max-h-40 overflow-y-auto rounded-lg border bg-background shadow-md">
-                    {availableTasks.map((task) => (
-                      <button
-                        key={task.id}
-                        type="button"
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors truncate"
-                        onClick={() => handleTaskSelect(task.id)}
-                      >
-                        {task.title}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={!title.trim() || createTimeBlock.isPending}
-            >
-              {createTimeBlock.isPending ? "Creating..." : "Create"}
-            </Button>
-          </DialogFooter>
-        </form>
+          <TabsContent value="event" className="mt-4">
+            <EventForm
+              date={date}
+              startTime={startTime}
+              endTime={endTime}
+              onClose={() => onOpenChange(false)}
+            />
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

@@ -204,6 +204,70 @@ export class GoogleCalendarProvider implements CalendarProvider {
     };
   }
 
+  async createEvent(
+    accessToken: string,
+    calendarId: string,
+    payload: EventPatch
+  ): Promise<ExternalEvent> {
+    if (
+      !payload.title ||
+      payload.startTime === undefined ||
+      payload.endTime === undefined
+    ) {
+      throw new Error('createEvent requires title, startTime, and endTime');
+    }
+
+    const body: Partial<GoogleEvent> = {
+      summary: payload.title,
+    };
+    if (payload.description !== undefined) {
+      body.description = payload.description ?? '';
+    }
+    if (payload.location !== undefined) {
+      body.location = payload.location ?? '';
+    }
+    if (payload.isAllDay) {
+      body.start = { date: toUtcDateString(payload.startTime) };
+      body.end = { date: toUtcDateString(payload.endTime) };
+    } else {
+      const tz = payload.timezone ?? 'UTC';
+      body.start = {
+        dateTime: payload.startTime.toISOString(),
+        timeZone: tz,
+      };
+      body.end = {
+        dateTime: payload.endTime.toISOString(),
+        timeZone: tz,
+      };
+    }
+
+    const response = await fetch(
+      `${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(calendarId)}/events`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(
+        `Google createEvent failed (${response.status}): ${error}`
+      );
+    }
+
+    const data = (await response.json()) as GoogleEvent;
+    const parsed = parseGoogleEvent(data);
+    if (!parsed) {
+      throw new Error('Google returned an event that could not be parsed');
+    }
+    return parsed;
+  }
+
   async updateEvent(
     accessToken: string,
     calendarId: string,

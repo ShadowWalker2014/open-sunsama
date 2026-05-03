@@ -69,6 +69,20 @@ export interface CalendarProvider {
   listCalendars(accessToken: string): Promise<ExternalCalendar[]>;
   listEvents(accessToken: string, calendarId: string, options: SyncOptions): Promise<SyncResult>;
   /**
+   * Create a new event upstream. Returns the canonical post-write
+   * representation so the caller can write it through to local
+   * storage without waiting for the next incremental sync. Providers
+   * without create support throw `ProviderReadOnlyError`.
+   *
+   * `EventPatch` is reused as the create shape — title is required,
+   * start+end are required (the route layer enforces this).
+   */
+  createEvent?(
+    accessToken: string,
+    calendarExternalId: string,
+    payload: EventPatch
+  ): Promise<ExternalEvent>;
+  /**
    * Patch an event in place upstream. Returns the canonical post-write
    * representation so the caller can update local storage without
    * waiting for the next incremental sync. Throws on failure.

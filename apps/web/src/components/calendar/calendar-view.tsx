@@ -323,6 +323,55 @@ export function CalendarView({
   }, [viewMode]);
   const goToToday = () => setSelectedDate(startOfDay(new Date()));
 
+  // Keyboard shortcuts — match Google Calendar's defaults so the muscle
+  // memory transfers cleanly:
+  //   D = Day, X = 3 days (their "4 days" key, near enough), W = Week,
+  //   M = Month, T = Today, J = previous range, K = next range.
+  // Skip when focus is inside an input / textarea / contenteditable so
+  // typing in any form field doesn't accidentally swap the view mode.
+  React.useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      switch (e.key.toLowerCase()) {
+        case "d":
+          setViewMode("day");
+          break;
+        case "x":
+          setViewMode("3-day");
+          break;
+        case "w":
+          setViewMode("week");
+          break;
+        case "m":
+          setViewMode("month");
+          break;
+        case "t":
+          goToToday();
+          break;
+        case "j":
+          goToPreviousDay();
+          break;
+        case "k":
+          goToNextDay();
+          break;
+        default:
+          return;
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [setViewMode, goToPreviousDay, goToNextDay]);
+
   // Mouse handlers for drag
   const handleTimelineMouseMove = (e: React.MouseEvent) => {
     if (isDragging) {

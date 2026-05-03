@@ -396,7 +396,7 @@ export function MultiDayView({
   const isWeek = days.length >= 7;
 
   return (
-    <div className={cn("flex h-full flex-col", className)}>
+    <div className={cn("flex h-full w-full min-w-0 flex-1 flex-col", className)}>
       {/* Day-of-week headers */}
       <div className="flex flex-shrink-0 border-b bg-background">
         {/* Empty gutter to align with hour axis */}
