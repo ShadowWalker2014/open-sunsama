@@ -491,10 +491,18 @@ export function MobileCalendarView({
       {/* FAB for creating time blocks */}
       <button
         onClick={() => {
-          // Default to next-hour slot on the current day.
+          // Default-time logic: when viewing today, anchor at the
+          // next hour from now (clamped to ≤22:00 so the +1h end
+          // doesn't roll past midnight). When viewing any other
+          // day, anchor at 09:00 — using "current time of day" on
+          // a navigated day produces a confusing slot mismatched
+          // with the displayed date in the dialog header.
+          const baseHour = isToday
+            ? Math.min(now.getHours() + 1, 22)
+            : 9;
           const defaultStart = setHours(
             setMinutes(selectedDate, 0),
-            now.getHours() + 1
+            baseHour
           );
           const defaultEnd = addMinutes(defaultStart, 60);
           if (onTimeSlotClick) {

@@ -30,6 +30,7 @@ import {
   useCascadeResizeTimeBlock,
 } from "@/hooks";
 import { useAuth } from "@/hooks/useAuth";
+import { useSavePreferences } from "@/hooks/useUserPreferences";
 import {
   useCalendarEvents,
   useCalendars,
@@ -180,13 +181,37 @@ export function CalendarView({
     }
   }, [user?.preferences?.calendarViewMode]);
 
-  const setViewMode = React.useCallback((mode: CalendarViewMode) => {
-    setViewModeRaw(mode);
-    storeViewMode(mode);
-    // TODO: also write the preference back to the server via
-    // `useUpdateUser` once we want it to sync across devices. For now
-    // localStorage is enough for the in-session experience.
-  }, []);
+  const savePreferences = useSavePreferences();
+  const setViewMode = React.useCallback(
+    (mode: CalendarViewMode) => {
+      setViewModeRaw(mode);
+      storeViewMode(mode);
+      // Also write the preference back to the server so the choice
+      // syncs across devices. We send the full preferences object
+      // (server replaces it wholesale) by spreading the current
+      // user.preferences and overriding calendarViewMode. The hook
+      // is a no-op for unauthenticated users and swallows errors —
+      // the local change still sticks via setViewModeRaw +
+      // storeViewMode, so a transient API failure doesn't break UX.
+      if (user?.preferences) {
+        savePreferences.mutate({
+          ...user.preferences,
+          calendarViewMode: mode,
+        });
+      } else if (user) {
+        // Authenticated but no prefs object yet — seed with safe
+        // defaults for the required theme fields plus the chosen
+        // view mode. Future writes will preserve siblings.
+        savePreferences.mutate({
+          themeMode: "system" as const,
+          colorTheme: "default",
+          fontFamily: "geist",
+          calendarViewMode: mode,
+        });
+      }
+    },
+    [savePreferences, user]
+  );
 
   // The window of days currently visible.
   const range = React.useMemo(
