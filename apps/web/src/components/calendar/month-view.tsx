@@ -113,7 +113,7 @@ export function MonthView({
   const weekdayLabels = weekStartsOn === 1 ? WEEKDAY_LABELS_MON : WEEKDAY_LABELS_SUN;
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full w-full min-w-0 flex-1 flex-col">
       {/* Weekday headers */}
       <div className="grid grid-cols-7 border-b bg-background flex-shrink-0">
         {weekdayLabels.map((label) => (
