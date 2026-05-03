@@ -126,15 +126,22 @@ export function CalendarItem({
         <button
           type="button"
           onClick={onSetDefaultEvents}
-          disabled={isUpdating || !calendar.isEnabled}
+          disabled={
+            isUpdating || !calendar.isEnabled || calendar.isReadOnly
+          }
           className={cn(
             "flex h-7 items-center gap-1 rounded-md border px-2 text-xs transition-colors",
             defaultForEvents
               ? "border-primary bg-primary/10 text-primary"
               : "border-transparent text-muted-foreground hover:border-border hover:text-foreground",
-            (!calendar.isEnabled || isUpdating) && "cursor-not-allowed opacity-50"
+            (!calendar.isEnabled || isUpdating || calendar.isReadOnly) &&
+              "cursor-not-allowed opacity-50"
           )}
-          title="Set as default for new events"
+          title={
+            calendar.isReadOnly
+              ? "Read-only calendars can't be a default for new events"
+              : "Set as default for new events"
+          }
         >
           {defaultForEvents && <CheckCircle2 className="h-3 w-3" />}
           Events

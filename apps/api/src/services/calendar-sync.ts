@@ -15,6 +15,7 @@ import { decrypt, encrypt } from './encryption.js';
 import {
   GoogleCalendarProvider,
   OutlookCalendarProvider,
+  ProviderAuthError,
   type CalendarProvider,
   type SyncOptions,
   type ExternalEvent,
@@ -47,11 +48,19 @@ export async function refreshTokensIfNeeded(
   provider: CalendarProvider
 ): Promise<string> {
   const db = getDb();
-  let accessToken = decrypt(account.accessTokenEncrypted!);
+  // Throw a typed auth error instead of crashing the decrypt path
+  // with an unhelpful crypto stack trace. The route layer maps this
+  // to a clean 401 with a "Reconnect your calendar" toast. The most
+  // common cause is a partially-disconnected account whose token
+  // column was nulled out without flipping isActive.
+  if (!account.accessTokenEncrypted) {
+    throw new ProviderAuthError(account.provider);
+  }
+  let accessToken = decrypt(account.accessTokenEncrypted);
 
   if (account.tokenExpiresAt && new Date(account.tokenExpiresAt) < new Date()) {
     if (!account.refreshTokenEncrypted) {
-      throw new Error('Token expired and no refresh token available');
+      throw new ProviderAuthError(account.provider);
     }
 
     const refreshToken = decrypt(account.refreshTokenEncrypted);

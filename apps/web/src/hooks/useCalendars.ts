@@ -449,19 +449,33 @@ export function useUpdateCalendarEvent() {
       }
       return { snapshots };
     },
-    onError: (error, _input, context) => {
+    onError: (error, input, context) => {
+      const isOutOfSync =
+        isApiError(error) && error.code === "EVENT_OUT_OF_SYNC";
       if (context?.snapshots) {
-        for (const [key, prior] of context.snapshots) {
-          queryClient.setQueryData(key, prior);
+        if (isOutOfSync) {
+          // The server has already deleted the stale row — restoring
+          // the snapshot would put the dead event back in the cache
+          // for the brief window before the refetch lands, causing a
+          // visible flash. Filter the event out of every cached range
+          // instead, so it disappears immediately and stays gone.
+          for (const [key, prior] of context.snapshots) {
+            queryClient.setQueryData<CalendarEvent[]>(
+              key,
+              prior.filter((ev) => ev.id !== input.id)
+            );
+          }
+        } else {
+          // Real failure (validation, auth, network) — restore the
+          // snapshot so the user's pre-mutation state is preserved.
+          for (const [key, prior] of context.snapshots) {
+            queryClient.setQueryData(key, prior);
+          }
         }
       }
       const { title, description } = describeWriteBackError(error, "update");
       toast({ variant: "destructive", title, description });
-      // EVENT_OUT_OF_SYNC means the server already cleaned up the
-      // stale local row — refetch so the dead event disappears from
-      // the UI. (The standard onSettled invalidation also fires, but
-      // doing this here ensures we cover the rollback path too.)
-      if (isApiError(error) && error.code === "EVENT_OUT_OF_SYNC") {
+      if (isOutOfSync) {
         queryClient.invalidateQueries({ queryKey: calendarKeys.all });
       }
     },
