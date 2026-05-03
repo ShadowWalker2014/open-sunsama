@@ -11,6 +11,16 @@ export interface VCalendarComponent {
   location?: string;
   dtstart?: string;
   dtend?: string;
+  // IANA zone names captured from the `TZID=` parameter on
+  // DTSTART/DTEND lines. Required to correctly interpret a
+  // floating-zone wall-clock (e.g. `DTSTART;TZID=America/New_York:
+  // 20260503T140000` means 14:00 NYC, NOT 14:00 UTC). When TZID is
+  // absent and the value has no `Z` suffix, the time is "floating"
+  // per RFC 5545 §3.3.5 — interpreted in the user's local zone.
+  // We don't currently surface that case; floating times are rare
+  // in practice (iOS / Apple Calendar always emits TZID).
+  dtstartTzid?: string;
+  dtendTzid?: string;
   rrule?: string;
   status?: string;
   etag?: string;
@@ -22,10 +32,32 @@ export interface VCalendarComponent {
 }
 
 /**
- * Parse an iCalendar date-time string
- * Handles formats: YYYYMMDD, YYYYMMDDTHHmmss, YYYYMMDDTHHmmssZ
+ * Parse an iCalendar date-time string into a UTC `Date`.
+ *
+ * Handles three forms (RFC 5545 §3.3.4-§3.3.5):
+ *   1. Date-only (`YYYYMMDD`) → all-day; treated as UTC midnight per
+ *      the iCal convention used elsewhere.
+ *   2. UTC date-time (`YYYYMMDDTHHmmssZ`) → absolute moment in UTC.
+ *   3. Local-time date-time (`YYYYMMDDTHHmmss`):
+ *        - if `tzid` (IANA zone) is supplied, the wall-clock is in
+ *          that zone — convert to UTC via Intl.
+ *        - otherwise it's a "floating" time. Floating times have no
+ *          definitive zone per spec; we pick UTC as a deterministic
+ *          fallback (matches prior behavior, avoids server-locale
+ *          surprises).
+ *
+ * Critical for sync correctness: events created in iOS Calendar /
+ * Apple Calendar with an explicit zone (the default UI behavior)
+ * emit `DTSTART;TZID=America/New_York:20260503T140000`. If we ignore
+ * TZID and treat 14:00 as UTC, the event renders 4 hours off. Before
+ * this fix, every NYC user's iCloud event drifted by their UTC
+ * offset every time it synced.
  */
-export function parseICalDateTime(value: string, isAllDay: boolean): Date {
+export function parseICalDateTime(
+  value: string,
+  isAllDay: boolean,
+  tzid?: string
+): Date {
   if (isAllDay || value.length === 8) {
     const year = parseInt(value.slice(0, 4), 10);
     const month = parseInt(value.slice(4, 6), 10) - 1;
@@ -44,7 +76,83 @@ export function parseICalDateTime(value: string, isAllDay: boolean): Date {
     return new Date(Date.UTC(year, month, day, hour, minute, second));
   }
 
+  if (tzid) {
+    return wallTimeInZoneToUtc(year, month, day, hour, minute, second, tzid);
+  }
+
+  // Floating time — no zone. Treat as UTC for determinism.
   return new Date(Date.UTC(year, month, day, hour, minute, second));
+}
+
+/**
+ * Convert a wall-clock time + IANA zone to a UTC `Date`.
+ *
+ * No third-party tz library: we use Intl.DateTimeFormat to learn the
+ * zone's offset at the candidate UTC moment, then correct. The
+ * "candidate UTC" iteration handles DST: the offset at 02:30 local
+ * on a spring-forward day is the post-jump offset, but we still
+ * land on a real UTC instant after one correction step. Two passes
+ * are sufficient for all current IANA zones (no double-transition
+ * cases).
+ *
+ * Returns `Invalid Date` if the zone name isn't recognised.
+ */
+function wallTimeInZoneToUtc(
+  year: number,
+  monthZeroBased: number,
+  day: number,
+  hour: number,
+  minute: number,
+  second: number,
+  tzid: string
+): Date {
+  // Treat the wall-clock as if it were UTC, then ask Intl what that
+  // moment looks like in the target zone. The difference between
+  // "what we want it to read" and "what it actually reads in the
+  // zone" is the offset we need to subtract.
+  const candidate = Date.UTC(year, monthZeroBased, day, hour, minute, second);
+  const offsetMs = getZoneOffsetMs(candidate, tzid);
+  if (Number.isNaN(offsetMs)) return new Date(NaN);
+  // Re-check after applying the offset: DST transitions can shift
+  // the offset by an hour around the candidate. One refinement pass
+  // handles all single-transition cases correctly.
+  const corrected = candidate - offsetMs;
+  const refinedOffsetMs = getZoneOffsetMs(corrected, tzid);
+  return new Date(candidate - refinedOffsetMs);
+}
+
+/**
+ * The offset (in milliseconds) that needs to be added to UTC to
+ * reach wall-clock in `tzid` at the given UTC instant. Positive for
+ * zones east of UTC, negative for west.
+ */
+function getZoneOffsetMs(utcMs: number, tzid: string): number {
+  try {
+    const dtf = new Intl.DateTimeFormat('en-US', {
+      timeZone: tzid,
+      hourCycle: 'h23',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+    const parts = dtf.formatToParts(new Date(utcMs));
+    const get = (type: Intl.DateTimeFormatPartTypes) =>
+      parseInt(parts.find((p) => p.type === type)?.value ?? '0', 10);
+    const asUtc = Date.UTC(
+      get('year'),
+      get('month') - 1,
+      get('day'),
+      get('hour'),
+      get('minute'),
+      get('second')
+    );
+    return asUtc - utcMs;
+  } catch {
+    return NaN;
+  }
 }
 
 /**
@@ -70,13 +178,16 @@ export function parseVCalendar(icalData: string): VCalendarComponent | null {
     const colonIndex = line.indexOf(':');
     if (colonIndex === -1) continue;
 
-    let key = line.slice(0, colonIndex);
+    const rawKey = line.slice(0, colonIndex);
     const value = line.slice(colonIndex + 1);
 
-    const semicolonIndex = key.indexOf(';');
-    if (semicolonIndex !== -1) {
-      key = key.slice(0, semicolonIndex);
-    }
+    // The key may carry parameters (e.g. `DTSTART;TZID=America/New_York`)
+    // — split them off so the switch matches on the bare property name,
+    // but keep the parameter string around so DTSTART/DTEND can pull
+    // out TZID below.
+    const semicolonIndex = rawKey.indexOf(';');
+    const key = semicolonIndex === -1 ? rawKey : rawKey.slice(0, semicolonIndex);
+    const params = semicolonIndex === -1 ? '' : rawKey.slice(semicolonIndex + 1);
 
     switch (key.toUpperCase()) {
       case 'UID':
@@ -93,9 +204,11 @@ export function parseVCalendar(icalData: string): VCalendarComponent | null {
         break;
       case 'DTSTART':
         event.dtstart = value;
+        event.dtstartTzid = extractParam(params, 'TZID') ?? undefined;
         break;
       case 'DTEND':
         event.dtend = value;
+        event.dtendTzid = extractParam(params, 'TZID') ?? undefined;
         break;
       case 'RRULE':
         event.rrule = value;
@@ -114,6 +227,33 @@ export function parseVCalendar(icalData: string): VCalendarComponent | null {
   }
 
   return event.uid ? event : null;
+}
+
+/**
+ * Pull a single parameter value (e.g. `TZID`) out of a property's
+ * raw parameter string (`TZID=America/New_York;VALUE=DATE-TIME`).
+ * Returns `null` if the parameter isn't present. Names are matched
+ * case-insensitively per RFC 5545 §3.2.
+ *
+ * iCal allows the value to be DQUOTE-wrapped when it contains a `:`
+ * or `;` (e.g. `TZID="GMT+05:00"`); strip the surrounding quotes if
+ * present.
+ */
+function extractParam(params: string, name: string): string | null {
+  if (!params) return null;
+  const upper = name.toUpperCase();
+  for (const piece of params.split(';')) {
+    const eq = piece.indexOf('=');
+    if (eq === -1) continue;
+    const k = piece.slice(0, eq).trim().toUpperCase();
+    if (k !== upper) continue;
+    let v = piece.slice(eq + 1).trim();
+    if (v.startsWith('"') && v.endsWith('"') && v.length >= 2) {
+      v = v.slice(1, -1);
+    }
+    return v;
+  }
+  return null;
 }
 
 /**
@@ -161,11 +301,21 @@ function buildExternalEventFromComponent(
   if (!event.uid || !event.dtstart) return null;
 
   const isAllDay = event.dtstart.length === 8;
-  const startTime = parseICalDateTime(event.dtstart, isAllDay);
+  const startTime = parseICalDateTime(
+    event.dtstart,
+    isAllDay,
+    event.dtstartTzid
+  );
 
   let endTime: Date;
   if (event.dtend) {
-    endTime = parseICalDateTime(event.dtend, isAllDay);
+    // Fall back to the start zone if DTEND has no TZID — iCal
+    // events normally carry the same zone on both ends.
+    endTime = parseICalDateTime(
+      event.dtend,
+      isAllDay,
+      event.dtendTzid ?? event.dtstartTzid
+    );
   } else {
     endTime = new Date(startTime.getTime() + (isAllDay ? 24 * 60 * 60 * 1000 : 60 * 60 * 1000));
   }
@@ -180,7 +330,11 @@ function buildExternalEventFromComponent(
     startTime,
     endTime,
     isAllDay,
-    timezone: null,
+    // Pass through the source zone so the UI can show "10:00 PM EDT"
+    // instead of guessing from the user's browser zone. Also lets
+    // the update path round-trip the original zone if we ever add
+    // zone-preserving writes.
+    timezone: event.dtstartTzid ?? null,
     recurrenceRule: event.rrule ?? null,
     recurringEventId: null,
     status: mapCalDavStatus(event.status),
