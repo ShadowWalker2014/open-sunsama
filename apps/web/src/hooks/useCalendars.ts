@@ -215,6 +215,170 @@ export function useConnectICloud() {
 }
 
 /**
+ * Patch shape accepted by useUpdateCalendarEvent. Times are local Date
+ * objects on the wire; the hook serialises them to ISO 8601.
+ */
+export interface UpdateCalendarEventInput {
+  id: string;
+  /**
+   * The from/to range the event currently appears in. We use this to
+   * scope the optimistic update to the right cache key. Without it the
+   * update would only land after a refetch.
+   */
+  rangeFrom: string;
+  rangeTo: string;
+  patch: {
+    title?: string;
+    description?: string | null;
+    location?: string | null;
+    startTime?: Date;
+    endTime?: Date;
+    isAllDay?: boolean;
+    timezone?: string | null;
+  };
+}
+
+/**
+ * Edit an external calendar event in place. The change is sent upstream
+ * to the provider (Google, etc.) and the local cache is optimistically
+ * updated so the UI reflects the new value immediately. If the upstream
+ * write fails, the optimistic change is rolled back.
+ */
+export function useUpdateCalendarEvent() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      patch,
+    }: UpdateCalendarEventInput): Promise<CalendarEvent> => {
+      const client = getApiClient();
+      const body: Record<string, unknown> = {};
+      if (patch.title !== undefined) body.title = patch.title;
+      if (patch.description !== undefined) body.description = patch.description;
+      if (patch.location !== undefined) body.location = patch.location;
+      if (patch.startTime !== undefined) {
+        body.startTime = patch.startTime.toISOString();
+      }
+      if (patch.endTime !== undefined) {
+        body.endTime = patch.endTime.toISOString();
+      }
+      if (patch.isAllDay !== undefined) body.isAllDay = patch.isAllDay;
+      if (patch.timezone !== undefined) body.timezone = patch.timezone;
+
+      const response = await client.patch<{ success: boolean; data: CalendarEvent }>(
+        `calendar-events/${id}`,
+        body
+      );
+      return response.data;
+    },
+    onMutate: async (input) => {
+      const key = calendarKeys.events(input.rangeFrom, input.rangeTo);
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<CalendarEvent[]>(key);
+      if (previous) {
+        const next: CalendarEvent[] = previous.map((ev) => {
+          if (ev.id !== input.id) return ev;
+          // The server-side type uses ISO strings on the wire (Date in
+          // TS but the JSON layer stringifies). Match that here so the
+          // optimistic value is shape-compatible with the refetch.
+          const merged: CalendarEvent = { ...ev };
+          if (input.patch.title !== undefined) merged.title = input.patch.title;
+          if (input.patch.description !== undefined) {
+            merged.description = input.patch.description;
+          }
+          if (input.patch.location !== undefined) {
+            merged.location = input.patch.location;
+          }
+          if (input.patch.startTime !== undefined) {
+            (merged as unknown as { startTime: string }).startTime =
+              input.patch.startTime.toISOString();
+          }
+          if (input.patch.endTime !== undefined) {
+            (merged as unknown as { endTime: string }).endTime =
+              input.patch.endTime.toISOString();
+          }
+          if (input.patch.isAllDay !== undefined) {
+            merged.isAllDay = input.patch.isAllDay;
+          }
+          if (input.patch.timezone !== undefined) {
+            merged.timezone = input.patch.timezone;
+          }
+          return merged;
+        });
+        queryClient.setQueryData<CalendarEvent[]>(key, next);
+      }
+      return { previous, key };
+    },
+    onError: (error, _input, context) => {
+      // Roll back the optimistic change so the UI reflects reality.
+      if (context?.previous) {
+        queryClient.setQueryData(context.key, context.previous);
+      }
+      toast({
+        variant: "destructive",
+        title: "Failed to update event",
+        description: error instanceof Error ? error.message : "Unknown error",
+      });
+    },
+    onSettled: (_data, _err, input) => {
+      // Always re-fetch so the canonical server state lands. This also
+      // covers the case where the event moved out of the visible range.
+      queryClient.invalidateQueries({
+        queryKey: calendarKeys.events(input.rangeFrom, input.rangeTo),
+      });
+    },
+  });
+}
+
+/**
+ * Delete an external calendar event upstream + locally.
+ */
+export function useDeleteCalendarEvent() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+    }: {
+      id: string;
+      rangeFrom: string;
+      rangeTo: string;
+    }): Promise<void> => {
+      const client = getApiClient();
+      await client.delete(`calendar-events/${id}`);
+    },
+    onMutate: async (input) => {
+      const key = calendarKeys.events(input.rangeFrom, input.rangeTo);
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<CalendarEvent[]>(key);
+      if (previous) {
+        queryClient.setQueryData<CalendarEvent[]>(
+          key,
+          previous.filter((ev) => ev.id !== input.id)
+        );
+      }
+      return { previous, key };
+    },
+    onError: (error, _input, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(context.key, context.previous);
+      }
+      toast({
+        variant: "destructive",
+        title: "Failed to delete event",
+        description: error instanceof Error ? error.message : "Unknown error",
+      });
+    },
+    onSettled: (_data, _err, input) => {
+      queryClient.invalidateQueries({
+        queryKey: calendarKeys.events(input.rangeFrom, input.rangeTo),
+      });
+    },
+  });
+}
+
+/**
  * Initiate OAuth flow for a calendar provider
  * Calls the API with auth to get the OAuth URL, then redirects
  */

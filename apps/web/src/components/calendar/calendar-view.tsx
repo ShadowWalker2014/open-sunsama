@@ -30,7 +30,7 @@ import {
   useCascadeResizeTimeBlock,
 } from "@/hooks";
 import { useAuth } from "@/hooks/useAuth";
-import { useCalendarEvents } from "@/hooks/useCalendars";
+import { useCalendarEvents, useCalendars } from "@/hooks/useCalendars";
 import { useCalendarDnd } from "@/hooks/useCalendarDnd";
 import { Timeline } from "./timeline";
 import { MultiDayView } from "./multi-day-view";
@@ -216,6 +216,17 @@ export function CalendarView({
   const fromDate = range.start.toISOString();
   const toDate = range.end.toISOString();
   const { data: calendarEvents = [] } = useCalendarEvents(fromDate, toDate);
+
+  // Per-calendar read-only flag — used by the detail sheet to gate the
+  // edit / delete affordances. We look it up by the selected event's
+  // calendarId rather than embedding it on the event payload to avoid
+  // a wider API change.
+  const { data: calendarsList = [] } = useCalendars();
+  const calendarReadOnlyById = React.useMemo(() => {
+    const m = new Map<string, boolean>();
+    for (const c of calendarsList) m.set(c.id, c.isReadOnly);
+    return m;
+  }, [calendarsList]);
 
   // Mutations
   const createTimeBlock = useCreateTimeBlock();
@@ -526,6 +537,15 @@ export function CalendarView({
         open={externalEventSheetOpen}
         onOpenChange={handleExternalEventSheetOpenChange}
         onCreateTask={handleCreateTaskFromEvent}
+        rangeFrom={fromDate}
+        rangeTo={toDate}
+        calendarReadOnly={
+          selectedExternalEvent
+            ? (calendarReadOnlyById.get(
+                selectedExternalEvent.calendarId
+              ) ?? true)
+            : true
+        }
       />
 
       {/* Add task modal pre-filled from a calendar event */}
