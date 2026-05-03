@@ -130,6 +130,14 @@ export class GoogleCalendarProvider implements CalendarProvider {
     });
 
     if (!response.ok) {
+      // 401 = access token rejected (expired/revoked between
+      // refresh and this call); 403 = scope rescinded. Both mean
+      // "user must reconnect" — surface as the typed error so the
+      // route layer emits the clean 401 + reconnect toast instead
+      // of a 500 with raw Google JSON.
+      if (response.status === 401 || response.status === 403) {
+        throw new ProviderAuthError('google');
+      }
       const error = await response.text();
       throw new Error(`Failed to list calendars: ${error}`);
     }
@@ -187,12 +195,18 @@ export class GoogleCalendarProvider implements CalendarProvider {
       );
 
       if (!response.ok) {
-        const error = await response.text();
-
         if (response.status === 410) {
           throw new Error('SYNC_TOKEN_INVALID');
         }
-
+        // 401/403: access token rejected or scope rescinded.
+        // Surface as the typed `ProviderAuthError` so the route
+        // layer + worker write a clean "Reconnect your calendar"
+        // message instead of dumping the raw Google JSON into the
+        // sync-status row (which the UI then can't act on).
+        if (response.status === 401 || response.status === 403) {
+          throw new ProviderAuthError('google');
+        }
+        const error = await response.text();
         throw new Error(`Failed to list events: ${error}`);
       }
 

@@ -131,6 +131,12 @@ export class OutlookCalendarProvider implements CalendarProvider {
     });
 
     if (!response.ok) {
+      // Same shape as Google — 401/403 means the user must reconnect.
+      // Surface as the typed error so the route layer's mapping fires
+      // and the UI shows a clean "Reconnect" toast.
+      if (response.status === 401 || response.status === 403) {
+        throw new ProviderAuthError('outlook');
+      }
       const error = await response.text();
       throw new Error(`Failed to list calendars: ${error}`);
     }
@@ -199,12 +205,17 @@ export class OutlookCalendarProvider implements CalendarProvider {
       });
 
       if (!response.ok) {
-        const error = await response.text();
-
         if (response.status === 410 || response.status === 400) {
           throw new Error('SYNC_TOKEN_INVALID');
         }
-
+        // 401/403: token rejected or scope rescinded — typed error
+        // so the route layer + worker write a clean "Reconnect"
+        // message instead of dumping raw Microsoft Graph JSON into
+        // the sync-status row.
+        if (response.status === 401 || response.status === 403) {
+          throw new ProviderAuthError('outlook');
+        }
+        const error = await response.text();
         throw new Error(`Failed to list events: ${error}`);
       }
 
