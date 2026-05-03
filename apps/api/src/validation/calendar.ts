@@ -51,12 +51,21 @@ export const calendarIdParamSchema = z.object({
 });
 
 /**
- * Schema for updating calendar settings
+ * Schema for updating calendar settings.
+ *
+ * `color` is the user's override — when set, it takes precedence over
+ * the color the provider returned at sync time. Pass null to clear
+ * the override and fall back to the provider color.
  */
 export const updateCalendarSettingsSchema = z.object({
   isEnabled: z.boolean().optional(),
   isDefaultForEvents: z.boolean().optional(),
   isDefaultForTasks: z.boolean().optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/, 'color must be a #RRGGBB hex string')
+    .nullable()
+    .optional(),
 });
 
 /**
