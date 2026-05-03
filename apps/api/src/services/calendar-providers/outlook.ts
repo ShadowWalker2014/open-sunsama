@@ -160,7 +160,16 @@ export class OutlookCalendarProvider implements CalendarProvider {
       if (options.timeMin && options.timeMax) {
         params.set('startDateTime', options.timeMin.toISOString());
         params.set('endDateTime', options.timeMax.toISOString());
-        url = `${GRAPH_API}/me/calendars/${encodeURIComponent(calendarId)}/calendarView?${params.toString()}`;
+        // calendarView/delta — NOT calendarView. The plain endpoint
+        // returns "current state" with no `@removed` markers, so
+        // events deleted upstream become permanent ghosts in our DB
+        // (the user only sees them disappear after Settings → Reset
+        // & re-sync). The `/delta` variant accepts the same window
+        // params, returns the full set on first call with a
+        // `@odata.deltaLink` at the end, then emits `@removed` on
+        // subsequent calls — which our existing branch at the
+        // event-loop below already handles.
+        url = `${GRAPH_API}/me/calendars/${encodeURIComponent(calendarId)}/calendarView/delta?${params.toString()}`;
       } else {
         url = `${GRAPH_API}/me/calendars/${encodeURIComponent(calendarId)}/events/delta?${params.toString()}`;
       }
