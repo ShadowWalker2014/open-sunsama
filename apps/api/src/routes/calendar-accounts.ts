@@ -27,6 +27,7 @@ import {
   updateSyncStatus,
   publishSyncEvent,
 } from '../services/calendar-sync.js';
+import { ProviderAuthError } from '../services/calendar-providers/index.js';
 import { publishEvent } from '../lib/websocket/index.js';
 
 const calendarAccountsRouter = new Hono<{ Variables: AuthVariables }>();
@@ -242,6 +243,23 @@ calendarAccountsRouter.post(
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       await updateSyncStatus(id, 'error', null, errorMessage);
       console.error(`[Calendar Sync] Error syncing account ${id}: ${errorMessage}`);
+
+      // Surface auth failures with the same shape the per-event
+      // routes use (calendar-events.ts) so the web client can show
+      // its "Reconnect your calendar" toast on a 401 instead of a
+      // generic 500 sync error.
+      if (err instanceof ProviderAuthError) {
+        return c.json(
+          {
+            success: false,
+            error: {
+              code: 'PROVIDER_AUTH_FAILED',
+              message: errorMessage,
+            },
+          },
+          401
+        );
+      }
 
       return c.json({
         success: false,
