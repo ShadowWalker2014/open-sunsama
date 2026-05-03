@@ -112,12 +112,25 @@ export function calculateMovePreview(
 
   // Clamp the start so the entire event still fits inside the day.
   // Without this, a 4h event dragged past 20:00 would silently roll
-  // onto the next day's date.
+  // onto the next day's date. Also detect snap-rolled-to-next-day
+  // (snapToInterval(23:53) → tomorrow 00:00) and pull back to today.
+  const sameDay =
+    startTime.getDate() === baseDate.getDate() &&
+    startTime.getMonth() === baseDate.getMonth() &&
+    startTime.getFullYear() === baseDate.getFullYear();
   const startMins = minutesFromMidnight(startTime);
   const maxStartMins = TIMELINE_END_MINUTE - originalDuration;
-  if (startMins > maxStartMins) {
-    const overflow = startMins - maxStartMins;
-    startTime = addMinutes(startTime, -overflow);
+  if (!sameDay || startMins > maxStartMins) {
+    const startOfDayBase = new Date(
+      baseDate.getFullYear(),
+      baseDate.getMonth(),
+      baseDate.getDate(),
+      0,
+      0,
+      0,
+      0
+    );
+    startTime = addMinutes(startOfDayBase, Math.max(0, maxStartMins));
   }
   const endTime = addMinutes(startTime, originalDuration);
 
@@ -162,12 +175,29 @@ export function calculateResizePreview(
     endTime = snapToInterval(rawEndTime);
 
     // Clamp end so it can't spill past midnight onto the next day.
-    const endMins = minutesFromMidnight(endTime);
-    if (endMins === 0 && endTime.getDate() !== originalStart.getDate()) {
-      // Crossed into next day — pull back to end-of-day.
-      endTime = addMinutes(originalStart, TIMELINE_END_MINUTE - minutesFromMidnight(originalStart));
-    } else if (endMins > TIMELINE_END_MINUTE) {
-      endTime = addMinutes(endTime, -(endMins - TIMELINE_END_MINUTE));
+    // `snapToInterval(23:53)` rolls to next-day 00:00, which the
+    // previous clamp's recomputation would also produce — a no-op,
+    // and `calculateYFromTime(00:00)` renders at top=0 (preview
+    // collapses). Pull back to the last full slot of the day instead
+    // (24:00 - SNAP_INTERVAL) so the preview stays visible. For an
+    // event ending at literal midnight, use the detail sheet.
+    const crossedMidnight =
+      endTime.getDate() !== originalStart.getDate() ||
+      endTime.getMonth() !== originalStart.getMonth() ||
+      endTime.getFullYear() !== originalStart.getFullYear() ||
+      minutesFromMidnight(endTime) > TIMELINE_END_MINUTE;
+    if (crossedMidnight) {
+      const lastSlotMins = TIMELINE_END_MINUTE - SNAP_INTERVAL;
+      const startOfDayBase = new Date(
+        baseDate.getFullYear(),
+        baseDate.getMonth(),
+        baseDate.getDate(),
+        0,
+        0,
+        0,
+        0
+      );
+      endTime = addMinutes(startOfDayBase, lastSlotMins);
     }
 
     // Ensure minimum duration
