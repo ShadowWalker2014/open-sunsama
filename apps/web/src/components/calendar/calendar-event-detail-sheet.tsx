@@ -34,6 +34,7 @@ import {
   useDeleteCalendarEvent,
 } from "@/hooks/useCalendars";
 import { toast } from "@/hooks/use-toast";
+import { HtmlContent } from "@/components/ui/html-content";
 
 interface CalendarEventDetailSheetProps {
   event: CalendarEvent | null;
@@ -148,6 +149,51 @@ function localMidnightTodayUtc(): Date {
   const now = new Date();
   return new Date(
     Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)
+  );
+}
+
+/**
+ * Detects whether `value` is provider-supplied HTML or plain text, and
+ * returns sanitizer-ready HTML in either case.
+ *
+ * Google Calendar's API returns event descriptions as rich HTML with
+ * tags like `<br>`, `<a href="...">`, `<b>`, plus `&nbsp;` entities.
+ * Outlook is similar. iCloud and manually-typed descriptions are
+ * usually plain text. Rendering Google's HTML as JSX text turns every
+ * `<br/>` into the literal string `<br/>` on screen — confirmed visual
+ * bug in the user-reported screenshot.
+ *
+ * Heuristic: if any tag-like substring (`<...>`) is present, treat it
+ * as HTML. Otherwise escape the text and convert linebreaks to `<br>`,
+ * then auto-link bare URLs so users can click through. The downstream
+ * `HtmlContent` component runs DOMPurify before rendering, so even if
+ * the heuristic mis-classifies plain text as HTML, no script tags or
+ * event handlers can leak through.
+ */
+function descriptionToHtml(value: string): string {
+  if (!value) return "";
+  const looksLikeHtml = /<\/?[a-z][\s\S]*?>/i.test(value);
+  if (looksLikeHtml) return value;
+  // Plain text path: escape HTML, convert newlines, then auto-link URLs.
+  const escaped = value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\n/g, "<br>");
+  return autoLink(escaped);
+}
+
+/**
+ * Replace bare http(s) URLs with anchor tags. Only operates on already-
+ * HTML-escaped text so the regex can't match inside an attribute value.
+ * Trailing punctuation (`,`, `.`, `)`, `]`, `;`) is excluded from the
+ * URL so `visit https://example.com.` doesn't link the trailing dot.
+ */
+function autoLink(escapedHtml: string): string {
+  return escapedHtml.replace(
+    /\bhttps?:\/\/[^\s<>"'`]+[^\s<>"'`,.;:!?)\]]/gi,
+    (url) =>
+      `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`
   );
 }
 
@@ -295,13 +341,23 @@ export function CalendarEventDetailSheet({
     }
 
     try {
+      // Provider descriptions for Google/Outlook are rich HTML, but
+      // the edit textarea shows the raw markup. If the user didn't
+      // touch the description, skip the patch entirely — sending
+      // back the textarea's value would round-trip plain text and
+      // destroy the original HTML server-side. Only patch when the
+      // string actually changed.
+      const descriptionUnchanged =
+        editState.description === (event.description ?? "");
       await updateMutation.mutateAsync({
         id: event.id,
         rangeFrom,
         rangeTo,
         patch: {
           title: trimmedTitle,
-          description: editState.description.trim() || null,
+          ...(descriptionUnchanged
+            ? {}
+            : { description: editState.description.trim() || null }),
           location: editState.location.trim() || null,
           startTime: startDate,
           endTime: endDate,
@@ -572,9 +628,14 @@ function ViewBody({ event }: { event: CalendarEvent }) {
       {event.description && (
         <div className="flex items-start gap-3 text-sm">
           <AlignLeft className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground" />
-          <div className="prose prose-sm max-w-none text-foreground/90 whitespace-pre-wrap break-words">
-            {event.description}
-          </div>
+          {/* Provider descriptions are rich HTML for Google/Outlook
+              and plain text for iCloud/manual; `descriptionToHtml`
+              normalises both shapes, then `HtmlContent` sanitises
+              with DOMPurify before rendering. */}
+          <HtmlContent
+            html={descriptionToHtml(event.description)}
+            className="text-foreground/90 break-words"
+          />
         </div>
       )}
     </>
