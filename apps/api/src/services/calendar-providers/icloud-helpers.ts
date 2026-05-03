@@ -235,9 +235,13 @@ export function parseVCalendar(icalData: string): VCalendarComponent | null {
  * Returns `null` if the parameter isn't present. Names are matched
  * case-insensitively per RFC 5545 §3.2.
  *
- * iCal allows the value to be DQUOTE-wrapped when it contains a `:`
- * or `;` (e.g. `TZID="GMT+05:00"`); strip the surrounding quotes if
- * present.
+ * RFC 5545 §3.2 allows DQUOTE-wrapped values for parameters whose
+ * value contains `:`, `;`, or `,` (e.g. `TZID="GMT+05:00"`). We
+ * strip the surrounding quotes here, but the upstream `parseVCalendar`
+ * line splitter is naive (`indexOf(':')`) and would split inside a
+ * quoted value — so quoted forms aren't fully supported end-to-end.
+ * In practice iCloud and Apple Calendar always emit bare IANA names,
+ * so this isn't a real-world gap; documenting it for future work.
  */
 function extractParam(params: string, name: string): string | null {
   if (!params) return null;
