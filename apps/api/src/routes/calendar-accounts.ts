@@ -165,57 +165,41 @@ calendarAccountsRouter.post(
 
       const syncOptions = { timeMin, timeMax };
 
-      let allEvents: Array<{
-        externalId: string;
-        title: string;
-        description: string | null;
-        location: string | null;
-        startTime: Date;
-        endTime: Date;
-        isAllDay: boolean;
-        timezone: string | null;
-        recurrenceRule: string | null;
-        recurringEventId: string | null;
-        status: 'confirmed' | 'tentative' | 'cancelled';
-        responseStatus: 'accepted' | 'declined' | 'tentative' | 'needsAction' | null;
-        htmlLink: string | null;
-        etag: string | null;
-      }> = [];
-      let allDeleted: string[] = [];
-      let nextSyncToken: string | null = null;
+      const syncResult =
+        account.provider === 'icloud'
+          ? await syncICloudAccount(account, accountCalendars, syncOptions)
+          : await (async () => {
+              const provider = getProvider(account.provider);
+              if (!provider || !account.accessTokenEncrypted) {
+                throw new Error('Invalid provider or missing credentials');
+              }
+              const accessToken = await refreshTokensIfNeeded(
+                account,
+                provider
+              );
+              return syncOAuthAccount(
+                accessToken,
+                provider,
+                accountCalendars,
+                syncOptions
+              );
+            })();
 
-      if (account.provider === 'icloud') {
-        const result = await syncICloudAccount(account, accountCalendars, syncOptions);
-        allEvents = result.events;
-        allDeleted = result.deleted;
-      } else {
-        const provider = getProvider(account.provider);
-        if (!provider || !account.accessTokenEncrypted) {
-          throw new Error('Invalid provider or missing credentials');
-        }
-
-        const accessToken = await refreshTokensIfNeeded(account, provider);
-        const result = await syncOAuthAccount(
-          accessToken,
-          provider,
-          accountCalendars,
-          syncOptions
-        );
-        allEvents = result.events;
-        allDeleted = result.deleted;
-        nextSyncToken = result.nextSyncToken;
-      }
-
-      await deleteRemovedEvents(userId, allDeleted);
-      await upsertEvents(userId, allEvents, accountCalendars);
-      await updateSyncStatus(id, 'idle', nextSyncToken);
-      publishSyncEvent(userId, id, allEvents.length, allDeleted.length);
+      await deleteRemovedEvents(userId, syncResult.perCalendar);
+      await upsertEvents(userId, syncResult.perCalendar);
+      await updateSyncStatus(id, 'idle', syncResult.nextSyncToken);
+      publishSyncEvent(
+        userId,
+        id,
+        syncResult.totalEvents,
+        syncResult.totalDeleted
+      );
 
       return c.json({
         success: true,
         data: {
-          syncedEvents: allEvents.length,
-          deletedEvents: allDeleted.length,
+          syncedEvents: syncResult.totalEvents,
+          deletedEvents: syncResult.totalDeleted,
           lastSyncedAt: new Date().toISOString(),
         },
       });

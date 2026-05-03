@@ -15,8 +15,8 @@ import {
   upsertEvents,
   updateSyncStatus,
   publishSyncEvent,
+  type AccountSyncResult,
 } from '../../services/calendar-sync.js';
-import { type ExternalEvent } from '../../services/calendar-providers/index.js';
 
 // Payload type for the sync account job
 export interface SyncAccountPayload {
@@ -80,13 +80,11 @@ export async function processSyncAccount(
       timeMax: endOfDay(addDays(now, SYNC_DAYS_FUTURE)),
     };
 
-    let events: ExternalEvent[] = [];
-    let deleted: string[] = [];
-    let nextSyncToken: string | null = null;
+    let result: AccountSyncResult;
 
     if (providerName === 'icloud') {
       // Handle iCloud (CalDAV) sync
-      const result = await syncICloudAccount(
+      result = await syncICloudAccount(
         {
           email: account.email,
           caldavPasswordEncrypted: account.caldavPasswordEncrypted,
@@ -95,8 +93,6 @@ export async function processSyncAccount(
         accountCalendars,
         syncOptions
       );
-      events = result.events;
-      deleted = result.deleted;
     } else {
       // Handle OAuth providers (Google, Outlook)
       const provider = getProvider(providerName);
@@ -117,31 +113,33 @@ export async function processSyncAccount(
       );
 
       // Sync events
-      const result = await syncOAuthAccount(
+      result = await syncOAuthAccount(
         accessToken,
         provider,
         accountCalendars,
         syncOptions
       );
-      events = result.events;
-      deleted = result.deleted;
-      nextSyncToken = result.nextSyncToken;
     }
 
-    // Delete removed events
-    await deleteRemovedEvents(userId, deleted);
+    // Delete removed events (per-calendar scoped)
+    await deleteRemovedEvents(userId, result.perCalendar);
 
-    // Upsert synced events
-    await upsertEvents(userId, events, accountCalendars);
+    // Upsert synced events (each event attributed to its source calendar)
+    await upsertEvents(userId, result.perCalendar);
 
     // Update sync status
-    await updateSyncStatus(accountId, 'idle', nextSyncToken);
+    await updateSyncStatus(accountId, 'idle', result.nextSyncToken);
 
     // Publish sync event via WebSocket
-    publishSyncEvent(userId, accountId, events.length, deleted.length);
+    publishSyncEvent(
+      userId,
+      accountId,
+      result.totalEvents,
+      result.totalDeleted
+    );
 
     console.log(
-      `[Calendar Sync] Completed sync for account ${accountId}: ${events.length} events, ${deleted.length} deleted`
+      `[Calendar Sync] Completed sync for account ${accountId}: ${result.totalEvents} events, ${result.totalDeleted} deleted`
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
