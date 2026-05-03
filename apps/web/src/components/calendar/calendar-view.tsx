@@ -161,22 +161,35 @@ export function CalendarView({
   });
   // If the server preference loads *after* mount (typical: /auth/me
   // resolves shortly after the first paint), seed it into local state
-  // exactly once. We use a ref to ensure subsequent local changes are
-  // never overwritten by a stale server value re-arriving — the user's
-  // intent always wins after they've interacted. The current viewMode
-  // is read via a ref so this effect's dep array can stay focused on
-  // the canonical server value.
+  // exactly once. The server is the source of truth for cross-device
+  // sync — if you picked "week" on desktop and open the phone, the
+  // phone's view should update to "week" even if its localStorage
+  // happens to remember a different value from a prior session.
+  // (PR #42 was supposed to enable this but the server schema was
+  // dropping the field; once that's fixed, we also need to drop the
+  // localStorage gate that the original effect had — which silently
+  // pinned each device to whatever it last had.)
+  // We use a ref to ensure subsequent server pushes (e.g. another
+  // tab updating prefs) don't fight with the user's local picks
+  // after mount — first arrival wins, then local state owns.
   const didSeedFromServerRef = React.useRef(false);
   const viewModeRef = React.useRef(viewMode);
   viewModeRef.current = viewMode;
+  // Tracks whether the user has interacted with the view-mode toggle
+  // since mount. If they have, we never seed from a late-arriving
+  // server value — their explicit pick beats a stale server value
+  // that happened to lose the race. (First-login-on-device case:
+  // no cached user → lazy init falls back to "day" → user picks
+  // "month" → /auth/me arrives 2s later with "week" → without this
+  // gate the user's pick gets silently clobbered.)
+  const userInteractedRef = React.useRef(false);
   React.useEffect(() => {
     if (didSeedFromServerRef.current) return;
+    if (userInteractedRef.current) return;
     const remote = user?.preferences?.calendarViewMode;
     if (!remote) return;
     didSeedFromServerRef.current = true;
-    // Only override if the user hasn't already overridden via local
-    // storage on this device (otherwise their per-device choice stands).
-    if (getStoredViewMode() === null && remote !== viewModeRef.current) {
+    if (remote !== viewModeRef.current) {
       setViewModeRaw(remote);
     }
   }, [user?.preferences?.calendarViewMode]);
@@ -184,6 +197,9 @@ export function CalendarView({
   const savePreferences = useSavePreferences();
   const setViewMode = React.useCallback(
     (mode: CalendarViewMode) => {
+      // Mark the user as having interacted so a late /auth/me push
+      // can't clobber this pick (see the seed effect for context).
+      userInteractedRef.current = true;
       setViewModeRaw(mode);
       storeViewMode(mode);
       // Also write the preference back to the server so the choice

@@ -24,6 +24,13 @@ export const loginSchema = z.object({
 
 /**
  * Schema for user preferences
+ *
+ * Zod's default mode strips unknown keys, so any field not declared
+ * here is silently dropped from PATCH /auth/me even when the client
+ * sends it. Keep this in sync with `UserPreferences` in
+ * `packages/types/src/user.ts` — missing keys here are real bugs
+ * (the symptom is "client picks a value, server returns success,
+ * but the field never lands in the DB").
  */
 export const userPreferencesSchema = z.object({
   themeMode: z.enum(["light", "dark", "system"]),
@@ -32,6 +39,8 @@ export const userPreferencesSchema = z.object({
   workStartHour: z.number().int().min(0).max(23).optional(),
   workEndHour: z.number().int().min(0).max(23).optional(),
   homeTab: z.enum(["board", "tasks", "calendar"]).optional(),
+  weekStartsOn: z.union([z.literal(0), z.literal(1)]).optional(),
+  calendarViewMode: z.enum(["day", "3-day", "week", "month"]).optional(),
 });
 
 /**
