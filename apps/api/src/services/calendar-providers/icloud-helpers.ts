@@ -14,6 +14,11 @@ export interface VCalendarComponent {
   rrule?: string;
   status?: string;
   etag?: string;
+  // Parsed from the existing VEVENT so we can bump it on the next
+  // PUT — required for RFC 5546 update semantics. Kept as a number
+  // so `+1` stays trivial; `parseVCalendar` defaults to undefined
+  // when the existing VEVENT didn't have SEQUENCE.
+  sequence?: number;
 }
 
 /**
@@ -98,6 +103,13 @@ export function parseVCalendar(icalData: string): VCalendarComponent | null {
       case 'STATUS':
         event.status = value;
         break;
+      case 'SEQUENCE': {
+        const n = parseInt(value, 10);
+        if (Number.isFinite(n) && n >= 0) {
+          event.sequence = n;
+        }
+        break;
+      }
     }
   }
 
@@ -119,13 +131,34 @@ export function mapCalDavStatus(status?: string): 'confirmed' | 'tentative' | 'c
 }
 
 /**
- * Parse a CalDAV event object into our ExternalEvent format
+ * Parse a CalDAV event object into our ExternalEvent format.
+ *
+ * The update path needs access to the raw `VCalendarComponent` too
+ * (for SEQUENCE — iCloud-specific, not a cross-provider concept) so
+ * we expose `parseCalDavEventWithRaw`. `parseCalDavEvent` is the
+ * thin wrapper used by the sync read path that doesn't care about
+ * sequence.
  */
-export function parseCalDavEvent(obj: DAVObject): ExternalEvent | null {
+export function parseCalDavEventWithRaw(
+  obj: DAVObject
+): { event: ExternalEvent; raw: VCalendarComponent } | null {
   if (!obj.data) return null;
 
-  const event = parseVCalendar(obj.data);
-  if (!event?.uid || !event.dtstart) return null;
+  const raw = parseVCalendar(obj.data);
+  if (!raw?.uid || !raw.dtstart) return null;
+  const event = buildExternalEventFromComponent(obj, raw);
+  return event ? { event, raw } : null;
+}
+
+export function parseCalDavEvent(obj: DAVObject): ExternalEvent | null {
+  return parseCalDavEventWithRaw(obj)?.event ?? null;
+}
+
+function buildExternalEventFromComponent(
+  obj: DAVObject,
+  event: VCalendarComponent
+): ExternalEvent | null {
+  if (!event.uid || !event.dtstart) return null;
 
   const isAllDay = event.dtstart.length === 8;
   const startTime = parseICalDateTime(event.dtstart, isAllDay);
@@ -170,6 +203,16 @@ export function parseCalDavEvent(obj: DAVObject): ExternalEvent | null {
  * This is enough for create/update — iCloud accepts a full VCALENDAR
  * envelope around a single VEVENT. We don't write timezone components
  * (VTIMEZONE) because iCloud accepts UTC dateTimes via the Z suffix.
+ *
+ * IMPORTANT — RRULE preservation: CalDAV PUT replaces the entire
+ * calendar object (RFC 4791 §5.3.2). Any property the existing
+ * VEVENT had but we omit on PUT is treated as deleted. Callers
+ * updating a recurring event MUST pass `rrule` (the raw RRULE value
+ * read back from `parseVCalendar`) so the series isn't silently
+ * destroyed. Same goes for `sequence` — RFC 5546 §3.1.4 says
+ * downstream clients can ignore an update whose SEQUENCE didn't
+ * increment, so iOS Calendar / shared participants may stay stale
+ * unless we bump it.
  */
 export function buildVCalendar(input: {
   uid: string;
@@ -179,6 +222,8 @@ export function buildVCalendar(input: {
   startTime: Date;
   endTime: Date;
   isAllDay: boolean;
+  rrule?: string | null;
+  sequence?: number | null;
 }): string {
   const lines: string[] = [
     'BEGIN:VCALENDAR',
@@ -202,6 +247,16 @@ export function buildVCalendar(input: {
   } else {
     lines.push(`DTSTART:${formatICalUtc(input.startTime)}`);
     lines.push(`DTEND:${formatICalUtc(input.endTime)}`);
+  }
+  // RRULE values are technically structured (FREQ=...;BYDAY=...) but
+  // we treat them opaquely — the server gave them to us, we hand
+  // them back unchanged. No escaping: RRULE values use literal `;`
+  // and `=` as syntax, not text content.
+  if (input.rrule) {
+    lines.push(`RRULE:${input.rrule}`);
+  }
+  if (typeof input.sequence === 'number') {
+    lines.push(`SEQUENCE:${input.sequence}`);
   }
   lines.push('END:VEVENT', 'END:VCALENDAR');
   // CRLF line endings per RFC 5545.
