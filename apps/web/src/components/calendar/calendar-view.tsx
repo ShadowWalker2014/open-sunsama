@@ -235,7 +235,10 @@ export function CalendarView({
     return m;
   }, [calendarAccounts]);
   const PROVIDERS_WITH_WRITE_BACK = React.useMemo(
-    () => new Set(["google"]),
+    // iCloud is read-only here — its provider class doesn't yet
+    // implement createEvent/updateEvent/deleteEvent and CalDAV's
+    // .ics PUT path is more involved than the OAuth providers.
+    () => new Set(["google", "outlook"]),
     []
   );
   const calendarReadOnlyById = React.useMemo(() => {

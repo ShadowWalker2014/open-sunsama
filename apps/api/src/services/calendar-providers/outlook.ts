@@ -6,8 +6,13 @@ import type {
   OAuthTokens,
   ExternalCalendar,
   ExternalEvent,
+  EventPatch,
   SyncOptions,
   SyncResult,
+} from './index';
+import {
+  ProviderAuthError,
+  ProviderEventNotFoundError,
 } from './index';
 import {
   getClientId,
@@ -15,6 +20,7 @@ import {
   parseOutlookEvent,
   OUTLOOK_COLORS,
   type OutlookCalendar,
+  type OutlookEvent,
   type OutlookEventsResponse,
   type OutlookTokenResponse,
   type OutlookCalendarListResponse,
@@ -205,4 +211,247 @@ export class OutlookCalendarProvider implements CalendarProvider {
       nextSyncToken: deltaLink,
     };
   }
+
+  async createEvent(
+    accessToken: string,
+    calendarId: string,
+    payload: EventPatch
+  ): Promise<ExternalEvent> {
+    if (
+      !payload.title ||
+      payload.startTime === undefined ||
+      payload.endTime === undefined
+    ) {
+      throw new Error('createEvent requires title, startTime, and endTime');
+    }
+
+    const body = buildOutlookEventBody({
+      title: payload.title,
+      description: payload.description,
+      location: payload.location,
+      startTime: payload.startTime,
+      endTime: payload.endTime,
+      isAllDay: payload.isAllDay,
+      timezone: payload.timezone,
+    });
+
+    const response = await fetch(
+      `${GRAPH_API}/me/calendars/${encodeURIComponent(calendarId)}/events`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      }
+    );
+
+    if (!response.ok) {
+      throw await mapOutlookError('createEvent', response);
+    }
+
+    const data = (await response.json()) as OutlookEvent;
+    const parsed = parseOutlookEvent(data);
+    if (!parsed) {
+      throw new Error('Outlook returned an event that could not be parsed');
+    }
+    return parsed;
+  }
+
+  async updateEvent(
+    accessToken: string,
+    calendarId: string,
+    eventId: string,
+    patch: EventPatch
+  ): Promise<ExternalEvent> {
+    const body: Record<string, unknown> = {};
+
+    if (patch.title !== undefined) {
+      body.subject = patch.title;
+    }
+    if (patch.description !== undefined) {
+      body.body = {
+        contentType: 'text',
+        content: patch.description ?? '',
+      };
+    }
+    if (patch.location !== undefined) {
+      body.location = { displayName: patch.location ?? '' };
+    }
+    if (patch.startTime !== undefined || patch.endTime !== undefined) {
+      if (patch.startTime === undefined || patch.endTime === undefined) {
+        throw new Error('startTime and endTime must be supplied together');
+      }
+      const tz = patch.timezone ?? 'UTC';
+      if (patch.isAllDay) {
+        // Microsoft Graph all-day: isAllDay=true, dateTime at 00:00
+        // of the date, timeZone fixed to UTC.
+        body.isAllDay = true;
+        body.start = {
+          dateTime: toUtcDateOnlyDateTime(patch.startTime),
+          timeZone: 'UTC',
+        };
+        body.end = {
+          dateTime: toUtcDateOnlyDateTime(patch.endTime),
+          timeZone: 'UTC',
+        };
+      } else {
+        body.isAllDay = false;
+        body.start = {
+          dateTime: stripIsoZ(patch.startTime),
+          timeZone: tz,
+        };
+        body.end = {
+          dateTime: stripIsoZ(patch.endTime),
+          timeZone: tz,
+        };
+      }
+    }
+
+    // Note: PATCH /me/events/{id} works regardless of which calendar
+    // the event lives on — Outlook resolves by event id alone. We
+    // pass the calendar id only for symmetry with Google's URL shape;
+    // it's not actually used in the path.
+    void calendarId;
+    const response = await fetch(
+      `${GRAPH_API}/me/events/${encodeURIComponent(eventId)}`,
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      }
+    );
+
+    if (!response.ok) {
+      throw await mapOutlookError('updateEvent', response);
+    }
+
+    const data = (await response.json()) as OutlookEvent;
+    const parsed = parseOutlookEvent(data);
+    if (!parsed) {
+      throw new Error('Outlook returned an event that could not be parsed');
+    }
+    return parsed;
+  }
+
+  async deleteEvent(
+    accessToken: string,
+    calendarId: string,
+    eventId: string
+  ): Promise<void> {
+    void calendarId; // Outlook resolves by event id alone (see updateEvent).
+    const response = await fetch(
+      `${GRAPH_API}/me/events/${encodeURIComponent(eventId)}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    // 404 / 410 = already gone — treat as success.
+    if (!response.ok && response.status !== 404 && response.status !== 410) {
+      throw await mapOutlookError('deleteEvent', response);
+    }
+  }
+}
+
+/**
+ * Build the request body for Outlook create/update. We don't reuse
+ * the update path's incremental builder because create requires the
+ * full payload (subject + start + end at minimum), and the all-day
+ * handling differs slightly from a partial PATCH.
+ */
+function buildOutlookEventBody(input: {
+  title: string;
+  description?: string | null;
+  location?: string | null;
+  startTime: Date;
+  endTime: Date;
+  isAllDay?: boolean;
+  timezone?: string | null;
+}): Record<string, unknown> {
+  const body: Record<string, unknown> = {
+    subject: input.title,
+  };
+  if (input.description !== undefined) {
+    body.body = {
+      contentType: 'text',
+      content: input.description ?? '',
+    };
+  }
+  if (input.location !== undefined) {
+    body.location = { displayName: input.location ?? '' };
+  }
+  body.isAllDay = !!input.isAllDay;
+  if (input.isAllDay) {
+    body.start = {
+      dateTime: toUtcDateOnlyDateTime(input.startTime),
+      timeZone: 'UTC',
+    };
+    body.end = {
+      dateTime: toUtcDateOnlyDateTime(input.endTime),
+      timeZone: 'UTC',
+    };
+  } else {
+    const tz = input.timezone ?? 'UTC';
+    body.start = {
+      dateTime: stripIsoZ(input.startTime),
+      timeZone: tz,
+    };
+    body.end = {
+      dateTime: stripIsoZ(input.endTime),
+      timeZone: tz,
+    };
+  }
+  return body;
+}
+
+/**
+ * Microsoft Graph rejects ISO strings with a `Z` suffix when a
+ * timeZone is supplied separately — it expects the local-naive
+ * dateTime ("2026-05-03T10:00:00.0000000") with the `timeZone` field
+ * carrying the IANA name. Strip the Z and any trailing offset so
+ * Graph treats the dateTime as wall-clock in the given zone.
+ */
+function stripIsoZ(d: Date): string {
+  const iso = d.toISOString();
+  // "2026-05-03T10:00:00.000Z" → "2026-05-03T10:00:00.000"
+  return iso.endsWith('Z') ? iso.slice(0, -1) : iso;
+}
+
+/**
+ * For all-day events, Microsoft Graph wants `dateTime` at
+ * "YYYY-MM-DDT00:00:00.0000000" with timeZone="UTC". The Date arg
+ * is expected to already be UTC midnight per the iCal convention.
+ */
+function toUtcDateOnlyDateTime(d: Date): string {
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}T00:00:00.0000000`;
+}
+
+/**
+ * Map a non-2xx response from Microsoft Graph to the right typed
+ * error so the route layer can produce a clean toast (matching the
+ * Google provider's pattern).
+ */
+async function mapOutlookError(
+  op: string,
+  response: Response
+): Promise<Error> {
+  if (response.status === 404 || response.status === 410) {
+    return new ProviderEventNotFoundError('outlook');
+  }
+  if (response.status === 401 || response.status === 403) {
+    return new ProviderAuthError('outlook');
+  }
+  const text = await response.text();
+  return new Error(`Outlook ${op} failed (${response.status}): ${text}`);
 }
