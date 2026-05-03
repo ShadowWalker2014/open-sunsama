@@ -28,6 +28,8 @@ import {
 } from '../services/calendar-sync.js';
 import {
   ProviderReadOnlyError,
+  ProviderEventNotFoundError,
+  ProviderAuthError,
   type EventPatch,
 } from '../services/calendar-providers/index.js';
 import { publishEvent } from '../lib/websocket/index.js';
@@ -317,6 +319,32 @@ calendarEventsRouter.post(
           409
         );
       }
+      if (err instanceof ProviderEventNotFoundError) {
+        return c.json(
+          {
+            success: false,
+            error: {
+              code: 'CALENDAR_OUT_OF_SYNC',
+              message:
+                'This calendar is out of sync. Run "Reset & re-sync" in Settings.',
+            },
+          },
+          410
+        );
+      }
+      if (err instanceof ProviderAuthError) {
+        return c.json(
+          {
+            success: false,
+            error: {
+              code: 'PROVIDER_AUTH_FAILED',
+              message:
+                'Your calendar connection needs to be re-authorized. Reconnect the account in Settings.',
+            },
+          },
+          401
+        );
+      }
       const message = err instanceof Error ? err.message : 'Unknown error';
       return c.json(
         {
@@ -499,6 +527,42 @@ calendarEventsRouter.patch(
           409
         );
       }
+      if (err instanceof ProviderEventNotFoundError) {
+        // The event no longer exists upstream — most likely deleted in
+        // the provider's UI, or a residue of pre-PR-#21 attribution
+        // corruption pointing our local row at a calendar/event id
+        // pair that doesn't match Google. Either way, the local row
+        // is stale; remove it so the next refetch hides it instead of
+        // surfacing the same broken event again. Return 410 with a
+        // clean, actionable message.
+        await db
+          .delete(calendarEvents)
+          .where(eq(calendarEvents.id, eventId));
+        return c.json(
+          {
+            success: false,
+            error: {
+              code: 'EVENT_OUT_OF_SYNC',
+              message:
+                'This event is out of sync with your calendar. Refresh or run "Reset & re-sync" in Settings.',
+            },
+          },
+          410
+        );
+      }
+      if (err instanceof ProviderAuthError) {
+        return c.json(
+          {
+            success: false,
+            error: {
+              code: 'PROVIDER_AUTH_FAILED',
+              message:
+                'Your calendar connection needs to be re-authorized. Reconnect the account in Settings.',
+            },
+          },
+          401
+        );
+      }
       const message = err instanceof Error ? err.message : 'Unknown error';
       return c.json(
         {
@@ -626,6 +690,19 @@ calendarEventsRouter.delete(
             error: { code: 'PROVIDER_READ_ONLY', message: err.message },
           },
           409
+        );
+      }
+      if (err instanceof ProviderAuthError) {
+        return c.json(
+          {
+            success: false,
+            error: {
+              code: 'PROVIDER_AUTH_FAILED',
+              message:
+                'Your calendar connection needs to be re-authorized. Reconnect the account in Settings.',
+            },
+          },
+          401
         );
       }
       const message = err instanceof Error ? err.message : 'Unknown error';
