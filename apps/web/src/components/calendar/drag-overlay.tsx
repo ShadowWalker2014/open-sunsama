@@ -1,7 +1,7 @@
 import * as React from "react";
 import { format } from "date-fns";
-import { Clock, Calendar } from "lucide-react";
-import type { Task, TimeBlock } from "@open-sunsama/types";
+import { Clock, Calendar, CalendarDays } from "lucide-react";
+import type { Task, TimeBlock, CalendarEvent } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/utils";
 import type { DragState, DropPreview } from "@/hooks/useCalendarDnd";
@@ -56,6 +56,16 @@ export function DragOverlay({
           dragState.block && (
             <BlockDragPreview
               block={dragState.block}
+              dropPreview={dropPreview}
+              dragType={dragState.type}
+            />
+          )}
+        {(dragState.type === "move-event" ||
+          dragState.type === "resize-event-top" ||
+          dragState.type === "resize-event-bottom") &&
+          dragState.event && (
+            <EventDragPreview
+              event={dragState.event}
               dropPreview={dropPreview}
               dragType={dragState.type}
             />
@@ -178,6 +188,69 @@ function BlockDragPreview({ block, dropPreview, dragType }: BlockDragPreviewProp
           <div
             className="flex items-center gap-2 text-xs font-medium"
             style={{ color: block.color ? "white" : "hsl(var(--primary))" }}
+          >
+            <Calendar className="h-3 w-3" />
+            <span>
+              {format(dropPreview.startTime, "h:mm")} -{" "}
+              {format(dropPreview.endTime, "h:mm a")}
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Preview card for dragging or resizing an external calendar event.
+ * Mirrors `BlockDragPreview` but tinted with the source-calendar's
+ * color so the user can confirm at a glance which calendar they're
+ * editing.
+ */
+interface EventDragPreviewProps {
+  event: CalendarEvent;
+  dropPreview: DropPreview | null;
+  dragType: "move-event" | "resize-event-top" | "resize-event-bottom";
+}
+
+function EventDragPreview({
+  event,
+  dropPreview,
+  dragType,
+}: EventDragPreviewProps) {
+  const isResizing =
+    dragType === "resize-event-top" || dragType === "resize-event-bottom";
+  const color = event.calendar?.color ?? "#6B7280";
+
+  return (
+    <div
+      className={cn(
+        "w-56 rounded-lg border bg-card shadow-xl",
+        "animate-in fade-in-0 zoom-in-95 duration-150"
+      )}
+      style={{ borderColor: color }}
+    >
+      <div className="p-3">
+        <div className="flex items-center gap-1.5">
+          <CalendarDays className="h-3 w-3 flex-shrink-0" style={{ color }} />
+          <p className="text-sm font-medium truncate">{event.title}</p>
+        </div>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {isResizing ? "Resizing event…" : "Moving event…"}
+        </p>
+      </div>
+
+      {dropPreview && (
+        <div
+          className="border-t px-3 py-2"
+          style={{
+            backgroundColor: `${color}1a`,
+            borderColor: `${color}33`,
+          }}
+        >
+          <div
+            className="flex items-center gap-2 text-xs font-medium"
+            style={{ color }}
           >
             <Calendar className="h-3 w-3" />
             <span>

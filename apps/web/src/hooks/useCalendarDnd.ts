@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import type { Task, TimeBlock } from "@open-sunsama/types";
+import type { Task, TimeBlock, CalendarEvent } from "@open-sunsama/types";
 import type { DragState, DropPreview, CalendarDndOptions } from "./calendar-dnd-types";
 import {
   calculateTimeFromY,
@@ -76,6 +76,45 @@ export function useCalendarDnd(
   );
 
   /**
+   * Start dragging an external calendar event to a new time slot.
+   * Mirrors `startBlockDrag` — the move math doesn't care whether the
+   * draggable thing is a TimeBlock or a CalendarEvent, only its
+   * current start/end pair.
+   */
+  const startEventDrag = useCallback(
+    (event: CalendarEvent, startY: number) => {
+      setDragState({
+        type: "move-event",
+        eventId: event.id,
+        event,
+        startY,
+        currentY: startY,
+        initialStartTime: new Date(event.startTime),
+        initialEndTime: new Date(event.endTime),
+      });
+    },
+    []
+  );
+
+  /**
+   * Start resizing an external calendar event from one of its edges.
+   */
+  const startEventResize = useCallback(
+    (event: CalendarEvent, edge: "top" | "bottom", startY: number) => {
+      setDragState({
+        type: edge === "top" ? "resize-event-top" : "resize-event-bottom",
+        eventId: event.id,
+        event,
+        startY,
+        currentY: startY,
+        initialStartTime: new Date(event.startTime),
+        initialEndTime: new Date(event.endTime),
+      });
+    },
+    []
+  );
+
+  /**
    * Start resizing a time block
    */
   const startBlockResize = useCallback(
@@ -141,6 +180,37 @@ export function useCalendarDnd(
           }
           break;
         }
+        case "move-event": {
+          if (dragState.event) {
+            const deltaY = currentY - dragState.startY;
+            // calculateMovePreview reads only `startTime` / `endTime`
+            // off its second arg, so a CalendarEvent satisfies its
+            // structural contract.
+            const preview = calculateMovePreview(
+              deltaY,
+              dragState.event as unknown as TimeBlock,
+              selectedDate
+            );
+            setDropPreview(preview);
+          }
+          break;
+        }
+        case "resize-event-top":
+        case "resize-event-bottom": {
+          if (dragState.event) {
+            const deltaY = currentY - dragState.startY;
+            const edge =
+              dragState.type === "resize-event-top" ? "top" : "bottom";
+            const preview = calculateResizePreview(
+              deltaY,
+              dragState.event as unknown as TimeBlock,
+              edge,
+              selectedDate
+            );
+            setDropPreview(preview);
+          }
+          break;
+        }
       }
     },
     [dragState, selectedDate]
@@ -174,6 +244,17 @@ export function useCalendarDnd(
         case "resize-bottom":
           if (dragState.blockId) {
             options?.onBlockResize?.(dragState.blockId, startTime, endTime);
+          }
+          break;
+        case "move-event":
+          if (dragState.eventId) {
+            options?.onEventMove?.(dragState.eventId, startTime, endTime);
+          }
+          break;
+        case "resize-event-top":
+        case "resize-event-bottom":
+          if (dragState.eventId) {
+            options?.onEventResize?.(dragState.eventId, startTime, endTime);
           }
           break;
       }
@@ -211,6 +292,8 @@ export function useCalendarDnd(
     startTaskDrag,
     startBlockDrag,
     startBlockResize,
+    startEventDrag,
+    startEventResize,
     updateDrag,
     endDrag,
     cancelDrag,
