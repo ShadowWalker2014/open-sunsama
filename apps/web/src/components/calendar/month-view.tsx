@@ -43,15 +43,19 @@ function bucketEntriesForDay(
 ): DayCellEntries {
   const dayStart = startOfDay(date);
   const dayEnd = endOfDay(date);
-  const targetCalendarDate = format(date, "yyyy-MM-dd");
+  // All-day events are stored at UTC midnight per the iCal convention.
+  // Compare YYYY-MM-DD strings derived using the same calendar-date
+  // semantics on both sides: local components for the cell, UTC
+  // components for the event start/end.
+  const targetCalendarDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
   const dayEvents: CalendarEvent[] = [];
   for (const event of events) {
     const start = new Date(event.startTime);
     const end = new Date(event.endTime);
     if (event.isAllDay) {
-      const startDateStr = start.toISOString().slice(0, 10);
-      const endDateStr = end.toISOString().slice(0, 10);
+      const startDateStr = `${start.getUTCFullYear()}-${String(start.getUTCMonth() + 1).padStart(2, "0")}-${String(start.getUTCDate()).padStart(2, "0")}`;
+      const endDateStr = `${end.getUTCFullYear()}-${String(end.getUTCMonth() + 1).padStart(2, "0")}-${String(end.getUTCDate()).padStart(2, "0")}`;
       if (
         targetCalendarDate >= startDateStr &&
         targetCalendarDate < endDateStr
@@ -170,12 +174,23 @@ export function MonthView({
             const hidden = Math.max(0, totalEntries - visible.length);
 
             return (
-              <button
+              // NOTE: must NOT be a <button> — it contains nested entry
+              // <button>s (and putting an interactive element inside a
+              // button is invalid HTML and triggers a React hydration
+              // warning). Use role="button" + keyboard handlers instead.
+              <div
                 key={day.toISOString()}
                 onClick={() => onDayClick?.(day)}
-                type="button"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onDayClick?.(day);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
                 className={cn(
-                  "border-r border-b last:border-r-0 flex flex-col items-stretch text-left p-1.5 hover:bg-accent/30 transition-colors",
+                  "border-r border-b last:border-r-0 flex flex-col items-stretch text-left p-1.5 hover:bg-accent/30 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset",
                   !inCurrentMonth && "bg-muted/20",
                   weekend && inCurrentMonth && "bg-muted/10"
                 )}
@@ -231,7 +246,7 @@ export function MonthView({
                     </div>
                   )}
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>

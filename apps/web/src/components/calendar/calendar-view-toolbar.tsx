@@ -1,10 +1,16 @@
-import { format, isToday } from "date-fns";
+import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui";
 import type { TimeBlock, CalendarViewMode } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 
 interface CalendarViewToolbarProps {
+  /**
+   * The user's anchor date — also what `Today` resets to. The button only
+   * highlights when today is within the visible range, not just when
+   * `selectedDate === today` (which would feel wrong on the week / month
+   * view where the user expects "Today" to mean "today is on screen").
+   */
   selectedDate: Date;
   /**
    * The full window the calendar is displaying. For "day" mode this is
@@ -70,7 +76,7 @@ function describeRange(
 }
 
 export function CalendarViewToolbar({
-  selectedDate,
+  selectedDate: _selectedDate,
   rangeStart,
   rangeEnd,
   viewMode,
@@ -80,7 +86,15 @@ export function CalendarViewToolbar({
   onNextDay,
   onToday,
 }: CalendarViewToolbarProps) {
-  const isTodaySelected = isToday(selectedDate);
+  // "Today" is highlighted when today's date falls anywhere in the visible
+  // range — for day view that collapses back to "selectedDate is today",
+  // but for week / month it correctly stays lit while the user navigates
+  // around the current week / month.
+  const today = new Date();
+  const todayInRange = isWithinInterval(today, {
+    start: startOfDay(rangeStart),
+    end: endOfDay(rangeEnd),
+  });
   const { primary, secondary } = describeRange(rangeStart, rangeEnd, viewMode);
 
   return (
@@ -98,7 +112,7 @@ export function CalendarViewToolbar({
             <ChevronLeft className="h-5 w-5 sm:h-4 sm:w-4" />
           </Button>
           <Button
-            variant={isTodaySelected ? "default" : "outline"}
+            variant={todayInRange ? "default" : "outline"}
             onClick={onToday}
             className="min-w-[60px] sm:min-w-[70px] h-10 sm:h-9 text-sm"
           >

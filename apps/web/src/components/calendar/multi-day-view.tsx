@@ -55,7 +55,14 @@ function bucketEventsForDay(
 ): DayColumnEvents {
   const dayStart = startOfDay(date);
   const dayEnd = endOfDay(date);
-  const targetCalendarDate = format(date, "yyyy-MM-dd");
+  // All-day events follow the iCal convention: backend stores them at UTC
+  // midnight for the date the event covers. To compare apples-to-apples,
+  // we project the cell's *local calendar date* to a UTC-midnight string
+  // using the local Y/M/D components, then string-compare against the
+  // event's UTC-derived YYYY-MM-DD. Mixing local-format on one side and
+  // UTC-format on the other would silently drop events for users west
+  // of UTC at the day boundary.
+  const targetCalendarDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
   const timed: CalendarEvent[] = [];
   const allDay: CalendarEvent[] = [];
@@ -65,8 +72,8 @@ function bucketEventsForDay(
     const end = new Date(event.endTime);
 
     if (event.isAllDay) {
-      const startDateStr = start.toISOString().slice(0, 10);
-      const endDateStr = end.toISOString().slice(0, 10);
+      const startDateStr = `${start.getUTCFullYear()}-${String(start.getUTCMonth() + 1).padStart(2, "0")}-${String(start.getUTCDate()).padStart(2, "0")}`;
+      const endDateStr = `${end.getUTCFullYear()}-${String(end.getUTCMonth() + 1).padStart(2, "0")}-${String(end.getUTCDate()).padStart(2, "0")}`;
       if (
         targetCalendarDate >= startDateStr &&
         targetCalendarDate < endDateStr
@@ -114,7 +121,7 @@ function MultiDayEvent({
   return (
     <div
       data-external-event
-      className="absolute left-0.5 right-0.5 z-5 my-0.5 rounded border-l-[2px] cursor-pointer hover:brightness-90 transition-all overflow-hidden px-1 py-0.5"
+      className="absolute left-0.5 right-0.5 z-[5] my-0.5 rounded border-l-[2px] cursor-pointer hover:brightness-90 transition-all overflow-hidden px-1 py-0.5"
       style={{
         top: `${top}px`,
         height: `${Math.max(height - 2, 16)}px`,
@@ -242,6 +249,12 @@ export function MultiDayView({
   // Aggregate all-day events row across columns
   const hasAnyAllDay = dayBuckets.some((b) => b.allDay.length > 0);
 
+  // 7-column week view on a 360px phone leaves ~44px per column after the
+  // hour gutter — enough for a single-letter day label and a 2-digit date.
+  // 3-day view at the same width gets ~100px per column. Tighten typography
+  // on the narrow case so headers and event chips stay readable.
+  const isWeek = days.length >= 7;
+
   return (
     <div className={cn("flex h-full flex-col", className)}>
       {/* Day-of-week headers */}
@@ -255,24 +268,33 @@ export function MultiDayView({
             <div
               key={day.toISOString()}
               className={cn(
-                "flex-1 px-2 py-1.5 text-center border-r last:border-r-0",
+                "flex-1 px-1 sm:px-2 py-1.5 text-center border-r last:border-r-0 min-w-0",
                 today && "bg-primary/5",
                 weekend && !today && "bg-muted/30"
               )}
             >
               <p
                 className={cn(
-                  "text-[11px] uppercase tracking-wide",
+                  "uppercase tracking-wide",
+                  isWeek ? "text-[10px] sm:text-[11px]" : "text-[11px]",
                   today
                     ? "text-primary font-semibold"
                     : "text-muted-foreground"
                 )}
               >
-                {format(day, "EEE")}
+                {/* On the week view at narrow widths, show single-letter
+                    weekday (M T W T F S S) so headers don't overflow. */}
+                <span className={cn(isWeek && "sm:hidden")}>
+                  {format(day, "EEEEE")}
+                </span>
+                <span className={cn(isWeek ? "hidden sm:inline" : "")}>
+                  {format(day, "EEE")}
+                </span>
               </p>
               <p
                 className={cn(
-                  "text-base sm:text-lg font-semibold leading-tight",
+                  "font-semibold leading-tight",
+                  isWeek ? "text-sm sm:text-lg" : "text-base sm:text-lg",
                   today && "text-primary"
                 )}
               >
@@ -294,7 +316,7 @@ export function MultiDayView({
           {dayBuckets.map((bucket, i) => (
             <div
               key={days[i]!.toISOString()}
-              className="flex-1 border-r last:border-r-0 px-1 py-1 space-y-0.5 min-h-[28px]"
+              className="flex-1 border-r last:border-r-0 px-1 py-1 space-y-0.5 min-h-[28px] min-w-0"
             >
               {bucket.allDay.map((event) => {
                 const color = event.calendar?.color ?? "#6B7280";
@@ -366,7 +388,7 @@ export function MultiDayView({
                 <div
                   key={day.toISOString()}
                   className={cn(
-                    "flex-1 relative border-r last:border-r-0",
+                    "flex-1 relative border-r last:border-r-0 min-w-0",
                     today && "bg-primary/[0.02]",
                     weekend && !today && "bg-muted/20"
                   )}
@@ -374,14 +396,25 @@ export function MultiDayView({
                     height: `${(TIMELINE_END_HOUR - TIMELINE_START_HOUR + 1) * HOUR_HEIGHT}px`,
                   }}
                 >
-                  {/* Hour grid lines */}
+                  {/* Hour grid lines — drawn at the BOTTOM of each hour
+                      slot to match the single-day Timeline. Drawing at the
+                      top would offset the grid by one row from Timeline. */}
                   {hours.map((hour) => (
                     <div
                       key={hour}
-                      className="absolute left-0 right-0 border-b border-border/30"
+                      className="absolute left-0 right-0 border-b border-border/30 pointer-events-none"
                       style={{
-                        top: `${(hour - TIMELINE_START_HOUR) * HOUR_HEIGHT}px`,
-                        height: HOUR_HEIGHT,
+                        top: `${(hour - TIMELINE_START_HOUR + 1) * HOUR_HEIGHT}px`,
+                      }}
+                    />
+                  ))}
+                  {/* Half-hour grid lines — fainter, mid-hour. */}
+                  {hours.map((hour) => (
+                    <div
+                      key={`${hour}-half`}
+                      className="absolute left-0 right-0 border-b border-border/15 pointer-events-none"
+                      style={{
+                        top: `${(hour - TIMELINE_START_HOUR) * HOUR_HEIGHT + HOUR_HEIGHT / 2}px`,
                       }}
                     />
                   ))}

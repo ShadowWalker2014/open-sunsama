@@ -153,19 +153,27 @@ export function CalendarView({
       user?.preferences?.calendarViewMode ?? getStoredViewMode() ?? "day"
     );
   });
-  // If the user preference loads in later (e.g. on first /auth/me arrival),
-  // sync into local state. This intentionally won't override user-driven
-  // changes that happened after mount because we only run when the
-  // server-canonical value arrives.
+  // If the server preference loads *after* mount (typical: /auth/me
+  // resolves shortly after the first paint), seed it into local state
+  // exactly once. We use a ref to ensure subsequent local changes are
+  // never overwritten by a stale server value re-arriving — the user's
+  // intent always wins after they've interacted. The current viewMode
+  // is read via a ref so this effect's dep array can stay focused on
+  // the canonical server value.
+  const didSeedFromServerRef = React.useRef(false);
+  const viewModeRef = React.useRef(viewMode);
+  viewModeRef.current = viewMode;
   React.useEffect(() => {
+    if (didSeedFromServerRef.current) return;
     const remote = user?.preferences?.calendarViewMode;
-    if (remote && remote !== viewMode && getStoredViewMode() === null) {
+    if (!remote) return;
+    didSeedFromServerRef.current = true;
+    // Only override if the user hasn't already overridden via local
+    // storage on this device (otherwise their per-device choice stands).
+    if (getStoredViewMode() === null && remote !== viewModeRef.current) {
       setViewModeRaw(remote);
     }
-    // Intentionally omit `viewMode` from deps — we only want to react to
-    // the canonical server value arriving, not to user-driven local
-    // changes.
-  }, [user?.preferences?.calendarViewMode, viewMode]);
+  }, [user?.preferences?.calendarViewMode]);
 
   const setViewMode = React.useCallback((mode: CalendarViewMode) => {
     setViewModeRaw(mode);
