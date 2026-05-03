@@ -323,7 +323,9 @@ export async function upsertEvents(
 
   for (const slice of perCalendar) {
     for (const event of slice.events) {
-      const [existing] = await db
+      // Look up first in this slice's own calendar (the normal case
+      // for an incremental update on a steady-state account).
+      const [existingInSlice] = await db
         .select({ id: calendarEvents.id })
         .from(calendarEvents)
         .where(
@@ -334,7 +336,7 @@ export async function upsertEvents(
         )
         .limit(1);
 
-      if (existing) {
+      if (existingInSlice) {
         await db
           .update(calendarEvents)
           .set({
@@ -353,27 +355,74 @@ export async function upsertEvents(
             etag: event.etag,
             updatedAt: new Date(),
           })
-          .where(eq(calendarEvents.id, existing.id));
-      } else {
-        await db.insert(calendarEvents).values({
-          calendarId: slice.calendarId,
-          userId,
-          externalId: event.externalId,
-          title: event.title,
-          description: event.description,
-          location: event.location,
-          startTime: event.startTime,
-          endTime: event.endTime,
-          isAllDay: event.isAllDay,
-          timezone: event.timezone,
-          recurrenceRule: event.recurrenceRule,
-          recurringEventId: event.recurringEventId,
-          status: event.status,
-          responseStatus: event.responseStatus,
-          htmlLink: event.htmlLink,
-          etag: event.etag,
-        });
+          .where(eq(calendarEvents.id, existingInSlice.id));
+        continue;
       }
+
+      // Fallback: the event might already exist in our DB but
+      // attributed to a DIFFERENT calendar than the one it just
+      // arrived on. This happens when a row was misattributed by
+      // the legacy flat-array sync (see the PerCalendarSyncResult
+      // doc comment above) — the upstream calendar didn't change,
+      // we just stored it in the wrong bucket. Re-home rather than
+      // insert a duplicate. Scoped to this user — provider event ids
+      // are user-globally unique for Google/Outlook, and for iCloud
+      // a UID could in theory collide across calendars on the same
+      // account, but in practice doesn't (each VEVENT object has a
+      // unique UID per RFC 5545).
+      const [misattributed] = await db
+        .select({ id: calendarEvents.id, calendarId: calendarEvents.calendarId })
+        .from(calendarEvents)
+        .where(
+          and(
+            eq(calendarEvents.userId, userId),
+            eq(calendarEvents.externalId, event.externalId)
+          )
+        )
+        .limit(1);
+
+      if (misattributed) {
+        await db
+          .update(calendarEvents)
+          .set({
+            calendarId: slice.calendarId,
+            title: event.title,
+            description: event.description,
+            location: event.location,
+            startTime: event.startTime,
+            endTime: event.endTime,
+            isAllDay: event.isAllDay,
+            timezone: event.timezone,
+            recurrenceRule: event.recurrenceRule,
+            recurringEventId: event.recurringEventId,
+            status: event.status,
+            responseStatus: event.responseStatus,
+            htmlLink: event.htmlLink,
+            etag: event.etag,
+            updatedAt: new Date(),
+          })
+          .where(eq(calendarEvents.id, misattributed.id));
+        continue;
+      }
+
+      await db.insert(calendarEvents).values({
+        calendarId: slice.calendarId,
+        userId,
+        externalId: event.externalId,
+        title: event.title,
+        description: event.description,
+        location: event.location,
+        startTime: event.startTime,
+        endTime: event.endTime,
+        isAllDay: event.isAllDay,
+        timezone: event.timezone,
+        recurrenceRule: event.recurrenceRule,
+        recurringEventId: event.recurringEventId,
+        status: event.status,
+        responseStatus: event.responseStatus,
+        htmlLink: event.htmlLink,
+        etag: event.etag,
+      });
     }
   }
 }
