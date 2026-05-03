@@ -34,7 +34,7 @@ import {
   useUpdateCalendarEvent,
 } from "@/hooks/useCalendars";
 import { useMobileTouchDrag } from "./use-mobile-touch-drag";
-import { PROVIDERS_WITH_WRITE_BACK } from "@/lib/calendar-providers";
+import { isCalendarReadOnlyForUi } from "@/lib/calendar-providers";
 import {
   HOUR_HEIGHT,
   TIMELINE_START_HOUR,
@@ -159,23 +159,31 @@ export function MobileCalendarView({
   // External calendar events
   const { data: calendarEvents = [] } = useCalendarEvents(fromDate, toDate);
 
-  // Per-calendar editability for the detail sheet's read-only gate.
+  // Per-calendar editability + provider maps for the detail sheet
+  // (read-only gate + recurring-event disclosure copy).
   const { data: calendarsList = [] } = useCalendars();
   const { data: calendarAccounts = [] } = useCalendarAccounts();
+  const accountProviderById = React.useMemo(() => {
+    const m = new Map<string, string>();
+    for (const a of calendarAccounts) m.set(a.id, a.provider);
+    return m;
+  }, [calendarAccounts]);
   const calendarReadOnlyById = React.useMemo(() => {
-    const providerByAccount = new Map<string, string>();
-    for (const a of calendarAccounts) providerByAccount.set(a.id, a.provider);
     const m = new Map<string, boolean>();
     for (const c of calendarsList) {
-      const provider = providerByAccount.get(c.accountId);
-      const writable =
-        !!provider &&
-        PROVIDERS_WITH_WRITE_BACK.has(provider) &&
-        !c.isReadOnly;
-      m.set(c.id, !writable);
+      const provider = accountProviderById.get(c.accountId);
+      m.set(c.id, isCalendarReadOnlyForUi(provider, c.isReadOnly));
     }
     return m;
-  }, [calendarsList, calendarAccounts]);
+  }, [calendarsList, accountProviderById]);
+  const calendarProviderById = React.useMemo(() => {
+    const m = new Map<string, string>();
+    for (const c of calendarsList) {
+      const provider = accountProviderById.get(c.accountId);
+      if (provider) m.set(c.id, provider);
+    }
+    return m;
+  }, [calendarsList, accountProviderById]);
 
   // Long-press-to-drag for external events. Same write-back path the
   // desktop uses — useUpdateCalendarEvent handles optimistic update +
@@ -617,6 +625,11 @@ export function MobileCalendarView({
                 selectedExternalEvent.calendarId
               ) ?? true)
             : true
+        }
+        calendarProvider={
+          selectedExternalEvent
+            ? calendarProviderById.get(selectedExternalEvent.calendarId)
+            : undefined
         }
       />
     </div>

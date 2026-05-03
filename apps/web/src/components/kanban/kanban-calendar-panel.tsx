@@ -29,7 +29,7 @@ import {
   layoutOverlappingItems,
   type LayoutResult,
 } from "@/components/calendar/event-layout";
-import { PROVIDERS_WITH_WRITE_BACK } from "@/lib/calendar-providers";
+import { isCalendarReadOnlyForUi } from "@/lib/calendar-providers";
 import {
   useCalendarDnd,
   HOUR_HEIGHT,
@@ -80,23 +80,31 @@ export function KanbanCalendarPanel({
   const toDate = dayEnd.toISOString();
   const { data: calendarEvents = [] } = useCalendarEvents(fromDate, toDate);
 
-  // For the read-only-calendar gating in the detail sheet.
+  // For the read-only-calendar gating + recurring-event disclosure in
+  // the detail sheet.
   const { data: calendarsList = [] } = useCalendars();
   const { data: calendarAccounts = [] } = useCalendarAccounts();
+  const accountProviderById = React.useMemo(() => {
+    const m = new Map<string, string>();
+    for (const a of calendarAccounts) m.set(a.id, a.provider);
+    return m;
+  }, [calendarAccounts]);
   const calendarReadOnlyById = React.useMemo(() => {
-    const providerByAccount = new Map<string, string>();
-    for (const a of calendarAccounts) providerByAccount.set(a.id, a.provider);
     const m = new Map<string, boolean>();
     for (const c of calendarsList) {
-      const provider = providerByAccount.get(c.accountId);
-      const writable =
-        !!provider &&
-        PROVIDERS_WITH_WRITE_BACK.has(provider) &&
-        !c.isReadOnly;
-      m.set(c.id, !writable);
+      const provider = accountProviderById.get(c.accountId);
+      m.set(c.id, isCalendarReadOnlyForUi(provider, c.isReadOnly));
     }
     return m;
-  }, [calendarsList, calendarAccounts]);
+  }, [calendarsList, accountProviderById]);
+  const calendarProviderById = React.useMemo(() => {
+    const m = new Map<string, string>();
+    for (const c of calendarsList) {
+      const provider = accountProviderById.get(c.accountId);
+      if (provider) m.set(c.id, provider);
+    }
+    return m;
+  }, [calendarsList, accountProviderById]);
 
   // External-event detail sheet state — opens when the user clicks a
   // calendar event in the panel. Self-contained inside the panel so the
@@ -523,6 +531,11 @@ export function KanbanCalendarPanel({
                 selectedExternalEvent.calendarId
               ) ?? true)
             : true
+        }
+        calendarProvider={
+          selectedExternalEvent
+            ? calendarProviderById.get(selectedExternalEvent.calendarId)
+            : undefined
         }
       />
     </div>

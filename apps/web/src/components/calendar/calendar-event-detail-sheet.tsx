@@ -58,6 +58,16 @@ interface CalendarEventDetailSheetProps {
    * calendars, holidays, etc.).
    */
   calendarReadOnly?: boolean;
+  /**
+   * Provider name (e.g. "google", "outlook", "icloud") for the
+   * event's calendar — used to branch the recurring-event
+   * disclosure copy. Google and Outlook treat a PATCH on an
+   * instance id as an exception (this instance only), but iCloud's
+   * CalDAV PUT replaces the whole VEVENT including RRULE → the
+   * change hits the entire series. Without this prop the
+   * disclosure would lie to iCloud users.
+   */
+  calendarProvider?: string;
 }
 
 function hexToRgba(hex: string, alpha: number): string {
@@ -194,6 +204,7 @@ export function CalendarEventDetailSheet({
   rangeFrom,
   rangeTo,
   calendarReadOnly = false,
+  calendarProvider,
 }: CalendarEventDetailSheetProps) {
   // Render nothing until first open so the sheet doesn't allocate DOM
   // before a user actually clicks an event.
@@ -382,30 +393,50 @@ export function CalendarEventDetailSheet({
 
           {event && (
             <div className="mt-6 space-y-5">
-              {/* Recurring-event disclosure. Edits and deletes from
-                  this sheet apply to THIS instance only — Google and
-                  Outlook both interpret a PATCH/DELETE on an instance
-                  id as an exception, not a series modification. We
-                  surface the badge plus a one-line note so users
-                  aren't surprised when the next occurrence still
-                  shows the old title or still exists after delete. */}
-              {(event.recurringEventId || event.recurrenceRule) && (
-                <div className="flex items-start gap-2 rounded-md border border-dashed border-border/60 bg-muted/30 px-3 py-2">
-                  <Repeat
-                    className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground"
-                    aria-hidden
-                  />
-                  <div className="text-xs">
-                    <p className="font-medium text-foreground/80">
-                      Recurring event · this instance
-                    </p>
-                    <p className="mt-0.5 text-muted-foreground">
-                      Changes here apply to this occurrence only. To
-                      edit the whole series, use the calendar provider.
-                    </p>
+              {/* Recurring-event disclosure. Behavior diverges by
+                  provider:
+                    - Google / Outlook: PATCH/DELETE on an instance id
+                      creates an exception → "this instance only".
+                    - iCloud (CalDAV): PUT replaces the master VEVENT
+                      including RRULE → "this entire series". The
+                      copy is amber/warning-tinted because the
+                      blast radius is bigger than the user might
+                      expect from a single-event UI affordance. */}
+              {(event.recurringEventId || event.recurrenceRule) &&
+                (calendarProvider === "icloud" ? (
+                  <div className="flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2">
+                    <Repeat
+                      className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-amber-600 dark:text-amber-400"
+                      aria-hidden
+                    />
+                    <div className="text-xs">
+                      <p className="font-medium text-amber-700 dark:text-amber-300">
+                        Recurring event · entire series
+                      </p>
+                      <p className="mt-0.5 text-amber-700/80 dark:text-amber-300/80">
+                        iCloud doesn't support per-instance edits —
+                        any change here applies to every occurrence.
+                        To edit just one, use the iCloud Calendar app.
+                      </p>
+                    </div>
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="flex items-start gap-2 rounded-md border border-dashed border-border/60 bg-muted/30 px-3 py-2">
+                    <Repeat
+                      className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground"
+                      aria-hidden
+                    />
+                    <div className="text-xs">
+                      <p className="font-medium text-foreground/80">
+                        Recurring event · this instance
+                      </p>
+                      <p className="mt-0.5 text-muted-foreground">
+                        Changes here apply to this occurrence only. To
+                        edit the whole series, use the calendar provider.
+                      </p>
+                    </div>
+                  </div>
+                ))}
               {isEditing && editState ? (
                 <EditForm
                   state={editState}
