@@ -5,19 +5,36 @@ import {
   subDays,
   startOfDay,
   endOfDay,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  addWeeks,
+  subWeeks,
+  addMonths,
+  subMonths,
 } from "date-fns";
-import type { Task, TimeBlock, CalendarEvent } from "@open-sunsama/types";
+import type {
+  Task,
+  TimeBlock,
+  CalendarEvent,
+  CalendarViewMode,
+} from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import {
   useTasks,
   useTimeBlocksForDate,
+  useTimeBlocksForDateRange,
   useCreateTimeBlock,
   useMoveTimeBlock,
   useCascadeResizeTimeBlock,
 } from "@/hooks";
+import { useAuth } from "@/hooks/useAuth";
 import { useCalendarEvents } from "@/hooks/useCalendars";
 import { useCalendarDnd } from "@/hooks/useCalendarDnd";
 import { Timeline } from "./timeline";
+import { MultiDayView } from "./multi-day-view";
+import { MonthView } from "./month-view";
 import { UnscheduledTasksPanel } from "./unscheduled-tasks";
 import { DragOverlay } from "./drag-overlay";
 import { CalendarViewToolbar } from "./calendar-view-toolbar";
@@ -26,6 +43,78 @@ import {
   AddTaskModal,
   prefetchAddTaskModal,
 } from "@/components/kanban/add-task-modal.lazy";
+
+/**
+ * Persist the calendar view mode in localStorage so the user's choice
+ * survives across reloads even before the server-side preference write
+ * lands. We also seed from `user.preferences.calendarViewMode` if it's
+ * set so the choice can flow across devices via the canonical
+ * preferences sync path.
+ */
+const VIEW_MODE_STORAGE_KEY = "open_sunsama_calendar_view_mode";
+
+function getStoredViewMode(): CalendarViewMode | null {
+  if (typeof window === "undefined") return null;
+  const v = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+  if (v === "day" || v === "3-day" || v === "week" || v === "month") return v;
+  return null;
+}
+
+function storeViewMode(mode: CalendarViewMode): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, mode);
+  } catch {
+    // ignore quota errors
+  }
+}
+
+interface VisibleRange {
+  start: Date;
+  end: Date;
+  /** Days the columns iterate over (day=1, 3-day=3, week=7, month=N) */
+  days: Date[];
+}
+
+function computeRange(
+  selectedDate: Date,
+  viewMode: CalendarViewMode,
+  weekStartsOn: 0 | 1
+): VisibleRange {
+  switch (viewMode) {
+    case "day": {
+      const start = startOfDay(selectedDate);
+      const end = endOfDay(selectedDate);
+      return { start, end, days: [start] };
+    }
+    case "3-day": {
+      const start = startOfDay(selectedDate);
+      const end = endOfDay(addDays(start, 2));
+      return {
+        start,
+        end,
+        days: [0, 1, 2].map((i) => addDays(start, i)),
+      };
+    }
+    case "week": {
+      const start = startOfWeek(selectedDate, { weekStartsOn });
+      const end = endOfWeek(selectedDate, { weekStartsOn });
+      return {
+        start,
+        end,
+        days: Array.from({ length: 7 }, (_, i) => addDays(start, i)),
+      };
+    }
+    case "month": {
+      // Server fetch should cover from the first visible cell (the prior
+      // month's tail in the first row) to the last visible cell (the
+      // next month's head in the last row).
+      const start = startOfWeek(startOfMonth(selectedDate), { weekStartsOn });
+      const end = endOfWeek(endOfMonth(selectedDate), { weekStartsOn });
+      return { start, end, days: [] /* not used by month grid */ };
+    }
+  }
+}
 
 interface CalendarViewProps {
   initialDate?: Date;
@@ -49,33 +138,75 @@ export function CalendarView({
   onTimeSlotClick,
   className,
 }: CalendarViewProps) {
-  // Selected date state
+  const { user } = useAuth();
+  const weekStartsOn = (user?.preferences?.weekStartsOn ?? 0) as 0 | 1;
+
+  // Selected date state — anchors the visible range
   const [selectedDate, setSelectedDate] = React.useState<Date>(() =>
     startOfDay(initialDate)
+  );
+
+  // View mode: prefer server-synced preference; fall back to localStorage,
+  // then to "day".
+  const [viewMode, setViewModeRaw] = React.useState<CalendarViewMode>(() => {
+    return (
+      user?.preferences?.calendarViewMode ?? getStoredViewMode() ?? "day"
+    );
+  });
+  // If the user preference loads in later (e.g. on first /auth/me arrival),
+  // sync into local state. This intentionally won't override user-driven
+  // changes that happened after mount because we only run when the
+  // server-canonical value arrives.
+  React.useEffect(() => {
+    const remote = user?.preferences?.calendarViewMode;
+    if (remote && remote !== viewMode && getStoredViewMode() === null) {
+      setViewModeRaw(remote);
+    }
+    // Intentionally omit `viewMode` from deps — we only want to react to
+    // the canonical server value arriving, not to user-driven local
+    // changes.
+  }, [user?.preferences?.calendarViewMode, viewMode]);
+
+  const setViewMode = React.useCallback((mode: CalendarViewMode) => {
+    setViewModeRaw(mode);
+    storeViewMode(mode);
+    // TODO: also write the preference back to the server via
+    // `useUpdateUser` once we want it to sync across devices. For now
+    // localStorage is enough for the in-session experience.
+  }, []);
+
+  // The window of days currently visible.
+  const range = React.useMemo(
+    () => computeRange(selectedDate, viewMode, weekStartsOn),
+    [selectedDate, viewMode, weekStartsOn]
   );
 
   // Format date for API calls
   const dateString = format(selectedDate, "yyyy-MM-dd");
 
-  // Fetch tasks for selected date (unscheduled = scheduled for this day but no time block)
+  // Fetch tasks for selected date (only used for unscheduled-tasks panel
+  // in day view). For multi-day / month we don't show that panel.
   const { data: allTasks = [], isLoading: isLoadingTasks } = useTasks({
     scheduledDate: dateString,
     limit: 200,
   });
 
-  // Fetch time blocks for selected date
-  const { data: timeBlocks = [], isLoading: isLoadingBlocks } =
+  // Fetch time blocks for the visible range. Day view stays on the
+  // single-day endpoint to avoid changing its cache key shape; multi-day
+  // and month use the range endpoint.
+  const { data: dayTimeBlocks = [], isLoading: isLoadingDayBlocks } =
     useTimeBlocksForDate(dateString);
+  const { data: rangeTimeBlocks = [], isLoading: isLoadingRangeBlocks } =
+    useTimeBlocksForDateRange(range.start, range.end);
+  const timeBlocks = viewMode === "day" ? dayTimeBlocks : rangeTimeBlocks;
+  const isLoadingBlocks =
+    viewMode === "day" ? isLoadingDayBlocks : isLoadingRangeBlocks;
 
-  // Fetch external calendar events for the selected day. We use the user's
-  // LOCAL day boundaries converted to UTC ISO strings — `format(...,
-  // "yyyy-MM-dd'T'HH:mm:ss")` was emitting a timezone-less string that the
-  // server then mis-interpreted as UTC, shifting the query window by the
-  // user's UTC offset and causing events near the day boundary to be
-  // dropped or wrongly attributed. `.toISOString()` yields the same local
-  // instant in UTC, which the server parses correctly.
-  const fromDate = startOfDay(selectedDate).toISOString();
-  const toDate = endOfDay(selectedDate).toISOString();
+  // Fetch external calendar events for the visible range. `.toISOString()`
+  // encodes the user's local-day boundary as a real UTC instant so the
+  // server parses it back to the same instant.
+  const fromDate = range.start.toISOString();
+  const toDate = range.end.toISOString();
   const { data: calendarEvents = [] } = useCalendarEvents(fromDate, toDate);
 
   // Mutations
@@ -131,9 +262,24 @@ export function CalendarView({
     },
   });
 
-  // Navigation handlers
-  const goToPreviousDay = () => setSelectedDate((d) => subDays(d, 1));
-  const goToNextDay = () => setSelectedDate((d) => addDays(d, 1));
+  // Navigation handlers — step size depends on view mode.
+  // Day → ±1 day; 3-Day → ±3 days; Week → ±1 week; Month → ±1 month.
+  const goToPreviousDay = React.useCallback(() => {
+    setSelectedDate((d) => {
+      if (viewMode === "day") return subDays(d, 1);
+      if (viewMode === "3-day") return subDays(d, 3);
+      if (viewMode === "week") return subWeeks(d, 1);
+      return subMonths(d, 1); // "month"
+    });
+  }, [viewMode]);
+  const goToNextDay = React.useCallback(() => {
+    setSelectedDate((d) => {
+      if (viewMode === "day") return addDays(d, 1);
+      if (viewMode === "3-day") return addDays(d, 3);
+      if (viewMode === "week") return addWeeks(d, 1);
+      return addMonths(d, 1); // "month"
+    });
+  }, [viewMode]);
   const goToToday = () => setSelectedDate(startOfDay(new Date()));
 
   // Mouse handlers for drag
@@ -272,55 +418,101 @@ export function CalendarView({
     []
   );
 
+  // When the user clicks a day cell in month view, switch to day view
+  // anchored on that date — common UX pattern (Google / Outlook).
+  const handleDayCellClick = React.useCallback((date: Date) => {
+    setSelectedDate(startOfDay(date));
+    setViewMode("day");
+  }, [setViewMode]);
+
   return (
     <div className={cn("flex h-full flex-col", className)}>
-      {/* Header / Toolbar - Responsive */}
+      {/* Header / Toolbar */}
       <CalendarViewToolbar
         selectedDate={selectedDate}
+        rangeStart={range.start}
+        rangeEnd={range.end}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
         timeBlocks={timeBlocks}
         onPreviousDay={goToPreviousDay}
         onNextDay={goToNextDay}
         onToday={goToToday}
       />
 
-      {/* Main Content - Two Panel Layout */}
+      {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Panel - Unscheduled Tasks */}
-        <UnscheduledTasksPanel
-          tasks={unscheduledTasks}
-          isLoading={isLoading}
-          scheduledDate={dateString}
-          onTaskDragStart={handleTaskDragStart}
-          {...(onTaskClick ? { onTaskClick } : {})}
-        />
+        {/* Day view keeps the unscheduled-tasks side panel + DnD-aware
+            Timeline. Multi-day and month views drop the panel — they're
+            read-mostly so the extra real estate goes to the calendar. */}
+        {viewMode === "day" && (
+          <>
+            <UnscheduledTasksPanel
+              tasks={unscheduledTasks}
+              isLoading={isLoading}
+              scheduledDate={dateString}
+              onTaskDragStart={handleTaskDragStart}
+              {...(onTaskClick ? { onTaskClick } : {})}
+            />
+            <Timeline
+              date={selectedDate}
+              timeBlocks={timeBlocks}
+              calendarEvents={calendarEvents}
+              isLoading={isLoading}
+              dragState={dragState}
+              dropPreview={dropPreview}
+              justEndedDrag={justEndedDrag}
+              timelineRef={timelineRef}
+              onBlockDragStart={handleBlockDragStart}
+              onBlockResizeStart={handleBlockResizeStart}
+              onTimelineMouseMove={handleTimelineMouseMove}
+              onTimelineMouseUp={handleTimelineMouseUp}
+              onTimelineMouseLeave={handleTimelineMouseLeave}
+              onExternalEventClick={handleExternalEventClick}
+              {...(onBlockClick ? { onBlockClick } : {})}
+              {...(onEditBlock ? { onEditBlock } : {})}
+              {...(onViewTask ? { onViewTask } : {})}
+              {...(onTimeSlotClick
+                ? {
+                    onTimeSlotClick: (startTime: Date, endTime: Date) =>
+                      onTimeSlotClick(selectedDate, startTime, endTime),
+                  }
+                : {})}
+            />
+          </>
+        )}
 
-        {/* Right Panel - Timeline */}
-        <Timeline
-          date={selectedDate}
-          timeBlocks={timeBlocks}
-          calendarEvents={calendarEvents}
-          isLoading={isLoading}
-          dragState={dragState}
-          dropPreview={dropPreview}
-          justEndedDrag={justEndedDrag}
-          timelineRef={timelineRef}
-          onBlockDragStart={handleBlockDragStart}
-          onBlockResizeStart={handleBlockResizeStart}
-          onTimelineMouseMove={handleTimelineMouseMove}
-          onTimelineMouseUp={handleTimelineMouseUp}
-          onTimelineMouseLeave={handleTimelineMouseLeave}
-          onExternalEventClick={handleExternalEventClick}
-          {...(onBlockClick ? { onBlockClick } : {})}
-          {...(onEditBlock ? { onEditBlock } : {})}
-          {...(onViewTask ? { onViewTask } : {})}
-          {...(onTimeSlotClick ? { onTimeSlotClick: (startTime: Date, endTime: Date) => onTimeSlotClick(selectedDate, startTime, endTime) } : {})}
-        />
+        {(viewMode === "3-day" || viewMode === "week") && (
+          <MultiDayView
+            days={range.days}
+            calendarEvents={calendarEvents}
+            timeBlocks={timeBlocks}
+            isLoading={isLoading}
+            onExternalEventClick={handleExternalEventClick}
+            {...(onBlockClick ? { onBlockClick } : {})}
+          />
+        )}
+
+        {viewMode === "month" && (
+          <MonthView
+            month={selectedDate}
+            weekStartsOn={weekStartsOn}
+            calendarEvents={calendarEvents}
+            timeBlocks={timeBlocks}
+            isLoading={isLoading}
+            onDayClick={handleDayCellClick}
+            onExternalEventClick={handleExternalEventClick}
+            {...(onBlockClick ? { onBlockClick } : {})}
+          />
+        )}
       </div>
 
-      {/* Drag Overlay */}
-      <DragOverlay dragState={dragState} dropPreview={dropPreview} />
+      {/* Drag Overlay (only meaningful in day view) */}
+      {viewMode === "day" && (
+        <DragOverlay dragState={dragState} dropPreview={dropPreview} />
+      )}
 
-      {/* External calendar event detail sheet */}
+      {/* External calendar event detail sheet (shared across views) */}
       <CalendarEventDetailSheet
         event={selectedExternalEvent}
         open={externalEventSheetOpen}
