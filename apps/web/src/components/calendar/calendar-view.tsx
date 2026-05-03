@@ -30,7 +30,11 @@ import {
   useCascadeResizeTimeBlock,
 } from "@/hooks";
 import { useAuth } from "@/hooks/useAuth";
-import { useCalendarEvents } from "@/hooks/useCalendars";
+import {
+  useCalendarEvents,
+  useCalendars,
+  useCalendarAccounts,
+} from "@/hooks/useCalendars";
 import { useCalendarDnd } from "@/hooks/useCalendarDnd";
 import { Timeline } from "./timeline";
 import { MultiDayView } from "./multi-day-view";
@@ -216,6 +220,35 @@ export function CalendarView({
   const fromDate = range.start.toISOString();
   const toDate = range.end.toISOString();
   const { data: calendarEvents = [] } = useCalendarEvents(fromDate, toDate);
+
+  // Per-calendar capability map — used by the detail sheet to gate the
+  // edit / delete affordances. A calendar is editable if (a) the
+  // provider supports write-back AND (b) the calendar isn't flagged
+  // read-only by the provider itself (subscriptions, holidays, etc.).
+  // Provider info lives on the account; we resolve via accountId.
+  const { data: calendarsList = [] } = useCalendars();
+  const { data: calendarAccounts = [] } = useCalendarAccounts();
+  const accountProviderById = React.useMemo(() => {
+    const m = new Map<string, string>();
+    for (const a of calendarAccounts) m.set(a.id, a.provider);
+    return m;
+  }, [calendarAccounts]);
+  const PROVIDERS_WITH_WRITE_BACK = React.useMemo(
+    () => new Set(["google"]),
+    []
+  );
+  const calendarReadOnlyById = React.useMemo(() => {
+    const m = new Map<string, boolean>();
+    for (const c of calendarsList) {
+      const provider = accountProviderById.get(c.accountId);
+      const writable =
+        !!provider &&
+        PROVIDERS_WITH_WRITE_BACK.has(provider) &&
+        !c.isReadOnly;
+      m.set(c.id, !writable);
+    }
+    return m;
+  }, [calendarsList, accountProviderById, PROVIDERS_WITH_WRITE_BACK]);
 
   // Mutations
   const createTimeBlock = useCreateTimeBlock();
@@ -526,6 +559,15 @@ export function CalendarView({
         open={externalEventSheetOpen}
         onOpenChange={handleExternalEventSheetOpenChange}
         onCreateTask={handleCreateTaskFromEvent}
+        rangeFrom={fromDate}
+        rangeTo={toDate}
+        calendarReadOnly={
+          selectedExternalEvent
+            ? (calendarReadOnlyById.get(
+                selectedExternalEvent.calendarId
+              ) ?? true)
+            : true
+        }
       />
 
       {/* Add task modal pre-filled from a calendar event */}

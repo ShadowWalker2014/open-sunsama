@@ -6,6 +6,7 @@ import type {
   OAuthTokens,
   ExternalCalendar,
   ExternalEvent,
+  EventPatch,
   SyncOptions,
   SyncResult,
 } from './index';
@@ -14,6 +15,7 @@ import {
   getClientSecret,
   parseGoogleEvent,
   type GoogleCalendarListItem,
+  type GoogleEvent,
   type GoogleEventsResponse,
   type GoogleTokenResponse,
   type GoogleCalendarListResponse,
@@ -201,4 +203,106 @@ export class GoogleCalendarProvider implements CalendarProvider {
       nextSyncToken,
     };
   }
+
+  async updateEvent(
+    accessToken: string,
+    calendarId: string,
+    eventId: string,
+    patch: EventPatch
+  ): Promise<ExternalEvent> {
+    const body: Partial<GoogleEvent> = {};
+
+    if (patch.title !== undefined) {
+      body.summary = patch.title;
+    }
+    if (patch.description !== undefined) {
+      // Google accepts empty string to clear; sending null is invalid.
+      body.description = patch.description ?? '';
+    }
+    if (patch.location !== undefined) {
+      body.location = patch.location ?? '';
+    }
+    if (patch.startTime !== undefined || patch.endTime !== undefined) {
+      if (patch.startTime === undefined || patch.endTime === undefined) {
+        throw new Error('startTime and endTime must be supplied together');
+      }
+      if (patch.isAllDay) {
+        // Google all-day events use `date: "YYYY-MM-DD"` and the
+        // exclusive-end convention (end is the day AFTER the last
+        // covered day). Caller is expected to follow that convention.
+        body.start = { date: toUtcDateString(patch.startTime) };
+        body.end = { date: toUtcDateString(patch.endTime) };
+      } else {
+        const tz = patch.timezone ?? 'UTC';
+        body.start = {
+          dateTime: patch.startTime.toISOString(),
+          timeZone: tz,
+        };
+        body.end = {
+          dateTime: patch.endTime.toISOString(),
+          timeZone: tz,
+        };
+      }
+    }
+
+    const response = await fetch(
+      `${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(
+        `Google updateEvent failed (${response.status}): ${error}`
+      );
+    }
+
+    const data = (await response.json()) as GoogleEvent;
+    const parsed = parseGoogleEvent(data);
+    if (!parsed) {
+      throw new Error('Google returned an event that could not be parsed');
+    }
+    return parsed;
+  }
+
+  async deleteEvent(
+    accessToken: string,
+    calendarId: string,
+    eventId: string
+  ): Promise<void> {
+    const response = await fetch(
+      `${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    // 410 Gone = already deleted upstream. Treat as success — local row
+    // will be cleaned up alongside.
+    if (!response.ok && response.status !== 410 && response.status !== 404) {
+      const error = await response.text();
+      throw new Error(
+        `Google deleteEvent failed (${response.status}): ${error}`
+      );
+    }
+  }
+}
+
+/**
+ * Format a Date as YYYY-MM-DD using UTC components — required by Google's
+ * all-day event date format. The input is expected to already represent
+ * UTC midnight on the target calendar date (per the iCal convention).
+ */
+function toUtcDateString(d: Date): string {
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
 }
