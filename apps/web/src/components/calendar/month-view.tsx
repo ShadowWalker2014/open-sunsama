@@ -180,8 +180,26 @@ export function MonthView({
               // warning). Use role="button" + keyboard handlers instead.
               <div
                 key={day.toISOString()}
-                onClick={() => onDayClick?.(day)}
+                onClick={(e) => {
+                  // Don't open the day if the click originated inside
+                  // an entry button — that has its own handler. Mouse
+                  // clicks on entry buttons already stopPropagation so
+                  // this is mostly defensive, but it also covers any
+                  // future interactive child.
+                  if (
+                    (e.target as HTMLElement).closest(
+                      "button,a,[role='button']"
+                    ) !== e.currentTarget
+                  ) {
+                    return;
+                  }
+                  onDayClick?.(day);
+                }}
                 onKeyDown={(e) => {
+                  // Keyboard activation (Enter / Space) on an entry
+                  // button bubbles up — only respond when focus is on
+                  // the cell itself, not an interactive descendant.
+                  if (e.target !== e.currentTarget) return;
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
                     onDayClick?.(day);
