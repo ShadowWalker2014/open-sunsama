@@ -1,12 +1,37 @@
 import * as React from "react";
-import { format, isSameDay, setHours, setMinutes, addMinutes, startOfDay } from "date-fns";
-import { Menu, Plus } from "lucide-react";
-import type { Task, TimeBlock as TimeBlockType } from "@open-sunsama/types";
+import {
+  format,
+  isSameDay,
+  setHours,
+  setMinutes,
+  addMinutes,
+  startOfDay,
+  endOfDay,
+  addDays,
+  subDays,
+} from "date-fns";
+import {
+  Menu,
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  Calendar as CalendarIcon,
+} from "lucide-react";
+import type {
+  Task,
+  TimeBlock as TimeBlockType,
+  CalendarEvent,
+} from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import {
   useTasks,
   useTimeBlocksForDate,
 } from "@/hooks";
+import {
+  useCalendarEvents,
+  useCalendars,
+  useCalendarAccounts,
+} from "@/hooks/useCalendars";
 import {
   HOUR_HEIGHT,
   TIMELINE_START_HOUR,
@@ -18,9 +43,19 @@ import {
   Sheet,
   SheetContent,
   SheetTrigger,
+  Button,
 } from "@/components/ui";
 import { TimeBlock } from "@/components/calendar/time-block";
+import { ExternalEvent } from "@/components/calendar/external-event";
+import { CalendarEventDetailSheet } from "@/components/calendar/calendar-event-detail-sheet";
+import {
+  layoutOverlappingItems,
+  type LayoutResult,
+} from "@/components/calendar/event-layout";
 import { UnscheduledTasksDrawer } from "./mobile-unscheduled-drawer";
+
+const DEFAULT_LAYOUT: LayoutResult = { lane: 0, columnCount: 1 };
+const PROVIDERS_WITH_WRITE_BACK = new Set(["google", "outlook"]);
 
 interface MobileCalendarViewProps {
   /** Initial date to display */
@@ -37,9 +72,6 @@ interface MobileCalendarViewProps {
   className?: string;
 }
 
-/**
- * Generate hour markers for the timeline
- */
 function generateHours(): number[] {
   return Array.from(
     { length: TIMELINE_END_HOUR - TIMELINE_START_HOUR + 1 },
@@ -48,8 +80,15 @@ function generateHours(): number[] {
 }
 
 /**
- * MobileCalendarView - Full-width vertical timeline for mobile devices
- * Matches Sunsama mobile design with hamburger menu for unscheduled tasks
+ * MobileCalendarView — mobile day timeline with nav + external events.
+ *
+ * Brought up to feature parity with the board sidebar's calendar panel:
+ * shows time blocks AND external Google/Outlook events on the same
+ * timeline, with prev/next/today navigation, an "all-day" banner above
+ * the timeline, and click-to-edit via the same detail sheet the
+ * desktop uses (Radix Sheet renders fine on phones). Drag-to-
+ * reschedule on touch is deferred — the long-press / scroll-conflict
+ * handling is a separate problem from the desktop mouse-drag path.
  */
 export function MobileCalendarView({
   initialDate = new Date(),
@@ -59,13 +98,30 @@ export function MobileCalendarView({
   onTimeSlotClick,
   className,
 }: MobileCalendarViewProps) {
-  const [selectedDate] = React.useState<Date>(() => startOfDay(initialDate));
+  const [selectedDate, setSelectedDate] = React.useState<Date>(() =>
+    startOfDay(initialDate)
+  );
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
   const timelineRef = React.useRef<HTMLDivElement>(null);
 
+  // Tick every minute so the now-line moves and the day-flip happens
+  // automatically at midnight while the page is open.
+  const [now, setNow] = React.useState(() => new Date());
+  React.useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
   // Format date for API calls
   const dateString = format(selectedDate, "yyyy-MM-dd");
+  const dayStart = React.useMemo(
+    () => startOfDay(selectedDate),
+    [selectedDate]
+  );
+  const dayEnd = React.useMemo(() => endOfDay(selectedDate), [selectedDate]);
+  const fromDate = dayStart.toISOString();
+  const toDate = dayEnd.toISOString();
 
   // Fetch tasks for selected date
   const { data: allTasks = [], isLoading: isLoadingTasks } = useTasks({
@@ -77,6 +133,83 @@ export function MobileCalendarView({
   const { data: timeBlocks = [], isLoading: isLoadingBlocks } =
     useTimeBlocksForDate(dateString);
 
+  // External calendar events
+  const { data: calendarEvents = [] } = useCalendarEvents(fromDate, toDate);
+
+  // Per-calendar editability for the detail sheet's read-only gate.
+  const { data: calendarsList = [] } = useCalendars();
+  const { data: calendarAccounts = [] } = useCalendarAccounts();
+  const calendarReadOnlyById = React.useMemo(() => {
+    const providerByAccount = new Map<string, string>();
+    for (const a of calendarAccounts) providerByAccount.set(a.id, a.provider);
+    const m = new Map<string, boolean>();
+    for (const c of calendarsList) {
+      const provider = providerByAccount.get(c.accountId);
+      const writable =
+        !!provider &&
+        PROVIDERS_WITH_WRITE_BACK.has(provider) &&
+        !c.isReadOnly;
+      m.set(c.id, !writable);
+    }
+    return m;
+  }, [calendarsList, calendarAccounts]);
+
+  // Bucket events into timed (drawn on timeline) and all-day (banner).
+  const { timedEvents, allDayEvents } = React.useMemo(() => {
+    const targetCalendarDate = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`;
+    const timed: CalendarEvent[] = [];
+    const allDay: CalendarEvent[] = [];
+    for (const event of calendarEvents) {
+      const start = new Date(event.startTime);
+      const end = new Date(event.endTime);
+      if (event.isAllDay) {
+        const startDateStr = `${start.getUTCFullYear()}-${String(start.getUTCMonth() + 1).padStart(2, "0")}-${String(start.getUTCDate()).padStart(2, "0")}`;
+        const endDateStr = `${end.getUTCFullYear()}-${String(end.getUTCMonth() + 1).padStart(2, "0")}-${String(end.getUTCDate()).padStart(2, "0")}`;
+        if (
+          targetCalendarDate >= startDateStr &&
+          targetCalendarDate < endDateStr
+        ) {
+          allDay.push(event);
+        }
+      } else if (start < dayEnd && end > dayStart) {
+        timed.push(event);
+      }
+    }
+    return { timedEvents: timed, allDayEvents: allDay };
+  }, [calendarEvents, selectedDate, dayStart, dayEnd]);
+
+  // Filter blocks for this day
+  const dayBlocks = React.useMemo(() => {
+    return timeBlocks.filter((block) =>
+      isSameDay(new Date(block.startTime), selectedDate)
+    );
+  }, [timeBlocks, selectedDate]);
+
+  // Side-by-side overlap layout shared with the desktop views.
+  const itemLayouts = React.useMemo(() => {
+    const items = [
+      ...timedEvents.map((e) => {
+        const s = new Date(e.startTime);
+        const en = new Date(e.endTime);
+        return {
+          id: `event:${e.id}`,
+          start: s < dayStart ? dayStart : s,
+          end: en > dayEnd ? dayEnd : en,
+        };
+      }),
+      ...dayBlocks.map((b) => {
+        const s = new Date(b.startTime);
+        const en = new Date(b.endTime);
+        return {
+          id: `block:${b.id}`,
+          start: s < dayStart ? dayStart : s,
+          end: en > dayEnd ? dayEnd : en,
+        };
+      }),
+    ];
+    return layoutOverlappingItems(items);
+  }, [timedEvents, dayBlocks, dayStart, dayEnd]);
+
   // Filter tasks that don't have a time block on this day
   const unscheduledTasks = React.useMemo(() => {
     const blockedTaskIds = new Set(
@@ -87,80 +220,151 @@ export function MobileCalendarView({
     );
   }, [allTasks, timeBlocks]);
 
-  // Generate hour markers
   const hours = React.useMemo(() => generateHours(), []);
-  const now = new Date();
   const isToday = isSameDay(selectedDate, now);
 
-  // Calculate current time indicator position
+  // Now indicator position
   const currentTimePosition = React.useMemo(() => {
     if (!isToday) return null;
     return calculateYFromTime(now);
   }, [isToday, now]);
 
-  // Auto-scroll to current time on mount
+  // Auto-scroll to current time on mount AND on date change.
   React.useEffect(() => {
-    if (isToday && scrollAreaRef.current) {
-      // Scroll to 2 hours before current time, or start of day
-      const scrollPosition = Math.max(0, (now.getHours() - 2) * HOUR_HEIGHT);
-
-      // Find the scroll viewport within ScrollArea
-      const viewport = scrollAreaRef.current.querySelector(
-        "[data-radix-scroll-area-viewport]"
-      );
-      if (viewport) {
-        viewport.scrollTop = scrollPosition;
-      }
-    }
-  }, [isToday]); // Only run on mount or when isToday changes
-
-  // Filter blocks for this day
-  const dayBlocks = React.useMemo(() => {
-    return timeBlocks.filter((block) =>
-      isSameDay(new Date(block.startTime), selectedDate)
+    if (!scrollAreaRef.current) return;
+    const targetHour = isToday ? Math.max(0, now.getHours() - 1) : 8;
+    const scrollPosition = targetHour * HOUR_HEIGHT;
+    const viewport = scrollAreaRef.current.querySelector(
+      "[data-radix-scroll-area-viewport]"
     );
-  }, [timeBlocks, selectedDate]);
+    if (viewport) viewport.scrollTop = scrollPosition;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateString]);
 
   const isLoading = isLoadingTasks || isLoadingBlocks;
+
+  // External-event detail sheet — same component the desktop uses, so
+  // mobile users get full edit/delete with a Radix Sheet that's already
+  // mobile-friendly (slides up from the bottom in narrow viewports).
+  const [selectedExternalEvent, setSelectedExternalEvent] =
+    React.useState<CalendarEvent | null>(null);
+  const [externalEventSheetOpen, setExternalEventSheetOpen] =
+    React.useState(false);
+  const handleExternalEventClick = React.useCallback(
+    (event: CalendarEvent) => {
+      setSelectedExternalEvent(event);
+      setExternalEventSheetOpen(true);
+    },
+    []
+  );
+  const handleExternalEventSheetOpenChange = React.useCallback(
+    (next: boolean) => {
+      setExternalEventSheetOpen(next);
+      if (!next) {
+        setTimeout(() => setSelectedExternalEvent(null), 200);
+      }
+    },
+    []
+  );
+
+  const goToPrevDay = () => setSelectedDate((d) => subDays(d, 1));
+  const goToNextDay = () => setSelectedDate((d) => addDays(d, 1));
+  const goToToday = () => setSelectedDate(startOfDay(new Date()));
 
   return (
     <div className={cn("flex h-full flex-col bg-background", className)}>
       {/* Header */}
-      <header className="flex items-center gap-3 border-b px-4 py-3">
-        <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
-          <SheetTrigger asChild>
-            <button
-              className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-lg",
-                "hover:bg-accent active:bg-accent/80",
-                "transition-colors"
-              )}
-              aria-label="Open unscheduled tasks"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-full max-w-sm p-0 flex flex-col">
-            <UnscheduledTasksDrawer
-              tasks={unscheduledTasks}
-              isLoading={isLoading}
-              onTaskClick={(task) => {
-                onTaskClick?.(task);
-                setDrawerOpen(false);
-              }}
-            />
-          </SheetContent>
-        </Sheet>
+      <header className="flex flex-col gap-2 border-b px-3 py-2">
+        <div className="flex items-center gap-2">
+          <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+            <SheetTrigger asChild>
+              <button
+                className={cn(
+                  "flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg",
+                  "hover:bg-accent active:bg-accent/80 transition-colors"
+                )}
+                aria-label="Open unscheduled tasks"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-full max-w-sm p-0 flex flex-col">
+              <UnscheduledTasksDrawer
+                tasks={unscheduledTasks}
+                isLoading={isLoading}
+                onTaskClick={(task) => {
+                  onTaskClick?.(task);
+                  setDrawerOpen(false);
+                }}
+              />
+            </SheetContent>
+          </Sheet>
 
-        <div className="flex-1">
-          <h1 className="text-lg font-semibold">
-            {format(selectedDate, "EEEE")}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {format(selectedDate, "MMMM d")}
-          </p>
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-lg font-semibold leading-tight">
+              {format(selectedDate, "EEEE")}
+            </h1>
+            <p className="text-xs text-muted-foreground leading-tight">
+              {format(selectedDate, "MMMM d, yyyy")}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={goToPrevDay}
+              aria-label="Previous day"
+              className="h-9 w-9"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={isToday ? "default" : "outline"}
+              onClick={goToToday}
+              className="h-9 px-3 text-xs"
+            >
+              Today
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={goToNextDay}
+              aria-label="Next day"
+              className="h-9 w-9"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </header>
+
+      {/* All-day banner — shown only when there's at least one all-day
+          event for this day. Compact chips matching the desktop. */}
+      {allDayEvents.length > 0 && (
+        <div className="flex-shrink-0 border-b bg-muted/30 px-2 py-1 space-y-0.5">
+          {allDayEvents.map((event) => {
+            const color = event.calendar?.color ?? "#6B7280";
+            return (
+              <button
+                key={event.id}
+                type="button"
+                data-all-day-event
+                onClick={() => handleExternalEventClick(event)}
+                className="flex w-full items-center gap-1.5 rounded px-2 py-1 text-xs hover:brightness-90 cursor-pointer"
+                style={{
+                  backgroundColor: hexToRgba(color, 0.15),
+                  borderLeft: `3px solid ${hexToRgba(color, 0.6)}`,
+                }}
+                title={event.title}
+              >
+                <CalendarIcon className="h-3 w-3 flex-shrink-0" style={{ color }} />
+                <span className="truncate text-left">{event.title}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Timeline */}
       <ScrollArea className="flex-1" ref={scrollAreaRef}>
@@ -168,7 +372,7 @@ export function MobileCalendarView({
           className="flex"
           style={{ minHeight: hours.length * HOUR_HEIGHT }}
         >
-          {/* Time Labels Column */}
+          {/* Time Labels Column — 12-hour to match desktop. */}
           <div className="w-14 flex-shrink-0 border-r bg-muted/30">
             {hours.map((hour) => (
               <div
@@ -177,7 +381,7 @@ export function MobileCalendarView({
                 style={{ height: HOUR_HEIGHT }}
               >
                 <span className="absolute -top-2 right-2 text-[11px] text-muted-foreground font-medium tabular-nums">
-                  {format(setHours(selectedDate, hour), "HH:mm")}
+                  {format(setHours(selectedDate, hour), "ha").toLowerCase()}
                 </span>
               </div>
             ))}
@@ -216,7 +420,7 @@ export function MobileCalendarView({
               />
             ))}
 
-            {/* Current time indicator - Red line */}
+            {/* Current time indicator */}
             {currentTimePosition !== null && (
               <div
                 className="absolute left-0 right-0 z-30 flex items-center pointer-events-none"
@@ -236,12 +440,27 @@ export function MobileCalendarView({
               </div>
             )}
 
+            {/* External calendar events (drawn behind time blocks) */}
+            {!isLoading &&
+              timedEvents.map((event) => (
+                <ExternalEvent
+                  key={event.id}
+                  event={event}
+                  displayDate={selectedDate}
+                  layout={
+                    itemLayouts.get(`event:${event.id}`) ?? DEFAULT_LAYOUT
+                  }
+                  onClick={() => handleExternalEventClick(event)}
+                />
+              ))}
+
             {/* Time blocks */}
             {!isLoading &&
               dayBlocks.map((block) => (
                 <TimeBlock
                   key={block.id}
                   block={block}
+                  layout={itemLayouts.get(`block:${block.id}`) ?? DEFAULT_LAYOUT}
                   onClick={() => onBlockClick?.(block)}
                   onViewTask={onViewTask}
                 />
@@ -253,14 +472,14 @@ export function MobileCalendarView({
       {/* FAB for creating time blocks */}
       <button
         onClick={() => {
-          // Create a time block starting at next hour
-          const now = new Date();
-          const startHour = now.getHours() + 1;
-          const startTime = setHours(setMinutes(selectedDate, 0), startHour);
-          const endTime = addMinutes(startTime, 60);
-          
+          // Default to next-hour slot on the current day.
+          const defaultStart = setHours(
+            setMinutes(selectedDate, 0),
+            now.getHours() + 1
+          );
+          const defaultEnd = addMinutes(defaultStart, 60);
           if (onTimeSlotClick) {
-            onTimeSlotClick(selectedDate, startTime, endTime);
+            onTimeSlotClick(selectedDate, defaultStart, defaultEnd);
           }
         }}
         className={cn(
@@ -274,6 +493,32 @@ export function MobileCalendarView({
       >
         <Plus className="h-6 w-6" />
       </button>
+
+      {/* External event detail sheet — read + edit + delete on tap. */}
+      <CalendarEventDetailSheet
+        event={selectedExternalEvent}
+        open={externalEventSheetOpen}
+        onOpenChange={handleExternalEventSheetOpenChange}
+        rangeFrom={fromDate}
+        rangeTo={toDate}
+        calendarReadOnly={
+          selectedExternalEvent
+            ? (calendarReadOnlyById.get(
+                selectedExternalEvent.calendarId
+              ) ?? true)
+            : true
+        }
+      />
     </div>
   );
+}
+
+/** Hex → rgba string. Used by the all-day chips. */
+function hexToRgba(hex: string, alpha: number): string {
+  const cleanHex = hex.replace("#", "");
+  const r = parseInt(cleanHex.substring(0, 2), 16);
+  const g = parseInt(cleanHex.substring(2, 4), 16);
+  const b = parseInt(cleanHex.substring(4, 6), 16);
+  if (Number.isNaN(r)) return `rgba(107, 114, 128, ${alpha})`;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
