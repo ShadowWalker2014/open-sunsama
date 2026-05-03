@@ -1,5 +1,11 @@
 import * as React from "react";
-import { format, differenceInMinutes } from "date-fns";
+import {
+  format,
+  differenceInMinutes,
+  startOfDay,
+  endOfDay,
+  isSameDay,
+} from "date-fns";
 import type { CalendarEvent } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { ExternalLink, CalendarDays } from "lucide-react";
@@ -16,6 +22,12 @@ import {
 
 interface ExternalEventProps {
   event: CalendarEvent;
+  /**
+   * The day this timeline is rendering. Used to clamp multi-day events
+   * to the visible window — without this a Mon→Wed event would render at
+   * Y = "23:00 of Tuesday" on Tuesday's view (off-screen at the bottom).
+   */
+  displayDate: Date;
   onClick?: () => void;
   className?: string;
 }
@@ -48,6 +60,7 @@ function getEventColor(event: CalendarEvent): string {
  */
 export function ExternalEvent({
   event,
+  displayDate,
   onClick,
   className,
 }: ExternalEventProps) {
@@ -55,9 +68,22 @@ export function ExternalEvent({
   const endTime = new Date(event.endTime);
   const color = getEventColor(event);
 
-  // Calculate position and size
-  const top = calculateYFromTime(startTime);
-  const durationMins = differenceInMinutes(endTime, startTime);
+  // Clamp the rendered slice of a multi-day event to the displayed day.
+  // If the event started yesterday it should render flush against the top
+  // of today's column; if it ends tomorrow it should render flush against
+  // the bottom. We also surface "continues from earlier" / "continues
+  // tomorrow" indicators via title-row affordances.
+  const dayStart = startOfDay(displayDate);
+  const dayEnd = endOfDay(displayDate);
+  const continuesFromPriorDay = startTime < dayStart;
+  const continuesToNextDay = endTime > dayEnd;
+
+  const renderStart = continuesFromPriorDay ? dayStart : startTime;
+  const renderEnd = continuesToNextDay ? dayEnd : endTime;
+
+  // Calculate position and size based on the clamped slice.
+  const top = calculateYFromTime(renderStart);
+  const durationMins = differenceInMinutes(renderEnd, renderStart);
   const height = (durationMins / 60) * HOUR_HEIGHT;
 
   // Determine if event is too short to show full content
@@ -145,11 +171,23 @@ export function ExternalEvent({
           <div className="space-y-1">
             <p className="font-medium">{event.title}</p>
             <p className="text-xs text-muted-foreground">
-              {format(startTime, "h:mm a")} - {format(endTime, "h:mm a")}
+              {format(startTime, "MMM d, h:mm a")} -{" "}
+              {isSameDay(startTime, endTime)
+                ? format(endTime, "h:mm a")
+                : format(endTime, "MMM d, h:mm a")}
             </p>
+            {(continuesFromPriorDay || continuesToNextDay) && (
+              <p className="text-xs text-muted-foreground/80 italic">
+                {continuesFromPriorDay && continuesToNextDay
+                  ? "Continues across days"
+                  : continuesFromPriorDay
+                    ? "Continues from earlier"
+                    : "Continues tomorrow"}
+              </p>
+            )}
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <div 
-                className="h-2 w-2 rounded-full" 
+              <div
+                className="h-2 w-2 rounded-full"
                 style={{ backgroundColor: color }}
               />
               <span>{calendarName}</span>

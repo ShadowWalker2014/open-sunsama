@@ -62,9 +62,15 @@ export function CalendarView({
   const { data: timeBlocks = [], isLoading: isLoadingBlocks } =
     useTimeBlocksForDate(dateString);
 
-  // Fetch external calendar events for selected date
-  const fromDate = format(startOfDay(selectedDate), "yyyy-MM-dd'T'HH:mm:ss");
-  const toDate = format(endOfDay(selectedDate), "yyyy-MM-dd'T'HH:mm:ss");
+  // Fetch external calendar events for the selected day. We use the user's
+  // LOCAL day boundaries converted to UTC ISO strings — `format(...,
+  // "yyyy-MM-dd'T'HH:mm:ss")` was emitting a timezone-less string that the
+  // server then mis-interpreted as UTC, shifting the query window by the
+  // user's UTC offset and causing events near the day boundary to be
+  // dropped or wrongly attributed. `.toISOString()` yields the same local
+  // instant in UTC, which the server parses correctly.
+  const fromDate = startOfDay(selectedDate).toISOString();
+  const toDate = endOfDay(selectedDate).toISOString();
   const { data: calendarEvents = [] } = useCalendarEvents(fromDate, toDate);
 
   // Mutations

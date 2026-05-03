@@ -1,5 +1,12 @@
 import * as React from "react";
-import { format, isSameDay, setHours, addMinutes } from "date-fns";
+import {
+  format,
+  isSameDay,
+  setHours,
+  addMinutes,
+  startOfDay,
+  endOfDay,
+} from "date-fns";
 import type { TimeBlock as TimeBlockType, CalendarEvent } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui";
@@ -103,16 +110,55 @@ export function Timeline({
     );
   }, [timeBlocks, date]);
 
-  // Filter and separate external calendar events for this day
+  // Filter and separate external calendar events for this day.
+  //
+  // A multi-day event (e.g. a 3-day conference May 1 → May 3) should appear
+  // on every day it overlaps, not just the start day — the previous code
+  // checked `isSameDay(startTime, date)` which dropped it from the
+  // intermediate days. Use a real overlap check instead.
+  //
+  // All-day events are stored at UTC midnight (Google's convention), so
+  // their startTime in a non-UTC viewer timezone may render as the
+  // previous evening. We treat the date portion of the UTC string as the
+  // event's "calendar date" and check membership against that span.
   const { timedEvents, allDayEvents } = React.useMemo(() => {
-    const dayEvents = calendarEvents.filter((event) =>
-      isSameDay(new Date(event.startTime), date)
-    );
-    
-    return {
-      timedEvents: dayEvents.filter((event) => !event.isAllDay),
-      allDayEvents: dayEvents.filter((event) => event.isAllDay),
-    };
+    const dayStart = startOfDay(date);
+    const dayEnd = endOfDay(date);
+    // The user's local "calendar date" — the date string they think of as
+    // "today" in the UI. We compare it against the UTC-stored date span of
+    // each all-day event. This works because all-day events are stored
+    // detached from any wall-clock timezone (per iCal/Google convention),
+    // so a "May 2" all-day event is "May 2" regardless of viewer TZ.
+    const targetCalendarDate = format(date, "yyyy-MM-dd");
+
+    const timed: CalendarEvent[] = [];
+    const allDay: CalendarEvent[] = [];
+
+    for (const event of calendarEvents) {
+      const start = new Date(event.startTime);
+      const end = new Date(event.endTime);
+
+      if (event.isAllDay) {
+        // The iCal/Google convention stores an all-day event with
+        // start = midnight UTC of the calendar date and end = exclusive
+        // next-day midnight. The event covers [startDateStr, endDateStr).
+        const startDateStr = start.toISOString().slice(0, 10);
+        const endDateStr = end.toISOString().slice(0, 10);
+        if (
+          targetCalendarDate >= startDateStr &&
+          targetCalendarDate < endDateStr
+        ) {
+          allDay.push(event);
+        }
+      } else {
+        // Timed event: include if it overlaps the user's local day window.
+        if (start < dayEnd && end > dayStart) {
+          timed.push(event);
+        }
+      }
+    }
+
+    return { timedEvents: timed, allDayEvents: allDay };
   }, [calendarEvents, date]);
 
   // Handle click on empty time slot
@@ -240,7 +286,11 @@ export function Timeline({
             {/* External calendar events (rendered behind time blocks) */}
             {!isLoading &&
               timedEvents.map((event) => (
-                <ExternalEvent key={event.id} event={event} />
+                <ExternalEvent
+                  key={event.id}
+                  event={event}
+                  displayDate={date}
+                />
               ))}
 
             {/* Time blocks */}
