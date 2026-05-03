@@ -668,6 +668,24 @@ export function CalendarView({
             timeBlocks={timeBlocks}
             isLoading={isLoading}
             onExternalEventClick={handleExternalEventClick}
+            onExternalEventReschedule={(eventId, startTime, endTime) => {
+              // Same write-back path as the day-view drag — the
+              // mutation hook handles optimistic update + rollback +
+              // cross-range invalidation. Browser local TZ preserved
+              // so the round-trip doesn't shift the displayed time.
+              updateCalendarEvent.mutate({
+                id: eventId,
+                rangeFrom: fromDate,
+                rangeTo: toDate,
+                patch: {
+                  startTime,
+                  endTime,
+                  timezone:
+                    Intl.DateTimeFormat().resolvedOptions().timeZone,
+                },
+              });
+            }}
+            externalEventCanEdit={externalEventCanEdit}
             {...(onBlockClick ? { onBlockClick } : {})}
           />
         )}

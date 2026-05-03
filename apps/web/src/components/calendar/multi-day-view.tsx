@@ -18,6 +18,10 @@ import {
   calculateYFromTime,
 } from "@/hooks/useCalendarDnd";
 import { layoutOverlappingItems, type LayoutResult } from "./event-layout";
+import {
+  useMultiDayEventDrag,
+  type EventDragMode,
+} from "./multi-day-event-drag";
 
 /**
  * When N items overlap we split the column into N sub-columns, but we
@@ -44,6 +48,18 @@ interface MultiDayViewProps {
   isLoading?: boolean;
   onExternalEventClick?: (event: CalendarEvent) => void;
   onBlockClick?: (block: TimeBlock) => void;
+  /**
+   * Fired after the user drops an external event at a new time on the
+   * same day (no cross-column drag). The parent translates this into
+   * a PATCH /calendar-events/:id via useUpdateCalendarEvent.
+   */
+  onExternalEventReschedule?: (
+    eventId: string,
+    startTime: Date,
+    endTime: Date
+  ) => void;
+  /** Editability gate per event — read-only events stay click-only. */
+  externalEventCanEdit?: (event: CalendarEvent) => boolean;
   className?: string;
 }
 
@@ -136,11 +152,23 @@ function MultiDayEvent({
   displayDate,
   layout,
   onClick,
+  onMouseDownDrag,
+  onMouseDownResize,
+  isDragging = false,
+  justEndedDrag = false,
 }: {
   event: CalendarEvent;
   displayDate: Date;
   layout: LayoutResult;
   onClick?: () => void;
+  /** mousedown on the body — starts a move drag if defined. */
+  onMouseDownDrag?: (e: React.MouseEvent) => void;
+  /** mousedown on a resize handle — pass the edge. */
+  onMouseDownResize?: (e: React.MouseEvent, edge: "top" | "bottom") => void;
+  /** True while THIS event is mid-drag — dim it. */
+  isDragging?: boolean;
+  /** Suppress the trailing click after a real drag completes. */
+  justEndedDrag?: boolean;
 }) {
   const startTime = new Date(event.startTime);
   const endTime = new Date(event.endTime);
@@ -157,10 +185,26 @@ function MultiDayEvent({
   const widthPct = 100 / layout.columnCount - COLUMN_GAP_PCT;
   const leftPct = (100 / layout.columnCount) * layout.lane;
 
+  const cursor = isDragging
+    ? "cursor-grabbing"
+    : onMouseDownDrag
+      ? "cursor-grab"
+      : "cursor-pointer";
+
+  // Trim resize-handle space from the chip body when handles render
+  // (so the chip's middle area is clearly the drag/click target).
+  const continuesAcrossDay =
+    startTime < startOfDay(displayDate) || endTime > endOfDay(displayDate);
+  const showResizeHandles = !!onMouseDownResize && !continuesAcrossDay;
+
   return (
     <div
       data-external-event
-      className="absolute z-[5] my-0.5 rounded border-l-[2px] cursor-pointer hover:brightness-90 hover:z-[15] transition-all overflow-hidden px-1 py-0.5"
+      className={cn(
+        "absolute z-[5] my-0.5 rounded border-l-[2px] hover:brightness-90 hover:z-[15] transition-all overflow-hidden px-1 py-0.5",
+        cursor,
+        isDragging && "opacity-50"
+      )}
       style={{
         top: `${top}px`,
         height: `${Math.max(height - 2, 16)}px`,
@@ -171,7 +215,16 @@ function MultiDayEvent({
       }}
       onClick={(e) => {
         e.stopPropagation();
+        // Browsers fire click after mouseup even for drags — bail if
+        // the DnD hook says we just dragged.
+        if (justEndedDrag) return;
         onClick?.();
+      }}
+      onMouseDown={(e) => {
+        if (!onMouseDownDrag) return;
+        // Resize handles stop propagation; if we got here, body drag.
+        if ((e.target as HTMLElement).dataset.resize) return;
+        onMouseDownDrag(e);
       }}
       role="button"
       tabIndex={0}
@@ -183,6 +236,26 @@ function MultiDayEvent({
       }}
       aria-label={`${event.title} at ${format(startTime, "h:mm a")}`}
     >
+      {showResizeHandles && (
+        <div
+          data-resize="top"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            onMouseDownResize?.(e, "top");
+          }}
+          className="absolute top-0 left-0 right-0 h-1 cursor-ns-resize hover:bg-foreground/10 rounded-t"
+        />
+      )}
+      {showResizeHandles && (
+        <div
+          data-resize="bottom"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            onMouseDownResize?.(e, "bottom");
+          }}
+          className="absolute bottom-0 left-0 right-0 h-1 cursor-ns-resize hover:bg-foreground/10 rounded-b"
+        />
+      )}
       <p className="truncate text-[10px] font-medium text-foreground/85">
         {event.title}
       </p>
@@ -272,8 +345,18 @@ export function MultiDayView({
   isLoading = false,
   onExternalEventClick,
   onBlockClick,
+  onExternalEventReschedule,
+  externalEventCanEdit,
   className,
 }: MultiDayViewProps) {
+  // Per-column drag state. The hook tracks which day was grabbed, so
+  // vertical drag stays scoped to that column. Cross-column drag
+  // (Mon → Wed) is intentionally out of scope — see hook docstring.
+  const drag = useMultiDayEventDrag({
+    onCommit: (eventId, startTime, endTime, _mode: EventDragMode) => {
+      onExternalEventReschedule?.(eventId, startTime, endTime);
+    },
+  });
   const hours = React.useMemo(() => generateHours(), []);
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
   // Tick the now-indicator once per minute so it advances. Without
@@ -564,6 +647,9 @@ export function MultiDayView({
               return (
                 <div
                   key={day.toISOString()}
+                  // `data-day-column` lets the drag hook find this
+                  // column's bounding rect via element.closest().
+                  data-day-column
                   className={cn(
                     "flex-1 relative border-r last:border-r-0 min-w-0",
                     today && "bg-primary/[0.02]",
@@ -630,6 +716,10 @@ export function MultiDayView({
                     const layout =
                       dayLayouts[i]?.get(`event:${event.id}`) ??
                       DEFAULT_LAYOUT;
+                    const canEdit =
+                      externalEventCanEdit?.(event) ?? false;
+                    const isThisDragging =
+                      drag.dragState?.eventId === event.id;
                     return (
                       <MultiDayEvent
                         key={event.id}
@@ -641,9 +731,71 @@ export function MultiDayView({
                             ? () => onExternalEventClick(event)
                             : undefined
                         }
+                        onMouseDownDrag={
+                          canEdit && onExternalEventReschedule
+                            ? (e) =>
+                                drag.startDrag(
+                                  event.id,
+                                  day,
+                                  new Date(event.startTime),
+                                  new Date(event.endTime),
+                                  "move",
+                                  e
+                                )
+                            : undefined
+                        }
+                        onMouseDownResize={
+                          canEdit && onExternalEventReschedule
+                            ? (e, edge) =>
+                                drag.startDrag(
+                                  event.id,
+                                  day,
+                                  new Date(event.startTime),
+                                  new Date(event.endTime),
+                                  edge === "top"
+                                    ? "resize-top"
+                                    : "resize-bottom",
+                                  e
+                                )
+                            : undefined
+                        }
+                        isDragging={isThisDragging}
+                        justEndedDrag={drag.justEndedDrag}
                       />
                     );
                   })}
+
+                  {/* Live drop preview while this column owns the
+                      active drag — a dashed outline at the new
+                      position so the user sees where they'll land.
+                      Hidden once dragState clears on mouseup. */}
+                  {drag.dragState &&
+                    drag.dragState.dayDate.toDateString() ===
+                      day.toDateString() &&
+                    drag.dragState.moved && (() => {
+                      const previewTop = calculateYFromTime(
+                        drag.dragState.previewStart
+                      );
+                      const previewMins =
+                        (drag.dragState.previewEnd.getTime() -
+                          drag.dragState.previewStart.getTime()) /
+                        60000;
+                      const previewHeight = (previewMins / 60) * HOUR_HEIGHT;
+                      return (
+                        <div
+                          className="absolute inset-x-1 z-30 rounded border-2 border-dashed border-primary bg-primary/10 pointer-events-none flex items-start justify-start px-1.5 py-0.5"
+                          style={{
+                            top: `${previewTop}px`,
+                            height: `${Math.max(previewHeight, 16)}px`,
+                          }}
+                        >
+                          <span className="text-[10px] font-semibold text-primary">
+                            {format(drag.dragState.previewStart, "h:mm a")} –{" "}
+                            {format(drag.dragState.previewEnd, "h:mm a")}
+                          </span>
+                        </div>
+                      );
+                    })()}
                 </div>
               );
             })}
