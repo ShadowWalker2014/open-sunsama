@@ -9,7 +9,7 @@ export interface ShortcutDefinition {
     alt?: boolean;
   };
   description: string;
-  category: "navigation" | "task" | "general" | "focus";
+  category: "navigation" | "task" | "general" | "focus" | "calendar";
 }
 
 // Define all shortcuts
@@ -135,6 +135,48 @@ export const SHORTCUTS: Record<string, ShortcutDefinition> = {
     key: "w",
     description: "Edit planned time",
     category: "focus",
+  },
+  // Calendar view-mode shortcuts (matches Google Calendar's defaults
+  // so the muscle memory transfers cleanly). The actual handler lives
+  // in `apps/web/src/components/calendar/calendar-view.tsx` because
+  // the hook here is a registry — the calendar-view's local listener
+  // owns the dispatch since it needs access to `setViewMode`,
+  // `goToToday`, etc. The entries here exist so the `?` shortcuts
+  // modal can list them.
+  calendarDayView: {
+    key: "d",
+    description: "Switch to day view",
+    category: "calendar",
+  },
+  calendarThreeDayView: {
+    key: "x",
+    description: "Switch to 3-day view",
+    category: "calendar",
+  },
+  calendarWeekView: {
+    key: "w",
+    description: "Switch to week view",
+    category: "calendar",
+  },
+  calendarMonthView: {
+    key: "m",
+    description: "Switch to month view",
+    category: "calendar",
+  },
+  calendarToday: {
+    key: "t",
+    description: "Jump to today",
+    category: "calendar",
+  },
+  calendarPrevious: {
+    key: "j",
+    description: "Previous range",
+    category: "calendar",
+  },
+  calendarNext: {
+    key: "k",
+    description: "Next range",
+    category: "calendar",
   },
 };
 

@@ -32,10 +32,11 @@ const categoryLabels: Record<string, string> = {
   general: "General",
   navigation: "Navigation",
   task: "Task Actions",
+  calendar: "Calendar",
   focus: "Focus Mode",
 };
 
-const categoryOrder = ["general", "navigation", "task", "focus"];
+const categoryOrder = ["general", "navigation", "task", "calendar", "focus"];
 
 export function ShortcutsModal({ open, onOpenChange }: ShortcutsModalProps) {
   return (
