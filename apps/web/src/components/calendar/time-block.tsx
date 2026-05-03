@@ -7,9 +7,18 @@ import {
   HOUR_HEIGHT,
 } from "@/hooks/useCalendarDnd";
 import { TimeBlockContextMenu } from "./time-block-context-menu";
+import type { LayoutResult } from "./event-layout";
+
+const COLUMN_GAP_PCT = 1; // gap between side-by-side overlapping items
 
 interface TimeBlockProps {
   block: TimeBlockType;
+  /**
+   * Lane assignment from the side-by-side overlap layout. When N items
+   * overlap at the same time slot, they split the column into N
+   * sub-columns and each item renders in its assigned lane.
+   */
+  layout?: LayoutResult;
   onClick?: () => void;
   onEditBlock?: () => void;
   onDragStart?: (e: React.MouseEvent) => void;
@@ -61,6 +70,7 @@ function getBlockColors(block: TimeBlockType): {
  */
 export function TimeBlock({
   block,
+  layout = { lane: 0, columnCount: 1 },
   onClick,
   onEditBlock,
   onDragStart,
@@ -112,7 +122,7 @@ export function TimeBlock({
       <div
         data-time-block
         className={cn(
-          "absolute left-1 right-1 z-10 my-0.5 rounded-md border-l-[3px] transition-all select-none",
+          "absolute z-10 my-0.5 rounded-md border-l-[3px] transition-all select-none",
           "hover:brightness-95 hover:z-20",
           isSelected && "ring-2 ring-primary ring-offset-1",
           isDragging && "opacity-50 cursor-grabbing",
@@ -122,6 +132,12 @@ export function TimeBlock({
         style={{
           top: `${top}px`,
           height: `${Math.max(height - 4, 20)}px`, // Account for margin
+          // Side-by-side overlap: column split into layout.columnCount
+          // lanes, item lives in lane N. 4px gutter on the leftmost
+          // lane preserves the previous `left-1 right-1` look when no
+          // overlap is happening.
+          left: `calc(${(100 / layout.columnCount) * layout.lane}% + ${layout.lane === 0 ? "4px" : "1px"})`,
+          width: `calc(${100 / layout.columnCount - COLUMN_GAP_PCT}% - ${layout.lane === 0 ? "4px" : "1px"})`,
           backgroundColor: colors.bg,
           borderColor: colors.border,
         }}
