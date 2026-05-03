@@ -192,6 +192,188 @@ async function loadEventForWrite(eventId: string, userId: string) {
 }
 
 /**
+ * Body for POST /calendar-events. The client picks which writable
+ * calendar to host the new event on. Times are ISO 8601.
+ */
+const createEventBodySchema = z
+  .object({
+    calendarId: z.string().uuid(),
+    title: z.string().min(1).max(500),
+    description: z.string().max(50_000).nullable().optional(),
+    location: z.string().max(1000).nullable().optional(),
+    startTime: z.string().datetime(),
+    endTime: z.string().datetime(),
+    isAllDay: z.boolean().optional(),
+    timezone: z.string().max(100).nullable().optional(),
+  })
+  .refine((b) => new Date(b.endTime) > new Date(b.startTime), {
+    message: 'endTime must be after startTime',
+    path: ['endTime'],
+  });
+
+/**
+ * POST /calendar-events
+ * Create a new external calendar event. Sends to the provider first;
+ * only writes locally on success so we don't end up with orphan rows.
+ * Returns the created event with calendar metadata enriched.
+ */
+calendarEventsRouter.post(
+  '/',
+  requireScopes('user:write'),
+  zValidator('json', createEventBodySchema),
+  async (c) => {
+    const userId = c.get('userId');
+    const body = c.req.valid('json');
+    const db = getDb();
+
+    // Resolve calendar + account; verify ownership and write capability.
+    const [target] = await db
+      .select({
+        calendar: calendars,
+        account: calendarAccounts,
+      })
+      .from(calendars)
+      .innerJoin(
+        calendarAccounts,
+        eq(calendarAccounts.id, calendars.accountId)
+      )
+      .where(
+        and(
+          eq(calendars.id, body.calendarId),
+          eq(calendars.userId, userId)
+        )
+      )
+      .limit(1);
+
+    if (!target) {
+      return c.json(
+        { success: false, error: { code: 'NOT_FOUND', message: 'Calendar not found' } },
+        404
+      );
+    }
+
+    if (target.calendar.isReadOnly) {
+      return c.json(
+        {
+          success: false,
+          error: {
+            code: 'CALENDAR_READ_ONLY',
+            message: 'This calendar is read-only — events cannot be created here.',
+          },
+        },
+        409
+      );
+    }
+
+    const provider = getProvider(target.account.provider);
+    if (!provider || !provider.createEvent) {
+      return c.json(
+        {
+          success: false,
+          error: {
+            code: 'PROVIDER_READ_ONLY',
+            message: `Creating ${target.account.provider} events is not yet supported.`,
+          },
+        },
+        409
+      );
+    }
+
+    const accessToken = await refreshTokensIfNeeded(
+      {
+        id: target.account.id,
+        provider: target.account.provider,
+        accessTokenEncrypted: target.account.accessTokenEncrypted,
+        refreshTokenEncrypted: target.account.refreshTokenEncrypted,
+        tokenExpiresAt: target.account.tokenExpiresAt,
+      },
+      provider
+    );
+
+    const payload: EventPatch = {
+      title: body.title,
+      description: body.description ?? undefined,
+      location: body.location ?? undefined,
+      startTime: new Date(body.startTime),
+      endTime: new Date(body.endTime),
+      isAllDay: body.isAllDay ?? false,
+      timezone: body.timezone ?? undefined,
+    };
+
+    let externalEvent;
+    try {
+      externalEvent = await provider.createEvent(
+        accessToken,
+        target.calendar.externalId,
+        payload
+      );
+    } catch (err) {
+      if (err instanceof ProviderReadOnlyError) {
+        return c.json(
+          {
+            success: false,
+            error: { code: 'PROVIDER_READ_ONLY', message: err.message },
+          },
+          409
+        );
+      }
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      return c.json(
+        {
+          success: false,
+          error: { code: 'PROVIDER_ERROR', message },
+        },
+        502
+      );
+    }
+
+    const [created] = await db
+      .insert(calendarEvents)
+      .values({
+        calendarId: body.calendarId,
+        userId,
+        externalId: externalEvent.externalId,
+        title: externalEvent.title,
+        description: externalEvent.description,
+        location: externalEvent.location,
+        startTime: externalEvent.startTime,
+        endTime: externalEvent.endTime,
+        isAllDay: externalEvent.isAllDay,
+        timezone: externalEvent.timezone,
+        recurrenceRule: externalEvent.recurrenceRule,
+        recurringEventId: externalEvent.recurringEventId,
+        status: externalEvent.status,
+        responseStatus: externalEvent.responseStatus,
+        htmlLink: externalEvent.htmlLink,
+        etag: externalEvent.etag,
+      })
+      .returning();
+
+    if (created) {
+      await publishEvent(userId, 'calendar-event:updated', {
+        id: created.id,
+        calendarId: created.calendarId,
+      });
+    }
+
+    return c.json(
+      {
+        success: true,
+        data: {
+          ...created,
+          calendar: {
+            id: target.calendar.id,
+            name: target.calendar.name,
+            color: target.calendar.color,
+          },
+        },
+      },
+      201
+    );
+  }
+);
+
+/**
  * Body for PATCH /calendar-events/:id. All fields optional. The client
  * may send any subset of the editable fields. Times are ISO 8601.
  */

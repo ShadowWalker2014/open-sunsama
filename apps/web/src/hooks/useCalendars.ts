@@ -234,6 +234,81 @@ export function useConnectICloud() {
 }
 
 /**
+ * Input for useCreateCalendarEvent. The client picks which writable
+ * calendar to create the event on.
+ */
+export interface CreateCalendarEventInput {
+  calendarId: string;
+  /** Same range scoping as updates — for optimistic placement. */
+  rangeFrom: string;
+  rangeTo: string;
+  payload: {
+    title: string;
+    description?: string | null;
+    location?: string | null;
+    startTime: Date;
+    endTime: Date;
+    isAllDay?: boolean;
+    timezone?: string | null;
+  };
+}
+
+/**
+ * Create a new external calendar event. Sends to the provider first;
+ * the local cache is then updated with the returned canonical event so
+ * the UI shows it immediately. No optimistic insertion because we need
+ * the provider's id to render the event correctly (clicks resolve to
+ * the right detail sheet, etc.).
+ */
+export function useCreateCalendarEvent() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      calendarId,
+      payload,
+    }: CreateCalendarEventInput): Promise<CalendarEvent> => {
+      const client = getApiClient();
+      const body: Record<string, unknown> = {
+        calendarId,
+        title: payload.title,
+        startTime: payload.startTime.toISOString(),
+        endTime: payload.endTime.toISOString(),
+      };
+      if (payload.description !== undefined) body.description = payload.description;
+      if (payload.location !== undefined) body.location = payload.location;
+      if (payload.isAllDay !== undefined) body.isAllDay = payload.isAllDay;
+      if (payload.timezone !== undefined) body.timezone = payload.timezone;
+      const response = await client.post<{
+        success: boolean;
+        data: CalendarEvent;
+      }>("calendar-events", body);
+      return response.data;
+    },
+    onSuccess: (created, input) => {
+      // Append to the visible-range cache so the chip appears without
+      // waiting for the next refetch. If the canonical refetch lands
+      // before this update is overridden, no harm done — invariant is
+      // that the event ends up visible.
+      const key = calendarKeys.events(input.rangeFrom, input.rangeTo);
+      const previous = queryClient.getQueryData<CalendarEvent[]>(key);
+      if (previous) {
+        queryClient.setQueryData<CalendarEvent[]>(key, [...previous, created]);
+      }
+      // Also invalidate so any other open ranges pick it up.
+      queryClient.invalidateQueries({ queryKey: calendarKeys.all });
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Failed to create event",
+        description: error instanceof Error ? error.message : "Unknown error",
+      });
+    },
+  });
+}
+
+/**
  * Patch shape accepted by useUpdateCalendarEvent. Times are local Date
  * objects on the wire; the hook serialises them to ISO 8601.
  */
