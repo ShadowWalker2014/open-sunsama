@@ -74,4 +74,12 @@ export interface UpdateCalendarRequest {
   isEnabled?: boolean;
   isDefaultForEvents?: boolean;
   isDefaultForTasks?: boolean;
+  /**
+   * Override the color the provider returned at sync time. Pass null
+   * to clear the override — the column then stays null until the
+   * user picks a new color (sync intentionally never overwrites
+   * color on existing calendars, so the provider's color does NOT
+   * come back automatically).
+   */
+  color?: string | null;
 }

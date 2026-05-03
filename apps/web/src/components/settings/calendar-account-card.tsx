@@ -17,6 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui";
+import { CalendarColorPicker } from "./calendar-color-picker";
 import { cn } from "@/lib/utils";
 import type { CalendarAccount, Calendar } from "@/hooks/useCalendars";
 import { PROVIDER_CONFIG } from "./calendar-provider-icons";
@@ -90,6 +91,7 @@ export function CalendarItem({
   onToggleEnabled,
   onSetDefaultEvents,
   onSetDefaultTasks,
+  onSetColor,
   isUpdating,
 }: {
   calendar: Calendar;
@@ -98,6 +100,12 @@ export function CalendarItem({
   onToggleEnabled: () => void;
   onSetDefaultEvents: () => void;
   onSetDefaultTasks: () => void;
+  /**
+   * Persist a custom color override for this calendar. Pass null to
+   * clear the override (the per-calendar dot then falls back to
+   * whatever the provider assigned at first sync).
+   */
+  onSetColor: (color: string | null) => void;
   isUpdating: boolean;
 }) {
   return (
@@ -108,9 +116,11 @@ export function CalendarItem({
           onCheckedChange={onToggleEnabled}
           disabled={isUpdating}
         />
-        <div
-          className="h-3 w-3 rounded-full"
-          style={{ backgroundColor: calendar.color || "#6B7280" }}
+        <CalendarColorPicker
+          value={calendar.color}
+          disabled={isUpdating}
+          onChange={(c) => onSetColor(c)}
+          onReset={() => onSetColor(null)}
         />
         <span className={cn("text-sm", !calendar.isEnabled && "text-muted-foreground")}>
           {calendar.name}
@@ -191,7 +201,15 @@ export function AccountCard({
    */
   onForceResync: () => void;
   onRemove: () => void;
-  onUpdateCalendar: (calendarId: string, data: { isEnabled?: boolean; isDefaultForEvents?: boolean; isDefaultForTasks?: boolean }) => void;
+  onUpdateCalendar: (
+    calendarId: string,
+    data: {
+      isEnabled?: boolean;
+      isDefaultForEvents?: boolean;
+      isDefaultForTasks?: boolean;
+      color?: string | null;
+    }
+  ) => void;
   isSyncing: boolean;
   isUpdatingCalendar: boolean;
 }) {
@@ -303,6 +321,7 @@ export function AccountCard({
               }
               onSetDefaultEvents={() => handleSetDefaultEvents(calendar.id)}
               onSetDefaultTasks={() => handleSetDefaultTasks(calendar.id)}
+              onSetColor={(color) => onUpdateCalendar(calendar.id, { color })}
               isUpdating={isUpdatingCalendar}
             />
           ))

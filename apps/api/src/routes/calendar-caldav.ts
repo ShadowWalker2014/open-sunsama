@@ -109,12 +109,12 @@ calendarCaldavRouter.post(
         .limit(1);
 
       if (existingCalendar) {
-        // Update calendar info
+        // Preserve user color override (see calendar-oauth.ts for the
+        // same reasoning) — sync only refreshes name + permissions.
         await db
           .update(calendars)
           .set({
             name: extCal.name,
-            color: extCal.color,
             isReadOnly: extCal.isReadOnly,
             updatedAt: new Date(),
           })

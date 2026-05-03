@@ -146,6 +146,10 @@ calendarsRouter.patch(
     if (updates.isDefaultForTasks !== undefined) {
       updateData.isDefaultForTasks = updates.isDefaultForTasks;
     }
+    if (updates.color !== undefined) {
+      // null clears the override; any hex string sets it.
+      updateData.color = updates.color;
+    }
 
     // Update calendar
     const [updatedCalendar] = await db

@@ -180,7 +180,12 @@ export function CalendarSettings() {
 
   const handleUpdateCalendar = (
     calendarId: string,
-    data: { isEnabled?: boolean; isDefaultForEvents?: boolean; isDefaultForTasks?: boolean }
+    data: {
+      isEnabled?: boolean;
+      isDefaultForEvents?: boolean;
+      isDefaultForTasks?: boolean;
+      color?: string | null;
+    }
   ) => {
     updateCalendarMutation.mutate({ calendarId, data });
   };

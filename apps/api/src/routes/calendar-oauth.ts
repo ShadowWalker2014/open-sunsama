@@ -241,11 +241,19 @@ calendarOAuthRouter.get(
           .limit(1);
 
         if (existingCalendar) {
+          // Deliberately NOT overwriting `color` here — once a
+          // calendar exists locally, we treat its color as the
+          // user's. They might have set a custom override in
+          // settings, and re-syncing should preserve it. Provider-
+          // side color changes won't propagate after first sync,
+          // which is the correct trade-off (user intent > provider
+          // default). Same for `isReadOnly`? No — that's a
+          // permission state from the provider that must stay
+          // accurate, so we keep updating it.
           await db
             .update(calendars)
             .set({
               name: extCal.name,
-              color: extCal.color,
               isReadOnly: extCal.isReadOnly,
               updatedAt: new Date(),
             })
