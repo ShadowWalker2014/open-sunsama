@@ -464,3 +464,72 @@ export function publishSyncEvent(
     deletedCount,
   });
 }
+
+/**
+ * Opportunistically register Google `events.watch` push channels
+ * for an account's enabled calendars that don't already have an
+ * active watch. Idempotent — calendars with a non-expired watch are
+ * skipped. Failures are swallowed (push notifications are an upgrade
+ * over the 5-min poll, not a hard requirement).
+ *
+ * Called after every successful manual or worker sync, so a freshly-
+ * connected account picks up its watches on the first sync, and
+ * accounts that were synced before this code shipped pick them up on
+ * their next sync without any manual action.
+ */
+export async function ensureGoogleWatches(
+  accountId: string,
+  accessToken: string
+): Promise<void> {
+  // Lazy import keeps the watch service out of the hot sync path
+  // when nothing needs registering — the dynamic import is cached
+  // after the first call.
+  const { registerWatch } = await import('./google-calendar-watch.js');
+  const db = getDb();
+  // Refresh window: re-register anything expiring within the next 24h
+  // so we don't drop coverage between sync runs. Renewal happens
+  // here instead of in a separate cron until the dedicated renewal
+  // worker lands in a follow-up PR.
+  const refreshThreshold = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const targets = await db
+    .select({
+      id: calendars.id,
+      externalId: calendars.externalId,
+      watchChannelId: calendars.watchChannelId,
+      watchExpiresAt: calendars.watchExpiresAt,
+    })
+    .from(calendars)
+    .where(
+      and(eq(calendars.accountId, accountId), eq(calendars.isEnabled, true))
+    );
+  for (const cal of targets) {
+    const hasActive =
+      cal.watchChannelId &&
+      cal.watchExpiresAt &&
+      cal.watchExpiresAt > refreshThreshold;
+    if (hasActive) continue;
+    try {
+      const watch = await registerWatch({
+        accessToken,
+        externalCalendarId: cal.externalId,
+      });
+      if (!watch) continue; // calendar doesn't accept watches (read-only, etc.)
+      await db
+        .update(calendars)
+        .set({
+          watchChannelId: watch.channelId,
+          watchResourceId: watch.resourceId,
+          watchExpiresAt: watch.expiresAt,
+          updatedAt: new Date(),
+        })
+        .where(eq(calendars.id, cal.id));
+    } catch (err) {
+      // Push channels are best-effort. Log and move on so a single
+      // bad calendar doesn't block the rest of the account's sync.
+      console.warn(
+        `[Google Watch] register failed for calendar ${cal.id}:`,
+        err instanceof Error ? err.message : err
+      );
+    }
+  }
+}

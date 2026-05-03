@@ -28,6 +28,7 @@ import { calendarsRouter } from "./routes/calendars.js";
 import { calendarEventsRouter } from "./routes/calendar-events.js";
 import { releasesRouter } from "./routes/releases.js";
 import { taskSeriesRouter } from "./routes/task-series.js";
+import { webhooksRouter } from "./routes/webhooks.js";
 import { registerAllWorkers } from "./workers/index.js";
 import {
   stopPgBoss,
@@ -162,6 +163,9 @@ app.route("/calendars", calendarsRouter);
 app.route("/calendar-events", calendarEventsRouter);
 app.route("/releases", releasesRouter);
 app.route("/task-series", taskSeriesRouter);
+// Public — no auth (provider webhooks). Identity verified by per-
+// channel state stored when we registered the watch.
+app.route("/webhooks", webhooksRouter);
 
 // Error handling
 app.onError(errorHandler);
