@@ -89,7 +89,37 @@ export default function CalendarPage() {
   };
 
   if (isMobile) {
-    return <MobileCalendarView />;
+    // Wire the same handlers the desktop branch uses so the mobile
+    // FAB, time-block taps, and drawer-task taps actually open the
+    // right sheets / dialogs. Without these props the mobile surface
+    // is read-only by accident — every tap is a no-op.
+    return (
+      <>
+        <MobileCalendarView
+          onTaskClick={handleTaskClick}
+          onBlockClick={handleBlockClick}
+          onViewTask={handleViewTask}
+          onTimeSlotClick={handleTimeSlotClick}
+        />
+        <TaskModal
+          task={selectedTask}
+          open={taskPanelOpen}
+          onOpenChange={handleTaskPanelOpenChange}
+        />
+        <TimeBlockDetailSheet
+          timeBlock={selectedTimeBlock}
+          open={timeBlockSheetOpen}
+          onOpenChange={handleTimeBlockSheetOpenChange}
+        />
+        <CreateTimeBlockDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+          date={createDialogDate}
+          startTime={createDialogStartTime}
+          endTime={createDialogEndTime}
+        />
+      </>
+    );
   }
 
   return (

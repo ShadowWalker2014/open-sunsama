@@ -9,6 +9,7 @@ import {
   Pencil,
   Trash2,
   Loader2,
+  Repeat,
 } from "lucide-react";
 import type { CalendarEvent } from "@open-sunsama/types";
 import {
@@ -381,6 +382,30 @@ export function CalendarEventDetailSheet({
 
           {event && (
             <div className="mt-6 space-y-5">
+              {/* Recurring-event disclosure. Edits and deletes from
+                  this sheet apply to THIS instance only — Google and
+                  Outlook both interpret a PATCH/DELETE on an instance
+                  id as an exception, not a series modification. We
+                  surface the badge plus a one-line note so users
+                  aren't surprised when the next occurrence still
+                  shows the old title or still exists after delete. */}
+              {(event.recurringEventId || event.recurrenceRule) && (
+                <div className="flex items-start gap-2 rounded-md border border-dashed border-border/60 bg-muted/30 px-3 py-2">
+                  <Repeat
+                    className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground"
+                    aria-hidden
+                  />
+                  <div className="text-xs">
+                    <p className="font-medium text-foreground/80">
+                      Recurring event · this instance
+                    </p>
+                    <p className="mt-0.5 text-muted-foreground">
+                      Changes here apply to this occurrence only. To
+                      edit the whole series, use the calendar provider.
+                    </p>
+                  </div>
+                </div>
+              )}
               {isEditing && editState ? (
                 <EditForm
                   state={editState}

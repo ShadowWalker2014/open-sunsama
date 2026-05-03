@@ -113,6 +113,25 @@ export function MobileCalendarView({
     return () => clearInterval(id);
   }, []);
 
+  // Auto-advance the displayed day when the wall-clock crosses
+  // midnight and the user was looking at "today" before the flip.
+  // Without this, the now-line vanishes at 00:00 but the timeline
+  // keeps showing yesterday's events until the user manually taps
+  // "Today" / "Next". The ref tracks the "today" we last saw — when
+  // the tick produces a new "today" AND the user was previously on
+  // the old "today", we slide forward; if they navigated elsewhere,
+  // they stay put.
+  const lastTodayRef = React.useRef(startOfDay(now));
+  React.useEffect(() => {
+    const todayStart = startOfDay(now);
+    if (todayStart.getTime() === lastTodayRef.current.getTime()) return;
+    const wasOnOldToday = isSameDay(selectedDate, lastTodayRef.current);
+    lastTodayRef.current = todayStart;
+    if (wasOnOldToday) {
+      setSelectedDate(todayStart);
+    }
+  }, [now, selectedDate]);
+
   // Format date for API calls
   const dateString = format(selectedDate, "yyyy-MM-dd");
   const dayStart = React.useMemo(
