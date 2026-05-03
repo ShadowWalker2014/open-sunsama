@@ -51,6 +51,13 @@ interface ExternalEventProps {
   onResizeStart?: (e: React.MouseEvent, edge: "top" | "bottom") => void;
   /** True while THIS event is being dragged — used for visual feedback. */
   isDragging?: boolean;
+  /**
+   * The DnD hook's "we just finished a drag" flag. Browsers fire a
+   * synthetic click on the same element after a real drag's mouseup;
+   * without consulting this flag the trailing click would unexpectedly
+   * open the detail sheet right after the user repositioned the event.
+   */
+  justEndedDrag?: boolean;
   className?: string;
 }
 
@@ -88,6 +95,7 @@ export function ExternalEvent({
   onDragStart,
   onResizeStart,
   isDragging = false,
+  justEndedDrag = false,
   className,
 }: ExternalEventProps) {
   const startTime = new Date(event.startTime);
@@ -121,6 +129,11 @@ export function ExternalEvent({
     // slot to create a time block" handler — without this, clicking an
     // event ALSO opened the create-time-block dialog.
     e.stopPropagation();
+    // Suppress the trailing click after a real drag completes —
+    // browsers fire mouseup → click on the same element, and without
+    // this guard the detail sheet would unexpectedly open right after
+    // the user repositioned the event.
+    if (justEndedDrag) return;
     // Delegate to the parent — typically opens an in-app detail sheet
     // rather than redirecting to the provider's web UI.
     onClick?.();

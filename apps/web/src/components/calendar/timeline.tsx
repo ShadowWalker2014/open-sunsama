@@ -361,9 +361,13 @@ export function Timeline({
             {!isLoading &&
               timedEvents.map((event) => {
                 const canEdit = externalEventCanEdit?.(event) ?? false;
+                // Match move + both resize types so the original event
+                // dims while the user is resizing AND while dragging.
                 const isThisDragging =
-                  dragState?.type === "move-event" &&
-                  dragState.eventId === event.id;
+                  dragState?.eventId === event.id &&
+                  (dragState.type === "move-event" ||
+                    dragState.type === "resize-event-top" ||
+                    dragState.type === "resize-event-bottom");
                 return (
                   <ExternalEvent
                     key={event.id}
@@ -389,6 +393,7 @@ export function Timeline({
                         : undefined
                     }
                     isDragging={isThisDragging}
+                    justEndedDrag={justEndedDrag}
                   />
                 );
               })}
@@ -415,13 +420,18 @@ export function Timeline({
                 title={
                   dragState.task?.title ||
                   dragState.block?.title ||
+                  dragState.event?.title ||
                   "New Time Block"
                 }
                 startTime={dropPreview.startTime}
                 endTime={dropPreview.endTime}
                 top={dropPreview.top}
                 height={dropPreview.height}
-                {...(dragState.block?.color ? { color: dragState.block.color } : {})}
+                {...(dragState.block?.color
+                  ? { color: dragState.block.color }
+                  : dragState.event?.calendar?.color
+                    ? { color: dragState.event.calendar.color }
+                    : {})}
               />
             )}
           </div>
