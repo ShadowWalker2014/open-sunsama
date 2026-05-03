@@ -34,6 +34,7 @@ import {
   useCalendarEvents,
   useCalendars,
   useCalendarAccounts,
+  useUpdateCalendarEvent,
 } from "@/hooks/useCalendars";
 import { useCalendarDnd } from "@/hooks/useCalendarDnd";
 import { Timeline } from "./timeline";
@@ -266,6 +267,8 @@ export function CalendarView({
   }, [allTasks, timeBlocks]);
 
   // Calendar DnD hook
+  const updateCalendarEvent = useUpdateCalendarEvent();
+
   const {
     dragState,
     dropPreview,
@@ -275,6 +278,8 @@ export function CalendarView({
     startTaskDrag,
     startBlockDrag,
     startBlockResize,
+    startEventDrag,
+    startEventResize,
     updateDrag,
     endDrag,
     cancelDrag,
@@ -295,10 +300,40 @@ export function CalendarView({
     },
     onBlockResize: (blockId, startTime, endTime) => {
       // Use cascade resize to automatically shift blocks below (server-side)
-      cascadeResizeTimeBlock.mutate({ 
-        id: blockId, 
-        startTime, 
+      cascadeResizeTimeBlock.mutate({
+        id: blockId,
+        startTime,
         endTime,
+      });
+    },
+    onEventMove: (eventId, startTime, endTime) => {
+      // Write the new times back to the provider via the same path
+      // that the detail-sheet edit uses. The hook handles optimistic
+      // cache update + rollback + cross-range invalidation.
+      updateCalendarEvent.mutate({
+        id: eventId,
+        rangeFrom: fromDate,
+        rangeTo: toDate,
+        patch: {
+          startTime,
+          endTime,
+          // Preserve the user's local TZ on the round-trip; without it
+          // Google would default to UTC and the displayed time would
+          // shift on re-render.
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
+      });
+    },
+    onEventResize: (eventId, startTime, endTime) => {
+      updateCalendarEvent.mutate({
+        id: eventId,
+        rangeFrom: fromDate,
+        rangeTo: toDate,
+        patch: {
+          startTime,
+          endTime,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
       });
     },
   });
@@ -528,6 +563,38 @@ export function CalendarView({
     setViewMode("day");
   }, [setViewMode]);
 
+  // Drag handlers for external events — start the move/resize, then
+  // useCalendarDnd's `onEventMove` / `onEventResize` callbacks fire on
+  // mouseup with the new times.
+  const handleExternalEventDragStart = React.useCallback(
+    (event: CalendarEvent, e: React.MouseEvent) => {
+      e.preventDefault();
+      startEventDrag(event, e.clientY);
+    },
+    [startEventDrag]
+  );
+  const handleExternalEventResizeStart = React.useCallback(
+    (event: CalendarEvent, edge: "top" | "bottom", e: React.MouseEvent) => {
+      e.preventDefault();
+      startEventResize(event, edge, e.clientY);
+    },
+    [startEventResize]
+  );
+
+  // Editability check — used to gate drag handles. Same shape as the
+  // detail-sheet read-only check.
+  const externalEventCanEdit = React.useCallback(
+    (event: CalendarEvent) => {
+      // Don't allow drag for all-day events from the timeline path —
+      // they live in the banner row and have different semantics.
+      if (event.isAllDay) return false;
+      const isReadOnly =
+        calendarReadOnlyById.get(event.calendarId) ?? true;
+      return !isReadOnly;
+    },
+    [calendarReadOnlyById]
+  );
+
   return (
     <div className={cn("flex h-full flex-col", className)}>
       {/* Header / Toolbar */}
@@ -572,6 +639,9 @@ export function CalendarView({
               onTimelineMouseUp={handleTimelineMouseUp}
               onTimelineMouseLeave={handleTimelineMouseLeave}
               onExternalEventClick={handleExternalEventClick}
+              onExternalEventDragStart={handleExternalEventDragStart}
+              onExternalEventResizeStart={handleExternalEventResizeStart}
+              externalEventCanEdit={externalEventCanEdit}
               {...(onBlockClick ? { onBlockClick } : {})}
               {...(onEditBlock ? { onEditBlock } : {})}
               {...(onViewTask ? { onViewTask } : {})}

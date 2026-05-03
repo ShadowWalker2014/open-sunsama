@@ -43,6 +43,19 @@ interface TimelineProps {
   onViewTask?: (taskId: string) => void;
   /** Fired when the user clicks an external (Google/Outlook/iCloud) event */
   onExternalEventClick?: (event: CalendarEvent) => void;
+  /** Fired when the user starts dragging an editable external event */
+  onExternalEventDragStart?: (event: CalendarEvent, e: React.MouseEvent) => void;
+  /** Fired when the user starts resizing an editable external event */
+  onExternalEventResizeStart?: (
+    event: CalendarEvent,
+    edge: "top" | "bottom",
+    e: React.MouseEvent
+  ) => void;
+  /**
+   * Lookup of `eventId → can-write` so editable events get drag handles
+   * and read-only events stay click-only.
+   */
+  externalEventCanEdit?: (event: CalendarEvent) => boolean;
   onTimelineMouseMove?: (e: React.MouseEvent) => void;
   onTimelineMouseUp?: () => void;
   onTimelineMouseLeave?: () => void;
@@ -78,6 +91,9 @@ export function Timeline({
   onBlockResizeStart,
   onViewTask,
   onExternalEventClick,
+  onExternalEventDragStart,
+  onExternalEventResizeStart,
+  externalEventCanEdit,
   onTimelineMouseMove,
   onTimelineMouseUp,
   onTimelineMouseLeave,
@@ -343,19 +359,39 @@ export function Timeline({
 
             {/* External calendar events (rendered behind time blocks) */}
             {!isLoading &&
-              timedEvents.map((event) => (
-                <ExternalEvent
-                  key={event.id}
-                  event={event}
-                  displayDate={date}
-                  layout={itemLayouts.get(`event:${event.id}`) ?? DEFAULT_LAYOUT}
-                  onClick={
-                    onExternalEventClick
-                      ? () => onExternalEventClick(event)
-                      : undefined
-                  }
-                />
-              ))}
+              timedEvents.map((event) => {
+                const canEdit = externalEventCanEdit?.(event) ?? false;
+                const isThisDragging =
+                  dragState?.type === "move-event" &&
+                  dragState.eventId === event.id;
+                return (
+                  <ExternalEvent
+                    key={event.id}
+                    event={event}
+                    displayDate={date}
+                    layout={
+                      itemLayouts.get(`event:${event.id}`) ?? DEFAULT_LAYOUT
+                    }
+                    onClick={
+                      onExternalEventClick
+                        ? () => onExternalEventClick(event)
+                        : undefined
+                    }
+                    onDragStart={
+                      canEdit && onExternalEventDragStart
+                        ? (e) => onExternalEventDragStart(event, e)
+                        : undefined
+                    }
+                    onResizeStart={
+                      canEdit && onExternalEventResizeStart
+                        ? (e, edge) =>
+                            onExternalEventResizeStart(event, edge, e)
+                        : undefined
+                    }
+                    isDragging={isThisDragging}
+                  />
+                );
+              })}
 
             {/* Time blocks */}
             {!isLoading &&

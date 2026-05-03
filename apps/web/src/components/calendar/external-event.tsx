@@ -38,6 +38,19 @@ interface ExternalEventProps {
    */
   layout?: LayoutResult;
   onClick?: () => void;
+  /**
+   * Optional drag-to-reschedule entry point. Receives the native mouse
+   * event from `mousedown` on the event body. Resize-edge handlers
+   * stopPropagation so dragging an edge resizes instead of moving.
+   * Only wired for editable events — read-only events stay click-only.
+   */
+  onDragStart?: (e: React.MouseEvent) => void;
+  /**
+   * Resize handler — receives the edge being grabbed.
+   */
+  onResizeStart?: (e: React.MouseEvent, edge: "top" | "bottom") => void;
+  /** True while THIS event is being dragged — used for visual feedback. */
+  isDragging?: boolean;
   className?: string;
 }
 
@@ -72,6 +85,9 @@ export function ExternalEvent({
   displayDate,
   layout = { lane: 0, columnCount: 1 },
   onClick,
+  onDragStart,
+  onResizeStart,
+  isDragging = false,
   className,
 }: ExternalEventProps) {
   const startTime = new Date(event.startTime);
@@ -110,6 +126,26 @@ export function ExternalEvent({
     onClick?.();
   };
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // If user grabbed a resize handle, the resize handler stopped
+    // propagation already and this never fires. Otherwise: start
+    // a move-event drag. The DnD hook tracks `justEndedDrag` to
+    // suppress the trailing click when the mouse actually moved.
+    if (!onDragStart) return;
+    if ((e.target as HTMLElement).dataset.resize) return;
+    onDragStart(e);
+  };
+
+  const handleTopResize = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onResizeStart?.(e, "top");
+  };
+
+  const handleBottomResize = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onResizeStart?.(e, "bottom");
+  };
+
   const calendarName = event.calendar?.name || "External Calendar";
 
   return (
@@ -121,7 +157,11 @@ export function ExternalEvent({
             className={cn(
               "absolute z-[5] my-0.5 rounded-md border-l-[3px] transition-all select-none",
               "hover:brightness-90 hover:z-[15]",
-              "cursor-pointer",
+              isDragging
+                ? "opacity-50 cursor-grabbing"
+                : onDragStart
+                  ? "cursor-grab"
+                  : "cursor-pointer",
               className
             )}
             style={{
@@ -138,6 +178,7 @@ export function ExternalEvent({
               borderColor: hexToRgba(color, 0.5),
             }}
             onClick={handleClick}
+            onMouseDown={handleMouseDown}
             role="button"
             tabIndex={0}
             aria-label={`Calendar event: ${event.title} from ${format(startTime, "h:mm a")} to ${format(endTime, "h:mm a")}`}
@@ -148,6 +189,23 @@ export function ExternalEvent({
               }
             }}
           >
+            {/* Top resize handle — only when editable. Tagged with
+                `data-resize` so the body's mousedown bails out. */}
+            {onResizeStart && !continuesFromPriorDay && (
+              <div
+                data-resize="top"
+                onMouseDown={handleTopResize}
+                className="absolute top-0 left-0 right-0 h-1.5 cursor-ns-resize hover:bg-foreground/10 rounded-t-md"
+              />
+            )}
+            {/* Bottom resize handle */}
+            {onResizeStart && !continuesToNextDay && (
+              <div
+                data-resize="bottom"
+                onMouseDown={handleBottomResize}
+                className="absolute bottom-0 left-0 right-0 h-1.5 cursor-ns-resize hover:bg-foreground/10 rounded-b-md"
+              />
+            )}
             {/* Content */}
             <div
               className={cn(
