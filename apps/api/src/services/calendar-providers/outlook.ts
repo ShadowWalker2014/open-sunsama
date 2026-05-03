@@ -283,7 +283,6 @@ export class OutlookCalendarProvider implements CalendarProvider {
       if (patch.startTime === undefined || patch.endTime === undefined) {
         throw new Error('startTime and endTime must be supplied together');
       }
-      const tz = patch.timezone ?? 'UTC';
       if (patch.isAllDay) {
         // Microsoft Graph all-day: isAllDay=true, dateTime at 00:00
         // of the date, timeZone fixed to UTC.
@@ -297,14 +296,26 @@ export class OutlookCalendarProvider implements CalendarProvider {
           timeZone: 'UTC',
         };
       } else {
+        // Send the UTC instant directly. Graph reads `dateTime` as
+        // wall-clock in `timeZone`, so pairing the user's IANA zone
+        // with a Z-stripped UTC string would tell Graph "this NYC
+        // wall-clock time is 14:00" when it's actually 14:00 UTC =
+        // 10:00 NYC — every write would shift the event by the
+        // user's UTC offset on round-trip. Sending the UTC instant
+        // with timeZone="UTC" lets Graph store the absolute instant
+        // and display it in the user's mailbox-default zone, which
+        // matches what the user dragged on screen. The `tz` argument
+        // is intentionally unused — it's only relevant for create-
+        // from-grid where the user might have a hint about which
+        // zone to display the event in.
         body.isAllDay = false;
         body.start = {
-          dateTime: stripIsoZ(patch.startTime),
-          timeZone: tz,
+          dateTime: patch.startTime.toISOString(),
+          timeZone: 'UTC',
         };
         body.end = {
-          dateTime: stripIsoZ(patch.endTime),
-          timeZone: tz,
+          dateTime: patch.endTime.toISOString(),
+          timeZone: 'UTC',
         };
       }
     }
@@ -399,30 +410,19 @@ function buildOutlookEventBody(input: {
       timeZone: 'UTC',
     };
   } else {
-    const tz = input.timezone ?? 'UTC';
+    // See updateEvent for the full reasoning: send the UTC instant
+    // with timeZone="UTC" so Graph stores the absolute moment. The
+    // `input.timezone` is intentionally unused here.
     body.start = {
-      dateTime: stripIsoZ(input.startTime),
-      timeZone: tz,
+      dateTime: input.startTime.toISOString(),
+      timeZone: 'UTC',
     };
     body.end = {
-      dateTime: stripIsoZ(input.endTime),
-      timeZone: tz,
+      dateTime: input.endTime.toISOString(),
+      timeZone: 'UTC',
     };
   }
   return body;
-}
-
-/**
- * Microsoft Graph rejects ISO strings with a `Z` suffix when a
- * timeZone is supplied separately — it expects the local-naive
- * dateTime ("2026-05-03T10:00:00.0000000") with the `timeZone` field
- * carrying the IANA name. Strip the Z and any trailing offset so
- * Graph treats the dateTime as wall-clock in the given zone.
- */
-function stripIsoZ(d: Date): string {
-  const iso = d.toISOString();
-  // "2026-05-03T10:00:00.000Z" → "2026-05-03T10:00:00.000"
-  return iso.endsWith('Z') ? iso.slice(0, -1) : iso;
 }
 
 /**

@@ -213,25 +213,31 @@ export function parseOutlookEvent(event: OutlookEvent): ExternalEvent | null {
   let startTime: Date;
   let endTime: Date;
 
+  // Microsoft Graph returns `dateTime` strings without an explicit
+  // timezone offset (e.g. "2026-05-03T10:00:00.0000000") and pairs
+  // them with a separate `timeZone` field. For our query path
+  // (`/calendarView` with `startDateTime`/`endDateTime` params),
+  // Graph returns times in UTC unless a `Prefer: outlook.timezone`
+  // header is sent — and we don't send one, so the dateTime IS UTC.
+  // For all-day events, Graph returns dateTime at "00:00:00.0000000"
+  // with timeZone="UTC" — same UTC convention. In both cases the
+  // JS Date parser would default to LOCAL time without the trailing
+  // Z, shifting the moment by the viewer's UTC offset (off by a
+  // whole day for all-day events east/west of UTC). Append Z to
+  // force UTC interpretation in both branches.
+  const toUtcDate = (s: string): Date =>
+    new Date(s.endsWith('Z') ? s : s + 'Z');
+
   if (isAllDay) {
-    startTime = new Date(event.start.dateTime);
+    startTime = toUtcDate(event.start.dateTime);
     endTime = event.end?.dateTime
-      ? new Date(event.end.dateTime)
+      ? toUtcDate(event.end.dateTime)
       : new Date(startTime.getTime() + 24 * 60 * 60 * 1000);
   } else {
-    const startStr = event.start.dateTime.endsWith('Z')
-      ? event.start.dateTime
-      : event.start.dateTime + 'Z';
-    startTime = new Date(startStr);
-
-    if (event.end?.dateTime) {
-      const endStr = event.end.dateTime.endsWith('Z')
-        ? event.end.dateTime
-        : event.end.dateTime + 'Z';
-      endTime = new Date(endStr);
-    } else {
-      endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
-    }
+    startTime = toUtcDate(event.start.dateTime);
+    endTime = event.end?.dateTime
+      ? toUtcDate(event.end.dateTime)
+      : new Date(startTime.getTime() + 60 * 60 * 1000);
   }
 
   let description: string | null = null;
