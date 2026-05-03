@@ -8,8 +8,10 @@ import {
   getDb,
   eq,
   and,
+  inArray,
   calendarAccounts,
   calendars,
+  calendarEvents,
   sql,
 } from '@open-sunsama/database';
 import { NotFoundError } from '@open-sunsama/utils';
@@ -141,6 +143,15 @@ calendarAccountsRouter.post(
       }, 400);
     }
 
+    // `?force=true` clears sync tokens and wipes existing events for
+    // this account's calendars before re-syncing. Used to recover from
+    // historical data corruption where events were attributed to the
+    // wrong calendar — a clean slate forces every event to be
+    // re-fetched and attributed via the (now-correct) per-calendar
+    // sync slice. Safe to run anytime; just slower than incremental.
+    const forceParam = c.req.query('force');
+    const force = forceParam === 'true' || forceParam === '1';
+
     await db
       .update(calendarAccounts)
       .set({ syncStatus: 'syncing', syncError: null, updatedAt: new Date() })
@@ -156,6 +167,30 @@ calendarAccountsRouter.post(
             eq(calendars.isEnabled, true)
           )
         );
+
+      if (force && accountCalendars.length > 0) {
+        const calendarIds = accountCalendars.map((c) => c.id);
+        // Wipe events for these calendars so the upsert below rebuilds
+        // attribution from scratch — protects against the case where
+        // an event's calendarId is wrong in the DB.
+        await db
+          .delete(calendarEvents)
+          .where(
+            and(
+              eq(calendarEvents.userId, userId),
+              inArray(calendarEvents.calendarId, calendarIds)
+            )
+          );
+        // Clear per-calendar sync tokens so the next listEvents call
+        // does a full window fetch instead of an empty incremental.
+        await db
+          .update(calendars)
+          .set({ syncToken: null, updatedAt: new Date() })
+          .where(inArray(calendars.id, calendarIds));
+        // Refresh the in-memory list so the OAuth path sees the
+        // cleared tokens.
+        for (const c of accountCalendars) c.syncToken = null;
+      }
 
       const now = new Date();
       const timeMin = new Date(now);

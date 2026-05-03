@@ -117,23 +117,42 @@ export function useDisconnectAccount() {
 }
 
 /**
- * Trigger manual sync for a calendar account
+ * Trigger manual sync for a calendar account.
+ *
+ * Pass `{ force: true }` to wipe local events for the account's
+ * calendars and re-fetch from scratch — used to recover from
+ * historical attribution bugs where events landed under the wrong
+ * calendar. Force is slower but always converges to a clean state.
  */
 export function useSyncAccount() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (accountId: string): Promise<void> => {
+    mutationFn: async ({
+      accountId,
+      force = false,
+    }: {
+      accountId: string;
+      force?: boolean;
+    }): Promise<void> => {
       const client = getApiClient();
-      await client.post(`calendar/accounts/${accountId}/sync`);
+      const path = force
+        ? `calendar/accounts/${accountId}/sync?force=true`
+        : `calendar/accounts/${accountId}/sync`;
+      await client.post(path);
     },
-    onSuccess: () => {
+    onSuccess: (_data, vars) => {
       queryClient.invalidateQueries({ queryKey: calendarKeys.accounts() });
       queryClient.invalidateQueries({ queryKey: calendarKeys.calendars() });
+      // Force refetch all calendar-events queries so the just-rebuilt
+      // attribution lands immediately in any open calendar view.
+      queryClient.invalidateQueries({ queryKey: calendarKeys.all });
 
       toast({
-        title: "Sync started",
-        description: "Calendar sync has been initiated.",
+        title: vars.force ? "Reset & re-sync started" : "Sync started",
+        description: vars.force
+          ? "Wiping local events and re-fetching from your provider."
+          : "Calendar sync has been initiated.",
       });
     },
     onError: (error) => {

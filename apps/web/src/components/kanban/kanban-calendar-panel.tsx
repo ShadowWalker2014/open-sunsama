@@ -1,13 +1,34 @@
 import * as React from "react";
-import { format, isSameDay, setHours, addMinutes } from "date-fns";
-import type { TimeBlock as TimeBlockType } from "@open-sunsama/types";
+import {
+  format,
+  isSameDay,
+  setHours,
+  addMinutes,
+  startOfDay,
+  endOfDay,
+} from "date-fns";
+import type {
+  TimeBlock as TimeBlockType,
+  CalendarEvent,
+} from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import {
   useTimeBlocks,
   useMoveTimeBlock,
   useCascadeResizeTimeBlock,
 } from "@/hooks/useTimeBlocks";
+import {
+  useCalendarEvents,
+  useCalendars,
+  useCalendarAccounts,
+} from "@/hooks/useCalendars";
 import { TimeBlock, TimeBlockPreview } from "@/components/calendar/time-block";
+import { ExternalEvent } from "@/components/calendar/external-event";
+import { CalendarEventDetailSheet } from "@/components/calendar/calendar-event-detail-sheet";
+import {
+  layoutOverlappingItems,
+  type LayoutResult,
+} from "@/components/calendar/event-layout";
 import {
   useCalendarDnd,
   HOUR_HEIGHT,
@@ -18,6 +39,10 @@ import {
   calculateTimeFromY,
   snapToInterval,
 } from "@/hooks/useCalendarDnd";
+
+const DEFAULT_LAYOUT: LayoutResult = { lane: 0, columnCount: 1 };
+
+const PROVIDERS_WITH_WRITE_BACK = new Set(["google"]);
 
 interface KanbanCalendarPanelProps {
   date: Date;
@@ -43,6 +68,56 @@ export function KanbanCalendarPanel({
   const dateString = format(date, "yyyy-MM-dd");
   const { data: timeBlocks = [] } = useTimeBlocks({ date: dateString });
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
+  // External calendar events for the same day. Use the day's local
+  // start / end as the API range — matches CalendarView's convention
+  // so the React-Query cache key is shared and we don't double-fetch.
+  const dayStart = React.useMemo(() => startOfDay(date), [date]);
+  const dayEnd = React.useMemo(() => endOfDay(date), [date]);
+  const fromDate = dayStart.toISOString();
+  const toDate = dayEnd.toISOString();
+  const { data: calendarEvents = [] } = useCalendarEvents(fromDate, toDate);
+
+  // For the read-only-calendar gating in the detail sheet.
+  const { data: calendarsList = [] } = useCalendars();
+  const { data: calendarAccounts = [] } = useCalendarAccounts();
+  const calendarReadOnlyById = React.useMemo(() => {
+    const providerByAccount = new Map<string, string>();
+    for (const a of calendarAccounts) providerByAccount.set(a.id, a.provider);
+    const m = new Map<string, boolean>();
+    for (const c of calendarsList) {
+      const provider = providerByAccount.get(c.accountId);
+      const writable =
+        !!provider &&
+        PROVIDERS_WITH_WRITE_BACK.has(provider) &&
+        !c.isReadOnly;
+      m.set(c.id, !writable);
+    }
+    return m;
+  }, [calendarsList, calendarAccounts]);
+
+  // External-event detail sheet state — opens when the user clicks a
+  // calendar event in the panel. Self-contained inside the panel so the
+  // parent route doesn't need wiring.
+  const [selectedExternalEvent, setSelectedExternalEvent] =
+    React.useState<CalendarEvent | null>(null);
+  const [externalEventSheetOpen, setExternalEventSheetOpen] =
+    React.useState(false);
+
+  const handleExternalEventClick = React.useCallback((event: CalendarEvent) => {
+    setSelectedExternalEvent(event);
+    setExternalEventSheetOpen(true);
+  }, []);
+
+  const handleExternalEventSheetOpenChange = React.useCallback(
+    (next: boolean) => {
+      setExternalEventSheetOpen(next);
+      if (!next) {
+        setTimeout(() => setSelectedExternalEvent(null), 200);
+      }
+    },
+    []
+  );
 
   // Mutations
   const moveTimeBlock = useMoveTimeBlock();
@@ -106,6 +181,60 @@ export function KanbanCalendarPanel({
       isSameDay(new Date(block.startTime), date)
     );
   }, [timeBlocks, date]);
+
+  // Bucket the visible-range events into timed (drawn on the timeline)
+  // and all-day (drawn in the banner above). Same shape as the main
+  // CalendarView's per-day bucketer — kept inline because the panel is
+  // single-day and doesn't need the multi-day spanning logic.
+  const { timedEvents, allDayEvents } = React.useMemo(() => {
+    const targetCalendarDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    const timed: CalendarEvent[] = [];
+    const allDay: CalendarEvent[] = [];
+    for (const event of calendarEvents) {
+      const start = new Date(event.startTime);
+      const end = new Date(event.endTime);
+      if (event.isAllDay) {
+        // iCal/Google convention: all-day events stored at UTC midnight.
+        const startDateStr = `${start.getUTCFullYear()}-${String(start.getUTCMonth() + 1).padStart(2, "0")}-${String(start.getUTCDate()).padStart(2, "0")}`;
+        const endDateStr = `${end.getUTCFullYear()}-${String(end.getUTCMonth() + 1).padStart(2, "0")}-${String(end.getUTCDate()).padStart(2, "0")}`;
+        if (
+          targetCalendarDate >= startDateStr &&
+          targetCalendarDate < endDateStr
+        ) {
+          allDay.push(event);
+        }
+      } else if (start < dayEnd && end > dayStart) {
+        timed.push(event);
+      }
+    }
+    return { timedEvents: timed, allDayEvents: allDay };
+  }, [calendarEvents, date, dayStart, dayEnd]);
+
+  // Side-by-side overlap layout — same algorithm as the main timeline,
+  // packing timed events and time blocks into shared lanes.
+  const itemLayouts = React.useMemo(() => {
+    const items = [
+      ...timedEvents.map((e) => {
+        const s = new Date(e.startTime);
+        const en = new Date(e.endTime);
+        return {
+          id: `event:${e.id}`,
+          start: s < dayStart ? dayStart : s,
+          end: en > dayEnd ? dayEnd : en,
+        };
+      }),
+      ...dayBlocks.map((b) => {
+        const s = new Date(b.startTime);
+        const en = new Date(b.endTime);
+        return {
+          id: `block:${b.id}`,
+          start: s < dayStart ? dayStart : s,
+          end: en > dayEnd ? dayEnd : en,
+        };
+      }),
+    ];
+    return layoutOverlappingItems(items);
+  }, [timedEvents, dayBlocks, dayStart, dayEnd]);
 
   // Auto-scroll to current time on mount and date change
   React.useEffect(() => {
@@ -179,8 +308,14 @@ export function KanbanCalendarPanel({
 
   // Handle click on empty time slot
   const handleTimeSlotClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Don't trigger if clicking on a time block
-    if ((e.target as HTMLElement).closest("[data-time-block]")) {
+    // Don't trigger if clicking on a time block, an external calendar
+    // event, or an all-day banner — those have their own click handlers.
+    const target = e.target as HTMLElement;
+    if (
+      target.closest("[data-time-block]") ||
+      target.closest("[data-external-event]") ||
+      target.closest("[data-all-day-event]")
+    ) {
       return;
     }
 
@@ -224,6 +359,36 @@ export function KanbanCalendarPanel({
         </div>
         <div className="text-lg font-semibold">{format(date, "MMM d")}</div>
       </div>
+
+      {/* All-day banner — only renders when there's at least one all-day
+          event for this day. Compact one-line chips with a colored
+          left-border, click to open the same detail sheet. */}
+      {allDayEvents.length > 0 && (
+        <div className="flex-shrink-0 border-b bg-muted/30 px-2 py-1 space-y-0.5">
+          {allDayEvents.map((event) => {
+            const color = event.calendar?.color ?? "#6B7280";
+            return (
+              <button
+                key={event.id}
+                type="button"
+                data-all-day-event
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleExternalEventClick(event);
+                }}
+                className="block w-full text-left rounded px-1.5 py-0.5 text-[11px] truncate hover:brightness-90 cursor-pointer"
+                style={{
+                  backgroundColor: hexToRgba(color, 0.15),
+                  borderLeft: `2px solid ${hexToRgba(color, 0.6)}`,
+                }}
+                title={event.title}
+              >
+                {event.title}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Timeline */}
       <div
@@ -291,11 +456,26 @@ export function KanbanCalendarPanel({
               </div>
             )}
 
+            {/* External calendar events — drawn behind time blocks so
+                user-created blocks always layer on top. */}
+            {timedEvents.map((event) => (
+              <ExternalEvent
+                key={event.id}
+                event={event}
+                displayDate={date}
+                layout={
+                  itemLayouts.get(`event:${event.id}`) ?? DEFAULT_LAYOUT
+                }
+                onClick={() => handleExternalEventClick(event)}
+              />
+            ))}
+
             {/* Time blocks */}
             {dayBlocks.map((block) => (
               <TimeBlock
                 key={block.id}
                 block={block}
+                layout={itemLayouts.get(`block:${block.id}`) ?? DEFAULT_LAYOUT}
                 onClick={() => onBlockClick?.(block)}
                 onEditBlock={() => onEditBlock?.(block)}
                 onDragStart={(e) => handleBlockDragStart(block, e)}
@@ -327,6 +507,35 @@ export function KanbanCalendarPanel({
           </div>
         </div>
       </div>
+
+      {/* External calendar event detail sheet (read + edit + delete) */}
+      <CalendarEventDetailSheet
+        event={selectedExternalEvent}
+        open={externalEventSheetOpen}
+        onOpenChange={handleExternalEventSheetOpenChange}
+        rangeFrom={fromDate}
+        rangeTo={toDate}
+        calendarReadOnly={
+          selectedExternalEvent
+            ? (calendarReadOnlyById.get(
+                selectedExternalEvent.calendarId
+              ) ?? true)
+            : true
+        }
+      />
     </div>
   );
+}
+
+/**
+ * Convert hex color to rgba string. Same shape used by the all-day
+ * banner chips — not exported because the panel is the only consumer.
+ */
+function hexToRgba(hex: string, alpha: number): string {
+  const cleanHex = hex.replace("#", "");
+  const r = parseInt(cleanHex.substring(0, 2), 16);
+  const g = parseInt(cleanHex.substring(2, 4), 16);
+  const b = parseInt(cleanHex.substring(4, 6), 16);
+  if (Number.isNaN(r)) return `rgba(107, 114, 128, ${alpha})`;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
