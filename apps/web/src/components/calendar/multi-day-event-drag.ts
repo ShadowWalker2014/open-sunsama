@@ -145,11 +145,28 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
           ds.dayDate
         );
         let snappedStart = snapToInterval(rawStart);
-        // Clamp so the event still fits in the day.
+        // Clamp so the event still fits in the day. We also handle
+        // the snap-rolled-to-next-day case explicitly: if the snapped
+        // start landed on a different calendar date than the column
+        // we're dragging in (snapToInterval can roll 23:53 → 00:00
+        // tomorrow), force it back to today's last legal start slot.
+        const sameDay =
+          snappedStart.getDate() === ds.dayDate.getDate() &&
+          snappedStart.getMonth() === ds.dayDate.getMonth() &&
+          snappedStart.getFullYear() === ds.dayDate.getFullYear();
         const startMins = minutesFromMidnight(snappedStart);
         const maxStart = TIMELINE_END_MINUTE - originalDurationMins;
-        if (startMins > maxStart) {
-          snappedStart = addMinutes(snappedStart, -(startMins - maxStart));
+        if (!sameDay || startMins > maxStart) {
+          const startOfDayBase = new Date(
+            ds.dayDate.getFullYear(),
+            ds.dayDate.getMonth(),
+            ds.dayDate.getDate(),
+            0,
+            0,
+            0,
+            0
+          );
+          snappedStart = addMinutes(startOfDayBase, Math.max(0, maxStart));
         }
         previewStart = snappedStart;
         previewEnd = addMinutes(snappedStart, originalDurationMins);
@@ -182,13 +199,41 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
         if (minutesAfterStart < MIN_BLOCK_DURATION) {
           snappedEnd = addMinutes(ds.initialStart, MIN_BLOCK_DURATION);
         }
-        // Don't let the end cross midnight onto the next day.
+        // Don't let the end cross midnight. `snapToInterval(23:53)`
+        // rolls to next-day 00:00, which calculateYFromTime would
+        // render at y=0 (top of timeline) — the preview collapses.
+        // Clamp explicitly to the last snap slot of the day so the
+        // preview stays visible at the bottom. Drag can take you to
+        // 23:45 (with 15-min SNAP_INTERVAL); for an event that
+        // genuinely ends at midnight, use the detail sheet.
         const endMins = minutesFromMidnight(snappedEnd);
-        if (endMins === 0 && snappedEnd.getDate() !== ds.dayDate.getDate()) {
-          snappedEnd = addMinutes(
-            ds.initialStart,
-            TIMELINE_END_MINUTE - minutesFromMidnight(ds.initialStart)
+        const crossedMidnight =
+          (endMins === 0 && snappedEnd.getDate() !== ds.dayDate.getDate()) ||
+          snappedEnd.getDate() !== ds.dayDate.getDate() ||
+          snappedEnd.getMonth() !== ds.dayDate.getMonth() ||
+          snappedEnd.getFullYear() !== ds.dayDate.getFullYear();
+        if (crossedMidnight) {
+          // Last full slot of the day: 24:00 - SNAP_INTERVAL.
+          const lastSlotMins = TIMELINE_END_MINUTE - 15;
+          const startOfDayBase = new Date(
+            ds.dayDate.getFullYear(),
+            ds.dayDate.getMonth(),
+            ds.dayDate.getDate(),
+            0,
+            0,
+            0,
+            0
           );
+          snappedEnd = addMinutes(startOfDayBase, lastSlotMins);
+          // If that would shrink below MIN_BLOCK_DURATION, the user
+          // is dragging an event that already starts close to EOD —
+          // pin to start + MIN_BLOCK.
+          if (
+            differenceInMinutes(snappedEnd, ds.initialStart) <
+            MIN_BLOCK_DURATION
+          ) {
+            snappedEnd = addMinutes(ds.initialStart, MIN_BLOCK_DURATION);
+          }
         }
         previewStart = ds.initialStart;
         previewEnd = snappedEnd;

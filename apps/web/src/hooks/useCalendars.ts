@@ -230,6 +230,23 @@ export function useUpdateCalendar() {
       queryClient.invalidateQueries({ queryKey: calendarKeys.calendars() });
     },
     onError: (error) => {
+      // Reuse the same friendly mapper used by the event mutations.
+      // Most importantly, server 409 CALENDAR_READ_ONLY now produces
+      // "Read-only calendar" + the actionable server message instead
+      // of the generic "Failed to update calendar".
+      if (isApiError(error)) {
+        if (
+          error.code === "CALENDAR_READ_ONLY" ||
+          error.code === "PROVIDER_READ_ONLY"
+        ) {
+          toast({
+            variant: "destructive",
+            title: "Read-only calendar",
+            description: error.message,
+          });
+          return;
+        }
+      }
       toast({
         variant: "destructive",
         title: "Failed to update calendar",
