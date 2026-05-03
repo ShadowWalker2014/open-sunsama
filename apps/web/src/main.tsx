@@ -10,6 +10,7 @@ import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client
 import { HelmetProvider } from "react-helmet-async";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
+import { TooltipProvider } from "@/components/ui";
 import { useTimezoneSync } from "@/hooks/useTimezoneSync";
 import { persister, shouldPersistQueryFn } from "@/lib/query-persister";
 import { installChunkErrorRecovery } from "@/lib/chunk-error-recovery";
@@ -113,9 +114,17 @@ function App() {
   const inner = (
     <AuthProvider>
       <ThemeProvider>
-        <TimezoneSync>
-          <RouterProvider router={router} />
-        </TimezoneSync>
+        {/* Single app-wide TooltipProvider so individual leaf
+            components don't have to mount their own — a busy week
+            view used to instantiate 50+ providers. Children that
+            need different timing (e.g. add-task-inline with
+            delayDuration={0}) can still nest their own; Radix
+            allows nesting and inner overrides outer. */}
+        <TooltipProvider delayDuration={300}>
+          <TimezoneSync>
+            <RouterProvider router={router} />
+          </TimezoneSync>
+        </TooltipProvider>
       </ThemeProvider>
     </AuthProvider>
   );

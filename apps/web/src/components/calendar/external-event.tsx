@@ -16,7 +16,6 @@ import {
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui";
 import type { LayoutResult } from "./event-layout";
@@ -162,9 +161,8 @@ export function ExternalEvent({
   const calendarName = event.calendar?.name || "External Calendar";
 
   return (
-    <TooltipProvider>
-      <Tooltip delayDuration={300}>
-        <TooltipTrigger asChild>
+    <Tooltip delayDuration={300}>
+      <TooltipTrigger asChild>
           <div
             data-external-event
             className={cn(
@@ -292,8 +290,7 @@ export function ExternalEvent({
             )}
           </div>
         </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    </Tooltip>
   );
 }
 
@@ -320,9 +317,8 @@ export function AllDayEvent({
   };
 
   return (
-    <TooltipProvider>
-      <Tooltip delayDuration={300}>
-        <TooltipTrigger asChild>
+    <Tooltip delayDuration={300}>
+      <TooltipTrigger asChild>
           <div
             data-all-day-event
             className={cn(
@@ -364,7 +360,6 @@ export function AllDayEvent({
             )}
           </div>
         </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    </Tooltip>
   );
 }
