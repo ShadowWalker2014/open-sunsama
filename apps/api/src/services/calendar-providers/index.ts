@@ -60,6 +60,13 @@ export interface EventPatch {
    * start/end change, providers fall back to UTC. Ignored for all-day.
    */
   timezone?: string | null;
+  /**
+   * Provider-specific resource URL needed for CalDAV addressing —
+   * iCloud's PUT/DELETE target the .ics object's full HREF, not its
+   * UID. Google and Outlook ignore this field; the route layer
+   * populates it from the local row's `htmlLink` for iCloud.
+   */
+  eventUrl?: string | null;
 }
 
 export interface CalendarProvider {
@@ -99,11 +106,15 @@ export interface CalendarProvider {
   /**
    * Delete an event upstream. Resolves on success. Providers that
    * can't delete throw `ProviderReadOnlyError`.
+   *
+   * `extras.eventUrl` is the CalDAV resource URL (only used by
+   * iCloud — Google / Outlook resolve by event id alone).
    */
   deleteEvent?(
     accessToken: string,
     calendarExternalId: string,
-    eventExternalId: string
+    eventExternalId: string,
+    extras?: { eventUrl?: string | null; etag?: string | null }
   ): Promise<void>;
 }
 

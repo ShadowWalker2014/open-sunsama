@@ -20,7 +20,10 @@ import {
   type SyncOptions,
   type ExternalEvent,
 } from './calendar-providers/index.js';
-import { listCalDavEvents } from './calendar-providers/icloud.js';
+import {
+  ICloudCalendarProvider,
+  listCalDavEvents,
+} from './calendar-providers/icloud.js';
 import { publishEvent } from '../lib/websocket/index.js';
 
 export function getProvider(providerName: string): CalendarProvider | null {
@@ -29,9 +32,55 @@ export function getProvider(providerName: string): CalendarProvider | null {
       return new GoogleCalendarProvider();
     case 'outlook':
       return new OutlookCalendarProvider();
+    case 'icloud':
+      // iCloud's provider class accepts CalDAV credentials via the
+      // `accessToken` parameter as a JSON string (its constructor's
+      // optional credentials field is unused on this code path).
+      // The route's `getAccessTokenForProvider` builds the JSON
+      // payload from the account's caldav* columns.
+      return new ICloudCalendarProvider();
     default:
-      return null; // iCloud uses CalDAV directly
+      return null;
   }
+}
+
+/**
+ * Resolve the per-provider auth payload for the upstream call.
+ *
+ * - OAuth providers (Google, Outlook): returns the live access token
+ *   string after refreshing if expired.
+ * - iCloud: returns a JSON-encoded `CalDavCredentials` object so the
+ *   provider class can decode it inside `listEvents` etc.
+ *
+ * Throws `ProviderAuthError` when credentials are missing — the
+ * route layer maps this to a clean 401 with a "Reconnect your
+ * calendar" toast.
+ */
+export async function getAccessTokenForProvider(
+  account: {
+    id: string;
+    provider: string;
+    accessTokenEncrypted: string | null;
+    refreshTokenEncrypted: string | null;
+    tokenExpiresAt: Date | null;
+    email: string;
+    caldavPasswordEncrypted: string | null;
+    caldavUrl: string | null;
+  },
+  provider: CalendarProvider
+): Promise<string> {
+  if (account.provider === 'icloud') {
+    if (!account.caldavPasswordEncrypted) {
+      throw new ProviderAuthError('icloud');
+    }
+    const password = decrypt(account.caldavPasswordEncrypted);
+    return JSON.stringify({
+      username: account.email,
+      password,
+      serverUrl: account.caldavUrl ?? undefined,
+    });
+  }
+  return refreshTokensIfNeeded(account, provider);
 }
 
 /**

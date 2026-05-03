@@ -152,7 +152,86 @@ export function parseCalDavEvent(obj: DAVObject): ExternalEvent | null {
     recurringEventId: null,
     status: mapCalDavStatus(event.status),
     responseStatus: null,
-    htmlLink: null,
+    // CalDAV addresses events by URL (the .ics object's full HREF),
+    // not just by UID. Stash it in `htmlLink` so write-back can
+    // reach the right object via tsdav's update/delete methods.
+    // For Google/Outlook, htmlLink is the user-facing web URL; for
+    // iCloud, we repurpose the column as the addressable resource
+    // URL. Existing rows synced before this change will have null
+    // here — write-back returns a clear 410 telling the user to run
+    // "Reset & re-sync" to repopulate.
+    htmlLink: obj.url ?? null,
     etag,
   };
+}
+
+/**
+ * Build a minimal vCalendar VEVENT string for CalDAV PUT operations.
+ * This is enough for create/update — iCloud accepts a full VCALENDAR
+ * envelope around a single VEVENT. We don't write timezone components
+ * (VTIMEZONE) because iCloud accepts UTC dateTimes via the Z suffix.
+ */
+export function buildVCalendar(input: {
+  uid: string;
+  title: string;
+  description?: string | null;
+  location?: string | null;
+  startTime: Date;
+  endTime: Date;
+  isAllDay: boolean;
+}): string {
+  const lines: string[] = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Open Sunsama//EN',
+    'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `UID:${escapeICS(input.uid)}`,
+    `DTSTAMP:${formatICalUtc(new Date())}`,
+    `SUMMARY:${escapeICS(input.title)}`,
+  ];
+  if (input.description) {
+    lines.push(`DESCRIPTION:${escapeICS(input.description)}`);
+  }
+  if (input.location) {
+    lines.push(`LOCATION:${escapeICS(input.location)}`);
+  }
+  if (input.isAllDay) {
+    lines.push(`DTSTART;VALUE=DATE:${formatICalDate(input.startTime)}`);
+    lines.push(`DTEND;VALUE=DATE:${formatICalDate(input.endTime)}`);
+  } else {
+    lines.push(`DTSTART:${formatICalUtc(input.startTime)}`);
+    lines.push(`DTEND:${formatICalUtc(input.endTime)}`);
+  }
+  lines.push('END:VEVENT', 'END:VCALENDAR');
+  // CRLF line endings per RFC 5545.
+  return lines.join('\r\n');
+}
+
+/** YYYYMMDD for VALUE=DATE all-day events. Reads UTC components per the iCal convention. */
+function formatICalDate(d: Date): string {
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  return `${y}${m}${dd}`;
+}
+
+/** YYYYMMDDTHHMMSSZ — iCal UTC dateTime. */
+function formatICalUtc(d: Date): string {
+  const y = d.getUTCFullYear();
+  const M = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const D = String(d.getUTCDate()).padStart(2, '0');
+  const h = String(d.getUTCHours()).padStart(2, '0');
+  const m = String(d.getUTCMinutes()).padStart(2, '0');
+  const s = String(d.getUTCSeconds()).padStart(2, '0');
+  return `${y}${M}${D}T${h}${m}${s}Z`;
+}
+
+/** Escape commas, semicolons, backslashes, newlines per RFC 5545. */
+function escapeICS(s: string): string {
+  return s
+    .replace(/\\/g, '\\\\')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+    .replace(/\r?\n/g, '\\n');
 }

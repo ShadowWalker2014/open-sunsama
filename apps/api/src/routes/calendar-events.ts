@@ -25,12 +25,14 @@ import {
 import {
   getProvider,
   refreshTokensIfNeeded,
+  getAccessTokenForProvider,
 } from '../services/calendar-sync.js';
 import {
   ProviderReadOnlyError,
   ProviderEventNotFoundError,
   ProviderAuthError,
   type EventPatch,
+  type CalendarProvider,
 } from '../services/calendar-providers/index.js';
 import { publishEvent } from '../lib/websocket/index.js';
 
@@ -164,6 +166,43 @@ calendarEventsRouter.get(
 );
 
 /**
+ * Resolve the per-provider access token, mapping `ProviderAuthError`
+ * to a clean 401 JSON response object. The route checks the return
+ * value: a string means success; an object with `success: false`
+ * means auth failed and the route should return that response
+ * verbatim. Pulled into a helper because all three write routes
+ * (POST / PATCH / DELETE) share this guard.
+ */
+async function resolveAccessTokenOrAuthFail(
+  account: Parameters<typeof getAccessTokenForProvider>[0],
+  provider: CalendarProvider
+): Promise<
+  | { ok: true; accessToken: string }
+  | { ok: false; status: 401; body: { success: false; error: { code: string; message: string } } }
+> {
+  try {
+    const accessToken = await getAccessTokenForProvider(account, provider);
+    return { ok: true, accessToken };
+  } catch (err) {
+    if (err instanceof ProviderAuthError) {
+      return {
+        ok: false,
+        status: 401,
+        body: {
+          success: false,
+          error: {
+            code: 'PROVIDER_AUTH_FAILED',
+            message:
+              'Your calendar connection needs to be re-authorized. Reconnect the account in Settings.',
+          },
+        },
+      };
+    }
+    throw err;
+  }
+}
+
+/**
  * Common helper: load the event together with its calendar + account so
  * we can write back via the right provider with a fresh token. Returns
  * 404 with a `null` payload if the event doesn't belong to this user.
@@ -281,16 +320,12 @@ calendarEventsRouter.post(
       );
     }
 
-    const accessToken = await refreshTokensIfNeeded(
-      {
-        id: target.account.id,
-        provider: target.account.provider,
-        accessTokenEncrypted: target.account.accessTokenEncrypted,
-        refreshTokenEncrypted: target.account.refreshTokenEncrypted,
-        tokenExpiresAt: target.account.tokenExpiresAt,
-      },
+    const tokenResult = await resolveAccessTokenOrAuthFail(
+      target.account,
       provider
     );
+    if (!tokenResult.ok) return c.json(tokenResult.body, tokenResult.status);
+    const accessToken = tokenResult.accessToken;
 
     const payload: EventPatch = {
       title: body.title,
@@ -487,16 +522,12 @@ calendarEventsRouter.patch(
       );
     }
 
-    const accessToken = await refreshTokensIfNeeded(
-      {
-        id: row.account.id,
-        provider: row.account.provider,
-        accessTokenEncrypted: row.account.accessTokenEncrypted,
-        refreshTokenEncrypted: row.account.refreshTokenEncrypted,
-        tokenExpiresAt: row.account.tokenExpiresAt,
-      },
+    const tokenResult = await resolveAccessTokenOrAuthFail(
+      row.account,
       provider
     );
+    if (!tokenResult.ok) return c.json(tokenResult.body, tokenResult.status);
+    const accessToken = tokenResult.accessToken;
 
     const patch: EventPatch = {};
     if (body.title !== undefined) patch.title = body.title;
@@ -508,6 +539,11 @@ calendarEventsRouter.patch(
     }
     if (body.isAllDay !== undefined) patch.isAllDay = body.isAllDay;
     if (body.timezone !== undefined) patch.timezone = body.timezone;
+    // CalDAV (iCloud) addresses events by URL, not just by UID. The
+    // local row stores the URL in `htmlLink` — pass it through so
+    // the iCloud provider can target the right .ics object.
+    // Google / Outlook ignore this field.
+    if (row.event.htmlLink) patch.eventUrl = row.event.htmlLink;
 
     let updatedExternal;
     try {
@@ -665,22 +701,21 @@ calendarEventsRouter.delete(
       );
     }
 
-    const accessToken = await refreshTokensIfNeeded(
-      {
-        id: row.account.id,
-        provider: row.account.provider,
-        accessTokenEncrypted: row.account.accessTokenEncrypted,
-        refreshTokenEncrypted: row.account.refreshTokenEncrypted,
-        tokenExpiresAt: row.account.tokenExpiresAt,
-      },
+    const tokenResult = await resolveAccessTokenOrAuthFail(
+      row.account,
       provider
     );
+    if (!tokenResult.ok) return c.json(tokenResult.body, tokenResult.status);
+    const accessToken = tokenResult.accessToken;
 
     try {
       await provider.deleteEvent(
         accessToken,
         row.calendar.externalId,
-        row.event.externalId
+        row.event.externalId,
+        // iCloud needs the resource URL + etag to delete; Google /
+        // Outlook ignore the extras.
+        { eventUrl: row.event.htmlLink, etag: row.event.etag }
       );
     } catch (err) {
       if (err instanceof ProviderReadOnlyError) {
@@ -690,6 +725,29 @@ calendarEventsRouter.delete(
             error: { code: 'PROVIDER_READ_ONLY', message: err.message },
           },
           409
+        );
+      }
+      if (err instanceof ProviderEventNotFoundError) {
+        // Same out-of-sync semantics as PATCH: the upstream says
+        // the event doesn't exist (or our local row is stale, e.g.
+        // pre-PR iCloud row with null htmlLink). Treat as success
+        // from the user's POV — the event is gone either way.
+        // Clean up the local row + publish so other tabs refetch.
+        await db.delete(calendarEvents).where(eq(calendarEvents.id, eventId));
+        await publishEvent(userId, 'calendar-event:deleted', {
+          id: eventId,
+          calendarId: row.calendar.id,
+        });
+        return c.json(
+          {
+            success: false,
+            error: {
+              code: 'EVENT_OUT_OF_SYNC',
+              message:
+                'This event is out of sync with your calendar. Refresh or run "Reset & re-sync" in Settings.',
+            },
+          },
+          410
         );
       }
       if (err instanceof ProviderAuthError) {
