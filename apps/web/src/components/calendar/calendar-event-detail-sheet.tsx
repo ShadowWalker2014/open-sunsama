@@ -1,5 +1,5 @@
 import * as React from "react";
-import { format, isSameDay, parseISO } from "date-fns";
+import { format, isSameDay } from "date-fns";
 import {
   CalendarDays,
   Clock,
@@ -127,6 +127,18 @@ function fromAllDayInputValue(s: string): Date {
 
 function toAllDayInputValue(d: Date): string {
   return d.toISOString().slice(0, 10);
+}
+
+/**
+ * UTC midnight projection of *today's local date* — used as the default
+ * value for an empty all-day input when toggling. We pick today as the
+ * sensible default if no value is present.
+ */
+function localMidnightTodayUtc(): Date {
+  const now = new Date();
+  return new Date(
+    Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)
+  );
 }
 
 interface EditableState {
@@ -547,32 +559,33 @@ function EditForm({
           disabled={disabled}
           onCheckedChange={(next) => {
             // Switching to/from all-day reformats the start/end inputs to
-            // the right type. Convert the existing values across so we
-            // don't lose the user's chosen dates.
+            // the right type. Crucially, do NOT round-trip through
+            // UTC — toISOString.slice(0,10) shifts the date by one for
+            // users far enough from UTC. Pull the YYYY-MM-DD prefix
+            // straight from the local datetime-local string when going
+            // timed → all-day, and re-anchor at 09:00 local when going
+            // all-day → timed (sensible default for "what time?").
             if (next === state.isAllDay) return;
-            const startDate = next
-              ? toAllDayInputValue(
-                  state.start
-                    ? new Date(`${parseISO(state.start).toISOString()}`)
-                    : new Date()
-                )
-              : toLocalInputValue(
-                  state.start ? fromAllDayInputValue(state.start) : new Date()
-                );
-            const endDate = next
-              ? toAllDayInputValue(
-                  state.end
-                    ? new Date(`${parseISO(state.end).toISOString()}`)
-                    : new Date()
-                )
-              : toLocalInputValue(
-                  state.end ? fromAllDayInputValue(state.end) : new Date()
-                );
+            const datePart = (s: string) => s.slice(0, 10);
+            const newStart = next
+              ? state.start
+                ? datePart(state.start)
+                : toAllDayInputValue(localMidnightTodayUtc())
+              : state.start
+                ? `${state.start}T09:00`
+                : toLocalInputValue(new Date());
+            const newEnd = next
+              ? state.end
+                ? datePart(state.end)
+                : toAllDayInputValue(localMidnightTodayUtc())
+              : state.end
+                ? `${state.end}T10:00`
+                : toLocalInputValue(new Date());
             setState({
               ...state,
               isAllDay: next,
-              start: startDate,
-              end: endDate,
+              start: newStart,
+              end: newEnd,
             });
           }}
         />

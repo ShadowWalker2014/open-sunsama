@@ -202,8 +202,14 @@ function handleWebSocketEvent(
     case "calendar:synced":
     case "calendar:account-disconnected":
     case "calendar:updated":
+    // Per-event mutations from another tab / device land here. We
+    // refetch the same calendar sub-tree as a sync — the events
+    // query keys are scoped by date range so a global refetch is
+    // the simplest correct behavior.
+    case "calendar-event:updated":
+    case "calendar-event:deleted":
       // calendarKeys.all is the prefix for accounts/list/events, so this
-      // single refetch covers all three sub-trees.
+      // single refetch covers all sub-trees.
       queryClient.refetchQueries({ queryKey: calendarKeys.all });
       break;
   }

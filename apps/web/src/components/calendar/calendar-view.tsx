@@ -30,7 +30,11 @@ import {
   useCascadeResizeTimeBlock,
 } from "@/hooks";
 import { useAuth } from "@/hooks/useAuth";
-import { useCalendarEvents, useCalendars } from "@/hooks/useCalendars";
+import {
+  useCalendarEvents,
+  useCalendars,
+  useCalendarAccounts,
+} from "@/hooks/useCalendars";
 import { useCalendarDnd } from "@/hooks/useCalendarDnd";
 import { Timeline } from "./timeline";
 import { MultiDayView } from "./multi-day-view";
@@ -217,16 +221,34 @@ export function CalendarView({
   const toDate = range.end.toISOString();
   const { data: calendarEvents = [] } = useCalendarEvents(fromDate, toDate);
 
-  // Per-calendar read-only flag — used by the detail sheet to gate the
-  // edit / delete affordances. We look it up by the selected event's
-  // calendarId rather than embedding it on the event payload to avoid
-  // a wider API change.
+  // Per-calendar capability map — used by the detail sheet to gate the
+  // edit / delete affordances. A calendar is editable if (a) the
+  // provider supports write-back AND (b) the calendar isn't flagged
+  // read-only by the provider itself (subscriptions, holidays, etc.).
+  // Provider info lives on the account; we resolve via accountId.
   const { data: calendarsList = [] } = useCalendars();
+  const { data: calendarAccounts = [] } = useCalendarAccounts();
+  const accountProviderById = React.useMemo(() => {
+    const m = new Map<string, string>();
+    for (const a of calendarAccounts) m.set(a.id, a.provider);
+    return m;
+  }, [calendarAccounts]);
+  const PROVIDERS_WITH_WRITE_BACK = React.useMemo(
+    () => new Set(["google"]),
+    []
+  );
   const calendarReadOnlyById = React.useMemo(() => {
     const m = new Map<string, boolean>();
-    for (const c of calendarsList) m.set(c.id, c.isReadOnly);
+    for (const c of calendarsList) {
+      const provider = accountProviderById.get(c.accountId);
+      const writable =
+        !!provider &&
+        PROVIDERS_WITH_WRITE_BACK.has(provider) &&
+        !c.isReadOnly;
+      m.set(c.id, !writable);
+    }
     return m;
-  }, [calendarsList]);
+  }, [calendarsList, accountProviderById, PROVIDERS_WITH_WRITE_BACK]);
 
   // Mutations
   const createTimeBlock = useCreateTimeBlock();

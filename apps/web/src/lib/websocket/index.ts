@@ -19,6 +19,8 @@ export type WebSocketEventType =
   | "calendar:synced"
   | "calendar:account-disconnected"
   | "calendar:updated"
+  | "calendar-event:updated"
+  | "calendar-event:deleted"
   | "user:updated"
   | "connected";
 
