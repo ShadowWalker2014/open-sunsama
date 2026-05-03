@@ -10,6 +10,16 @@
 export type HomeTabPreference = "board" | "tasks" | "calendar";
 
 /**
+ * Granularity of the calendar view.
+ * - "day": single-day timeline (default)
+ * - "3-day": three columns side-by-side, today + next two
+ * - "week": seven-day week (Sun → Sat or Mon → Sun depending on
+ *    `weekStartsOn`)
+ * - "month": full-month grid with event chips
+ */
+export type CalendarViewMode = "day" | "3-day" | "week" | "month";
+
+/**
  * User's display preferences for theme, font, and default home tab.
  * Stored as JSON in the database and synced across devices.
  */
@@ -31,6 +41,15 @@ export interface UserPreferences {
 
   /** Default tab when visiting /app */
   homeTab?: HomeTabPreference;
+
+  /** Default granularity of the /app/calendar view (defaults to "day") */
+  calendarViewMode?: CalendarViewMode;
+
+  /**
+   * 0 = Sunday (US), 1 = Monday (most of the world). Used by the week
+   * and month calendar views to know where to start the row.
+   */
+  weekStartsOn?: 0 | 1;
 }
 
 /**

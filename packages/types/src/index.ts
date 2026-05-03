@@ -30,6 +30,7 @@ export type {
   User,
   UserPreferences,
   HomeTabPreference,
+  CalendarViewMode,
   CreateUserInput,
   LoginInput,
   AuthResponse,
