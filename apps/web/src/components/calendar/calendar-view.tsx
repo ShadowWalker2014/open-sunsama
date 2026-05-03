@@ -288,6 +288,18 @@ export function CalendarView({
     return m;
   }, [calendarsList, accountProviderById]);
 
+  // Per-calendar provider map — passed to the detail sheet so the
+  // recurring-event disclosure copy can branch on provider (iCloud
+  // edits hit the entire series; Google/Outlook hit one instance).
+  const calendarProviderById = React.useMemo(() => {
+    const m = new Map<string, string>();
+    for (const c of calendarsList) {
+      const provider = accountProviderById.get(c.accountId);
+      if (provider) m.set(c.id, provider);
+    }
+    return m;
+  }, [calendarsList, accountProviderById]);
+
   // Mutations
   const createTimeBlock = useCreateTimeBlock();
   const moveTimeBlock = useMoveTimeBlock();
@@ -760,6 +772,11 @@ export function CalendarView({
                 selectedExternalEvent.calendarId
               ) ?? true)
             : true
+        }
+        calendarProvider={
+          selectedExternalEvent
+            ? calendarProviderById.get(selectedExternalEvent.calendarId)
+            : undefined
         }
       />
 

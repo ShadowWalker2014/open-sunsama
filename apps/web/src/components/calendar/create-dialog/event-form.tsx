@@ -19,7 +19,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui";
-import { PROVIDERS_WITH_WRITE_BACK } from "@/lib/calendar-providers";
+import { isCalendarReadOnlyForUi } from "@/lib/calendar-providers";
 
 /**
  * Calendar event sub-form for the create dialog. Picks among the
@@ -48,10 +48,7 @@ export function EventForm({
       .filter((c) => {
         const provider = providerByAccount.get(c.accountId);
         return (
-          !!provider &&
-          PROVIDERS_WITH_WRITE_BACK.has(provider) &&
-          !c.isReadOnly &&
-          c.isEnabled
+          !isCalendarReadOnlyForUi(provider, c.isReadOnly) && c.isEnabled
         );
       })
       .sort((a, b) => {
