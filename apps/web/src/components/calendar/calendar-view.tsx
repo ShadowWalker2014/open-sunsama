@@ -327,8 +327,11 @@ export function CalendarView({
   // memory transfers cleanly:
   //   D = Day, X = 3 days (their "4 days" key, near enough), W = Week,
   //   M = Month, T = Today, J = previous range, K = next range.
-  // Skip when focus is inside an input / textarea / contenteditable so
-  // typing in any form field doesn't accidentally swap the view mode.
+  // Skip when focus is in a form field OR when ANY modal/popover is
+  // open — without the second guard, pressing "M" while an event
+  // detail sheet is open silently switches the calendar view behind
+  // the overlay because the focused dialog body doesn't match
+  // INPUT/TEXTAREA/SELECT/contentEditable.
   React.useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -339,6 +342,16 @@ export function CalendarView({
           target.tagName === "TEXTAREA" ||
           target.tagName === "SELECT" ||
           target.isContentEditable)
+      ) {
+        return;
+      }
+      // Radix open overlays are tagged with `data-state="open"`. If
+      // any modal-style overlay is mounted-and-open, swallow the
+      // shortcut.
+      if (
+        document.querySelector(
+          '[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"]'
+        )
       ) {
         return;
       }

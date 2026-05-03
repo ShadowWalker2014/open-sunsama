@@ -86,7 +86,14 @@ export function Timeline({
 }: TimelineProps) {
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
   const hours = React.useMemo(() => generateHours(), []);
-  const now = new Date();
+  // Tick once a minute so the now-indicator actually advances down the
+  // timeline. Without this, `now` was captured at first render and the
+  // red line froze in place until something else triggered a render.
+  const [now, setNow] = React.useState(() => new Date());
+  React.useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
   const isToday = isSameDay(date, now);
 
   // Calculate current time indicator position

@@ -276,6 +276,14 @@ export function MultiDayView({
 }: MultiDayViewProps) {
   const hours = React.useMemo(() => generateHours(), []);
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
+  // Tick the now-indicator once per minute so it advances. Without
+  // this, `new Date()` was captured at render time and the red line
+  // froze until something else triggered a re-render.
+  const [now, setNow] = React.useState(() => new Date());
+  React.useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
 
   // Auto-scroll to ~2 hours before now on mount
   React.useEffect(() => {
@@ -592,7 +600,7 @@ export function MultiDayView({
                   {today && (
                     <div
                       className="absolute left-0 right-0 z-30 flex items-center pointer-events-none"
-                      style={{ top: calculateYFromTime(new Date()) }}
+                      style={{ top: calculateYFromTime(now) }}
                     >
                       <div className="h-2 w-2 rounded-full bg-red-500 -ml-1 shadow-sm" />
                       <div className="h-0.5 flex-1 bg-red-500 shadow-sm" />

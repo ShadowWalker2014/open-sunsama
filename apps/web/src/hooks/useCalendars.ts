@@ -367,15 +367,23 @@ export function useUpdateCalendarEvent() {
       return response.data;
     },
     onMutate: async (input) => {
-      const key = calendarKeys.events(input.rangeFrom, input.rangeTo);
-      await queryClient.cancelQueries({ queryKey: key });
-      const previous = queryClient.getQueryData<CalendarEvent[]>(key);
-      if (previous) {
-        const next: CalendarEvent[] = previous.map((ev) => {
+      // Patch the event in EVERY cached event range so the change shows
+      // up across all open views (board sidebar, calendar week, etc.),
+      // not just the one that originated the mutation. Snapshots
+      // restore each range on rollback.
+      const eventsPrefix = ["calendars", "events"] as const;
+      await queryClient.cancelQueries({ queryKey: eventsPrefix });
+      const snapshots: Array<[unknown[], CalendarEvent[]]> = [];
+      const cached = queryClient.getQueriesData<CalendarEvent[]>({
+        queryKey: eventsPrefix,
+      });
+      for (const [key, data] of cached) {
+        if (!data) continue;
+        snapshots.push([key as unknown[], data]);
+        const next: CalendarEvent[] = data.map((ev) => {
           if (ev.id !== input.id) return ev;
-          // The server-side type uses ISO strings on the wire (Date in
-          // TS but the JSON layer stringifies). Match that here so the
-          // optimistic value is shape-compatible with the refetch.
+          // Wire shape: API serialises Date → ISO string, so optimistic
+          // values must be ISO strings to match the refetch payload.
           const merged: CalendarEvent = { ...ev };
           if (input.patch.title !== undefined) merged.title = input.patch.title;
           if (input.patch.description !== undefined) {
@@ -402,12 +410,13 @@ export function useUpdateCalendarEvent() {
         });
         queryClient.setQueryData<CalendarEvent[]>(key, next);
       }
-      return { previous, key };
+      return { snapshots };
     },
     onError: (error, _input, context) => {
-      // Roll back the optimistic change so the UI reflects reality.
-      if (context?.previous) {
-        queryClient.setQueryData(context.key, context.previous);
+      if (context?.snapshots) {
+        for (const [key, prior] of context.snapshots) {
+          queryClient.setQueryData(key, prior);
+        }
       }
       toast({
         variant: "destructive",
@@ -415,12 +424,15 @@ export function useUpdateCalendarEvent() {
         description: error instanceof Error ? error.message : "Unknown error",
       });
     },
-    onSettled: (_data, _err, input) => {
-      // Always re-fetch so the canonical server state lands. This also
-      // covers the case where the event moved out of the visible range.
-      queryClient.invalidateQueries({
-        queryKey: calendarKeys.events(input.rangeFrom, input.rangeTo),
-      });
+    onSettled: () => {
+      // Invalidate ALL cached calendar-event ranges so other open
+      // views (board sidebar showing day, main calendar showing week,
+      // a stale month range from a prior render) all refetch the
+      // canonical state. Without the broader invalidation, a saved
+      // edit would only land in the range that originated the
+      // mutation, leaving siblings stale or showing the event in the
+      // wrong slot if its time changed enough to leave the range.
+      queryClient.invalidateQueries({ queryKey: calendarKeys.all });
     },
   });
 }
@@ -443,20 +455,32 @@ export function useDeleteCalendarEvent() {
       await client.delete(`calendar-events/${id}`);
     },
     onMutate: async (input) => {
-      const key = calendarKeys.events(input.rangeFrom, input.rangeTo);
-      await queryClient.cancelQueries({ queryKey: key });
-      const previous = queryClient.getQueryData<CalendarEvent[]>(key);
-      if (previous) {
+      // Optimistically remove the event from EVERY cached event range
+      // (the prefix `["calendars","events"]` matches all ranges) so it
+      // disappears from all open views — board sidebar, calendar week,
+      // any stale ranges — not just the one that originated the call.
+      // Snapshot each range so rollback restores them all on error.
+      const eventsPrefix = ["calendars", "events"] as const;
+      await queryClient.cancelQueries({ queryKey: eventsPrefix });
+      const snapshots: Array<[unknown[], CalendarEvent[]]> = [];
+      const cached = queryClient.getQueriesData<CalendarEvent[]>({
+        queryKey: eventsPrefix,
+      });
+      for (const [key, data] of cached) {
+        if (!data) continue;
+        snapshots.push([key as unknown[], data]);
         queryClient.setQueryData<CalendarEvent[]>(
           key,
-          previous.filter((ev) => ev.id !== input.id)
+          data.filter((ev) => ev.id !== input.id)
         );
       }
-      return { previous, key };
+      return { snapshots };
     },
     onError: (error, _input, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(context.key, context.previous);
+      if (context?.snapshots) {
+        for (const [key, prior] of context.snapshots) {
+          queryClient.setQueryData(key, prior);
+        }
       }
       toast({
         variant: "destructive",
@@ -464,10 +488,9 @@ export function useDeleteCalendarEvent() {
         description: error instanceof Error ? error.message : "Unknown error",
       });
     },
-    onSettled: (_data, _err, input) => {
-      queryClient.invalidateQueries({
-        queryKey: calendarKeys.events(input.rangeFrom, input.rangeTo),
-      });
+    onSettled: () => {
+      // Invalidate ALL cached ranges — same reasoning as update.
+      queryClient.invalidateQueries({ queryKey: calendarKeys.all });
     },
   });
 }
