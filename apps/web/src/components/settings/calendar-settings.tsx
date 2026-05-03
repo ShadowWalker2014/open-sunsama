@@ -258,13 +258,22 @@ export function CalendarSettings() {
                   key={account.id}
                   account={account}
                   calendars={calendarsByAccount[account.id] || []}
-                  onSync={() => syncMutation.mutate(account.id)}
+                  onSync={() => syncMutation.mutate({ accountId: account.id })}
+                  onForceResync={() =>
+                    syncMutation.mutate({
+                      accountId: account.id,
+                      force: true,
+                    })
+                  }
                   onRemove={() => {
                     setAccountToRemove(account);
                     setRemoveDialogOpen(true);
                   }}
                   onUpdateCalendar={handleUpdateCalendar}
-                  isSyncing={syncMutation.isPending && syncMutation.variables === account.id}
+                  isSyncing={
+                    syncMutation.isPending &&
+                    syncMutation.variables?.accountId === account.id
+                  }
                   isUpdatingCalendar={updateCalendarMutation.isPending}
                 />
               ))}

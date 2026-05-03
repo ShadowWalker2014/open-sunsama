@@ -5,8 +5,18 @@ import {
   CheckCircle2,
   AlertCircle,
   Clock,
+  MoreVertical,
+  RotateCcw,
 } from "lucide-react";
-import { Button, Switch, Badge } from "@/components/ui";
+import {
+  Button,
+  Switch,
+  Badge,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui";
 import { cn } from "@/lib/utils";
 import type { CalendarAccount, Calendar } from "@/hooks/useCalendars";
 import { PROVIDER_CONFIG } from "./calendar-provider-icons";
@@ -158,6 +168,7 @@ export function AccountCard({
   account,
   calendars,
   onSync,
+  onForceResync,
   onRemove,
   onUpdateCalendar,
   isSyncing,
@@ -166,6 +177,12 @@ export function AccountCard({
   account: CalendarAccount;
   calendars: Calendar[];
   onSync: () => void;
+  /**
+   * Wipes local events for this account's calendars and re-fetches
+   * from scratch. Used as a self-service repair for past attribution
+   * bugs where events landed under the wrong calendar.
+   */
+  onForceResync: () => void;
   onRemove: () => void;
   onUpdateCalendar: (calendarId: string, data: { isEnabled?: boolean; isDefaultForEvents?: boolean; isDefaultForTasks?: boolean }) => void;
   isSyncing: boolean;
@@ -223,15 +240,29 @@ export function AccountCard({
               className={cn("h-4 w-4", isSyncing && "animate-spin")}
             />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onRemove}
-            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-            title="Remove account"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" title="More options">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={onForceResync}
+                disabled={isSyncing || account.syncStatus === "syncing"}
+              >
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Reset & re-sync
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={onRemove}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Disconnect account
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
