@@ -57,6 +57,20 @@ interface ExternalEventProps {
    * open the detail sheet right after the user repositioned the event.
    */
   justEndedDrag?: boolean;
+  /**
+   * Touch handlers for the mobile long-press drag. Wired by
+   * `useMobileTouchDrag` — set on the chip's root div so the
+   * `display: contents` Safari-iOS regression doesn't apply.
+   */
+  onTouchStart?: (e: React.TouchEvent) => void;
+  onTouchMove?: (e: React.TouchEvent) => void;
+  onTouchEnd?: (e: React.TouchEvent) => void;
+  /**
+   * Visual-only "this chip is currently being dragged on touch".
+   * The mobile drag hook sets this; the chip uses it to apply
+   * scale/shadow/opacity feedback so the user sees the lift.
+   */
+  isTouchDragging?: boolean;
   className?: string;
 }
 
@@ -95,6 +109,10 @@ export function ExternalEvent({
   onResizeStart,
   isDragging = false,
   justEndedDrag = false,
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd,
+  isTouchDragging = false,
   className,
 }: ExternalEventProps) {
   const startTime = new Date(event.startTime);
@@ -173,6 +191,9 @@ export function ExternalEvent({
                 : onDragStart
                   ? "cursor-grab"
                   : "cursor-pointer",
+              // Touch-drag visual feedback: lift + shadow on mobile.
+              isTouchDragging &&
+                "opacity-60 scale-[1.02] shadow-lg z-[15]",
               className
             )}
             style={{
@@ -187,9 +208,21 @@ export function ExternalEvent({
               width: `calc(${100 / layout.columnCount - COLUMN_GAP_PCT}% - ${layout.lane === 0 ? "4px" : "1px"})`,
               backgroundColor: hexToRgba(color, 0.1),
               borderColor: hexToRgba(color, 0.5),
+              // Suppress iOS Safari's text-selection callout on
+              // long-press — it would otherwise race with our 400ms
+              // long-press-to-drag timer and sometimes win, blocking
+              // the drag from starting. Belt + suspenders with
+              // `select-none` (which only suppresses selection, not
+              // the callout). Inline because there's no Tailwind
+              // shorthand for `-webkit-touch-callout`.
+              WebkitTouchCallout: "none",
+              WebkitUserSelect: "none",
             }}
             onClick={handleClick}
             onMouseDown={handleMouseDown}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
             role="button"
             tabIndex={0}
             aria-label={`Calendar event: ${event.title} from ${format(startTime, "h:mm a")} to ${format(endTime, "h:mm a")}`}
