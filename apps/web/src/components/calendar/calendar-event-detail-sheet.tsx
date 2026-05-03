@@ -3,7 +3,6 @@ import { format, isSameDay } from "date-fns";
 import {
   CalendarDays,
   Clock,
-  ExternalLink as ExternalLinkIcon,
   MapPin,
   Plus,
   AlignLeft,
@@ -222,12 +221,6 @@ export function CalendarEventDetailSheet({
   const calendarName = event?.calendar?.name ?? "External calendar";
   const canEdit = !!event && !calendarReadOnly;
 
-  const handleOpenInProvider = () => {
-    if (event?.htmlLink) {
-      window.open(event.htmlLink, "_blank", "noopener,noreferrer");
-    }
-  };
-
   const handleCreateTask = () => {
     if (event && onCreateTask) {
       onCreateTask(event);
@@ -442,16 +435,10 @@ export function CalendarEventDetailSheet({
                       <Plus className="mr-2 h-4 w-4" />
                       Create task from event
                     </Button>
-                    {event.htmlLink && (
-                      <Button
-                        onClick={handleOpenInProvider}
-                        className="w-full justify-start"
-                        variant="outline"
-                      >
-                        <ExternalLinkIcon className="mr-2 h-4 w-4" />
-                        Open in calendar provider
-                      </Button>
-                    )}
+                    {/* Intentionally no "Open in provider" link — the
+                        in-app sheet supports full edit/delete and is
+                        the canonical surface. Bouncing out to Google /
+                        Outlook would split the user's mental model. */}
                     {canEdit && (
                       <Button
                         onClick={() => setConfirmDeleteOpen(true)}

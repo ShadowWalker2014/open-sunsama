@@ -12,6 +12,9 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui";
 import { TimeBlock, TimeBlockPreview } from "./time-block";
 import { ExternalEvent, AllDayEvent } from "./external-event";
+import { layoutOverlappingItems, type LayoutResult } from "./event-layout";
+
+const DEFAULT_LAYOUT: LayoutResult = { lane: 0, columnCount: 1 };
 import {
   HOUR_HEIGHT,
   TIMELINE_START_HOUR,
@@ -164,6 +167,35 @@ export function Timeline({
     return { timedEvents: timed, allDayEvents: allDay };
   }, [calendarEvents, date]);
 
+  // Side-by-side overlap layout. Timed events and time blocks compete
+  // for column real estate, so we lane-pack them together — matches
+  // Google Calendar's "split the column when N items overlap" behavior.
+  const itemLayouts = React.useMemo(() => {
+    const dayStart = startOfDay(date);
+    const dayEnd = endOfDay(date);
+    const items = [
+      ...timedEvents.map((e) => {
+        const s = new Date(e.startTime);
+        const en = new Date(e.endTime);
+        return {
+          id: `event:${e.id}`,
+          start: s < dayStart ? dayStart : s,
+          end: en > dayEnd ? dayEnd : en,
+        };
+      }),
+      ...dayBlocks.map((b) => {
+        const s = new Date(b.startTime);
+        const en = new Date(b.endTime);
+        return {
+          id: `block:${b.id}`,
+          start: s < dayStart ? dayStart : s,
+          end: en > dayEnd ? dayEnd : en,
+        };
+      }),
+    ];
+    return layoutOverlappingItems(items);
+  }, [timedEvents, dayBlocks, date]);
+
   // Handle click on empty time slot
   const handleTimeSlotClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // Don't trigger if clicking on a time block, an external calendar
@@ -309,6 +341,7 @@ export function Timeline({
                   key={event.id}
                   event={event}
                   displayDate={date}
+                  layout={itemLayouts.get(`event:${event.id}`) ?? DEFAULT_LAYOUT}
                   onClick={
                     onExternalEventClick
                       ? () => onExternalEventClick(event)
@@ -323,6 +356,7 @@ export function Timeline({
                 <TimeBlock
                   key={block.id}
                   block={block}
+                  layout={itemLayouts.get(`block:${block.id}`) ?? DEFAULT_LAYOUT}
                   onClick={() => onBlockClick?.(block)}
                   onEditBlock={() => onEditBlock?.(block)}
                   onDragStart={(e) => onBlockDragStart?.(block, e)}

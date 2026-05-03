@@ -19,6 +19,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui";
+import type { LayoutResult } from "./event-layout";
+
+const COLUMN_GAP_PCT = 1; // gap between side-by-side overlapping events
 
 interface ExternalEventProps {
   event: CalendarEvent;
@@ -28,6 +31,12 @@ interface ExternalEventProps {
    * Y = "23:00 of Tuesday" on Tuesday's view (off-screen at the bottom).
    */
   displayDate: Date;
+  /**
+   * Lane assignment from the side-by-side overlap layout. When N items
+   * overlap at the same time slot, they split the column into N
+   * sub-columns and each item renders in its assigned lane.
+   */
+  layout?: LayoutResult;
   onClick?: () => void;
   className?: string;
 }
@@ -61,6 +70,7 @@ function getEventColor(event: CalendarEvent): string {
 export function ExternalEvent({
   event,
   displayDate,
+  layout = { lane: 0, columnCount: 1 },
   onClick,
   className,
 }: ExternalEventProps) {
@@ -109,14 +119,21 @@ export function ExternalEvent({
           <div
             data-external-event
             className={cn(
-              "absolute left-1 right-1 z-5 my-0.5 rounded-md border-l-[3px] transition-all select-none",
-              "hover:brightness-90 hover:z-15",
+              "absolute z-[5] my-0.5 rounded-md border-l-[3px] transition-all select-none",
+              "hover:brightness-90 hover:z-[15]",
               "cursor-pointer",
               className
             )}
             style={{
               top: `${top}px`,
               height: `${Math.max(height - 4, 20)}px`, // Account for margin
+              // Side-by-side overlap layout: split column into
+              // layout.columnCount lanes; this event lives in lane N.
+              // 4px gutter on the leftmost lane (matches the prior
+              // `left-1 right-1` look when no overlap), tighter gaps
+              // between sub-columns to keep them visually distinct.
+              left: `calc(${(100 / layout.columnCount) * layout.lane}% + ${layout.lane === 0 ? "4px" : "1px"})`,
+              width: `calc(${100 / layout.columnCount - COLUMN_GAP_PCT}% - ${layout.lane === 0 ? "4px" : "1px"})`,
               backgroundColor: hexToRgba(color, 0.1),
               borderColor: hexToRgba(color, 0.5),
             }}

@@ -17,6 +17,18 @@ import {
   TIMELINE_END_HOUR,
   calculateYFromTime,
 } from "@/hooks/useCalendarDnd";
+import { layoutOverlappingItems, type LayoutResult } from "./event-layout";
+
+/**
+ * When N items overlap we split the column into N sub-columns, but we
+ * leave a tiny gap between them so they remain visually distinct rather
+ * than one continuous block. Tuned so 7-day week view at 50px/col still
+ * shows separation.
+ */
+const COLUMN_GAP_PCT = 1; // %
+
+/** Fallback when a layout entry isn't found (defensive). */
+const DEFAULT_LAYOUT: LayoutResult = { lane: 0, columnCount: 1 };
 
 interface MultiDayViewProps {
   /** Ordered list of dates to render as columns */
@@ -46,6 +58,27 @@ interface DayColumnEvents {
   timed: CalendarEvent[];
   allDay: CalendarEvent[];
   blocks: TimeBlock[];
+}
+
+/** A multi-day all-day event laid out as a horizontal bar in the banner. */
+interface AllDaySpan {
+  event: CalendarEvent;
+  /** First visible-day index this event covers. */
+  startIdx: number;
+  /** Last visible-day index this event covers (inclusive). */
+  endIdx: number;
+  /** Number of days the bar spans (endIdx - startIdx + 1). */
+  length: number;
+}
+
+/** YYYY-MM-DD via local components — for cell dates the user sees. */
+function localDateString(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+/** YYYY-MM-DD via UTC components — for all-day events stored at UTC midnight. */
+function utcDateString(d: Date): string {
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
 }
 
 function bucketEventsForDay(
@@ -101,10 +134,12 @@ function bucketEventsForDay(
 function MultiDayEvent({
   event,
   displayDate,
+  layout,
   onClick,
 }: {
   event: CalendarEvent;
   displayDate: Date;
+  layout: LayoutResult;
   onClick?: () => void;
 }) {
   const startTime = new Date(event.startTime);
@@ -118,13 +153,19 @@ function MultiDayEvent({
   const height = (durationMins / 60) * HOUR_HEIGHT;
   const color = event.calendar?.color ?? "#6B7280";
 
+  // Split-column geometry: leftmost lane sits at lane/N of column width.
+  const widthPct = 100 / layout.columnCount - COLUMN_GAP_PCT;
+  const leftPct = (100 / layout.columnCount) * layout.lane;
+
   return (
     <div
       data-external-event
-      className="absolute left-0.5 right-0.5 z-[5] my-0.5 rounded border-l-[2px] cursor-pointer hover:brightness-90 transition-all overflow-hidden px-1 py-0.5"
+      className="absolute z-[5] my-0.5 rounded border-l-[2px] cursor-pointer hover:brightness-90 hover:z-[15] transition-all overflow-hidden px-1 py-0.5"
       style={{
         top: `${top}px`,
         height: `${Math.max(height - 2, 16)}px`,
+        left: `${leftPct}%`,
+        width: `${widthPct}%`,
         backgroundColor: hexToRgba(color, 0.12),
         borderColor: hexToRgba(color, 0.55),
       }}
@@ -166,10 +207,12 @@ function hexToRgba(hex: string, alpha: number): string {
 function MultiDayBlock({
   block,
   displayDate,
+  layout,
   onClick,
 }: {
   block: TimeBlock;
   displayDate: Date;
+  layout: LayoutResult;
   onClick?: () => void;
 }) {
   const startTime = new Date(block.startTime);
@@ -183,13 +226,18 @@ function MultiDayBlock({
   const height = (durationMins / 60) * HOUR_HEIGHT;
   const color = block.color ?? "#3B82F6";
 
+  const widthPct = 100 / layout.columnCount - COLUMN_GAP_PCT;
+  const leftPct = (100 / layout.columnCount) * layout.lane;
+
   return (
     <div
       data-time-block
-      className="absolute left-0.5 right-0.5 z-10 my-0.5 rounded cursor-pointer hover:brightness-90 transition-all overflow-hidden px-1 py-0.5"
+      className="absolute z-10 my-0.5 rounded cursor-pointer hover:brightness-90 hover:z-20 transition-all overflow-hidden px-1 py-0.5"
       style={{
         top: `${top}px`,
         height: `${Math.max(height - 2, 16)}px`,
+        left: `${leftPct}%`,
+        width: `${widthPct}%`,
         backgroundColor: hexToRgba(color, 0.85),
         color: "white",
       }}
@@ -246,8 +294,100 @@ export function MultiDayView({
     [days, calendarEvents, timeBlocks]
   );
 
-  // Aggregate all-day events row across columns
-  const hasAnyAllDay = dayBuckets.some((b) => b.allDay.length > 0);
+  // Per-day timed-event + block layout. Both kinds compete for column
+  // real estate (they overlap visually), so we pack them into the same
+  // lane assignment. The combined-id keys make the result lookup
+  // unambiguous when an event id and a block id collide.
+  const dayLayouts = React.useMemo(() => {
+    return dayBuckets.map((bucket, i) => {
+      const day = days[i]!;
+      const dayStart = startOfDay(day);
+      const dayEnd = endOfDay(day);
+      const items = [
+        ...bucket.timed.map((e) => {
+          const s = new Date(e.startTime);
+          const en = new Date(e.endTime);
+          return {
+            id: `event:${e.id}`,
+            start: s < dayStart ? dayStart : s,
+            end: en > dayEnd ? dayEnd : en,
+          };
+        }),
+        ...bucket.blocks.map((b) => {
+          const s = new Date(b.startTime);
+          const en = new Date(b.endTime);
+          return {
+            id: `block:${b.id}`,
+            start: s < dayStart ? dayStart : s,
+            end: en > dayEnd ? dayEnd : en,
+          };
+        }),
+      ];
+      return layoutOverlappingItems(items);
+    });
+  }, [dayBuckets, days]);
+
+  // All-day banner: render multi-day spans as single horizontal bars
+  // across the columns they cover, with lane stacking when bars overlap.
+  // We deduplicate the events first (an event spans multiple day buckets
+  // but is a single entity), then compute each event's start-day-index +
+  // span-length within the visible range.
+  const allDaySpans = React.useMemo(() => {
+    const seen = new Map<string, CalendarEvent>();
+    for (const b of dayBuckets) {
+      for (const e of b.allDay) seen.set(e.id, e);
+    }
+    if (seen.size === 0) {
+      return { lanes: [] as Array<Array<AllDaySpan>>, count: 0 };
+    }
+    type Span = AllDaySpan;
+    const spans: Span[] = [];
+    for (const event of seen.values()) {
+      const startDateStr = utcDateString(new Date(event.startTime));
+      const endDateStr = utcDateString(new Date(event.endTime));
+      // Find first / last visible-day index covered by this event.
+      let firstIdx = -1;
+      let lastIdx = -1;
+      for (let i = 0; i < days.length; i++) {
+        const d = localDateString(days[i]!);
+        // Event covers day d if startDateStr ≤ d < endDateStr
+        if (d >= startDateStr && d < endDateStr) {
+          if (firstIdx === -1) firstIdx = i;
+          lastIdx = i;
+        }
+      }
+      if (firstIdx === -1) continue;
+      spans.push({
+        event,
+        startIdx: firstIdx,
+        endIdx: lastIdx,
+        length: lastIdx - firstIdx + 1,
+      });
+    }
+    // Lane-pack: sort by start day asc, then by length desc so longer
+    // spans claim leftmost lane. Greedy-place into the first lane whose
+    // last placed span ends before this one starts.
+    spans.sort((a, b) => {
+      if (a.startIdx !== b.startIdx) return a.startIdx - b.startIdx;
+      return b.length - a.length;
+    });
+    const lanes: Array<Array<Span>> = [];
+    for (const s of spans) {
+      let placed = false;
+      for (const lane of lanes) {
+        const last = lane[lane.length - 1]!;
+        if (last.endIdx < s.startIdx) {
+          lane.push(s);
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) lanes.push([s]);
+    }
+    return { lanes, count: spans.length };
+  }, [dayBuckets, days]);
+
+  const hasAnyAllDay = allDaySpans.count > 0;
 
   // 7-column week view on a 360px phone leaves ~44px per column after the
   // hour gutter — enough for a single-letter day label and a 2-digit date.
@@ -282,14 +422,17 @@ export function MultiDayView({
                     : "text-muted-foreground"
                 )}
               >
-                {/* On the week view at narrow widths, show single-letter
-                    weekday (M T W T F S S) so headers don't overflow. */}
-                <span className={cn(isWeek && "sm:hidden")}>
-                  {format(day, "EEEEE")}
-                </span>
-                <span className={cn(isWeek ? "hidden sm:inline" : "")}>
-                  {format(day, "EEE")}
-                </span>
+                {/* Week view at narrow widths shows single-letter
+                    weekday (M T W T F S S) so headers don't overflow.
+                    Other views always show 3-letter (SAT, SUN, MON). */}
+                {isWeek ? (
+                  <>
+                    <span className="sm:hidden">{format(day, "EEEEE")}</span>
+                    <span className="hidden sm:inline">{format(day, "EEE")}</span>
+                  </>
+                ) : (
+                  format(day, "EEE")
+                )}
               </p>
               <p
                 className={cn(
@@ -305,7 +448,10 @@ export function MultiDayView({
         })}
       </div>
 
-      {/* All-day banner row */}
+      {/* All-day banner row — multi-day events render as a single bar
+          spanning the columns they cover, lane-stacked when bars overlap.
+          Layered: a faint gridline of empty day cells underneath, the
+          spanning bars positioned absolutely on top. */}
       {hasAnyAllDay && (
         <div className="flex flex-shrink-0 border-b bg-muted/30">
           <div className="w-12 sm:w-14 flex-shrink-0 border-r flex items-start justify-end px-2 py-1">
@@ -313,34 +459,57 @@ export function MultiDayView({
               All day
             </span>
           </div>
-          {dayBuckets.map((bucket, i) => (
-            <div
-              key={days[i]!.toISOString()}
-              className="flex-1 border-r last:border-r-0 px-1 py-1 space-y-0.5 min-h-[28px] min-w-0"
-            >
-              {bucket.allDay.map((event) => {
-                const color = event.calendar?.color ?? "#6B7280";
+          <div
+            className="flex-1 relative"
+            style={{
+              // Each lane is one row of bars. 22px keeps text legible
+              // and matches Google Calendar's banner-row density.
+              height: `${allDaySpans.lanes.length * 22 + 4}px`,
+            }}
+          >
+            {/* Background day-cell separators — match the timeline below */}
+            <div className="absolute inset-0 flex">
+              {days.map((day, i) => (
+                <div
+                  key={day.toISOString()}
+                  className={cn(
+                    "flex-1 border-r min-w-0",
+                    i === days.length - 1 && "border-r-0"
+                  )}
+                />
+              ))}
+            </div>
+            {/* Spanning bars */}
+            {allDaySpans.lanes.flatMap((lane, laneIdx) =>
+              lane.map((span) => {
+                const color = span.event.calendar?.color ?? "#6B7280";
+                const widthPct = (span.length / days.length) * 100;
+                const leftPct = (span.startIdx / days.length) * 100;
                 return (
                   <button
-                    key={event.id}
+                    key={span.event.id}
                     data-all-day-event
                     onClick={(e) => {
                       e.stopPropagation();
-                      onExternalEventClick?.(event);
+                      onExternalEventClick?.(span.event);
                     }}
-                    className="block w-full text-left rounded px-1.5 py-0.5 text-[10px] truncate hover:brightness-90 cursor-pointer"
+                    className="absolute text-left rounded px-1.5 py-0.5 text-[11px] truncate hover:brightness-90 cursor-pointer"
                     style={{
-                      backgroundColor: hexToRgba(color, 0.15),
-                      borderLeft: `2px solid ${hexToRgba(color, 0.6)}`,
+                      top: `${laneIdx * 22 + 2}px`,
+                      left: `calc(${leftPct}% + 2px)`,
+                      width: `calc(${widthPct}% - 4px)`,
+                      height: "20px",
+                      backgroundColor: hexToRgba(color, 0.18),
+                      borderLeft: `3px solid ${hexToRgba(color, 0.7)}`,
                     }}
-                    title={event.title}
+                    title={span.event.title}
                   >
-                    {event.title}
+                    {span.event.title}
                   </button>
                 );
-              })}
-            </div>
-          ))}
+              })
+            )}
+          </div>
         </div>
       )}
 
@@ -431,30 +600,42 @@ export function MultiDayView({
                   )}
 
                   {/* Time blocks (above events) */}
-                  {bucket.blocks.map((block) => (
-                    <MultiDayBlock
-                      key={block.id}
-                      block={block}
-                      displayDate={day}
-                      onClick={
-                        onBlockClick ? () => onBlockClick(block) : undefined
-                      }
-                    />
-                  ))}
+                  {bucket.blocks.map((block) => {
+                    const layout =
+                      dayLayouts[i]?.get(`block:${block.id}`) ??
+                      DEFAULT_LAYOUT;
+                    return (
+                      <MultiDayBlock
+                        key={block.id}
+                        block={block}
+                        displayDate={day}
+                        layout={layout}
+                        onClick={
+                          onBlockClick ? () => onBlockClick(block) : undefined
+                        }
+                      />
+                    );
+                  })}
 
                   {/* External calendar events */}
-                  {bucket.timed.map((event) => (
-                    <MultiDayEvent
-                      key={event.id}
-                      event={event}
-                      displayDate={day}
-                      onClick={
-                        onExternalEventClick
-                          ? () => onExternalEventClick(event)
-                          : undefined
-                      }
-                    />
-                  ))}
+                  {bucket.timed.map((event) => {
+                    const layout =
+                      dayLayouts[i]?.get(`event:${event.id}`) ??
+                      DEFAULT_LAYOUT;
+                    return (
+                      <MultiDayEvent
+                        key={event.id}
+                        event={event}
+                        displayDate={day}
+                        layout={layout}
+                        onClick={
+                          onExternalEventClick
+                            ? () => onExternalEventClick(event)
+                            : undefined
+                        }
+                      />
+                    );
+                  })}
                 </div>
               );
             })}
