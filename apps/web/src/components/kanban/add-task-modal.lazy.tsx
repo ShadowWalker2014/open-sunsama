@@ -16,6 +16,7 @@ type AddTaskModalProps = {
   scheduledDate?: string | null;
   addPosition?: AddPosition;
   onAddPositionChange?: (position: AddPosition) => void;
+  initialTitle?: string;
 };
 
 type AddTaskModalModule = typeof AddTaskModalModuleNS;

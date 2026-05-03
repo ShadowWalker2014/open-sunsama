@@ -38,6 +38,8 @@ interface TimelineProps {
   onBlockDragStart?: (block: TimeBlockType, e: React.MouseEvent) => void;
   onBlockResizeStart?: (block: TimeBlockType, edge: "top" | "bottom", e: React.MouseEvent) => void;
   onViewTask?: (taskId: string) => void;
+  /** Fired when the user clicks an external (Google/Outlook/iCloud) event */
+  onExternalEventClick?: (event: CalendarEvent) => void;
   onTimelineMouseMove?: (e: React.MouseEvent) => void;
   onTimelineMouseUp?: () => void;
   onTimelineMouseLeave?: () => void;
@@ -72,6 +74,7 @@ export function Timeline({
   onBlockDragStart,
   onBlockResizeStart,
   onViewTask,
+  onExternalEventClick,
   onTimelineMouseMove,
   onTimelineMouseUp,
   onTimelineMouseLeave,
@@ -163,8 +166,16 @@ export function Timeline({
 
   // Handle click on empty time slot
   const handleTimeSlotClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Don't trigger if clicking on a time block
-    if ((e.target as HTMLElement).closest('[data-time-block]')) {
+    // Don't trigger if clicking on a time block, an external calendar
+    // event, or any all-day banner — those have their own click handlers
+    // and the time-slot click would otherwise also open the "create time
+    // block" dialog as a side-effect.
+    const target = e.target as HTMLElement;
+    if (
+      target.closest('[data-time-block]') ||
+      target.closest('[data-external-event]') ||
+      target.closest('[data-all-day-event]')
+    ) {
       return;
     }
 
@@ -202,7 +213,15 @@ export function Timeline({
           <p className="text-xs font-medium text-muted-foreground mb-1">All day</p>
           <div className="flex flex-wrap gap-1">
             {allDayEvents.map((event) => (
-              <AllDayEvent key={event.id} event={event} />
+              <AllDayEvent
+                key={event.id}
+                event={event}
+                onClick={
+                  onExternalEventClick
+                    ? () => onExternalEventClick(event)
+                    : undefined
+                }
+              />
             ))}
           </div>
         </div>
@@ -290,6 +309,11 @@ export function Timeline({
                   key={event.id}
                   event={event}
                   displayDate={date}
+                  onClick={
+                    onExternalEventClick
+                      ? () => onExternalEventClick(event)
+                      : undefined
+                  }
                 />
               ))}
 
