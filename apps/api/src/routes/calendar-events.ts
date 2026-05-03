@@ -395,6 +395,16 @@ const updateEventBodySchema = z
       message: 'startTime and endTime must be provided together',
       path: ['endTime'],
     }
+  )
+  .refine(
+    (b) =>
+      b.startTime === undefined ||
+      b.endTime === undefined ||
+      new Date(b.endTime) > new Date(b.startTime),
+    {
+      message: 'endTime must be after startTime',
+      path: ['endTime'],
+    }
   );
 
 /**

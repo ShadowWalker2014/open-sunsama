@@ -12,6 +12,7 @@ import {
   DialogFooter,
   Input,
   Label,
+  Switch,
   Select,
   SelectTrigger,
   SelectValue,
@@ -66,10 +67,12 @@ export function EventForm({
     writableCalendars[0]?.id
   );
   const [location, setLocation] = React.useState("");
+  const [isAllDay, setIsAllDay] = React.useState(false);
 
   React.useEffect(() => {
     setTitle("");
     setLocation("");
+    setIsAllDay(false);
   }, [date, startTime, endTime]);
 
   React.useEffect(() => {
@@ -95,6 +98,29 @@ export function EventForm({
       });
       return;
     }
+    // For all-day events the iCal convention is UTC midnight of the
+    // covered date(s) with end exclusive. The user's slot click gave
+    // us a timed startTime — project to UTC midnight of that local
+    // date and set end = next-day UTC midnight (single-day all-day).
+    const finalStart = isAllDay
+      ? new Date(
+          Date.UTC(
+            startTime.getFullYear(),
+            startTime.getMonth(),
+            startTime.getDate()
+          )
+        )
+      : startTime;
+    const finalEnd = isAllDay
+      ? new Date(
+          Date.UTC(
+            startTime.getFullYear(),
+            startTime.getMonth(),
+            startTime.getDate() + 1
+          )
+        )
+      : endTime;
+
     try {
       await createMutation.mutateAsync({
         calendarId,
@@ -103,10 +129,12 @@ export function EventForm({
         payload: {
           title: trimmed,
           location: location.trim() || null,
-          startTime,
-          endTime,
-          isAllDay: false,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          startTime: finalStart,
+          endTime: finalEnd,
+          isAllDay,
+          timezone: isAllDay
+            ? null
+            : Intl.DateTimeFormat().resolvedOptions().timeZone,
         },
       });
       toast({ title: "Event created" });
@@ -142,6 +170,18 @@ export function EventForm({
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Event title"
           autoFocus
+        />
+      </div>
+
+      <div className="flex items-center justify-between">
+        <Label htmlFor="ev-allday" className="text-sm font-medium">
+          All-day
+        </Label>
+        <Switch
+          id="ev-allday"
+          checked={isAllDay}
+          onCheckedChange={setIsAllDay}
+          disabled={createMutation.isPending}
         />
       </div>
 
