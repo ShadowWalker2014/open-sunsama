@@ -11,6 +11,10 @@ import type {
   SyncResult,
 } from './index';
 import {
+  ProviderAuthError,
+  ProviderEventNotFoundError,
+} from './index';
+import {
   getClientId,
   getClientSecret,
   parseGoogleEvent,
@@ -254,6 +258,12 @@ export class GoogleCalendarProvider implements CalendarProvider {
     );
 
     if (!response.ok) {
+      if (response.status === 404 || response.status === 410) {
+        throw new ProviderEventNotFoundError('google');
+      }
+      if (response.status === 401 || response.status === 403) {
+        throw new ProviderAuthError('google');
+      }
       const error = await response.text();
       throw new Error(
         `Google createEvent failed (${response.status}): ${error}`
@@ -322,6 +332,15 @@ export class GoogleCalendarProvider implements CalendarProvider {
     );
 
     if (!response.ok) {
+      // Map common Google error codes to typed errors so the route
+      // layer can produce clean, actionable messages instead of
+      // forwarding the raw Google JSON to the user.
+      if (response.status === 404 || response.status === 410) {
+        throw new ProviderEventNotFoundError('google');
+      }
+      if (response.status === 401 || response.status === 403) {
+        throw new ProviderAuthError('google');
+      }
       const error = await response.text();
       throw new Error(
         `Google updateEvent failed (${response.status}): ${error}`
@@ -351,9 +370,12 @@ export class GoogleCalendarProvider implements CalendarProvider {
       }
     );
 
-    // 410 Gone = already deleted upstream. Treat as success — local row
-    // will be cleaned up alongside.
+    // 404 / 410 = already deleted upstream. Treat as success — local
+    // row will be cleaned up alongside.
     if (!response.ok && response.status !== 410 && response.status !== 404) {
+      if (response.status === 401 || response.status === 403) {
+        throw new ProviderAuthError('google');
+      }
       const error = await response.text();
       throw new Error(
         `Google deleteEvent failed (${response.status}): ${error}`

@@ -6,9 +6,49 @@ import type {
   ConnectCalDavRequest,
   UpdateCalendarRequest,
 } from "@open-sunsama/types";
+import { isApiError } from "@open-sunsama/api-client";
 import { getApiClient } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 import { calendarKeys } from "@/lib/query-keys";
+
+/**
+ * Map a write-back API error into a human-readable {title, description}
+ * pair. The server already produces clean message strings for known
+ * codes (EVENT_OUT_OF_SYNC, PROVIDER_AUTH_FAILED, etc.); this helper
+ * just gives them friendlier titles and falls back to generic for
+ * unknown errors.
+ */
+function describeWriteBackError(error: unknown, action: "update" | "delete" | "create"): { title: string; description: string } {
+  const verb = action === "update" ? "updated" : action === "delete" ? "deleted" : "created";
+  if (isApiError(error)) {
+    if (error.code === "EVENT_OUT_OF_SYNC" || error.code === "CALENDAR_OUT_OF_SYNC") {
+      return {
+        title: "Event out of sync",
+        description: error.message,
+      };
+    }
+    if (error.code === "PROVIDER_AUTH_FAILED") {
+      return {
+        title: "Reconnect your calendar",
+        description: error.message,
+      };
+    }
+    if (error.code === "PROVIDER_READ_ONLY" || error.code === "CALENDAR_READ_ONLY") {
+      return {
+        title: "Read-only calendar",
+        description: error.message,
+      };
+    }
+    return {
+      title: `Failed to ${action} event`,
+      description: error.message,
+    };
+  }
+  return {
+    title: `Failed to ${action} event`,
+    description: error instanceof Error ? error.message : `Couldn't be ${verb}.`,
+  };
+}
 
 // Canonical key factory lives in lib/query-keys; re-exported for callers.
 export { calendarKeys };
@@ -299,11 +339,8 @@ export function useCreateCalendarEvent() {
       queryClient.invalidateQueries({ queryKey: calendarKeys.all });
     },
     onError: (error) => {
-      toast({
-        variant: "destructive",
-        title: "Failed to create event",
-        description: error instanceof Error ? error.message : "Unknown error",
-      });
+      const { title, description } = describeWriteBackError(error, "create");
+      toast({ variant: "destructive", title, description });
     },
   });
 }
@@ -418,11 +455,15 @@ export function useUpdateCalendarEvent() {
           queryClient.setQueryData(key, prior);
         }
       }
-      toast({
-        variant: "destructive",
-        title: "Failed to update event",
-        description: error instanceof Error ? error.message : "Unknown error",
-      });
+      const { title, description } = describeWriteBackError(error, "update");
+      toast({ variant: "destructive", title, description });
+      // EVENT_OUT_OF_SYNC means the server already cleaned up the
+      // stale local row — refetch so the dead event disappears from
+      // the UI. (The standard onSettled invalidation also fires, but
+      // doing this here ensures we cover the rollback path too.)
+      if (isApiError(error) && error.code === "EVENT_OUT_OF_SYNC") {
+        queryClient.invalidateQueries({ queryKey: calendarKeys.all });
+      }
     },
     onSettled: () => {
       // Invalidate ALL cached calendar-event ranges so other open
@@ -482,11 +523,8 @@ export function useDeleteCalendarEvent() {
           queryClient.setQueryData(key, prior);
         }
       }
-      toast({
-        variant: "destructive",
-        title: "Failed to delete event",
-        description: error instanceof Error ? error.message : "Unknown error",
-      });
+      const { title, description } = describeWriteBackError(error, "delete");
+      toast({ variant: "destructive", title, description });
     },
     onSettled: () => {
       // Invalidate ALL cached ranges — same reasoning as update.

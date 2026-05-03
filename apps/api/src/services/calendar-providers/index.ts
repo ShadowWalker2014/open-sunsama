@@ -120,6 +120,37 @@ export class ProviderReadOnlyError extends Error {
   }
 }
 
+/**
+ * Thrown when the upstream provider says the event no longer exists
+ * (HTTP 404 / 410). The most common cause is local data drift — the
+ * event was deleted in the provider's UI, or our local row points at
+ * a calendar/event id pair that doesn't match upstream (typically a
+ * residue of pre-PR-#21 attribution corruption).
+ *
+ * Routes translate this into a 410 Gone with a clean, actionable
+ * message; clients also use the signal to trigger a quick re-sync
+ * of the affected account so the next attempt has fresh data.
+ */
+export class ProviderEventNotFoundError extends Error {
+  readonly code = 'EVENT_NOT_FOUND_UPSTREAM' as const;
+  constructor(provider: string) {
+    super(`${provider} no longer has this event`);
+    this.name = 'ProviderEventNotFoundError';
+  }
+}
+
+/**
+ * Thrown when the access token is rejected (401 / 403) and the
+ * refresh path can't recover. Client should prompt re-auth.
+ */
+export class ProviderAuthError extends Error {
+  readonly code = 'PROVIDER_AUTH_FAILED' as const;
+  constructor(provider: string) {
+    super(`${provider} authentication failed — please reconnect the account`);
+    this.name = 'ProviderAuthError';
+  }
+}
+
 export { GoogleCalendarProvider } from './google';
 export { OutlookCalendarProvider } from './outlook';
 export { ICloudCalendarProvider } from './icloud';
