@@ -57,7 +57,7 @@ import {
 import { UnscheduledTasksDrawer } from "./mobile-unscheduled-drawer";
 
 const DEFAULT_LAYOUT: LayoutResult = { lane: 0, columnCount: 1 };
-const PROVIDERS_WITH_WRITE_BACK = new Set(["google", "outlook"]);
+const PROVIDERS_WITH_WRITE_BACK = new Set(["google", "outlook", "icloud"]);
 
 interface MobileCalendarViewProps {
   /** Initial date to display */

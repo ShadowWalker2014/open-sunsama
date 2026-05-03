@@ -42,7 +42,7 @@ import {
 
 const DEFAULT_LAYOUT: LayoutResult = { lane: 0, columnCount: 1 };
 
-const PROVIDERS_WITH_WRITE_BACK = new Set(["google", "outlook"]);
+const PROVIDERS_WITH_WRITE_BACK = new Set(["google", "outlook", "icloud"]);
 
 interface KanbanCalendarPanelProps {
   date: Date;
