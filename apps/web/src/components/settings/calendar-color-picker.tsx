@@ -32,13 +32,20 @@ const PALETTE: Array<{ label: string; hex: string }> = [
 ];
 
 interface CalendarColorPickerProps {
-  /** Current color (override or provider). */
+  /** Current color — provider's at first sync, the user's after. */
   value: string | null;
   /** True while the API call is in flight — disables the trigger. */
   disabled?: boolean;
   onChange: (next: string) => void;
-  /** Optional "reset to provider color" — null clears override. */
-  onReset?: () => void;
+  /**
+   * Clears the color back to null. The dot then renders in the
+   * neutral fallback (grey). We intentionally don't call this
+   * "Reset to provider color" because we don't store the provider's
+   * original color separately — sync only writes color on the
+   * initial insert, so once cleared, the provider color does NOT
+   * come back unless the user disconnects + reconnects the account.
+   */
+  onClear?: () => void;
 }
 
 /**
@@ -52,7 +59,7 @@ export function CalendarColorPicker({
   value,
   disabled,
   onChange,
-  onReset,
+  onClear,
 }: CalendarColorPickerProps) {
   const [open, setOpen] = React.useState(false);
   const display = value ?? "#6B7280";
@@ -106,16 +113,16 @@ export function CalendarColorPicker({
             );
           })}
         </div>
-        {onReset && (
+        {onClear && value !== null && (
           <button
             type="button"
             onClick={() => {
-              onReset();
+              onClear();
               setOpen(false);
             }}
             className="mt-2 w-full rounded px-2 py-1 text-left text-xs text-muted-foreground hover:bg-muted/50"
           >
-            Reset to provider color
+            Clear color
           </button>
         )}
       </PopoverContent>
