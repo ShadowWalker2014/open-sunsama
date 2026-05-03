@@ -31,6 +31,7 @@ import {
 } from "@/hooks";
 import { useAuth } from "@/hooks/useAuth";
 import { useSavePreferences } from "@/hooks/useUserPreferences";
+import { isCalendarReadOnlyForUi } from "@/lib/calendar-providers";
 import {
   useCalendarEvents,
   useCalendars,
@@ -278,22 +279,14 @@ export function CalendarView({
     for (const a of calendarAccounts) m.set(a.id, a.provider);
     return m;
   }, [calendarAccounts]);
-  const PROVIDERS_WITH_WRITE_BACK = React.useMemo(
-    () => new Set(["google", "outlook", "icloud"]),
-    []
-  );
   const calendarReadOnlyById = React.useMemo(() => {
     const m = new Map<string, boolean>();
     for (const c of calendarsList) {
       const provider = accountProviderById.get(c.accountId);
-      const writable =
-        !!provider &&
-        PROVIDERS_WITH_WRITE_BACK.has(provider) &&
-        !c.isReadOnly;
-      m.set(c.id, !writable);
+      m.set(c.id, isCalendarReadOnlyForUi(provider, c.isReadOnly));
     }
     return m;
-  }, [calendarsList, accountProviderById, PROVIDERS_WITH_WRITE_BACK]);
+  }, [calendarsList, accountProviderById]);
 
   // Mutations
   const createTimeBlock = useCreateTimeBlock();

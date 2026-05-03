@@ -19,8 +19,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui";
-
-const PROVIDERS_WITH_WRITE_BACK = new Set(["google", "outlook", "icloud"]);
+import { PROVIDERS_WITH_WRITE_BACK } from "@/lib/calendar-providers";
 
 /**
  * Calendar event sub-form for the create dialog. Picks among the

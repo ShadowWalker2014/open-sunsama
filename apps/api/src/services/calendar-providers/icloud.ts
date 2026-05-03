@@ -417,8 +417,23 @@ function mergePatchIntoEvent(
   };
 }
 
-/** Map a thrown error from tsdav to a typed provider error. */
+/**
+ * Map a thrown error from tsdav to a typed provider error.
+ *
+ * Pass-through for already-typed errors (`ProviderEventNotFoundError`,
+ * `ProviderAuthError`, `ProviderReadOnlyError`) — without this guard,
+ * a typed error thrown inside a `try` block would be re-wrapped here
+ * as a generic `Error("iCloud ... failed: ...")`, the route's
+ * `instanceof` checks would miss, and the user would see a 502
+ * instead of the friendly 410/401 toast.
+ */
 function mapCalDavError(op: string, err: unknown): Error {
+  if (
+    err instanceof ProviderAuthError ||
+    err instanceof ProviderEventNotFoundError
+  ) {
+    return err;
+  }
   const message = err instanceof Error ? err.message : 'Unknown error';
   if (/401|Unauthorized|403|Forbidden/i.test(message)) {
     return new ProviderAuthError('icloud');

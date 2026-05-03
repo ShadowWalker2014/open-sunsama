@@ -29,6 +29,7 @@ import {
   layoutOverlappingItems,
   type LayoutResult,
 } from "@/components/calendar/event-layout";
+import { PROVIDERS_WITH_WRITE_BACK } from "@/lib/calendar-providers";
 import {
   useCalendarDnd,
   HOUR_HEIGHT,
@@ -42,7 +43,8 @@ import {
 
 const DEFAULT_LAYOUT: LayoutResult = { lane: 0, columnCount: 1 };
 
-const PROVIDERS_WITH_WRITE_BACK = new Set(["google", "outlook", "icloud"]);
+// Imported from the central source so adding a new provider is a
+// one-line change in one place.
 
 interface KanbanCalendarPanelProps {
   date: Date;
