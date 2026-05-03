@@ -95,6 +95,20 @@ export class GoogleCalendarProvider implements CalendarProvider {
     });
 
     if (!response.ok) {
+      // Google returns 400 with `error: "invalid_grant"` when the
+      // refresh token has been revoked, expired, or the user changed
+      // their password. 401/403 are the textbook auth-failed shapes.
+      // All three mean "the user needs to reconnect" — surface as the
+      // typed `ProviderAuthError` so the route layer can emit a 401
+      // with a clean "Reconnect your calendar" toast instead of a
+      // 500 with raw Google JSON in the body.
+      if (
+        response.status === 400 ||
+        response.status === 401 ||
+        response.status === 403
+      ) {
+        throw new ProviderAuthError('google');
+      }
       const error = await response.text();
       throw new Error(`Failed to refresh token: ${error}`);
     }

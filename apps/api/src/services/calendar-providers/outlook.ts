@@ -95,6 +95,21 @@ export class OutlookCalendarProvider implements CalendarProvider {
     });
 
     if (!response.ok) {
+      // Microsoft Graph identity returns 400 with `error:
+      // "invalid_grant"` (refresh token revoked or expired),
+      // `"interaction_required"` (consent rescinded), or
+      // `"unauthorized_client"` (app deauthorized). 401 covers token
+      // signature failures. All mean "user must reconnect" — surface
+      // as the typed `ProviderAuthError` so the route layer can emit
+      // a 401 with a clean "Reconnect" toast instead of a 500 with
+      // the raw Microsoft Graph JSON.
+      if (
+        response.status === 400 ||
+        response.status === 401 ||
+        response.status === 403
+      ) {
+        throw new ProviderAuthError('outlook');
+      }
       const error = await response.text();
       throw new Error(`Failed to refresh token: ${error}`);
     }
