@@ -20,9 +20,26 @@ export type EventDragMode = "move" | "resize-top" | "resize-bottom";
 
 export interface EventDragState {
   eventId: string;
-  /** Day this event was grabbed in — drag stays within this day. */
-  dayDate: Date;
-  columnRect: DOMRect;
+  /**
+   * Day where the event was originally grabbed. For move-mode this
+   * can change to a different column as the cursor crosses; for
+   * resize modes it stays pinned (resizing across days isn't a
+   * coherent UI affordance).
+   */
+  originDayDate: Date;
+  /**
+   * Day the cursor is currently over (move-mode only — for resize
+   * this equals originDayDate).
+   */
+  currentDayDate: Date;
+  /** Bounding rect of the ORIGIN column at drag start. */
+  originColumnRect: DOMRect;
+  /**
+   * Bounding rect of the column the cursor is currently over. For
+   * resize this stays equal to originColumnRect; for move this
+   * updates whenever the cursor crosses to a new column.
+   */
+  currentColumnRect: DOMRect;
   /** scrollTop at drag start, used to compensate for mid-drag scroll. */
   scrollTopAtStart: number;
   scrollEl: HTMLElement | null;
@@ -92,8 +109,10 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
       const scrollTopAtStart = scrollEl?.scrollTop ?? 0;
       setDragState({
         eventId,
-        dayDate,
-        columnRect,
+        originDayDate: dayDate,
+        currentDayDate: dayDate,
+        originColumnRect: columnRect,
+        currentColumnRect: columnRect,
         scrollTopAtStart,
         scrollEl,
         startY: e.clientY,
@@ -115,9 +134,6 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
       if (!ds) return;
       const liveScroll = ds.scrollEl?.scrollTop ?? ds.scrollTopAtStart;
       const scrollDelta = liveScroll - ds.scrollTopAtStart;
-      // The cursor's Y relative to the column's top, accounting for
-      // any scrolling that happened during the drag.
-      const relativeY = e.clientY - ds.columnRect.top + scrollDelta;
       const movedEnough =
         ds.moved || Math.abs(e.clientY - ds.startY) >= DRAG_THRESHOLD_PX;
 
@@ -126,41 +142,76 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
         ds.initialStart
       );
 
+      // For move mode, detect the column under the cursor so the user
+      // can drag an event from Mon → Wed. Resize stays pinned to the
+      // origin column (resizing across days isn't a coherent gesture).
+      let nextDayDate = ds.currentDayDate;
+      let nextColumnRect = ds.currentColumnRect;
+      if (ds.mode === "move") {
+        // elementFromPoint is cheap (browser hit-test); walk up to the
+        // marked column root and read its `data-day` ISO date.
+        const hit = document.elementFromPoint(e.clientX, e.clientY);
+        const column =
+          hit?.closest<HTMLElement>("[data-day-column]") ?? null;
+        if (column?.dataset.day) {
+          const parsed = new Date(column.dataset.day);
+          if (!Number.isNaN(parsed.getTime())) {
+            nextDayDate = parsed;
+            nextColumnRect = column.getBoundingClientRect();
+          }
+        }
+        // If the cursor wandered outside any day column (e.g. into the
+        // hour gutter), keep the last valid column.
+      }
+
+      // The cursor's Y relative to the active column's top, accounting
+      // for mid-drag scroll. For resize this is the origin column;
+      // for move this is whichever column the cursor is over.
+      const activeColumnRect =
+        ds.mode === "move" ? nextColumnRect : ds.originColumnRect;
+      const activeDayDate =
+        ds.mode === "move" ? nextDayDate : ds.originDayDate;
+      const relativeY = e.clientY - activeColumnRect.top + scrollDelta;
+
       let previewStart = ds.previewStart;
       let previewEnd = ds.previewEnd;
 
       if (ds.mode === "move") {
         // Anchor the event's top edge to the cursor by computing the
         // offset between cursor's start position and event's top, then
-        // shifting the new top by the same offset.
+        // shifting the new top by the same offset. The offset is
+        // computed against the ORIGIN column (where the cursor was
+        // first picked up); the resulting Y is then applied against
+        // the ACTIVE column (which may now be a different day).
         const initialTopPx =
           ((minutesFromMidnight(ds.initialStart) - TIMELINE_START_HOUR * 60) /
             60) *
           HOUR_HEIGHT;
         const cursorOffsetWithinEvent =
-          ds.startY - ds.columnRect.top + ds.scrollTopAtStart - initialTopPx;
+          ds.startY -
+          ds.originColumnRect.top +
+          ds.scrollTopAtStart -
+          initialTopPx;
         const newTopPx = relativeY - cursorOffsetWithinEvent;
         const rawStart = calculateTimeFromY(
           Math.max(0, newTopPx),
-          ds.dayDate
+          activeDayDate
         );
         let snappedStart = snapToInterval(rawStart);
-        // Clamp so the event still fits in the day. We also handle
-        // the snap-rolled-to-next-day case explicitly: if the snapped
-        // start landed on a different calendar date than the column
-        // we're dragging in (snapToInterval can roll 23:53 → 00:00
-        // tomorrow), force it back to today's last legal start slot.
+        // Clamp so the event still fits in the active day. Detect
+        // snap-rolled-to-next-day and force back to today's last
+        // legal start slot.
         const sameDay =
-          snappedStart.getDate() === ds.dayDate.getDate() &&
-          snappedStart.getMonth() === ds.dayDate.getMonth() &&
-          snappedStart.getFullYear() === ds.dayDate.getFullYear();
+          snappedStart.getDate() === activeDayDate.getDate() &&
+          snappedStart.getMonth() === activeDayDate.getMonth() &&
+          snappedStart.getFullYear() === activeDayDate.getFullYear();
         const startMins = minutesFromMidnight(snappedStart);
         const maxStart = TIMELINE_END_MINUTE - originalDurationMins;
         if (!sameDay || startMins > maxStart) {
           const startOfDayBase = new Date(
-            ds.dayDate.getFullYear(),
-            ds.dayDate.getMonth(),
-            ds.dayDate.getDate(),
+            activeDayDate.getFullYear(),
+            activeDayDate.getMonth(),
+            activeDayDate.getDate(),
             0,
             0,
             0,
@@ -173,7 +224,7 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
       } else if (ds.mode === "resize-top") {
         const rawStart = calculateTimeFromY(
           Math.max(0, relativeY),
-          ds.dayDate
+          ds.originDayDate
         );
         let snappedStart = snapToInterval(rawStart);
         const minutesBeforeEnd = differenceInMinutes(
@@ -189,7 +240,7 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
         // resize-bottom
         const rawEnd = calculateTimeFromY(
           Math.max(0, relativeY),
-          ds.dayDate
+          ds.originDayDate
         );
         let snappedEnd = snapToInterval(rawEnd);
         const minutesAfterStart = differenceInMinutes(
@@ -208,17 +259,18 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
         // genuinely ends at midnight, use the detail sheet.
         const endMins = minutesFromMidnight(snappedEnd);
         const crossedMidnight =
-          (endMins === 0 && snappedEnd.getDate() !== ds.dayDate.getDate()) ||
-          snappedEnd.getDate() !== ds.dayDate.getDate() ||
-          snappedEnd.getMonth() !== ds.dayDate.getMonth() ||
-          snappedEnd.getFullYear() !== ds.dayDate.getFullYear();
+          (endMins === 0 &&
+            snappedEnd.getDate() !== ds.originDayDate.getDate()) ||
+          snappedEnd.getDate() !== ds.originDayDate.getDate() ||
+          snappedEnd.getMonth() !== ds.originDayDate.getMonth() ||
+          snappedEnd.getFullYear() !== ds.originDayDate.getFullYear();
         if (crossedMidnight) {
           // Last full slot of the day: 24:00 - SNAP_INTERVAL.
           const lastSlotMins = TIMELINE_END_MINUTE - 15;
           const startOfDayBase = new Date(
-            ds.dayDate.getFullYear(),
-            ds.dayDate.getMonth(),
-            ds.dayDate.getDate(),
+            ds.originDayDate.getFullYear(),
+            ds.originDayDate.getMonth(),
+            ds.originDayDate.getDate(),
             0,
             0,
             0,
@@ -241,7 +293,14 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
 
       setDragState((prev) =>
         prev
-          ? { ...prev, previewStart, previewEnd, moved: movedEnough }
+          ? {
+              ...prev,
+              previewStart,
+              previewEnd,
+              moved: movedEnough,
+              currentDayDate: nextDayDate,
+              currentColumnRect: nextColumnRect,
+            }
           : prev
       );
     };

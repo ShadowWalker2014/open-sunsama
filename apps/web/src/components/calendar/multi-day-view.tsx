@@ -648,8 +648,12 @@ export function MultiDayView({
                 <div
                   key={day.toISOString()}
                   // `data-day-column` lets the drag hook find this
-                  // column's bounding rect via element.closest().
+                  // column's bounding rect via element.closest(); the
+                  // ISO date in `data-day` lets cross-column drag
+                  // reconstruct the target day when the cursor moves
+                  // out of the column where the event was grabbed.
                   data-day-column
+                  data-day={day.toISOString()}
                   className={cn(
                     "flex-1 relative border-r last:border-r-0 min-w-0",
                     today && "bg-primary/[0.02]",
@@ -769,8 +773,13 @@ export function MultiDayView({
                       active drag — a dashed outline at the new
                       position so the user sees where they'll land.
                       Hidden once dragState clears on mouseup. */}
+                  {/* Use currentDayDate so the preview tracks the
+                      cursor across columns during a move. For resize
+                      modes, currentDayDate stays equal to
+                      originDayDate, so the preview pins to the origin
+                      column — which is the right behavior. */}
                   {drag.dragState &&
-                    drag.dragState.dayDate.toDateString() ===
+                    drag.dragState.currentDayDate.toDateString() ===
                       day.toDateString() &&
                     drag.dragState.moved && (() => {
                       const previewTop = calculateYFromTime(
