@@ -435,7 +435,15 @@ function mapCalDavError(op: string, err: unknown): Error {
     return err;
   }
   const message = err instanceof Error ? err.message : 'Unknown error';
-  if (/401|Unauthorized|403|Forbidden/i.test(message)) {
+  // tsdav's error messages vary across versions and code paths
+  // (network-level, response-status, parse failures). Match a wider
+  // set of auth-related patterns including the WWW-Authenticate
+  // challenge wording iCloud emits and the literal status keywords.
+  if (
+    /401|403|Unauthorized|Forbidden|invalid_grant|authentication|credentials/i.test(
+      message
+    )
+  ) {
     return new ProviderAuthError('icloud');
   }
   if (/404|410|Not Found|Gone/i.test(message)) {
@@ -461,7 +469,18 @@ async function mapCalDavHttpError(op: string, response: Response): Promise<Error
   return new Error(`iCloud ${op} failed (${response.status}): ${body.slice(0, 200)}`);
 }
 
-/** Concatenate a base URL with a filename, handling trailing slashes. */
+/**
+ * Resolve a CalDAV object URL relative to the calendar URL — must
+ * use `new URL(...).href` so the resulting string matches what tsdav
+ * itself produces internally on PUT (which percent-encodes special
+ * characters like `@`). String-concatenation here would store
+ * `...calendar/UUID@open-sunsama.ics` locally while iCloud's
+ * canonical href is `...calendar/UUID%40open-sunsama.ics`, and the
+ * next sync would create a duplicate row keyed off the encoded form.
+ */
 function joinUrl(base: string, filename: string): string {
-  return base.endsWith('/') ? `${base}${filename}` : `${base}/${filename}`;
+  // `new URL(filename, base)` requires `base` to end with `/` to
+  // resolve as a directory; ensure that.
+  const baseWithSlash = base.endsWith('/') ? base : `${base}/`;
+  return new URL(filename, baseWithSlash).href;
 }
