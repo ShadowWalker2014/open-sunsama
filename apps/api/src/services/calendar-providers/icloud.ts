@@ -15,7 +15,11 @@ import {
   ProviderAuthError,
   ProviderEventNotFoundError,
 } from './index';
-import { buildVCalendar, parseCalDavEvent } from './icloud-helpers';
+import {
+  buildVCalendar,
+  parseCalDavEvent,
+  parseCalDavEventWithRaw,
+} from './icloud-helpers';
 // Node's built-in randomUUID — used when generating UIDs for new events.
 import { randomUUID } from 'node:crypto';
 
@@ -269,13 +273,22 @@ export class ICloudCalendarProvider implements CalendarProvider {
     const credentials =
       this.credentials || (JSON.parse(accessToken) as CalDavCredentials);
     const client = await getCalDavClient(credentials);
-    // CalDAV PUT replaces the entire object — we need to send the
-    // FULL ICS, not just the changed fields. Fetch the current
-    // object, parse it, merge the patch, then re-serialise.
-    const existing = await fetchSingleObject(client, calendarId, patch.eventUrl);
-    if (!existing) {
+    // CalDAV PUT replaces the entire object (RFC 4791 §5.3.2) — we
+    // must send the FULL ICS, not just the changed fields. Anything
+    // we omit gets deleted server-side. The most catastrophic case
+    // is RRULE: dropping it on update silently destroys a recurring
+    // series everywhere it syncs (iPhone, Mac Calendar, shared
+    // attendees), so the existing VEVENT's recurrence + sequence
+    // must be carried forward by hand.
+    const existingPair = await fetchSingleObjectWithRaw(
+      client,
+      calendarId,
+      patch.eventUrl
+    );
+    if (!existingPair) {
       throw new ProviderEventNotFoundError('icloud');
     }
+    const { event: existing, raw } = existingPair;
     const merged = mergePatchIntoEvent(existing, patch);
     const ics = buildVCalendar({
       uid: existing.externalId,
@@ -285,6 +298,14 @@ export class ICloudCalendarProvider implements CalendarProvider {
       startTime: merged.startTime,
       endTime: merged.endTime,
       isAllDay: merged.isAllDay,
+      // Preserve the recurrence rule so the series stays intact.
+      // Per RFC 5545 §3.6.1, RRULE is a property of the master
+      // VEVENT — omitting it on PUT means "no longer recurring".
+      rrule: existing.recurrenceRule,
+      // Bump SEQUENCE per RFC 5546 §3.1.4 so downstream clients
+      // (iOS Calendar, shared attendees) accept the update instead
+      // of treating it as stale.
+      sequence: (raw.sequence ?? 0) + 1,
     });
     let response: Response;
     try {
@@ -309,9 +330,8 @@ export class ICloudCalendarProvider implements CalendarProvider {
       startTime: merged.startTime,
       endTime: merged.endTime,
       isAllDay: merged.isAllDay,
-      // Carry the rest forward from the existing event — CalDAV
-      // doesn't surface RRULE/timezone changes through this path
-      // so they stay as they were.
+      // Carry the rest forward — RRULE was preserved on the wire
+      // above, and timezone isn't exposed through our patch shape.
       timezone: existing.timezone,
       recurrenceRule: existing.recurrenceRule,
       recurringEventId: existing.recurringEventId,
@@ -373,19 +393,24 @@ async function getCalDavClient(
   return client;
 }
 
-/** Re-fetch a single CalDAV object so we can merge a partial patch. */
-async function fetchSingleObject(
+/**
+ * Re-fetch a single CalDAV object and return both the parsed
+ * `ExternalEvent` and its raw `VCalendarComponent`. Update needs the
+ * raw component for iCloud-specific properties (SEQUENCE) that
+ * aren't part of the cross-provider `ExternalEvent` shape.
+ */
+async function fetchSingleObjectWithRaw(
   client: DAVClient,
   calendarUrl: string,
   objectUrl: string
-): Promise<ExternalEvent | null> {
+) {
   const objects = await client.fetchCalendarObjects({
     calendar: { url: calendarUrl },
     objectUrls: [objectUrl],
   });
   const obj = objects[0];
   if (!obj) return null;
-  return parseCalDavEvent(obj);
+  return parseCalDavEventWithRaw(obj);
 }
 
 /**
