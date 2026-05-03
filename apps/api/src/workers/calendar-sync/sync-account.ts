@@ -15,6 +15,7 @@ import {
   upsertEvents,
   updateSyncStatus,
   publishSyncEvent,
+  ensureGoogleWatches,
   type AccountSyncResult,
 } from '../../services/calendar-sync.js';
 
@@ -119,6 +120,13 @@ export async function processSyncAccount(
         accountCalendars,
         syncOptions
       );
+
+      // Register Google `events.watch` push channels for any
+      // calendars that don't yet have one. Idempotent and best-
+      // effort — failures don't affect the rest of the sync.
+      if (providerName === 'google') {
+        await ensureGoogleWatches(accountId, accessToken);
+      }
     }
 
     // Delete removed events (per-calendar scoped)

@@ -26,6 +26,7 @@ import {
   upsertEvents,
   updateSyncStatus,
   publishSyncEvent,
+  ensureGoogleWatches,
 } from '../services/calendar-sync.js';
 import { ProviderAuthError } from '../services/calendar-providers/index.js';
 import { publishEvent } from '../lib/websocket/index.js';
@@ -94,6 +95,42 @@ calendarAccountsRouter.delete(
 
     if (!account) {
       throw new NotFoundError('Calendar account', id);
+    }
+
+    // Best-effort: tear down any Google push channels we own for
+    // this account's calendars before the cascade-delete drops the
+    // rows. Stop calls are async-fire-and-forget — even if Google
+    // refuses, channels expire on their own within 7 days.
+    if (account.provider === 'google' && account.accessTokenEncrypted) {
+      try {
+        const provider = getProvider('google');
+        if (provider) {
+          const accessToken = await refreshTokensIfNeeded(account, provider);
+          const watched = await db
+            .select({
+              channelId: calendars.watchChannelId,
+              resourceId: calendars.watchResourceId,
+            })
+            .from(calendars)
+            .where(eq(calendars.accountId, id));
+          const { stopWatch } = await import(
+            '../services/google-calendar-watch.js'
+          );
+          for (const w of watched) {
+            if (!w.channelId || !w.resourceId) continue;
+            await stopWatch({
+              accessToken,
+              channelId: w.channelId,
+              resourceId: w.resourceId,
+            });
+          }
+        }
+      } catch (err) {
+        console.warn(
+          `[Google Watch] stop-on-disconnect failed for account ${id}:`,
+          err instanceof Error ? err.message : err
+        );
+      }
     }
 
     await db
@@ -201,6 +238,10 @@ calendarAccountsRouter.post(
 
       const syncOptions = { timeMin, timeMax };
 
+      // Hold onto the OAuth access token so we can register Google
+      // push-notification watches after the sync. iCloud doesn't
+      // need this — CalDAV has no equivalent.
+      let oauthAccessToken: string | null = null;
       const syncResult =
         account.provider === 'icloud'
           ? await syncICloudAccount(account, accountCalendars, syncOptions)
@@ -213,6 +254,7 @@ calendarAccountsRouter.post(
                 account,
                 provider
               );
+              oauthAccessToken = accessToken;
               return syncOAuthAccount(
                 accessToken,
                 provider,
@@ -224,6 +266,16 @@ calendarAccountsRouter.post(
       await deleteRemovedEvents(userId, syncResult.perCalendar);
       await upsertEvents(userId, syncResult.perCalendar);
       await updateSyncStatus(id, 'idle', syncResult.nextSyncToken);
+
+      // Register Google `events.watch` channels for any calendars
+      // that don't yet have one — gives us seconds-latency push
+      // notifications instead of waiting for the 5-min poll. Outlook
+      // gets the same treatment in a follow-up via Microsoft Graph
+      // subscriptions; iCloud has no push-notification protocol.
+      if (account.provider === 'google' && oauthAccessToken) {
+        await ensureGoogleWatches(id, oauthAccessToken);
+      }
+
       publishSyncEvent(
         userId,
         id,
