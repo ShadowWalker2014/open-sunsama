@@ -11,7 +11,6 @@ import {
   type DragStartEvent,
   type DragOverEvent,
   type DragEndEvent,
-  closestCenter,
 } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { snapCenterToCursor } from "@dnd-kit/modifiers";
@@ -57,18 +56,23 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
   const moveTask = useMoveTask();
   const reorderTasks = useReorderTasks();
 
-  // Drag and drop sensors with keyboard support for accessibility
-  // Using delay + distance to ensure clicks register before drag starts
+  // Drag-and-drop sensors with keyboard support for accessibility.
+  // Using `distance` instead of `delay` keeps clicks distinct from drags
+  // without paying a 100ms perceived lag at the start of every drag. dnd-kit
+  // only treats the gesture as a drag once the pointer has actually moved
+  // 5px, so a plain click never misfires.
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        delay: 100,
-        tolerance: 5,
+        distance: 5,
       },
     }),
     useSensor(TouchSensor, {
+      // Touch keeps a small delay because long-press is the natural gesture
+      // for "pick up an item" on touch and we don't want a scroll to
+      // accidentally start a drag. Tightened from 200ms.
       activationConstraint: {
-        delay: 200,
+        delay: 150,
         tolerance: 8,
       },
     }),
