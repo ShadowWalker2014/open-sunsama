@@ -3,7 +3,6 @@
 
 export { KanbanBoard } from "./kanban-board";
 export { KanbanBoardToolbar } from "./kanban-board-toolbar";
-export { createDndHandlers } from "./kanban-dnd-handlers";
 export { DayColumn } from "./day-column";
 export { TaskCard, SortableTaskCard, TaskCardPlaceholder } from "./task-card";
 export { TaskContextMenu } from "./task-context-menu";

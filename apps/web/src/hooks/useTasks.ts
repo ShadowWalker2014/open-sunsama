@@ -180,9 +180,13 @@ export function useCreateTask() {
       const api = getApi();
       return await api.tasks.create(data);
     },
-    onMutate: async (data) => {
+    onMutate: (data) => {
       // Optimistically inject a placeholder task so the UI updates instantly.
-      await queryClient.cancelQueries({ queryKey: taskKeys.lists() });
+      // We fire cancelQueries WITHOUT awaiting — the abort() call propagates
+      // synchronously and React Query refuses to write a cancelled fetch's
+      // result to the cache, so awaiting only delays the user-visible
+      // setQueryData below without changing correctness.
+      void queryClient.cancelQueries({ queryKey: taskKeys.lists() });
 
       const previousQueries = queryClient.getQueriesData<Task[]>({
         queryKey: taskKeys.lists(),
@@ -326,9 +330,15 @@ export function useUpdateTask() {
       const api = getApi();
       return await api.tasks.update(id, data);
     },
-    onMutate: async ({ id, data }) => {
-      await queryClient.cancelQueries({ queryKey: taskKeys.lists() });
-      await queryClient.cancelQueries({ queryKey: taskKeys.detail(id) });
+    onMutate: ({ id, data }) => {
+      // Fire cancelQueries WITHOUT awaiting — abort() propagates synchronously
+      // so any in-flight fetch is killed before our optimistic state below can
+      // be overwritten. Awaiting here was the source of perceptible drag /
+      // shortcut / context-menu lag on cards: with 30+ visible day-column
+      // queries plus the range prefetch in flight, settling the cancellation
+      // promise before applying setQueryData stalled the UI noticeably.
+      void queryClient.cancelQueries({ queryKey: taskKeys.lists() });
+      void queryClient.cancelQueries({ queryKey: taskKeys.detail(id) });
 
       const previousTask = queryClient.getQueryData<Task>(taskKeys.detail(id));
       const previousQueries = queryClient.getQueriesData<Task[]>({
@@ -430,9 +440,12 @@ export function useDeleteTask() {
       await api.tasks.delete(id);
       return id;
     },
-    onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: taskKeys.lists() });
-      await queryClient.cancelQueries({
+    onMutate: (id) => {
+      // Fire cancelQueries without awaiting — abort signals propagate
+      // synchronously, so the snapshot + setQueryData below run instantly
+      // without any aborted refetch racing them.
+      void queryClient.cancelQueries({ queryKey: taskKeys.lists() });
+      void queryClient.cancelQueries({
         queryKey: ["tasks", "search", "infinite"],
       });
 
@@ -527,10 +540,14 @@ export function useCompleteTask() {
         return await api.tasks.uncomplete(id);
       }
     },
-    onMutate: async ({ id, completed }) => {
-      await queryClient.cancelQueries({ queryKey: taskKeys.lists() });
-      await queryClient.cancelQueries({ queryKey: taskKeys.detail(id) });
-      await queryClient.cancelQueries({
+    onMutate: ({ id, completed }) => {
+      // Fire cancelQueries without awaiting; the synchronous abort prevents
+      // an in-flight refetch from overwriting our optimistic state, while
+      // skipping the await gives instant visual feedback when the user
+      // checks the box / hits the keyboard shortcut.
+      void queryClient.cancelQueries({ queryKey: taskKeys.lists() });
+      void queryClient.cancelQueries({ queryKey: taskKeys.detail(id) });
+      void queryClient.cancelQueries({
         queryKey: ["tasks", "search", "infinite"],
       });
 
@@ -674,9 +691,13 @@ export function useMoveTask() {
         position,
       });
     },
-    onMutate: async ({ id, targetDate, position }) => {
-      // Cancel outgoing refetches to avoid overwriting optimistic update
-      await queryClient.cancelQueries({ queryKey: taskKeys.lists() });
+    onMutate: ({ id, targetDate, position }) => {
+      // Fire cancelQueries without awaiting. The abort propagates
+      // synchronously, so an in-flight refetch can't land between our
+      // snapshot and our setQueryData. Awaiting here used to add a
+      // perceptible delay between drop and visual update — that's the
+      // exact lag the user reported on drag/keyboard/context-menu moves.
+      void queryClient.cancelQueries({ queryKey: taskKeys.lists() });
 
       // Snapshot all task list queries for rollback
       const previousQueries = queryClient.getQueriesData<Task[]>({
@@ -768,12 +789,17 @@ export function useReorderTasks() {
       const input: ReorderTasksInput = { date, taskIds };
       return await api.tasks.reorder(input);
     },
-    onMutate: async ({ date, taskIds }) => {
+    onMutate: ({ date, taskIds }) => {
       const isBacklog = date === "backlog";
       const targetScheduledDate: string | null = isBacklog ? null : date;
 
-      await queryClient.cancelQueries({ queryKey: taskKeys.lists() });
-      await queryClient.cancelQueries({
+      // Fire cancelQueries without awaiting. abort() fires synchronously,
+      // so any in-flight refetch is killed before the optimistic
+      // setQueryData calls below; awaiting here used to delay the
+      // post-drop reorder UI update by the time it took for cancellation
+      // to settle across all task list queries.
+      void queryClient.cancelQueries({ queryKey: taskKeys.lists() });
+      void queryClient.cancelQueries({
         queryKey: ["tasks", "search", "infinite"],
       });
 
