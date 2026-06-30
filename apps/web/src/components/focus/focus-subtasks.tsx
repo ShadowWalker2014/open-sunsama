@@ -143,9 +143,9 @@ export function FocusSubtasks({ taskId }: FocusSubtasksProps) {
       )}
 
       {/* Add subtask input */}
-      <div className="flex items-center gap-2 py-2 px-2 -mx-2 rounded-md hover:bg-muted/30 transition-colors">
-        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-muted-foreground/20">
-          <Plus className="h-3 w-3 text-muted-foreground/40" />
+      <div className="flex items-center gap-2 py-1 px-2 -mx-2 rounded-md hover:bg-muted/30 transition-colors">
+        <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[1.5px] border-dashed border-muted-foreground/20">
+          <Plus className="h-2.5 w-2.5 text-muted-foreground/40" />
         </div>
         <Input
           value={newSubtaskTitle}
@@ -157,7 +157,7 @@ export function FocusSubtasks({ taskId }: FocusSubtasksProps) {
             }
           }}
           placeholder="Add a subtask..."
-          className="border-none p-0 h-auto text-sm shadow-none focus-visible:ring-0 bg-transparent placeholder:text-muted-foreground/40"
+          className="border-none p-0 h-auto text-[13px] shadow-none focus-visible:ring-0 bg-transparent placeholder:text-muted-foreground/40"
           disabled={createSubtask.isPending}
         />
       </div>
