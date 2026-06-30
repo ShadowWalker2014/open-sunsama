@@ -108,8 +108,14 @@ export default function SettingsPage() {
   }, [searchParams.tab, isCalendarRedirect]);
 
   const [activeTab, setActiveTab] = React.useState<SettingsTab>(initialTab);
+  // Open a tab's sheet directly when deep-linked (e.g. mobile "More → Profile")
+  // — for ANY valid tab, profile included. Bare /app/settings shows the list.
+  const explicitTab =
+    searchParams.tab && TABS.some((t) => t.id === searchParams.tab)
+      ? (searchParams.tab as SettingsTab)
+      : null;
   const [openSheet, setOpenSheet] = React.useState<SettingsTab | null>(
-    isMobile ? (initialTab !== "profile" ? initialTab : null) : null
+    isMobile ? explicitTab ?? (isCalendarRedirect ? "calendars" : null) : null
   );
 
   // Track if we've already handled the calendar redirect to avoid double-refetching
