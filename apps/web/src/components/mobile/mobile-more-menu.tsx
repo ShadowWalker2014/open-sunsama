@@ -6,6 +6,8 @@ import {
   Lock,
   Palette,
   ListTodo,
+  Repeat,
+  CalendarDays,
   Bell,
   Key,
   Terminal,
@@ -137,7 +139,7 @@ export function MobileMoreMenu({ onLogout }: MobileMoreMenuProps) {
           id: "backlog",
           icon: Inbox,
           label: "Backlog",
-          href: "/app?backlog=true",
+          href: "/app/tasks?backlog=1",
         },
       ],
     },
@@ -165,8 +167,20 @@ export function MobileMoreMenu({ onLogout }: MobileMoreMenuProps) {
         {
           id: "tasks",
           icon: ListTodo,
-          label: "Tasks",
+          label: "Task defaults",
           href: "/app/settings?tab=tasks",
+        },
+        {
+          id: "routines",
+          icon: Repeat,
+          label: "Routines",
+          href: "/app/settings?tab=routines",
+        },
+        {
+          id: "calendars",
+          icon: CalendarDays,
+          label: "Calendars",
+          href: "/app/settings?tab=calendars",
         },
         {
           id: "notifications",
@@ -175,10 +189,12 @@ export function MobileMoreMenu({ onLogout }: MobileMoreMenuProps) {
           href: "/app/settings?tab=notifications",
         },
         {
-          id: "api-keys",
+          // Settings tab id is "api" (not "api-keys") — an invalid tab silently
+          // falls back to the Profile tab.
+          id: "api",
           icon: Key,
           label: "API Keys",
-          href: "/app/settings?tab=api-keys",
+          href: "/app/settings?tab=api",
         },
         {
           id: "mcp",

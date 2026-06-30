@@ -15,6 +15,7 @@ import {
   addMonths,
 } from "date-fns";
 import { ChevronDown, ChevronLeft, ChevronRight, Inbox, Menu, Plus } from "lucide-react";
+import { useSearch } from "@tanstack/react-router";
 import type { Task } from "@open-sunsama/types";
 import {
   DndContext,
@@ -50,9 +51,15 @@ interface MobileTaskListViewProps {
  * Features sticky header, progress bar, and scrollable task list.
  */
 export function MobileTaskListView({ date, className }: MobileTaskListViewProps) {
+  // Open the backlog sheet when arriving via `/app/tasks?backlog=1`
+  // (mobile "More → Backlog"). Initialize the open state straight from the
+  // param — clearing the param via navigate would remount this view and
+  // reset the state, so we just leave it.
+  const { backlog } = useSearch({ strict: false }) as { backlog?: string };
+
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(!!backlog);
   const [swipeDirection, setSwipeDirection] = React.useState<'left' | 'right' | null>(null);
   
   // Stateful date for swipe navigation
@@ -203,7 +210,7 @@ export function MobileTaskListView({ date, className }: MobileTaskListViewProps)
                 </button>
               </SheetTrigger>
               <SheetContent side="left" className="p-0 w-72">
-                <MobileBacklogSidebar onClose={() => setIsSidebarOpen(false)} />
+                <MobileBacklogSidebar />
               </SheetContent>
             </Sheet>
             
@@ -504,7 +511,7 @@ function MobileDatePicker({
 
 // --- MobileBacklogSidebar ---
 
-function MobileBacklogSidebar({ onClose }: { onClose: () => void }) {
+function MobileBacklogSidebar() {
   const { data: tasks, isLoading } = useTasks({ backlog: true, limit: 500 });
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
 
