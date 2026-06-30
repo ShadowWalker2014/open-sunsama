@@ -18,6 +18,38 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { taskKeys, timeBlockKeys } from "@/lib/query-keys";
 
+/**
+ * Write an authoritative task into every cache that can hold it: the detail
+ * entry plus all list and infinite-search caches. Used after a mutation (or an
+ * undo/redo) resolves so synchronous cache readers — e.g. the `c` shortcut's
+ * `getFreshTask` — never observe a stale copy. Invalidation alone is not
+ * enough: it leaves the old value in cache until a refetch lands, and the
+ * detail cache isn't even refetched unless it's actively observed.
+ */
+function writeTaskToCaches(qc: QueryClient, task: Task) {
+  qc.setQueryData<Task>(taskKeys.detail(task.id), task);
+  qc.setQueriesData<Task[]>({ queryKey: taskKeys.lists() }, (old) =>
+    old ? old.map((t) => (t.id === task.id ? task : t)) : old
+  );
+  qc.setQueriesData(
+    { queryKey: ["tasks", "search", "infinite"] },
+    (old: unknown) => {
+      if (!old || typeof old !== "object" || !("pages" in old)) return old;
+      const current = old as {
+        pages: Array<{ data: Task[]; meta?: unknown }>;
+        pageParams: unknown[];
+      };
+      return {
+        ...current,
+        pages: current.pages.map((page) => ({
+          ...page,
+          data: page.data.map((t) => (t.id === task.id ? task : t)),
+        })),
+      };
+    }
+  );
+}
+
 /** Refetch the task-related caches after an undo/redo applies a raw change. */
 function invalidateTaskCaches(qc: QueryClient) {
   qc.invalidateQueries({ queryKey: taskKeys.lists() });
@@ -859,36 +891,7 @@ export function useCompleteTask() {
       });
     },
     onSuccess: (updatedTask, variables, context) => {
-      queryClient.setQueryData(taskKeys.detail(updatedTask.id), updatedTask);
-      queryClient.setQueriesData<Task[]>(
-        { queryKey: taskKeys.lists() },
-        (old) => {
-          if (!old) return old;
-          return old.map((task) =>
-            task.id === updatedTask.id ? updatedTask : task
-          );
-        }
-      );
-      queryClient.setQueriesData(
-        { queryKey: ["tasks", "search", "infinite"] },
-        (old: unknown) => {
-          if (!old || typeof old !== "object" || !("pages" in old)) return old;
-          const current = old as {
-            pages: Array<{ data: Task[]; meta?: unknown }>;
-            pageParams: unknown[];
-          };
-
-          return {
-            ...current,
-            pages: current.pages.map((page) => ({
-              ...page,
-              data: page.data.map((task) =>
-                task.id === updatedTask.id ? updatedTask : task
-              ),
-            })),
-          };
-        }
-      );
+      writeTaskToCaches(queryClient, updatedTask);
 
       // Undo toggles completion back. When completing also moved the task to
       // today (movedFromDate set), undo restores its original planned day.
@@ -899,26 +902,32 @@ export function useCompleteTask() {
           label: completed ? "Complete task" : "Uncomplete task",
           undo: async () => {
             const api = getApi();
+            let task: Task;
             if (completed) {
-              await api.tasks.uncomplete(id);
+              task = await api.tasks.uncomplete(id);
               if (movedFromDate)
-                await api.tasks.update(id, { scheduledDate: movedFromDate });
+                task = await api.tasks.update(id, {
+                  scheduledDate: movedFromDate,
+                });
             } else {
-              await api.tasks.complete(id);
+              task = await api.tasks.complete(id);
             }
+            writeTaskToCaches(queryClient, task);
             invalidateTaskCaches(queryClient);
           },
           redo: async () => {
             const api = getApi();
+            let task: Task;
             if (completed) {
-              await api.tasks.complete(id);
+              task = await api.tasks.complete(id);
               if (movedFromDate)
-                await api.tasks.update(id, {
+                task = await api.tasks.update(id, {
                   scheduledDate: format(new Date(), "yyyy-MM-dd"),
                 });
             } else {
-              await api.tasks.uncomplete(id);
+              task = await api.tasks.uncomplete(id);
             }
+            writeTaskToCaches(queryClient, task);
             invalidateTaskCaches(queryClient);
           },
         });
