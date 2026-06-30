@@ -86,7 +86,7 @@ export function IdeaColumnView({
       )}
     >
       {/* Column header */}
-      <div className="flex items-center gap-2 px-1">
+      <div className="relative flex items-center gap-2 px-1">
         {renaming ? (
           <Input
             autoFocus
@@ -105,11 +105,14 @@ export function IdeaColumnView({
           />
         ) : (
           <>
+            {/* Drag handle lives in the left gutter (absolutely positioned) so
+                it never reserves space — the title stays flush-left, aligned
+                with the cards, and the grip just fades in on hover. */}
             <button
               {...attributes}
               {...listeners}
               aria-label="Drag to reorder column"
-              className="-ml-0.5 cursor-grab touch-none text-muted-foreground opacity-0 transition-opacity group-hover/col:opacity-100 active:cursor-grabbing"
+              className="absolute left-0 top-1/2 z-10 -translate-x-full -translate-y-1/2 cursor-grab touch-none text-muted-foreground/70 opacity-0 transition-opacity group-hover/col:opacity-100 active:cursor-grabbing"
             >
               <GripVertical className="h-4 w-4" />
             </button>
