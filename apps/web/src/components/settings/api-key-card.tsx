@@ -37,13 +37,13 @@ export function ApiKeyCard({ apiKey, onRevoke }: ApiKeyCardProps) {
 
   return (
     <Card className={cn(!isActive && "opacity-60")}>
-      <CardContent className="flex items-center justify-between p-4">
-        <div className="flex items-center gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+      <CardContent className="flex items-start justify-between gap-2 p-3 sm:p-4">
+        <div className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted sm:h-10 sm:w-10">
             <Key className="h-5 w-5 text-muted-foreground" />
           </div>
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
+          <div className="min-w-0 space-y-1">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <span className="font-medium">{apiKey.name}</span>
               {isActive ? (
                 <Badge variant="success">Active</Badge>
@@ -51,14 +51,17 @@ export function ApiKeyCard({ apiKey, onRevoke }: ApiKeyCardProps) {
                 <Badge variant="warning">Expired</Badge>
               )}
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
+            {/* Stack the prefix above the dates so they don't cram onto one
+                row on narrow screens. */}
+            <div className="space-y-0.5 text-xs text-muted-foreground">
+              <code className="inline-block rounded bg-muted px-1.5 py-0.5 font-mono">
                 {apiKey.keyPrefix}...
               </code>
-              <span>·</span>
-              <span>Created {formatCreatedDate(apiKey.createdAt)}</span>
-              <span>·</span>
-              <span>{formatLastUsed(apiKey.lastUsedAt)}</span>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                <span>Created {formatCreatedDate(apiKey.createdAt)}</span>
+                <span className="text-muted-foreground/40">·</span>
+                <span>{formatLastUsed(apiKey.lastUsedAt)}</span>
+              </div>
             </div>
             {apiKey.scopes.length > 0 && (
               <div className="flex flex-wrap gap-1 pt-1">
@@ -72,7 +75,7 @@ export function ApiKeyCard({ apiKey, onRevoke }: ApiKeyCardProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           {isActive && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

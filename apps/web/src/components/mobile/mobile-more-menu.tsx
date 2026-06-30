@@ -1,19 +1,6 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import {
-  Inbox,
-  User,
-  Lock,
-  Palette,
-  ListTodo,
-  Repeat,
-  CalendarDays,
-  Bell,
-  Key,
-  Terminal,
-  LogOut,
-  ChevronRight,
-} from "lucide-react";
+import { Inbox, Settings, LogOut, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -91,12 +78,14 @@ interface MenuSectionComponentProps {
 function MenuSectionComponent({ section, isLast }: MenuSectionComponentProps) {
   return (
     <div className="mb-2">
-      {/* Section header */}
-      <div className="px-4 py-2">
-        <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          {section.title}
-        </h3>
-      </div>
+      {/* Section header (omitted for untitled groups) */}
+      {section.title && (
+        <div className="px-4 py-2">
+          <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            {section.title}
+          </h3>
+        </div>
+      )}
 
       {/* Section items */}
       <div className="bg-card rounded-lg mx-2 overflow-hidden">
@@ -131,9 +120,12 @@ export function MobileMoreMenu({ onLogout }: MobileMoreMenuProps) {
     onLogout?.();
   }, [logout, onLogout]);
 
+  // One "Settings" entry — not a copy of every settings sub-tab. The settings
+  // page is its own full list of those tabs on mobile, so duplicating them here
+  // was redundant (and tapping one just dropped you on that same list).
   const menuSections: MenuSection[] = React.useMemo(() => [
     {
-      title: "Work",
+      title: "",
       items: [
         {
           id: "backlog",
@@ -141,66 +133,11 @@ export function MobileMoreMenu({ onLogout }: MobileMoreMenuProps) {
           label: "Backlog",
           href: "/app/tasks?backlog=1",
         },
-      ],
-    },
-    {
-      title: "Settings",
-      items: [
         {
-          id: "profile",
-          icon: User,
-          label: "Profile",
-          href: "/app/settings?tab=profile",
-        },
-        {
-          id: "security",
-          icon: Lock,
-          label: "Security",
-          href: "/app/settings?tab=security",
-        },
-        {
-          id: "appearance",
-          icon: Palette,
-          label: "Appearance",
-          href: "/app/settings?tab=appearance",
-        },
-        {
-          id: "tasks",
-          icon: ListTodo,
-          label: "Task defaults",
-          href: "/app/settings?tab=tasks",
-        },
-        {
-          id: "routines",
-          icon: Repeat,
-          label: "Routines",
-          href: "/app/settings?tab=routines",
-        },
-        {
-          id: "calendars",
-          icon: CalendarDays,
-          label: "Calendars",
-          href: "/app/settings?tab=calendars",
-        },
-        {
-          id: "notifications",
-          icon: Bell,
-          label: "Notifications",
-          href: "/app/settings?tab=notifications",
-        },
-        {
-          // Settings tab id is "api" (not "api-keys") — an invalid tab silently
-          // falls back to the Profile tab.
-          id: "api",
-          icon: Key,
-          label: "API Keys",
-          href: "/app/settings?tab=api",
-        },
-        {
-          id: "mcp",
-          icon: Terminal,
-          label: "MCP",
-          href: "/app/settings?tab=mcp",
+          id: "settings",
+          icon: Settings,
+          label: "Settings",
+          href: "/app/settings",
         },
       ],
     },
