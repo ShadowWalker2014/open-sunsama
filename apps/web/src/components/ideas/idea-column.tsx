@@ -85,8 +85,9 @@ export function IdeaColumnView({
         isOver && "border-primary/40 bg-primary/5"
       )}
     >
-      {/* Column header */}
-      <div className="relative flex items-center gap-2 px-1">
+      {/* Column header. No flex `gap` here — the grip handle manages its own
+          spacing so it can collapse to zero width when not hovered. */}
+      <div className="flex items-center px-1">
         {renaming ? (
           <Input
             autoFocus
@@ -105,19 +106,20 @@ export function IdeaColumnView({
           />
         ) : (
           <>
-            {/* Drag handle lives in the left gutter (absolutely positioned) so
-                it never reserves space — the title stays flush-left, aligned
-                with the cards, and the grip just fades in on hover. */}
+            {/* Drag handle collapses to zero width when idle (title stays
+                flush-left, aligned with the cards) and expands in-flow on
+                hover — so space is *made* for the icon and the title slides
+                right, rather than the icon overlapping anything. */}
             <button
               {...attributes}
               {...listeners}
               aria-label="Drag to reorder column"
-              className="absolute left-0 top-1/2 z-10 -translate-x-full -translate-y-1/2 cursor-grab touch-none text-muted-foreground/70 opacity-0 transition-opacity group-hover/col:opacity-100 active:cursor-grabbing"
+              className="flex w-0 shrink-0 cursor-grab touch-none items-center overflow-hidden text-muted-foreground/70 opacity-0 transition-all duration-150 group-hover/col:mr-1 group-hover/col:w-4 group-hover/col:opacity-100 active:cursor-grabbing"
             >
-              <GripVertical className="h-4 w-4" />
+              <GripVertical className="h-4 w-4 shrink-0" />
             </button>
             <span className="text-[13px] font-semibold">{column.name}</span>
-            <span className="grid h-[18px] min-w-[20px] place-items-center rounded-full border border-border/60 bg-background px-1.5 text-[11px] font-medium tabular-nums text-muted-foreground">
+            <span className="ml-2 grid h-[18px] min-w-[20px] place-items-center rounded-full border border-border/60 bg-background px-1.5 text-[11px] font-medium tabular-nums text-muted-foreground">
               {ideas.length}
             </span>
             <DropdownMenu>
