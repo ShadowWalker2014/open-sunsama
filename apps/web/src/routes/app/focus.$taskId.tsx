@@ -349,8 +349,9 @@ export default function FocusPage() {
         </div>
       </div>
 
-      {/* Main content - centered with generous top padding */}
-      <div className="mx-auto max-w-3xl px-4 pt-14 pb-10 sm:px-6 sm:pt-16 sm:pb-12">
+      {/* Main content. The top bar is sticky (in-flow), so only a little
+          breathing room is needed below it — not a big empty gap. */}
+      <div className="mx-auto max-w-3xl px-4 pt-5 pb-10 sm:px-6 sm:pt-10 sm:pb-12">
         {/* Task header — title gets a full row on mobile; the timer drops
             below it instead of squeezing the title on the same line. */}
         <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
@@ -420,7 +421,7 @@ export default function FocusPage() {
         </div>
 
         {/* Metadata — priority · date */}
-        <div className="flex items-center gap-1 mb-10">
+        <div className="flex items-center gap-1 mb-6">
           <InlinePrioritySelector
             priority={task.priority}
             onChange={handlePriorityChange}

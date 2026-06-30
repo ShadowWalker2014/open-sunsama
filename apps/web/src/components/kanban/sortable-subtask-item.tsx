@@ -90,17 +90,18 @@ export function SortableSubtaskItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group flex items-center gap-3 py-2.5 px-1 -mx-1 rounded-md hover:bg-muted/30 transition-colors",
+        "group flex items-center gap-2.5 py-1.5 px-1 -mx-1 rounded-md hover:bg-muted/30 transition-colors",
         isDragging && "opacity-50 bg-muted/30"
       )}
       onMouseEnter={() => setHoveredSubtaskId(subtask.id)}
       onMouseLeave={() => setHoveredSubtaskId(null)}
     >
-      {/* Drag handle */}
+      {/* Drag handle — hidden on touch (no hover to reveal it, and it would
+          otherwise reserve dead space on the left of every row). */}
       <div
         {...attributes}
         {...listeners}
-        className="touch-none cursor-grab active:cursor-grabbing"
+        className="hidden sm:block touch-none cursor-grab active:cursor-grabbing"
       >
         <GripVertical className="h-4 w-4 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
