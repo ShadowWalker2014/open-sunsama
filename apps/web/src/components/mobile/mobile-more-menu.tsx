@@ -203,9 +203,12 @@ export function MobileMoreMenu({ onLogout }: MobileMoreMenuProps) {
   ], [handleLogout]);
 
   return (
-    <div className="flex flex-col min-h-full bg-background">
+    // Definite height so the list scrolls internally and the "More" header
+    // stays fixed (the app shell is `min-h-screen`, so a percentage height
+    // can't resolve — see mobile-calendar-view for the same fix).
+    <div className="flex h-[calc(100dvh-4rem)] flex-col overflow-hidden bg-background">
       {/* Header */}
-      <div className="px-4 py-4 border-b border-border/40">
+      <div className="flex-shrink-0 px-4 py-4 border-b border-border/40">
         <h1 className="text-xl font-semibold">More</h1>
       </div>
 

@@ -322,9 +322,19 @@ export function MobileCalendarView({
   const goToToday = () => setSelectedDate(startOfDay(new Date()));
 
   return (
-    <div className={cn("flex h-full flex-col bg-background", className)}>
+    // Definite height (viewport minus the bottom tab bar) so the timeline
+    // ScrollArea scrolls internally and the header + all-day bar stay fixed.
+    // `h-full` doesn't work here: the app shell is `min-h-screen` (no definite
+    // height), so a percentage height can't resolve and the whole view would
+    // page-scroll, carrying the header off-screen.
+    <div
+      className={cn(
+        "flex h-[calc(100dvh-4rem)] flex-col overflow-hidden bg-background",
+        className
+      )}
+    >
       {/* Header */}
-      <header className="flex flex-col gap-2 border-b px-3 py-2">
+      <header className="flex flex-shrink-0 flex-col gap-2 border-b px-3 py-2">
         <div className="flex items-center gap-2">
           <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
             <SheetTrigger asChild>
