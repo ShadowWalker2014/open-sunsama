@@ -118,6 +118,26 @@ export default function SettingsPage() {
     isMobile ? explicitTab ?? (isCalendarRedirect ? "calendars" : null) : null
   );
 
+  // Did we land here via a deep link (mobile "More → …")? If so, the settings
+  // list was never the user's destination — closing the sheet should take them
+  // back where they came from, not reveal the headerless list behind it.
+  const cameFromDeepLinkRef = React.useRef(!!explicitTab);
+  const handleSheetOpenChange = React.useCallback(
+    (open: boolean) => {
+      if (open) return;
+      setOpenSheet(null);
+      if (cameFromDeepLinkRef.current) {
+        cameFromDeepLinkRef.current = false;
+        if (typeof window !== "undefined" && window.history.length > 1) {
+          window.history.back();
+        } else {
+          void navigate({ to: "/app/more" });
+        }
+      }
+    },
+    [navigate]
+  );
+
   // Track if we've already handled the calendar redirect to avoid double-refetching
   const hasHandledRedirect = React.useRef(false);
 
@@ -177,10 +197,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Settings Sheet */}
-        <Sheet
-          open={openSheet !== null}
-          onOpenChange={(open) => !open && setOpenSheet(null)}
-        >
+        <Sheet open={openSheet !== null} onOpenChange={handleSheetOpenChange}>
           <SheetContent
             side="right"
             className="w-full overflow-y-auto overflow-x-hidden p-4 sm:max-w-md sm:p-6"
