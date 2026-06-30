@@ -310,7 +310,7 @@ export default function FocusPage() {
     <div className="fixed inset-0 z-50 bg-background overflow-auto">
       {/* Top bar - minimal */}
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border/50">
-        <div className="mx-auto max-w-3xl px-6 h-12 flex items-center justify-between">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 h-12 flex items-center justify-between">
           <button
             onClick={handleClose}
             className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -350,9 +350,12 @@ export default function FocusPage() {
       </div>
 
       {/* Main content - centered with generous top padding */}
-      <div className="mx-auto max-w-3xl px-6 pt-16 pb-12">
-        {/* Task header — checkbox + title + timer */}
-        <div className="flex items-center gap-4 mb-3">
+      <div className="mx-auto max-w-3xl px-4 pt-14 pb-10 sm:px-6 sm:pt-16 sm:pb-12">
+        {/* Task header — title gets a full row on mobile; the timer drops
+            below it instead of squeezing the title on the same line. */}
+        <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+          {/* Checkbox + title */}
+          <div className="flex min-w-0 flex-1 items-start gap-3 sm:items-center sm:gap-4">
           {/* Checkbox */}
           <button
             onClick={handleToggleComplete}
@@ -383,7 +386,7 @@ export default function FocusPage() {
               }}
               autoFocus
               className={cn(
-                "flex-1 text-2xl font-semibold bg-transparent border-none outline-none tracking-tight",
+                "flex-1 text-xl sm:text-2xl font-semibold bg-transparent border-none outline-none tracking-tight",
                 "focus:ring-0 placeholder:text-muted-foreground/50",
                 isCompleted && "line-through text-muted-foreground"
               )}
@@ -393,7 +396,7 @@ export default function FocusPage() {
             <h1
               onClick={() => !isCompleted && setEditingTitle(true)}
               className={cn(
-                "flex-1 text-2xl font-semibold leading-tight cursor-text tracking-tight",
+                "flex-1 text-xl sm:text-2xl font-semibold leading-tight cursor-text tracking-tight",
                 isCompleted && "line-through text-muted-foreground"
               )}
             >
@@ -401,7 +404,9 @@ export default function FocusPage() {
             </h1>
           )}
 
-          {/* Timer — inline with title */}
+          </div>
+          {/* Timer — beside the title on desktop, on its own row on mobile */}
+          <div className="shrink-0">
           <FocusTimer
             taskId={task.id}
             plannedMins={task.estimatedMins}
@@ -411,6 +416,7 @@ export default function FocusPage() {
             timerRef={timerRef}
             compact
           />
+          </div>
         </div>
 
         {/* Metadata — priority · date */}

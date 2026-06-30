@@ -947,7 +947,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden [&>button]:hidden">
           {/* Title row with inline actions */}
-          <div className="flex items-start gap-3 px-6 pt-5 pb-3">
+          <div className="flex items-start gap-2.5 px-4 pt-4 pb-2.5 sm:gap-3 sm:px-6 sm:pt-5 sm:pb-3">
             {/* Checkbox */}
             <button
               type="button"
@@ -969,7 +969,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
               onBlur={() => title !== renderTask.title && handleSave()}
               rows={1}
               className={cn(
-                "flex-1 min-w-0 resize-none border-none p-0 text-lg font-semibold shadow-none focus:outline-none focus:ring-0 bg-transparent leading-snug",
+                "flex-1 min-w-0 resize-none border-none p-0 text-base sm:text-lg font-semibold shadow-none focus:outline-none focus:ring-0 bg-transparent leading-snug",
                 isCompleted && "line-through text-muted-foreground"
               )}
               placeholder="Task title"
@@ -1031,8 +1031,11 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
             </div>
           </div>
 
-          {/* Property bar — priority · date · time */}
-          <div className="flex items-center gap-1 px-6 pb-4">
+          {/* Property bar — priority · date · time. On mobile the actions
+              group wraps to its own line so the metadata keeps full width. */}
+          <div className="flex flex-wrap items-center gap-x-1 gap-y-2 px-4 pb-3 sm:px-6 sm:pb-4">
+            {/* Properties group — stays together as one unit */}
+            <div className="flex items-center gap-1">
             <InlinePrioritySelector
               priority={renderTask.priority}
               onChange={handlePriorityChange}
@@ -1101,7 +1104,10 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                 </>
               )}
             </div>
-            <div className="flex-1" />
+            </div>
+            {/* Actions group — pinned right on desktop, wraps to its own
+                full line on mobile (keeps tap targets uncramped) */}
+            <div className="ml-auto flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => setIsAddingSubtask(true)}
@@ -1131,10 +1137,11 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                 </>
               )}
             </button>
+            </div>
           </div>
 
           {/* Main Content */}
-          <div className="border-t border-border/40 px-6 py-4 space-y-4 max-h-[55vh] overflow-y-auto">
+          <div className="border-t border-border/40 px-4 py-3 sm:px-6 sm:py-4 space-y-4 max-h-[55vh] overflow-y-auto">
             {/* Series Banner */}
             {renderTask.seriesId && <TaskSeriesBanner task={renderTask} />}
 
