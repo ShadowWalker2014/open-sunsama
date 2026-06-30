@@ -250,20 +250,20 @@ export function McpSettings() {
       <CardContent className="space-y-6">
         {/* API Key Section */}
         <div className="rounded-lg border bg-muted/30 p-4">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-3">
-              <Terminal className="mt-0.5 h-5 w-5 text-muted-foreground" />
-              <div className="space-y-1">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex min-w-0 items-start gap-3">
+              <Terminal className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+              <div className="min-w-0 space-y-1">
                 <p className="text-sm font-medium">Your MCP API Key</p>
-                <div className="flex items-center gap-1.5">
-                  <code className="rounded bg-background px-2 py-1 font-mono text-xs select-all">
-                    {hasKey && !showKey ? "•".repeat(Math.min(actualKey.length, 32)) : actualKey}
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <code className="min-w-0 truncate rounded bg-background px-2 py-1 font-mono text-xs select-all">
+                    {hasKey && !showKey ? "•".repeat(Math.min(actualKey.length, 24)) : actualKey}
                   </code>
                   {hasKey && (
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-6 w-6 p-0"
+                      className="h-6 w-6 shrink-0 p-0"
                       onClick={() => setShowKey(!showKey)}
                     >
                       {showKey ? (
@@ -276,7 +276,7 @@ export function McpSettings() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 w-6 p-0"
+                    className="h-6 w-6 shrink-0 p-0"
                     onClick={() => handleCopy(actualKey, "apiKey")}
                   >
                     {copiedField === "apiKey" ? (
@@ -291,6 +291,7 @@ export function McpSettings() {
             <Button
               variant="outline"
               size="sm"
+              className="shrink-0"
               onClick={handleRegenerateKey}
               disabled={isCreatingKey}
             >

@@ -183,7 +183,7 @@ export default function SettingsPage() {
         >
           <SheetContent
             side="right"
-            className="w-full sm:max-w-md overflow-y-auto"
+            className="w-full overflow-y-auto overflow-x-hidden p-4 sm:max-w-md sm:p-6"
           >
             <SheetHeader className="mb-4">
               <SheetTitle>

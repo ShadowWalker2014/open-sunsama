@@ -92,11 +92,11 @@ function WorkingHoursCard() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex items-end gap-4">
-          <div className="space-y-2">
+        <div className="flex items-end gap-3">
+          <div className="min-w-0 flex-1 space-y-2">
             <Label>Start time</Label>
             <Select value={String(workStartHour)} onValueChange={handleStartChange} disabled={isSaving}>
-              <SelectTrigger className="w-[140px]">
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -109,10 +109,10 @@ function WorkingHoursCard() {
             </Select>
           </div>
           <span className="pb-2 text-muted-foreground">to</span>
-          <div className="space-y-2">
+          <div className="min-w-0 flex-1 space-y-2">
             <Label>End time</Label>
             <Select value={String(workEndHour)} onValueChange={handleEndChange} disabled={isSaving}>
-              <SelectTrigger className="w-[140px]">
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
