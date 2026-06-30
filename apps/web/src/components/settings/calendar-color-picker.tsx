@@ -72,7 +72,7 @@ export function CalendarColorPicker({
           disabled={disabled}
           aria-label="Change calendar color"
           className={cn(
-            "h-3 w-3 rounded-full border border-border/40 transition-shadow hover:ring-2 hover:ring-offset-1 hover:ring-offset-background hover:ring-border",
+            "h-3 w-3 shrink-0 rounded-full border border-border/40 transition-shadow hover:ring-2 hover:ring-offset-1 hover:ring-offset-background hover:ring-border",
             disabled && "cursor-not-allowed opacity-50"
           )}
           style={{ backgroundColor: display }}

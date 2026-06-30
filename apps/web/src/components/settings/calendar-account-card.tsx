@@ -7,6 +7,7 @@ import {
   Clock,
   MoreVertical,
   RotateCcw,
+  Lock,
 } from "lucide-react";
 import {
   Button,
@@ -109,9 +110,10 @@ export function CalendarItem({
   isUpdating: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between py-2">
-      <div className="flex items-center gap-3">
+    <div className="flex items-center justify-between gap-2 py-2">
+      <div className="flex min-w-0 flex-1 items-center gap-2.5">
         <Switch
+          className="shrink-0"
           checked={calendar.isEnabled}
           onCheckedChange={onToggleEnabled}
           disabled={isUpdating}
@@ -122,17 +124,25 @@ export function CalendarItem({
           onChange={(c) => onSetColor(c)}
           onClear={() => onSetColor(null)}
         />
-        <span className={cn("text-sm", !calendar.isEnabled && "text-muted-foreground")}>
+        <span
+          className={cn(
+            "truncate text-sm",
+            !calendar.isEnabled && "text-muted-foreground"
+          )}
+        >
           {calendar.name}
         </span>
         {calendar.isReadOnly && (
-          <Badge variant="outline" className="text-xs">
-            Read-only
-          </Badge>
+          <span
+            title="Read-only calendar"
+            className="inline-flex shrink-0 items-center text-muted-foreground/60"
+          >
+            <Lock className="h-3.5 w-3.5" aria-label="Read-only" />
+          </span>
         )}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-1.5">
         <button
           type="button"
           onClick={onSetDefaultEvents}
@@ -243,12 +253,12 @@ export function AccountCard({
         <div className="flex min-w-0 items-center gap-3">
           <Icon className="h-5 w-5 flex-shrink-0" />
           <div className="min-w-0">
-            <p className="max-w-[200px] truncate text-sm font-medium">{account.email}</p>
+            <p className="truncate text-sm font-medium">{account.email}</p>
             <p className="text-xs text-muted-foreground">{config.name}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1">
           <SyncStatusBadge
             status={account.syncStatus}
             lastSyncedAt={account.lastSyncedAt}
