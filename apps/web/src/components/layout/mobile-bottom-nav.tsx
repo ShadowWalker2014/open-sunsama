@@ -1,10 +1,10 @@
 import * as React from "react";
 import { ListTodo, Calendar, Lightbulb, MoreHorizontal } from "lucide-react";
-import { useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
-  href: string;
+  href: "/app" | "/app/calendar" | "/app/ideas" | "/app/more";
   icon: React.ReactNode;
   label: string;
   matchExact?: boolean;
@@ -59,9 +59,9 @@ export function MobileBottomNav() {
             : currentPath.startsWith(item.href);
 
           return (
-            <a
+            <Link
               key={item.href}
-              href={item.href}
+              to={item.href}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 py-2 px-3",
                 "min-h-[56px] min-w-[64px]", // Touch-friendly size (> 44px)
@@ -82,7 +82,7 @@ export function MobileBottomNav() {
                 {item.icon}
               </div>
               <span className="text-xs font-medium">{item.label}</span>
-            </a>
+            </Link>
           );
         })}
       </div>

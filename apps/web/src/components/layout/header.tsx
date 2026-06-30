@@ -14,6 +14,7 @@ import {
   Download,
   BookOpen,
 } from "lucide-react";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
 import { useSearch } from "@/hooks/useSearch";
 import { useTheme } from "@/hooks/useTheme";
@@ -68,7 +69,7 @@ export function Header({ className }: HeaderProps) {
       <div className="flex h-11 w-full items-center px-3 sm:px-4">
         {/* Logo */}
         <div className="mr-3 flex">
-          <a href="/app" className="mr-4 flex items-center space-x-2">
+          <Link to="/app" className="mr-4 flex items-center space-x-2">
             <img
               src="/open-sunsama-logo.png"
               alt="Open Sunsama"
@@ -77,7 +78,7 @@ export function Header({ className }: HeaderProps) {
             <span className="hidden text-[13px] font-semibold sm:inline-block">
               Open Sunsama
             </span>
-          </a>
+          </Link>
         </div>
 
         {/* Navigation - Hidden on mobile (using bottom nav instead) */}
@@ -203,16 +204,16 @@ export function Header({ className }: HeaderProps) {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild className="text-[13px] py-1.5">
-                <a href="/app/settings" className="w-full cursor-pointer">
+                <Link to="/app/settings" className="w-full cursor-pointer">
                   <User className="mr-2 h-3.5 w-3.5" />
                   Profile
-                </a>
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="text-[13px] py-1.5">
-                <a href="/app/settings" className="w-full cursor-pointer">
+                <Link to="/app/settings" className="w-full cursor-pointer">
                   <Settings className="mr-2 h-3.5 w-3.5" />
                   Settings
-                </a>
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="text-[13px] py-1.5">
                 <a
@@ -250,23 +251,23 @@ export function Header({ className }: HeaderProps) {
 }
 
 interface NavLinkProps {
-  href: string;
+  href: "/app/board" | "/app/tasks" | "/app/calendar" | "/app/ideas";
   icon?: React.ReactNode;
   children: React.ReactNode;
 }
 
 function NavLink({ href, icon, children }: NavLinkProps) {
-  // Check if current path matches for active state
+  // Reactive active state via the router — a plain <a> would hard-reload the
+  // whole SPA on every tab switch (the flicker), so use a client-side <Link>.
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isActive =
-    typeof window !== "undefined" &&
-    ((href === "/app/board" &&
-      (window.location.pathname === "/app/board" ||
-        window.location.pathname === "/app")) ||
-      (href !== "/app/board" && window.location.pathname.startsWith(href)));
+    href === "/app/board"
+      ? pathname === "/app/board" || pathname === "/app"
+      : pathname.startsWith(href);
 
   return (
-    <a
-      href={href}
+    <Link
+      to={href}
       className={cn(
         "inline-flex items-center gap-1.5 rounded px-2 py-1 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
         isActive && "bg-accent text-accent-foreground"
@@ -274,6 +275,6 @@ function NavLink({ href, icon, children }: NavLinkProps) {
     >
       {icon}
       <span className="hidden sm:inline">{children}</span>
-    </a>
+    </Link>
   );
 }
