@@ -362,12 +362,13 @@ export function KanbanCalendarPanel({
         className
       )}
     >
-      {/* Header */}
-      <div className="flex-shrink-0 px-3 py-2 border-b">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+      {/* Header — height matched to the board toolbar (h-14) so the two
+          top rows line up as one uniform band. */}
+      <div className="flex h-14 flex-shrink-0 flex-col justify-center border-b px-3 leading-tight">
+        <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
           {format(date, "EEE")}
         </div>
-        <div className="text-lg font-semibold">{format(date, "MMM d")}</div>
+        <div className="text-base font-semibold">{format(date, "MMM d")}</div>
       </div>
 
       {/* All-day banner — only renders when there's at least one all-day

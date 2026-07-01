@@ -1,10 +1,12 @@
 import * as React from "react";
+import { format } from "date-fns";
 import type { Task } from "@open-sunsama/types";
 import { useKanbanDates } from "@/hooks/useKanbanDates";
 import { useKanbanRangePrefetch } from "@/hooks/useKanbanRangePrefetch";
 import { useTasksDnd } from "@/lib/dnd/tasks-dnd-context";
 import { DayColumn } from "./day-column";
 import { TaskModal } from "./task-modal.lazy";
+import { AddTaskModal } from "./add-task-modal.lazy";
 import { KanbanBoardToolbar, useSortPreference } from "./kanban-board-toolbar";
 import { KanbanNavigationProvider } from "./kanban-navigation-context";
 
@@ -31,6 +33,7 @@ interface KanbanBoardProps {
 export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
+  const [isAddTaskOpen, setIsAddTaskOpen] = React.useState(false);
   const [sortBy, onSortChange] = useSortPreference();
   const { isDragging } = useTasksDnd();
 
@@ -92,6 +95,7 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
           onNavigatePrevious={navigatePrevious}
           onNavigateNext={navigateNext}
           onNavigateToday={navigateToToday}
+          onAddTask={() => setIsAddTaskOpen(true)}
           sortBy={sortBy}
           onSortChange={onSortChange}
         />
@@ -141,6 +145,13 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
           onOpenChange={(open) => {
             if (!open) setSelectedTask(null);
           }}
+        />
+
+        {/* Add Task Modal — scoped to the day currently in view */}
+        <AddTaskModal
+          open={isAddTaskOpen}
+          onOpenChange={setIsAddTaskOpen}
+          scheduledDate={format(firstVisibleDate ?? new Date(), "yyyy-MM-dd")}
         />
       </div>
 

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ChevronLeft, ChevronRight, CalendarDays, ArrowUpDown, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays, ArrowUpDown, Check, Plus } from "lucide-react";
 import type { TaskSortBy } from "@open-sunsama/types";
 import {
   Button,
@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
   ShortcutHint,
 } from "@/components/ui";
+import { prefetchAddTaskModal } from "./add-task-modal.lazy";
 
 // Extended sort option that includes direction
 export type SortOption = "position" | "priority-desc" | "priority-asc" | "createdAt-desc" | "createdAt-asc";
@@ -45,6 +46,7 @@ interface KanbanBoardToolbarProps {
   onNavigatePrevious: () => void;
   onNavigateNext: () => void;
   onNavigateToday: () => void;
+  onAddTask: () => void;
   sortBy: SortOption;
   onSortChange: (sort: SortOption) => void;
 }
@@ -76,14 +78,15 @@ export function KanbanBoardToolbar({
   onNavigatePrevious,
   onNavigateNext,
   onNavigateToday,
+  onAddTask,
   sortBy,
   onSortChange,
 }: KanbanBoardToolbarProps) {
   const currentSortLabel = SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? "Manual";
 
   return (
-    <div className="flex items-center justify-between border-b px-3 sm:px-4 py-2 sm:py-3">
-      <div className="flex items-center gap-2 sm:gap-4">
+    <div className="flex h-14 flex-shrink-0 items-center justify-between border-b px-3 sm:px-4">
+      <div className="flex items-center gap-2 sm:gap-3">
         {/* Navigation Arrows */}
         <div className="flex items-center gap-0.5 sm:gap-1">
           <Button
@@ -91,14 +94,14 @@ export function KanbanBoardToolbar({
             size="icon"
             onClick={onNavigatePrevious}
             title="Previous day"
-            className="h-9 w-9 sm:h-10 sm:w-10"
+            className="h-8 w-8"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button 
-            variant="outline" 
-            onClick={onNavigateToday} 
-            className="group h-9 sm:h-10 px-2 sm:px-3"
+          <Button
+            variant="outline"
+            onClick={onNavigateToday}
+            className="group h-8 px-2.5"
           >
             <CalendarDays className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">Today</span>
@@ -109,7 +112,7 @@ export function KanbanBoardToolbar({
             size="icon"
             onClick={onNavigateNext}
             title="Next day"
-            className="h-9 w-9 sm:h-10 sm:w-10"
+            className="h-8 w-8"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -117,11 +120,31 @@ export function KanbanBoardToolbar({
 
       </div>
 
-      {/* Sort Dropdown */}
+      {/* Right-side actions */}
       <div className="flex items-center gap-2">
+        {/* Primary Add Task action */}
+        <Button
+          onClick={onAddTask}
+          onMouseEnter={() => {
+            void prefetchAddTaskModal();
+          }}
+          onFocus={() => {
+            void prefetchAddTaskModal();
+          }}
+          size="sm"
+          className="gap-1.5 h-8 pl-2.5 pr-1.5"
+        >
+          <Plus className="h-4 w-4" />
+          <span className="hidden sm:inline">Add task</span>
+          <kbd className="hidden sm:inline-flex h-4 min-w-[16px] items-center justify-center rounded border border-primary-foreground/25 bg-primary-foreground/15 px-1 text-[9px] font-semibold leading-none">
+            A
+          </kbd>
+        </Button>
+
+        {/* Sort Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1 sm:gap-2 h-9 sm:h-10 px-2 sm:px-3">
+            <Button variant="outline" size="sm" className="gap-1.5 h-8 px-2.5">
               <ArrowUpDown className="h-4 w-4" />
               <span className="hidden sm:inline">Sort:</span>
               <span className="text-xs sm:text-sm">{currentSortLabel}</span>
