@@ -19,6 +19,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSearch } from "@/hooks/useSearch";
 import { useTheme } from "@/hooks/useTheme";
 import { prefetchCommandPalette } from "@/components/command-palette/command-palette.lazy";
+import { DesktopUpdateMenuItem } from "@/components/desktop-update-menu-item";
 import { cn, getAvatarUrl } from "@/lib/utils";
 import {
   Button,
@@ -234,6 +235,7 @@ export function Header({ className }: HeaderProps) {
                   </a>
                 </DropdownMenuItem>
               )}
+              <DesktopUpdateMenuItem />
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="cursor-pointer text-destructive focus:text-destructive text-[13px] py-1.5"

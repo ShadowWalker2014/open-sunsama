@@ -40,13 +40,18 @@ export function useAppUpdate(): AppUpdateState {
     setStatus('checking');
     setError(null);
 
-    const result = await checkForUpdate();
-    if (result) {
-      setUpdate(result);
-      setStatus('available');
-      setDismissed(false);
-    } else {
-      setStatus('idle');
+    try {
+      const result = await checkForUpdate();
+      if (result) {
+        setUpdate(result);
+        setStatus('available');
+        setDismissed(false);
+      } else {
+        setStatus('idle');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to check for updates');
+      setStatus('error');
     }
   }, []);
 
@@ -55,12 +60,18 @@ export function useAppUpdate(): AppUpdateState {
 
     setStatus('downloading');
     setProgress(null);
+    setError(null);
 
-    await downloadAndInstallUpdate((p) => {
-      setProgress(p);
-    });
-    // If we get here, relaunch didn't happen (shouldn't normally reach this)
-    setStatus('installing');
+    try {
+      await downloadAndInstallUpdate((p) => {
+        setProgress(p);
+      });
+      // If we get here, relaunch didn't happen (shouldn't normally reach this)
+      setStatus('installing');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to install update');
+      setStatus('error');
+    }
   }, []);
 
   const dismiss = useCallback(() => {

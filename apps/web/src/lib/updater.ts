@@ -20,6 +20,17 @@ export interface UpdateProgress {
 }
 
 /**
+ * Get the running app's version (from the Tauri bundle).
+ * Returns null when not running in the desktop app.
+ */
+export async function getAppVersion(): Promise<string | null> {
+  if (!isDesktop()) return null;
+
+  const { getVersion } = await import('@tauri-apps/api/app');
+  return getVersion();
+}
+
+/**
  * Check for available updates
  * Returns update info if available, null otherwise
  */
