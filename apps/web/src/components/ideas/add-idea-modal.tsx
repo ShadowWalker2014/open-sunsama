@@ -1,4 +1,7 @@
 import * as React from "react";
+import { ChevronDown, Clock } from "lucide-react";
+import type { TaskPriority } from "@open-sunsama/types";
+import { cn, TIME_PRESETS, formatTimeDisplayCompact } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -6,11 +9,19 @@ import {
   Button,
   Input,
   Label,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui";
+import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
 import { RichTextEditor } from "@/components/ui/rich-text-editor.lazy";
 import { SubtaskList, type Subtask } from "@/components/kanban/subtask-list";
 import { useCreateIdea } from "@/hooks/useIdeas";
 import { useCreateIdeaSubtask } from "@/hooks/useIdeaSubtasks";
+
+const PRIORITIES: TaskPriority[] = ["P0", "P1", "P2", "P3"];
 
 interface AddIdeaModalProps {
   open: boolean;
@@ -34,6 +45,8 @@ export function AddIdeaModal({
 }: AddIdeaModalProps) {
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
+  const [estimatedMins, setEstimatedMins] = React.useState<string>("");
+  const [priority, setPriority] = React.useState<TaskPriority>("P2");
   const [subtasks, setSubtasks] = React.useState<Subtask[]>([]);
   const createIdea = useCreateIdea(boardId);
   const createSubtask = useCreateIdeaSubtask();
@@ -51,6 +64,8 @@ export function AddIdeaModal({
     if (!open) {
       setTitle("");
       setDescription("");
+      setEstimatedMins("");
+      setPriority("P2");
       setSubtasks([]);
     }
   }, [open]);
@@ -76,6 +91,8 @@ export function AddIdeaModal({
       columnId,
       title: title.trim(),
       notes: description || undefined,
+      estimatedMins: estimatedMins ? parseInt(estimatedMins, 10) : undefined,
+      priority,
     });
     // Persist subtasks once we have the idea id.
     if (subtasks.length > 0) {
@@ -110,8 +127,44 @@ export function AddIdeaModal({
             </p>
           </div>
 
-          {/* Body — subtasks + notes */}
+          {/* Body — priority, subtasks, notes, estimate */}
           <div className="max-h-[50vh] space-y-4 overflow-y-auto px-4 py-4">
+            {/* Priority */}
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium text-muted-foreground">
+                Priority
+              </Label>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 gap-1.5 px-2.5 text-sm font-normal"
+                  >
+                    <PriorityIcon priority={priority} />
+                    <span>{PRIORITY_LABELS[priority]}</span>
+                    <ChevronDown className="h-3 w-3 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-32">
+                  {PRIORITIES.map((p) => (
+                    <DropdownMenuItem
+                      key={p}
+                      onClick={() => setPriority(p)}
+                      className={cn(
+                        "gap-2 text-sm",
+                        priority === p && "bg-accent"
+                      )}
+                    >
+                      <PriorityIcon priority={p} />
+                      <span>{PRIORITY_LABELS[p]}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
             <div className="space-y-2">
               <Label className="text-sm font-medium text-muted-foreground">
                 Subtasks
@@ -128,6 +181,57 @@ export function AddIdeaModal({
                 placeholder="Add details..."
                 minHeight="80px"
               />
+            </div>
+
+            {/* Estimated time */}
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium text-muted-foreground">
+                Duration
+              </Label>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className={cn(
+                      "h-8 gap-1.5 px-2.5 text-sm font-normal",
+                      !estimatedMins && "text-muted-foreground"
+                    )}
+                  >
+                    <Clock className="h-3.5 w-3.5" />
+                    <span>
+                      {formatTimeDisplayCompact(estimatedMins) || "Time"}
+                    </span>
+                    <ChevronDown className="h-3 w-3 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-32">
+                  {TIME_PRESETS.map((preset) => (
+                    <DropdownMenuItem
+                      key={preset.value}
+                      onClick={() => setEstimatedMins(preset.value)}
+                      className={cn(
+                        "text-sm",
+                        estimatedMins === preset.value && "bg-accent"
+                      )}
+                    >
+                      {preset.label}
+                    </DropdownMenuItem>
+                  ))}
+                  {estimatedMins && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => setEstimatedMins("")}
+                        className="text-sm text-muted-foreground"
+                      >
+                        Clear
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 

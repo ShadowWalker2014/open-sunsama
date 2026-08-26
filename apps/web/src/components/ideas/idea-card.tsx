@@ -12,9 +12,10 @@ import {
   Columns3,
   Trash2,
   ListChecks,
+  Clock,
 } from "lucide-react";
-import type { Idea, IdeaColumn } from "@open-sunsama/types";
-import { cn } from "@/lib/utils";
+import type { Idea, IdeaColumn, TaskPriority } from "@open-sunsama/types";
+import { cn, formatDuration } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -33,6 +34,11 @@ import {
   ContextMenuSubTrigger,
   ContextMenuSubContent,
 } from "@/components/ui";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { HtmlContent } from "@/components/ui/html-content";
 import {
   useDeleteIdea,
@@ -40,6 +46,28 @@ import {
   useUpdateIdea,
 } from "@/hooks/useIdeas";
 import { IdeaEditDialog } from "./idea-edit-dialog";
+
+/** Priority swatch styles — identical to the kanban task card. */
+const PRIORITY_STYLES: Record<TaskPriority, string> = {
+  P0: "bg-red-500/15 text-red-600 dark:text-red-400",
+  P1: "bg-orange-500/15 text-orange-600 dark:text-orange-400",
+  P2: "bg-blue-500/10 text-blue-500 dark:text-blue-400",
+  P3: "bg-slate-400/10 text-slate-400 dark:text-slate-500",
+};
+
+const PRIORITY_OPTIONS: TaskPriority[] = ["P0", "P1", "P2", "P3"];
+
+/** Duration presets in minutes — same grid as the kanban task card. */
+const DURATION_PRESETS = [
+  { value: 5, label: "5m" },
+  { value: 10, label: "10m" },
+  { value: 15, label: "15m" },
+  { value: 30, label: "30m" },
+  { value: 45, label: "45m" },
+  { value: 60, label: "1h" },
+  { value: 90, label: "1.5h" },
+  { value: 120, label: "2h" },
+];
 
 interface IdeaCardProps {
   idea: Idea;
@@ -163,6 +191,8 @@ function IdeaMenuItems({
 export function IdeaCard({ idea, boardId, columns, overlay }: IdeaCardProps) {
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [editOpen, setEditOpen] = React.useState(false);
+  const [priorityOpen, setPriorityOpen] = React.useState(false);
+  const [durationOpen, setDurationOpen] = React.useState(false);
 
   const updateIdea = useUpdateIdea(boardId);
   const deleteIdea = useDeleteIdea(boardId);
@@ -216,6 +246,16 @@ export function IdeaCard({ idea, boardId, columns, overlay }: IdeaCardProps) {
       id: idea.id,
       input: { completedAt: isCompleted ? null : new Date() },
     });
+  };
+
+  const setPriority = (priority: TaskPriority) => {
+    updateIdea.mutate({ id: idea.id, input: { priority } });
+    setPriorityOpen(false);
+  };
+
+  const setEstimate = (estimatedMins: number | null) => {
+    updateIdea.mutate({ id: idea.id, input: { estimatedMins } });
+    setDurationOpen(false);
   };
 
   const handleClick = () => {
@@ -313,9 +353,125 @@ export function IdeaCard({ idea, boardId, columns, overlay }: IdeaCardProps) {
         />
       )}
 
-      {/* Meta row: subtasks + in-planner marker */}
-      {(subtaskTotal > 0 || inPlanner) && !isCompleted && (
-        <div className="flex items-center gap-3 pl-6">
+      {/* Meta row: estimate + priority (inline editable) + subtasks + planner */}
+      {!isCompleted && (
+        <div
+          className="flex flex-wrap items-center gap-1.5 pl-6"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          {/* Estimated time — click to pick a preset */}
+          <Popover open={durationOpen} onOpenChange={setDurationOpen}>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                aria-label="Estimated time"
+                onClick={(e) => e.stopPropagation()}
+                className={cn(
+                  "shrink-0 flex items-center gap-0.5 rounded px-1.5 py-0.5",
+                  "text-[11px] tabular-nums transition-colors",
+                  idea.estimatedMins
+                    ? "bg-muted/50 text-muted-foreground hover:bg-muted"
+                    : cn(
+                        "text-muted-foreground/60 hover:bg-muted hover:text-muted-foreground",
+                        !durationOpen && "opacity-0 group-hover:opacity-100"
+                      )
+                )}
+              >
+                <Clock className="h-3 w-3" />
+                {idea.estimatedMins ? formatDuration(idea.estimatedMins) : "Estimate"}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-auto p-1"
+              align="start"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="grid grid-cols-4 gap-0.5">
+                {DURATION_PRESETS.map((preset) => (
+                  <button
+                    key={preset.value}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEstimate(preset.value);
+                    }}
+                    className={cn(
+                      "rounded px-2 py-1 text-xs transition-colors",
+                      "hover:bg-accent hover:text-accent-foreground",
+                      idea.estimatedMins === preset.value &&
+                        "bg-accent font-medium text-accent-foreground"
+                    )}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+              {idea.estimatedMins != null && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEstimate(null);
+                  }}
+                  className="mt-1 w-full rounded px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                >
+                  Clear
+                </button>
+              )}
+            </PopoverContent>
+          </Popover>
+
+          {/* Priority — click to change */}
+          <Popover open={priorityOpen} onOpenChange={setPriorityOpen}>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                aria-label="Priority"
+                onClick={(e) => e.stopPropagation()}
+                className={cn(
+                  "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium transition-all duration-150",
+                  "hover:ring-1 hover:ring-primary/30",
+                  "focus:outline-none focus:ring-1 focus:ring-primary/50",
+                  PRIORITY_STYLES[idea.priority]
+                )}
+              >
+                {idea.priority}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-auto p-1"
+              align="start"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex flex-col gap-0.5">
+                {PRIORITY_OPTIONS.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPriority(option);
+                    }}
+                    className={cn(
+                      "flex items-center gap-2 rounded px-2 py-1 text-xs transition-colors",
+                      "hover:bg-accent hover:text-accent-foreground",
+                      idea.priority === option && "bg-accent"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "rounded px-1.5 py-0.5 text-[10px] font-medium",
+                        PRIORITY_STYLES[option]
+                      )}
+                    >
+                      {option}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+
           {subtaskTotal > 0 && (
             <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground tabular-nums">
               <ListChecks className="h-3 w-3" />
