@@ -4,6 +4,8 @@
  * @module @open-sunsama/types/idea
  */
 
+import type { TaskPriority } from "./task";
+
 /** A board groups one kind of idea (e.g. "Movies to watch"). */
 export interface IdeaBoard {
   /** Unique identifier (UUID) */
@@ -41,6 +43,10 @@ export interface Idea {
   columnId: string;
   title: string;
   notes: string | null;
+  /** Rough time estimate in minutes; null when unset. */
+  estimatedMins: number | null;
+  /** P0–P3, same scale as tasks. */
+  priority: TaskPriority;
   position: number;
   /** Set when the card is checked off (e.g. "watched"/"done"). */
   completedAt: Date | null;
@@ -85,12 +91,16 @@ export interface CreateIdeaInput {
   columnId: string;
   title: string;
   notes?: string | null;
+  estimatedMins?: number | null;
+  priority?: TaskPriority;
   position?: number;
 }
 
 export interface UpdateIdeaInput {
   title?: string;
   notes?: string | null;
+  estimatedMins?: number | null;
+  priority?: TaskPriority;
   columnId?: string;
   position?: number;
   /** Pass a Date to mark done, or null to clear. */

@@ -440,6 +440,8 @@ ideasRouter.post(
         columnId: data.columnId,
         title: data.title,
         notes: data.notes ?? null,
+        estimatedMins: data.estimatedMins ?? null,
+        priority: data.priority ?? "P2",
         position,
       })
       .returning();
@@ -532,7 +534,8 @@ ideasRouter.post(
         title: idea.title,
         notes: idea.notes ?? null,
         scheduledDate: targetDate,
-        priority: "P2",
+        estimatedMins: idea.estimatedMins,
+        priority: idea.priority,
         position,
       })
       .returning();
@@ -583,6 +586,9 @@ ideasRouter.patch(
     const updateData: Record<string, unknown> = { updatedAt: new Date() };
     if (updates.title !== undefined) updateData.title = updates.title;
     if (updates.notes !== undefined) updateData.notes = updates.notes;
+    if (updates.estimatedMins !== undefined)
+      updateData.estimatedMins = updates.estimatedMins;
+    if (updates.priority !== undefined) updateData.priority = updates.priority;
     if (updates.position !== undefined) updateData.position = updates.position;
     if (updates.completedAt !== undefined)
       updateData.completedAt = updates.completedAt

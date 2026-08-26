@@ -5,6 +5,9 @@
 import { z } from "zod";
 import { uuidSchema, dateSchema } from "@open-sunsama/utils";
 
+const prioritySchema = z.enum(["P0", "P1", "P2", "P3"]);
+const estimatedMinsSchema = z.number().int().positive().max(1440);
+
 // lucide icon name — letters/digits only (e.g. "Film", "Rocket")
 const iconSchema = z
   .string()
@@ -57,12 +60,16 @@ export const createIdeaSchema = z.object({
   columnId: uuidSchema,
   title: z.string().min(1, "Title is required").max(500),
   notes: z.string().max(5000).optional().nullable(),
+  estimatedMins: estimatedMinsSchema.optional().nullable(),
+  priority: prioritySchema.optional(),
   position: z.number().int().nonnegative().optional(),
 });
 
 export const updateIdeaSchema = z.object({
   title: z.string().min(1).max(500).optional(),
   notes: z.string().max(5000).optional().nullable(),
+  estimatedMins: estimatedMinsSchema.optional().nullable(),
+  priority: prioritySchema.optional(),
   columnId: uuidSchema.optional(),
   position: z.number().int().nonnegative().optional(),
   completedAt: z.string().datetime().optional().nullable(),

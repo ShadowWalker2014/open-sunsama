@@ -1,16 +1,25 @@
 import * as React from "react";
-import { Check } from "lucide-react";
-import type { Idea } from "@open-sunsama/types";
+import { Check, Clock, ChevronDown } from "lucide-react";
+import type { Idea, TaskPriority } from "@open-sunsama/types";
 import {
   Dialog,
   DialogContent,
   DialogTitle,
   Label,
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui";
+import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
 import { RichTextEditor } from "@/components/ui/rich-text-editor.lazy";
-import { cn } from "@/lib/utils";
+import { cn, TIME_PRESETS, formatTimeDisplayCompact } from "@/lib/utils";
 import { useUpdateIdea } from "@/hooks/useIdeas";
 import { IdeaSubtaskList } from "./idea-subtask-list";
+
+const PRIORITIES: TaskPriority[] = ["P0", "P1", "P2", "P3"];
 
 interface IdeaEditDialogProps {
   boardId: string;
@@ -68,6 +77,14 @@ export function IdeaEditDialog({
     onOpenChange(next);
   };
 
+  const setPriority = (priority: TaskPriority) => {
+    updateIdea.mutate({ id: idea.id, input: { priority } });
+  };
+
+  const setEstimate = (mins: number | null) => {
+    updateIdea.mutate({ id: idea.id, input: { estimatedMins: mins } });
+  };
+
   const toggleComplete = () => {
     updateIdea.mutate({
       id: idea.id,
@@ -113,6 +130,80 @@ export function IdeaEditDialog({
               isCompleted && "text-muted-foreground line-through"
             )}
           />
+        </div>
+
+        {/* Property bar: priority + estimate (saved immediately) */}
+        <div className="flex items-center gap-2 border-t border-border/40 px-5 py-3">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1.5 px-2.5 text-sm font-normal"
+              >
+                <PriorityIcon priority={idea.priority} />
+                <span>{PRIORITY_LABELS[idea.priority]}</span>
+                <ChevronDown className="h-3 w-3 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-32">
+              {PRIORITIES.map((p) => (
+                <DropdownMenuItem
+                  key={p}
+                  onClick={() => setPriority(p)}
+                  className={cn("gap-2 text-sm", idea.priority === p && "bg-accent")}
+                >
+                  <PriorityIcon priority={p} />
+                  <span>{PRIORITY_LABELS[p]}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn(
+                  "h-8 gap-1.5 px-2.5 text-sm font-normal",
+                  idea.estimatedMins == null && "text-muted-foreground"
+                )}
+              >
+                <Clock className="h-3.5 w-3.5" />
+                <span>
+                  {formatTimeDisplayCompact(idea.estimatedMins) || "Estimate"}
+                </span>
+                <ChevronDown className="h-3 w-3 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-32">
+              {TIME_PRESETS.map((preset) => (
+                <DropdownMenuItem
+                  key={preset.value}
+                  onClick={() => setEstimate(parseInt(preset.value, 10))}
+                  className={cn(
+                    "text-sm",
+                    idea.estimatedMins === parseInt(preset.value, 10) &&
+                      "bg-accent"
+                  )}
+                >
+                  {preset.label}
+                </DropdownMenuItem>
+              ))}
+              {idea.estimatedMins != null && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => setEstimate(null)}
+                    className="text-sm text-muted-foreground"
+                  >
+                    Clear
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Body: subtasks + notes */}

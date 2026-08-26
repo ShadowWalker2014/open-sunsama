@@ -6,7 +6,6 @@ import {
   TouchSensor,
   useSensor,
   useSensors,
-  closestCorners,
   type DragStartEvent,
   type DragEndEvent,
 } from "@dnd-kit/core";
@@ -27,6 +26,7 @@ import {
   useReorderIdeaColumns,
   useCreateIdeaColumn,
 } from "@/hooks/useIdeas";
+import { ideaPriorityCollision } from "@/lib/dnd/ideas-collision";
 import { IdeaColumnView } from "./idea-column";
 import { IdeaCard } from "./idea-card";
 
@@ -130,28 +130,40 @@ export function IdeasBoardView({ boardId }: IdeasBoardViewProps) {
     if (!destColumnId) return;
 
     const sourceColumnId = dragged.columnId;
+    const overIsCard = overData?.type === "idea";
+
+    // ── Same column: swap positions with arrayMove, exactly like the Board
+    // tab. Inserting *before* the hovered card (the old behaviour) is wrong
+    // when dragging downwards — it lands one slot short, which made the last
+    // slot unreachable. Dropping on the empty space under the list (`over` is
+    // the column) means "move to the end".
+    if (sourceColumnId === destColumnId) {
+      const ids = (ideasByColumn.get(sourceColumnId) ?? []).map((i) => i.id);
+      const activeIndex = ids.indexOf(dragged.id);
+      const overIndex = overIsCard
+        ? ids.indexOf(over.id as string)
+        : ids.length - 1;
+      if (activeIndex === -1 || overIndex === -1 || activeIndex === overIndex) {
+        return;
+      }
+      reorderIdeas.mutate({
+        columnId: sourceColumnId,
+        ideaIds: arrayMove(ids, activeIndex, overIndex),
+      });
+      return;
+    }
+
+    // ── Cross-column: insert before the hovered card, else append to the end.
     const destIdeas = (ideasByColumn.get(destColumnId) ?? []).filter(
       (i) => i.id !== dragged.id
     );
-
-    // Index to insert at: position of the card we hovered, else end.
     let insertIndex = destIdeas.length;
-    if (overData?.type === "idea") {
+    if (overIsCard) {
       const overIndex = destIdeas.findIndex((i) => i.id === over.id);
       if (overIndex !== -1) insertIndex = overIndex;
     }
-
     const nextIds = destIdeas.map((i) => i.id);
     nextIds.splice(insertIndex, 0, dragged.id);
-
-    // No-op guard: same column, same order.
-    if (sourceColumnId === destColumnId) {
-      const current = (ideasByColumn.get(destColumnId) ?? []).map((i) => i.id);
-      if (current.length === nextIds.length &&
-        current.every((id, idx) => id === nextIds[idx])) {
-        return;
-      }
-    }
 
     reorderIdeas.mutate({ columnId: destColumnId, ideaIds: nextIds });
   };
@@ -175,7 +187,11 @@ export function IdeasBoardView({ boardId }: IdeasBoardViewProps) {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={ideaPriorityCollision}
+      // Kill horizontal auto-scroll (same as the Board tab): the default edge
+      // zone is wide enough that reordering near a column edge yanks the board
+      // sideways. Vertical auto-scroll stays for long columns.
+      autoScroll={{ threshold: { x: 0, y: 0.2 } }}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragCancel={() => {

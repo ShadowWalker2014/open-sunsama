@@ -359,6 +359,8 @@ export function useCreateIdea(boardId: string | undefined) {
         columnId: input.columnId,
         title: input.title,
         notes: input.notes ?? null,
+        estimatedMins: input.estimatedMins ?? null,
+        priority: input.priority ?? "P2",
         position: Number.MAX_SAFE_INTEGER,
         completedAt: null,
         promotedTaskId: null,

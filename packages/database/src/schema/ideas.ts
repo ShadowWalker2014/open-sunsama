@@ -11,7 +11,7 @@ import { relations } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { users } from "./users";
-import { tasks } from "./tasks";
+import { tasks, TASK_PRIORITIES } from "./tasks";
 
 /**
  * Ideas feature — a Trello-style "someday" space.
@@ -80,6 +80,10 @@ export const ideas = pgTable(
       .references(() => ideaColumns.id, { onDelete: "cascade" }),
     title: varchar("title", { length: 500 }).notNull(),
     notes: text("notes"),
+    /** rough time estimate in minutes; mirrors tasks.estimatedMins */
+    estimatedMins: integer("estimated_mins"),
+    /** P0–P3, same scale as tasks.priority */
+    priority: varchar("priority", { length: 2 }).notNull().default("P2"),
     position: integer("position").notNull().default(0),
     /** set when the user checks the card off (e.g. "watched"/"done") */
     completedAt: timestamp("completed_at"),
@@ -158,6 +162,8 @@ export const updateIdeaColumnSchema = insertIdeaColumnSchema
 export const insertIdeaSchema = createInsertSchema(ideas, {
   title: z.string().min(1, "Title is required").max(500),
   notes: z.string().optional().nullable(),
+  estimatedMins: z.number().int().positive().optional().nullable(),
+  priority: z.enum(TASK_PRIORITIES).optional(),
   position: z.number().int().nonnegative().optional(),
 });
 export const selectIdeaSchema = createSelectSchema(ideas);
