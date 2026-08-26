@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import type { IdeaBoard } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { BoardRailContent } from "./board-rail-content";
@@ -24,6 +24,16 @@ export function BoardRail({
     if (typeof window === "undefined") return false;
     return localStorage.getItem(COLLAPSED_KEY) === "true";
   });
+
+  // Search lives here so its trigger can sit in the header row; the field
+  // itself is rendered by BoardRailContent, and only while open.
+  const [searchOpen, setSearchOpen] = React.useState(false);
+  const [query, setQuery] = React.useState("");
+
+  const closeSearch = React.useCallback(() => {
+    setSearchOpen(false);
+    setQuery("");
+  }, []);
 
   const toggle = React.useCallback(() => {
     setCollapsed((prev) => {
@@ -55,6 +65,17 @@ export function BoardRail({
           </span>
           <div className="flex items-center gap-0.5">
             <button
+              onClick={() => (searchOpen ? closeSearch() : setSearchOpen(true))}
+              title="Search boards"
+              aria-label="Search boards"
+              className={cn(
+                "flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground",
+                searchOpen && "bg-muted text-foreground"
+              )}
+            >
+              <Search className="h-3.5 w-3.5" />
+            </button>
+            <button
               onClick={onNewBoard}
               title="New board"
               className="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -78,6 +99,10 @@ export function BoardRail({
         onSelect={onSelect}
         onNewBoard={onNewBoard}
         collapsed={collapsed}
+        searchOpen={searchOpen && !collapsed}
+        query={query}
+        onQueryChange={setQuery}
+        onCloseSearch={closeSearch}
       />
     </aside>
   );

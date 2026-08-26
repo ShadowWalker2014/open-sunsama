@@ -35,6 +35,15 @@ interface BoardRailContentProps {
   onNewBoard: () => void;
   /** Icon-only mode (desktop collapsed rail). */
   collapsed?: boolean;
+  /**
+   * Search is controlled by the parent so its trigger can live in the rail's
+   * header row beside the +/collapse buttons — the field itself only takes a
+   * row of its own while it's actually open.
+   */
+  searchOpen?: boolean;
+  query?: string;
+  onQueryChange?: (query: string) => void;
+  onCloseSearch?: () => void;
 }
 
 interface BoardRowProps {
@@ -127,10 +136,12 @@ export function BoardRailContent({
   onSelect,
   onNewBoard,
   collapsed,
+  searchOpen = false,
+  query = "",
+  onQueryChange,
+  onCloseSearch,
 }: BoardRailContentProps) {
   const [editing, setEditing] = React.useState<IdeaBoard | null>(null);
-  const [searchOpen, setSearchOpen] = React.useState(false);
-  const [query, setQuery] = React.useState("");
   const searchRef = React.useRef<HTMLInputElement>(null);
   const deleteBoard = useDeleteIdeaBoard();
   const reorderBoards = useReorderIdeaBoards();
@@ -159,16 +170,10 @@ export function BoardRailContent({
   // shown, so it's only enabled on the full list.
   const canReorder = !trimmedQuery && boards.length > 1;
 
-  const openSearch = () => {
-    setSearchOpen(true);
-    // Wait for the input to mount before focusing it.
-    setTimeout(() => searchRef.current?.focus(), 0);
-  };
-
-  const closeSearch = () => {
-    setSearchOpen(false);
-    setQuery("");
-  };
+  // Focus the field as soon as the parent opens it.
+  React.useEffect(() => {
+    if (searchOpen) searchRef.current?.focus();
+  }, [searchOpen]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -188,49 +193,34 @@ export function BoardRailContent({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      {/* Search — an icon button that expands into a filter input. Hidden in
-          the collapsed icon-only rail, where there's no room for it. */}
-      {!collapsed && (
-        <div className="mb-1.5 px-0.5">
-          {searchOpen ? (
-            <div className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-2 py-1">
-              <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-              <input
-                ref={searchRef}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") closeSearch();
-                  if (e.key === "Enter" && visibleBoards[0]) {
-                    onSelect(visibleBoards[0].id);
-                  }
-                }}
-                onBlur={() => {
-                  if (!query) setSearchOpen(false);
-                }}
-                placeholder="Search boards…"
-                className="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-muted-foreground"
-              />
-              <button
-                onClick={closeSearch}
-                aria-label="Clear board search"
-                className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          ) : (
-            // Idle state is icon-only — the field only takes rail width while
-            // it's actually being used.
-            <button
-              onClick={openSearch}
-              aria-label="Search boards"
-              title="Search boards"
-              className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              <Search className="h-[15px] w-[15px]" />
-            </button>
-          )}
+      {/* The active search field — a row of its own, only while open. The
+          trigger that opens it lives in the rail header. */}
+      {!collapsed && searchOpen && (
+        <div className="mb-1.5 flex items-center gap-1.5 rounded-lg border border-border bg-background px-2 py-1">
+          <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <input
+            ref={searchRef}
+            value={query}
+            onChange={(e) => onQueryChange?.(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") onCloseSearch?.();
+              if (e.key === "Enter" && visibleBoards[0]) {
+                onSelect(visibleBoards[0].id);
+              }
+            }}
+            onBlur={() => {
+              if (!query) onCloseSearch?.();
+            }}
+            placeholder="Search boards…"
+            className="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-muted-foreground"
+          />
+          <button
+            onClick={onCloseSearch}
+            aria-label="Clear board search"
+            className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
         </div>
       )}
 
