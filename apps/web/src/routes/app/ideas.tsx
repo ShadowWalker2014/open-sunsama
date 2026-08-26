@@ -6,6 +6,7 @@ import {
   Loader2,
   Plus,
   ChevronDown,
+  Search,
 } from "lucide-react";
 import {
   Button,
@@ -21,6 +22,7 @@ import {
   matchesShortcut,
   shouldIgnoreShortcut,
 } from "@/hooks/useKeyboardShortcuts";
+import { cn } from "@/lib/utils";
 import { useIdeaBoards, useIdeaColumns } from "@/hooks/useIdeas";
 import { BoardRail } from "@/components/ideas/board-rail";
 import { BoardRailContent } from "@/components/ideas/board-rail-content";
@@ -47,6 +49,10 @@ export default function IdeasPage() {
   }) as { board?: string; idea?: string };
   const [newBoardOpen, setNewBoardOpen] = React.useState(false);
   const [mobileSheetOpen, setMobileSheetOpen] = React.useState(false);
+  // Board search inside the mobile sheet — trigger in its header row, field
+  // only while open (same shape as the desktop rail).
+  const [boardSearchOpen, setBoardSearchOpen] = React.useState(false);
+  const [boardQuery, setBoardQuery] = React.useState("");
   const [quickAddOpen, setQuickAddOpen] = React.useState(false);
 
   React.useEffect(() => {
@@ -174,16 +180,43 @@ export default function IdeasPage() {
               </button>
             </SheetTrigger>
             <SheetContent side="left" className="flex w-72 flex-col p-3">
-              <SheetHeader className="mb-3">
+              <SheetHeader className="mb-3 flex-row items-center justify-between space-y-0">
                 <SheetTitle className="text-left">Boards</SheetTitle>
+                <button
+                  onClick={() => {
+                    if (boardSearchOpen) {
+                      setBoardSearchOpen(false);
+                      setBoardQuery("");
+                    } else {
+                      setBoardSearchOpen(true);
+                    }
+                  }}
+                  aria-label="Search boards"
+                  className={cn(
+                    "mr-6 flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground",
+                    boardSearchOpen && "bg-muted text-foreground"
+                  )}
+                >
+                  <Search className="h-4 w-4" />
+                </button>
               </SheetHeader>
               <BoardRailContent
                 boards={boards}
                 activeBoardId={activeBoardId}
-                onSelect={selectBoard}
+                onSelect={(id) => {
+                  selectBoard(id);
+                  setMobileSheetOpen(false);
+                }}
                 onNewBoard={() => {
                   setMobileSheetOpen(false);
                   setNewBoardOpen(true);
+                }}
+                searchOpen={boardSearchOpen}
+                query={boardQuery}
+                onQueryChange={setBoardQuery}
+                onCloseSearch={() => {
+                  setBoardSearchOpen(false);
+                  setBoardQuery("");
                 }}
               />
             </SheetContent>
