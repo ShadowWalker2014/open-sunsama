@@ -4,7 +4,7 @@ import { KanbanBoard, useKanbanNavigation } from "@/components/kanban";
 import { KanbanCalendarPanel } from "@/components/kanban/kanban-calendar-panel";
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileBacklogSheet } from "@/components/layout/mobile-backlog-sheet";
-import { MobileTaskListView } from "@/components/mobile";
+import { MobileTasksView } from "@/components/mobile";
 import { TasksDndProvider } from "@/lib/dnd/tasks-dnd-context";
 import { TaskShortcutsHandler } from "@/components/task-shortcuts-handler";
 import { TaskModal } from "@/components/kanban/task-modal.lazy";
@@ -49,7 +49,7 @@ export function BoardPageContent() {
   }, [fetchedTask, selectedTaskId]);
 
   if (isMobile) {
-    return <MobileTaskListView />;
+    return <MobileTasksView />;
   }
 
   const handleViewTask = (taskId: string) => {

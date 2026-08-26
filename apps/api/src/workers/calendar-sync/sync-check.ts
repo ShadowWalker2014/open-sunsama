@@ -18,6 +18,22 @@ export interface CalendarSyncCheckPayload {
 const SYNC_INTERVAL_MINUTES = 15;
 
 /**
+ * How long an account may sit in `syncing` before we assume the job died and
+ * queue it again. Without this an interrupted worker (deploy, crash, lost
+ * pg-boss job) leaves the account marked `syncing` forever, and the check —
+ * which only looked at `idle`/null — skipped it for good: "connected but never
+ * syncs".
+ */
+const STUCK_SYNCING_MINUTES = 30;
+
+/**
+ * How long to wait before retrying an account whose last sync errored. Errors
+ * are usually transient (expired token, provider 5xx, network), but a status
+ * of `error` used to be terminal for the same reason as above.
+ */
+const ERROR_RETRY_MINUTES = 30;
+
+/**
  * Main job handler that finds accounts needing sync and queues sync jobs
  * Runs every 5 minutes
  */
@@ -28,11 +44,15 @@ export async function processCalendarSyncCheck(
   const boss = await getPgBoss();
   const now = new Date();
 
-  // Find accounts that need syncing:
-  // 1. Active accounts
-  // 2. Not currently syncing
-  // 3. Last synced more than 15 minutes ago OR never synced
+  // Find active accounts that need syncing. An account qualifies when it is:
+  //  - idle (or has no status yet) and hasn't synced within the interval,
+  //  - stuck in `syncing` past STUCK_SYNCING_MINUTES (dead job — self-heal),
+  //  - or in `error` and untouched for ERROR_RETRY_MINUTES (transient failure).
+  // The last two used to be excluded entirely, which is why an account could
+  // read as connected while silently never syncing again.
   const syncThreshold = subMinutes(now, SYNC_INTERVAL_MINUTES);
+  const stuckThreshold = subMinutes(now, STUCK_SYNCING_MINUTES);
+  const errorRetryThreshold = subMinutes(now, ERROR_RETRY_MINUTES);
 
   const accountsNeedingSync = await db
     .select({
@@ -40,18 +60,34 @@ export async function processCalendarSyncCheck(
       userId: calendarAccounts.userId,
       provider: calendarAccounts.provider,
       email: calendarAccounts.email,
+      syncStatus: calendarAccounts.syncStatus,
     })
     .from(calendarAccounts)
     .where(
       and(
         eq(calendarAccounts.isActive, true),
         or(
-          eq(calendarAccounts.syncStatus, 'idle'),
-          isNull(calendarAccounts.syncStatus)
-        ),
-        or(
-          lt(calendarAccounts.lastSyncedAt, syncThreshold),
-          isNull(calendarAccounts.lastSyncedAt)
+          // Normal path: idle / never-synced, due for a refresh.
+          and(
+            or(
+              eq(calendarAccounts.syncStatus, 'idle'),
+              isNull(calendarAccounts.syncStatus)
+            ),
+            or(
+              lt(calendarAccounts.lastSyncedAt, syncThreshold),
+              isNull(calendarAccounts.lastSyncedAt)
+            )
+          ),
+          // Recovery: a sync that never reported back.
+          and(
+            eq(calendarAccounts.syncStatus, 'syncing'),
+            lt(calendarAccounts.updatedAt, stuckThreshold)
+          ),
+          // Retry: a sync that failed a while ago.
+          and(
+            eq(calendarAccounts.syncStatus, 'error'),
+            lt(calendarAccounts.updatedAt, errorRetryThreshold)
+          )
         )
       )
     );
@@ -60,7 +96,13 @@ export async function processCalendarSyncCheck(
     return;
   }
 
-  console.log(`[Calendar Sync Check] Found ${accountsNeedingSync.length} accounts needing sync`);
+  const recovered = accountsNeedingSync.filter(
+    (a) => a.syncStatus === 'syncing' || a.syncStatus === 'error'
+  ).length;
+  console.log(
+    `[Calendar Sync Check] Found ${accountsNeedingSync.length} accounts needing sync` +
+      (recovered > 0 ? ` (${recovered} recovered from stuck/errored state)` : '')
+  );
 
   // Queue sync jobs for each account
   let jobsQueued = 0;

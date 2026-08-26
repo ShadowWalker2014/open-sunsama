@@ -32,6 +32,14 @@ import {
 } from "@dnd-kit/sortable";
 import { cn, formatDuration } from "@/lib/utils";
 import { ViewSearch } from "@/components/ui";
+import {
+  parseSortOption,
+  type SortOption,
+} from "@/components/kanban/kanban-board-toolbar";
+import {
+  MobileViewControls,
+  type MobileTasksViewMode,
+} from "./mobile-view-controls";
 import { useTasks, useReorderTasks } from "@/hooks/useTasks";
 import { MobileTaskCardWithActualTime } from "./mobile-task-card";
 import { SortableMobileTaskCard } from "./sortable-mobile-task-card";
@@ -41,17 +49,32 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
+/** P0 first — matches the desktop day column's ordering. */
+const PRIORITY_RANK: Record<string, number> = { P0: 0, P1: 1, P2: 2, P3: 3 };
+
 interface MobileTaskListViewProps {
   /** The date to show tasks for (defaults to today) */
   date?: Date;
   className?: string;
+  /** List/board switch + sort order, rendered in the header when provided. */
+  viewMode?: MobileTasksViewMode;
+  onViewModeChange?: (mode: MobileTasksViewMode) => void;
+  sortBy?: SortOption;
+  onSortChange?: (sort: SortOption) => void;
 }
 
 /**
  * Mobile-optimized task list view matching Sunsama mobile design.
  * Features sticky header, progress bar, and scrollable task list.
  */
-export function MobileTaskListView({ date, className }: MobileTaskListViewProps) {
+export function MobileTaskListView({
+  date,
+  className,
+  viewMode,
+  onViewModeChange,
+  sortBy = "position",
+  onSortChange,
+}: MobileTaskListViewProps) {
   // Open the backlog sheet when arriving via `/app/tasks?backlog=1`
   // (mobile "More → Backlog"). Initialize the open state straight from the
   // param — clearing the param via navigate would remount this view and
@@ -141,10 +164,28 @@ export function MobileTaskListView({ date, className }: MobileTaskListViewProps)
         notes.toLowerCase().includes(query)
       );
     });
-    const pending = all.filter((task) => !task.completedAt).sort((a, b) => a.position - b.position);
+    // Same sort options as the desktop board; "Manual" keeps drag order.
+    const { field, direction } = parseSortOption(sortBy);
+    const pending = all
+      .filter((task) => !task.completedAt)
+      .sort((a, b) => {
+        if (field === "priority") {
+          const rank = (t: typeof a) => PRIORITY_RANK[t.priority] ?? 2;
+          const diff =
+            direction === "desc" ? rank(a) - rank(b) : rank(b) - rank(a);
+          if (diff !== 0) return diff;
+          return a.position - b.position;
+        }
+        if (field === "createdAt") {
+          const diff =
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          return direction === "desc" ? -diff : diff;
+        }
+        return a.position - b.position;
+      });
     const completed = all.filter((task) => task.completedAt);
     return { pendingTasks: pending, completedTasks: completed };
-  }, [tasks, searchQuery]);
+  }, [tasks, searchQuery, sortBy]);
   
   // Calculate progress statistics
   const stats = React.useMemo(() => {
@@ -187,6 +228,7 @@ export function MobileTaskListView({ date, className }: MobileTaskListViewProps)
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
+    if (sortBy !== "position") return; // reordering only means something in manual order
     const oldIndex = pendingTasks.findIndex((t) => t.id === active.id);
     const newIndex = pendingTasks.findIndex((t) => t.id === over.id);
     
@@ -245,7 +287,15 @@ export function MobileTaskListView({ date, className }: MobileTaskListViewProps)
               onChange={setSearchQuery}
               placeholder="Search tasks…"
             />
-            {!searchQuery && (
+            {!searchQuery && viewMode && onViewModeChange && onSortChange && (
+              <MobileViewControls
+                viewMode={viewMode}
+                onViewModeChange={onViewModeChange}
+                sortBy={sortBy}
+                onSortChange={onSortChange}
+              />
+            )}
+            {!searchQuery && !viewMode && (
               <span className="text-sm tabular-nums text-muted-foreground">
                 {stats.totalEstimatedMins > 0
                   ? formatDuration(stats.totalEstimatedMins)
