@@ -132,3 +132,4 @@ export {
 } from "./inline-time-input";
 export { TimeDropdown, type TimeDropdownRef } from "./time-dropdown";
 export { SubtaskItem } from "./subtask-item";
+export { ViewSearch } from "./view-search";

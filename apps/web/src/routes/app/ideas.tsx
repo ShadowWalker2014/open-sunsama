@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useSearch } from "@tanstack/react-router";
 import { Lightbulb, LayoutGrid, Loader2, Plus } from "lucide-react";
 import {
   Button,
@@ -7,6 +8,7 @@ import {
   SheetTrigger,
   SheetHeader,
   SheetTitle,
+  ViewSearch,
 } from "@/components/ui";
 import {
   SHORTCUTS,
@@ -30,9 +32,20 @@ export default function IdeasPage() {
       ? null
       : localStorage.getItem(ACTIVE_BOARD_KEY)
   );
+  const [cardQuery, setCardQuery] = React.useState("");
+
+  // `?board=&idea=` (command-palette result) selects the board and opens that
+  // card's editor on arrival.
+  const { board: boardParam, idea: ideaParam } = useSearch({
+    strict: false,
+  }) as { board?: string; idea?: string };
   const [newBoardOpen, setNewBoardOpen] = React.useState(false);
   const [mobileSheetOpen, setMobileSheetOpen] = React.useState(false);
   const [quickAddOpen, setQuickAddOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (boardParam) setActiveBoardId(boardParam);
+  }, [boardParam]);
 
   // First column of the active board — the target for the "A" quick-add.
   const { data: activeColumns } = useIdeaColumns(activeBoardId ?? undefined);
@@ -148,7 +161,7 @@ export default function IdeasPage() {
                 )}
               </button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-72 p-3">
+            <SheetContent side="left" className="flex w-72 flex-col p-3">
               <SheetHeader className="mb-3">
                 <SheetTitle className="text-left">Boards</SheetTitle>
               </SheetHeader>
@@ -178,10 +191,25 @@ export default function IdeasPage() {
               </h1>
             </div>
           )}
+
+          {/* Filter this board's cards down to a substring match */}
+          <div className="ml-auto">
+            <ViewSearch
+              value={cardQuery}
+              onChange={setCardQuery}
+              placeholder="Search ideas…"
+            />
+          </div>
         </div>
 
         {/* Board */}
-        {activeBoardId && <IdeasBoardView boardId={activeBoardId} />}
+        {activeBoardId && (
+          <IdeasBoardView
+            boardId={activeBoardId}
+            searchQuery={cardQuery}
+            focusIdeaId={ideaParam}
+          />
+        )}
       </main>
 
       <BoardDialog

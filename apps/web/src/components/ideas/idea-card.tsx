@@ -70,6 +70,8 @@ interface IdeaCardProps {
   columns: IdeaColumn[];
   /** Rendered inside a DragOverlay — disables sortable wiring + menus. */
   overlay?: boolean;
+  /** Reordering is meaningless while the board is filtered by a search. */
+  dragDisabled?: boolean;
 }
 
 /** Menu family — lets one render path drive both the ⋯ dropdown and the
@@ -183,7 +185,13 @@ function IdeaMenuItems({
  * a subtask counter, and both a ⋯ menu and a right-click context menu that
  * mirror the task actions, adapted for Ideas.
  */
-export function IdeaCard({ idea, boardId, columns, overlay }: IdeaCardProps) {
+export function IdeaCard({
+  idea,
+  boardId,
+  columns,
+  overlay,
+  dragDisabled,
+}: IdeaCardProps) {
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [editOpen, setEditOpen] = React.useState(false);
   const [priorityOpen, setPriorityOpen] = React.useState(false);
@@ -196,7 +204,7 @@ export function IdeaCard({ idea, boardId, columns, overlay }: IdeaCardProps) {
   const sortable = useSortable({
     id: idea.id,
     data: { type: "idea", columnId: idea.columnId, idea },
-    disabled: overlay,
+    disabled: overlay || dragDisabled,
   });
 
   const isCompleted = !!idea.completedAt;
@@ -298,7 +306,8 @@ export function IdeaCard({ idea, boardId, columns, overlay }: IdeaCardProps) {
         "group relative flex flex-col gap-1.5 rounded-lg px-3 py-2.5 transition-all duration-200",
         "bg-card hover:bg-card/80",
         "border border-border/40 hover:border-border/60",
-        "cursor-grab active:cursor-grabbing touch-none select-none",
+        dragDisabled ? "cursor-pointer" : "cursor-grab active:cursor-grabbing",
+        "touch-none select-none",
         overlay &&
           "shadow-xl ring-2 ring-primary/20 rotate-[0.5deg] cursor-grabbing",
         !overlay && sortable.isDragging && "opacity-30 z-50",

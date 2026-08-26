@@ -29,6 +29,8 @@ interface DayColumnProps {
   onSelectTask: (task: Task) => void;
   onDateClick?: (date: Date) => void;
   sortBy?: SortOption;
+  /** Case-insensitive substring filter on title + notes; "" shows everything. */
+  searchQuery?: string;
 }
 
 /**
@@ -40,6 +42,7 @@ export function DayColumn({
   onSelectTask,
   onDateClick,
   sortBy = "position",
+  searchQuery = "",
 }: DayColumnProps) {
   // Use explicit limit to prevent accidental truncation (API default is 50)
   const {
@@ -102,8 +105,24 @@ export function DayColumn({
   // Separate pending and completed tasks
   // CRITICAL: Preserve the actively dragged task to prevent removeChild DOM errors
   // when React Query refetches or optimistic updates change the data mid-drag
+  // Board-level search: match on the title and the plain text of the notes.
+  const query = searchQuery.trim().toLowerCase();
+  const matchesQuery = React.useCallback(
+    (task: Task) => {
+      if (!query) return true;
+      const notes = task.notes?.replace(/<[^>]*>/g, " ") ?? "";
+      return (
+        task.title.toLowerCase().includes(query) ||
+        notes.toLowerCase().includes(query)
+      );
+    },
+    [query]
+  );
+
   const pendingTasks = React.useMemo(() => {
-    let filtered = sortTasks(tasks?.filter((t) => !t.completedAt) ?? []);
+    let filtered = sortTasks(
+      tasks?.filter((t) => !t.completedAt && matchesQuery(t)) ?? []
+    );
 
     // If dragging a task that belongs to this column, ensure it stays in the list
     if (isDragging && activeTask?.scheduledDate === dateString) {
@@ -115,11 +134,11 @@ export function DayColumn({
     }
 
     return filtered;
-  }, [tasks, sortTasks, isDragging, activeTask, dateString]);
+  }, [tasks, sortTasks, isDragging, activeTask, dateString, matchesQuery]);
 
   const completedTasks = React.useMemo(
-    () => tasks?.filter((t) => t.completedAt) ?? [],
-    [tasks]
+    () => tasks?.filter((t) => t.completedAt && matchesQuery(t)) ?? [],
+    [tasks, matchesQuery]
   );
 
   // Task IDs for sortable context - must include dragged task

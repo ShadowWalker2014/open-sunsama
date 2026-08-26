@@ -29,16 +29,25 @@ import {
 import { ideaPriorityCollision } from "@/lib/dnd/ideas-collision";
 import { IdeaColumnView } from "./idea-column";
 import { IdeaCard } from "./idea-card";
+import { IdeaEditDialog } from "./idea-edit-dialog";
 
 interface IdeasBoardViewProps {
   boardId: string;
+  /** Case-insensitive substring filter on title + notes; "" shows everything. */
+  searchQuery?: string;
+  /** Idea to open on arrival — set by the command palette's `?idea=` param. */
+  focusIdeaId?: string;
 }
 
 function sortByPosition(a: Idea, b: Idea) {
   return a.position - b.position || (a.createdAt < b.createdAt ? -1 : 1);
 }
 
-export function IdeasBoardView({ boardId }: IdeasBoardViewProps) {
+export function IdeasBoardView({
+  boardId,
+  searchQuery = "",
+  focusIdeaId,
+}: IdeasBoardViewProps) {
   const { data: columns, isLoading: columnsLoading } = useIdeaColumns(boardId);
   const { data: ideas, isLoading: ideasLoading } = useIdeas(boardId);
   const reorderIdeas = useReorderIdeas(boardId);
@@ -64,17 +73,34 @@ export function IdeasBoardView({ boardId }: IdeasBoardViewProps) {
     })
   );
 
+  // Board search — matches the card title and the plain text of its notes.
+  const query = searchQuery.trim().toLowerCase();
+  const isFiltering = query.length > 0;
+
   // Group ideas by column, each sorted by position.
   const ideasByColumn = React.useMemo(() => {
     const map = new Map<string, Idea[]>();
     for (const col of columns ?? []) map.set(col.id, []);
     for (const idea of ideas ?? []) {
+      if (query) {
+        const notes = idea.notes?.replace(/<[^>]*>/g, " ") ?? "";
+        const match =
+          idea.title.toLowerCase().includes(query) ||
+          notes.toLowerCase().includes(query);
+        if (!match) continue;
+      }
       const list = map.get(idea.columnId);
       if (list) list.push(idea);
     }
     for (const list of map.values()) list.sort(sortByPosition);
     return map;
-  }, [columns, ideas]);
+  }, [columns, ideas, query]);
+
+  const matchCount = React.useMemo(() => {
+    let total = 0;
+    for (const list of ideasByColumn.values()) total += list.length;
+    return total;
+  }, [ideasByColumn]);
 
   const sortedColumns = React.useMemo(
     () => [...(columns ?? [])].sort((a, b) => a.position - b.position),
@@ -84,6 +110,20 @@ export function IdeasBoardView({ boardId }: IdeasBoardViewProps) {
     () => sortedColumns.map((c) => c.id),
     [sortedColumns]
   );
+
+  // Deep link from the command palette: open the card's editor once the
+  // board's ideas have loaded, then drop the param so closing the dialog
+  // doesn't immediately reopen it.
+  const [focusedIdea, setFocusedIdea] = React.useState<Idea | null>(null);
+  const openedFocusRef = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    if (!focusIdeaId || openedFocusRef.current === focusIdeaId) return;
+    const match = (ideas ?? []).find((i) => i.id === focusIdeaId);
+    if (match) {
+      openedFocusRef.current = focusIdeaId;
+      setFocusedIdea(match);
+    }
+  }, [focusIdeaId, ideas]);
 
   const handleDragStart = (event: DragStartEvent) => {
     const data = event.active.data.current;
@@ -199,6 +239,12 @@ export function IdeasBoardView({ boardId }: IdeasBoardViewProps) {
         setActiveColumn(null);
       }}
     >
+      {isFiltering && matchCount === 0 && (
+        <p className="px-4 pt-4 text-sm text-muted-foreground">
+          No ideas match “{searchQuery.trim()}”.
+        </p>
+      )}
+
       {/* On mobile, snap each column into view while scrolling (Trello/Notion
           style); free horizontal scroll from sm up. Matches the kanban board. */}
       <div className="flex min-h-0 flex-1 items-start gap-3.5 overflow-x-auto overflow-y-hidden p-4 snap-x snap-mandatory scroll-pl-4 sm:snap-none">
@@ -215,6 +261,7 @@ export function IdeasBoardView({ boardId }: IdeasBoardViewProps) {
               allColumns={sortedColumns}
               canDelete={sortedColumns.length > 1}
               isDragActive={!!activeIdea}
+              isFiltering={isFiltering}
             />
           ))}
         </SortableContext>
@@ -252,6 +299,19 @@ export function IdeasBoardView({ boardId }: IdeasBoardViewProps) {
           </button>
         )}
       </div>
+
+      {focusedIdea && (
+        <IdeaEditDialog
+          boardId={boardId}
+          idea={
+            (ideas ?? []).find((i) => i.id === focusedIdea.id) ?? focusedIdea
+          }
+          open
+          onOpenChange={(next) => {
+            if (!next) setFocusedIdea(null);
+          }}
+        />
+      )}
 
       <DragOverlay
         dropAnimation={null}
