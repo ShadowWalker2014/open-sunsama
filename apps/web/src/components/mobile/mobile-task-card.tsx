@@ -226,15 +226,12 @@ export function MobileTaskCard({ task, onTaskClick }: MobileTaskCardProps) {
     <MobileTaskCardBase
       task={task}
       onTaskClick={onTaskClick}
-      renderTimeDisplay={({ isCompleted, estimatedMins }) => {
+      renderTimeDisplay={({ estimatedMins }) => {
         if (estimatedMins == null || estimatedMins <= 0) return null;
         
         return (
           <div
-            className={cn(
-              "shrink-0 text-xs tabular-nums text-muted-foreground",
-              isCompleted && "opacity-50"
-            )}
+            className="shrink-0 text-xs tabular-nums text-muted-foreground"
           >
             {formatDuration(estimatedMins)}
           </div>
@@ -263,17 +260,16 @@ export function MobileTaskCardWithActualTime({
     <MobileTaskCardBase
       task={task}
       onTaskClick={onTaskClick}
-      renderTimeDisplay={({ isCompleted }) => {
+      renderTimeDisplay={() => {
         if (!displayText) return null;
-        
+
         return (
           <div
             className={cn(
               "shrink-0 flex items-center gap-1 text-xs tabular-nums whitespace-nowrap",
               isTimerRunning
                 ? "text-emerald-600 dark:text-emerald-400"
-                : "text-muted-foreground",
-              isCompleted && "opacity-50"
+                : "text-muted-foreground"
             )}
           >
             {isTimerRunning && (
