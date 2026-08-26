@@ -164,6 +164,8 @@ function filtersToSearchParams(
   if (!filters) return {};
 
   return {
+    // Case-insensitive substring match on title/notes (server-side)
+    search: filters.titleSearch,
     // API uses 'date' for single date filter
     date: filters.scheduledDate ?? undefined,
     // API uses 'from' and 'to' for date range

@@ -62,6 +62,18 @@ tasksRouter.get(
     else if (filters.backlog === "false")
       conditions.push(isNotNull(tasks.scheduledDate));
     if (filters.priority) conditions.push(eq(tasks.priority, filters.priority));
+    if (filters.search) {
+      // Every whitespace-separated term must appear in the title or the notes,
+      // so "web analytics" matches a title where the words aren't adjacent.
+      // LIKE wildcards in the query are escaped so % / _ stay literal.
+      for (const term of filters.search.split(/\s+/).filter(Boolean)) {
+        const escaped = term.replace(/[\\%_]/g, (ch) => `\\${ch}`);
+        const pattern = `%${escaped}%`;
+        conditions.push(
+          sql`(${tasks.title} ILIKE ${pattern} OR COALESCE(${tasks.notes}, '') ILIKE ${pattern})`
+        );
+      }
+    }
 
     const offset = (filters.page - 1) * filters.limit;
     const [countResult] = await db
