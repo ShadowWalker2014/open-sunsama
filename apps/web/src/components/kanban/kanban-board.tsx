@@ -35,6 +35,7 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [isAddTaskOpen, setIsAddTaskOpen] = React.useState(false);
   const [sortBy, onSortChange] = useSortPreference();
+  const [searchQuery, setSearchQuery] = React.useState("");
   const { isDragging } = useTasksDnd();
 
   // Use the kanban dates hook for date management and navigation
@@ -98,6 +99,8 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
           onAddTask={() => setIsAddTaskOpen(true)}
           sortBy={sortBy}
           onSortChange={onSortChange}
+          searchQuery={searchQuery}
+          onSearchQueryChange={setSearchQuery}
         />
 
         {/* Kanban Board - DndContext is provided by TasksDndProvider */}
@@ -131,6 +134,7 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
                     onSelectTask={setSelectedTask}
                     onDateClick={navigateToDate}
                     sortBy={sortBy}
+                    searchQuery={searchQuery}
                   />
                 </div>
               );

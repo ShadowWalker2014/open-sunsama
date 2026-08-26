@@ -219,6 +219,11 @@ const appCalendarRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/calendar",
   component: lazyRouteComponent(() => import("./routes/app/calendar")),
+  // `?date=YYYY-MM-DD` opens the calendar on that day (command-palette event
+  // results jump here).
+  validateSearch: (search: Record<string, unknown>): { date?: string } => ({
+    date: typeof search.date === "string" ? search.date : undefined,
+  }),
 });
 
 const appBoardRoute = createRoute({
@@ -286,6 +291,14 @@ const appIdeasRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/ideas",
   component: lazyRouteComponent(() => import("./routes/app/ideas")),
+  // `?board=&idea=` opens a specific card — used by the command palette to
+  // jump straight to an idea from anywhere in the app.
+  validateSearch: (
+    search: Record<string, unknown>
+  ): { board?: string; idea?: string } => ({
+    board: typeof search.board === "string" ? search.board : undefined,
+    idea: typeof search.idea === "string" ? search.idea : undefined,
+  }),
 });
 
 // Build the route tree

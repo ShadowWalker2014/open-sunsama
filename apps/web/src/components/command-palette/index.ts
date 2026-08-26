@@ -1,6 +1,6 @@
 export { CommandPalette } from "./command-palette";
 export { CommandItem } from "./command-item";
-export { TaskItem } from "./task-item";
+export { ResultItem } from "./result-item";
 export { CreateTaskItem } from "./create-task-item";
 export {
   COMMANDS,

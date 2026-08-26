@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   ShortcutHint,
+  ViewSearch,
 } from "@/components/ui";
 import { prefetchAddTaskModal } from "./add-task-modal.lazy";
 
@@ -49,6 +50,9 @@ interface KanbanBoardToolbarProps {
   onAddTask: () => void;
   sortBy: SortOption;
   onSortChange: (sort: SortOption) => void;
+  /** Substring filter applied to task titles/notes across the day columns. */
+  searchQuery: string;
+  onSearchQueryChange: (query: string) => void;
 }
 
 const VALID_SORT_OPTIONS: SortOption[] = ["position", "priority-desc", "priority-asc", "createdAt-desc", "createdAt-asc"];
@@ -81,6 +85,8 @@ export function KanbanBoardToolbar({
   onAddTask,
   sortBy,
   onSortChange,
+  searchQuery,
+  onSearchQueryChange,
 }: KanbanBoardToolbarProps) {
   const currentSortLabel = SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? "Manual";
 
@@ -122,6 +128,13 @@ export function KanbanBoardToolbar({
 
       {/* Right-side actions */}
       <div className="flex items-center gap-2">
+        {/* Filter the visible day columns down to matching cards */}
+        <ViewSearch
+          value={searchQuery}
+          onChange={onSearchQueryChange}
+          placeholder="Search tasks…"
+        />
+
         {/* Primary Add Task action */}
         <Button
           onClick={onAddTask}

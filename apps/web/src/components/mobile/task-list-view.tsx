@@ -31,6 +31,7 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { cn, formatDuration } from "@/lib/utils";
+import { ViewSearch } from "@/components/ui";
 import { useTasks, useReorderTasks } from "@/hooks/useTasks";
 import { MobileTaskCardWithActualTime } from "./mobile-task-card";
 import { SortableMobileTaskCard } from "./sortable-mobile-task-card";
@@ -113,6 +114,9 @@ export function MobileTaskListView({ date, className }: MobileTaskListViewProps)
   
   // Fetch tasks for the current date
   const { data: tasks, isLoading } = useTasks({ scheduledDate: dateString });
+
+  // Same in-view card search as the desktop board toolbar.
+  const [searchQuery, setSearchQuery] = React.useState("");
   
   // DnD setup for reordering
   const sensors = useSensors(
@@ -128,11 +132,19 @@ export function MobileTaskListView({ date, className }: MobileTaskListViewProps)
   
   // Separate pending and completed tasks
   const { pendingTasks, completedTasks } = React.useMemo(() => {
-    const all = tasks ?? [];
+    const query = searchQuery.trim().toLowerCase();
+    const all = (tasks ?? []).filter((task) => {
+      if (!query) return true;
+      const notes = task.notes?.replace(/<[^>]*>/g, " ") ?? "";
+      return (
+        task.title.toLowerCase().includes(query) ||
+        notes.toLowerCase().includes(query)
+      );
+    });
     const pending = all.filter((task) => !task.completedAt).sort((a, b) => a.position - b.position);
     const completed = all.filter((task) => task.completedAt);
     return { pendingTasks: pending, completedTasks: completed };
-  }, [tasks]);
+  }, [tasks, searchQuery]);
   
   // Calculate progress statistics
   const stats = React.useMemo(() => {
@@ -226,9 +238,20 @@ export function MobileTaskListView({ date, className }: MobileTaskListViewProps)
             </MobileDatePicker>
           </div>
           
-          {/* Right side: Total time badge */}
-          <div className="text-sm text-muted-foreground tabular-nums">
-            {stats.totalEstimatedMins > 0 ? formatDuration(stats.totalEstimatedMins) : "0:00"}
+          {/* Right side: search + total time badge */}
+          <div className="flex items-center gap-2">
+            <ViewSearch
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search tasks…"
+            />
+            {!searchQuery && (
+              <span className="text-sm tabular-nums text-muted-foreground">
+                {stats.totalEstimatedMins > 0
+                  ? formatDuration(stats.totalEstimatedMins)
+                  : "0:00"}
+              </span>
+            )}
           </div>
         </div>
         

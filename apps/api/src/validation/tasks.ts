@@ -46,6 +46,12 @@ export const updateTaskSchema = z.object({
  * Schema for filtering tasks
  */
 export const taskFilterSchema = z.object({
+  /**
+   * Case-insensitive substring match on the title or notes. Needed by the
+   * command palette: it used to pull the first page of tasks and filter in the
+   * browser, so anything past that page was invisible to search.
+   */
+  search: z.string().trim().min(1).max(200).optional(),
   date: dateSchema.optional(),
   from: dateSchema.optional(),
   to: dateSchema.optional(),

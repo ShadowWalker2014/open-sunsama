@@ -1,5 +1,12 @@
 import * as React from "react";
-import { Lightbulb, LayoutGrid, Loader2, Plus } from "lucide-react";
+import { useSearch } from "@tanstack/react-router";
+import {
+  Lightbulb,
+  LayoutGrid,
+  Loader2,
+  Plus,
+  ChevronDown,
+} from "lucide-react";
 import {
   Button,
   Sheet,
@@ -7,6 +14,7 @@ import {
   SheetTrigger,
   SheetHeader,
   SheetTitle,
+  ViewSearch,
 } from "@/components/ui";
 import {
   SHORTCUTS,
@@ -30,9 +38,20 @@ export default function IdeasPage() {
       ? null
       : localStorage.getItem(ACTIVE_BOARD_KEY)
   );
+  const [cardQuery, setCardQuery] = React.useState("");
+
+  // `?board=&idea=` (command-palette result) selects the board and opens that
+  // card's editor on arrival.
+  const { board: boardParam, idea: ideaParam } = useSearch({
+    strict: false,
+  }) as { board?: string; idea?: string };
   const [newBoardOpen, setNewBoardOpen] = React.useState(false);
   const [mobileSheetOpen, setMobileSheetOpen] = React.useState(false);
   const [quickAddOpen, setQuickAddOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (boardParam) setActiveBoardId(boardParam);
+  }, [boardParam]);
 
   // First column of the active board — the target for the "A" quick-add.
   const { data: activeColumns } = useIdeaColumns(activeBoardId ?? undefined);
@@ -130,11 +149,13 @@ export default function IdeasPage() {
       <main className="flex min-h-0 min-w-0 flex-1 flex-col bg-muted/30 dark:bg-background">
         {/* Header */}
         <div className="flex items-center gap-2.5 border-b border-border bg-background px-4 py-2.5">
-          {/* Mobile board switcher */}
+          {/* Mobile board switcher — the board identity itself is the control
+              (icon + name + chevron). A bare icon read as decoration, leaving
+              phones with no visible way to change board. */}
           <Sheet open={mobileSheetOpen} onOpenChange={setMobileSheetOpen}>
             <SheetTrigger asChild>
               <button
-                className="flex items-center lg:hidden"
+                className="-ml-1.5 flex min-w-0 items-center gap-2 rounded-md px-1.5 py-1 transition-colors hover:bg-muted active:bg-muted lg:hidden"
                 aria-label="Switch board"
               >
                 {activeBoard ? (
@@ -146,9 +167,13 @@ export default function IdeasPage() {
                 ) : (
                   <Lightbulb className="h-5 w-5" />
                 )}
+                <span className="min-w-0 truncate text-base font-semibold tracking-tight">
+                  {activeBoard?.name ?? "Boards"}
+                </span>
+                <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
               </button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-72 p-3">
+            <SheetContent side="left" className="flex w-72 flex-col p-3">
               <SheetHeader className="mb-3">
                 <SheetTitle className="text-left">Boards</SheetTitle>
               </SheetHeader>
@@ -165,23 +190,36 @@ export default function IdeasPage() {
           </Sheet>
 
           {activeBoard && (
-            <div className="flex items-center gap-2.5">
-              <span className="hidden lg:inline-flex">
-                <BoardIcon
-                  icon={activeBoard.icon}
-                  color={activeBoard.color}
-                  size={24}
-                />
-              </span>
+            <div className="hidden items-center gap-2.5 lg:flex">
+              <BoardIcon
+                icon={activeBoard.icon}
+                color={activeBoard.color}
+                size={24}
+              />
               <h1 className="text-base font-semibold tracking-tight">
                 {activeBoard.name}
               </h1>
             </div>
           )}
+
+          {/* Filter this board's cards down to a substring match */}
+          <div className="ml-auto">
+            <ViewSearch
+              value={cardQuery}
+              onChange={setCardQuery}
+              placeholder="Search ideas…"
+            />
+          </div>
         </div>
 
         {/* Board */}
-        {activeBoardId && <IdeasBoardView boardId={activeBoardId} />}
+        {activeBoardId && (
+          <IdeasBoardView
+            boardId={activeBoardId}
+            searchQuery={cardQuery}
+            focusIdeaId={ideaParam}
+          />
+        )}
       </main>
 
       <BoardDialog

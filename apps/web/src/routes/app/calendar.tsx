@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useSearch } from "@tanstack/react-router";
 import type { Task, TimeBlock } from "@open-sunsama/types";
 import { CalendarView } from "@/components/calendar";
 import { TaskModal } from "@/components/kanban/task-modal.lazy";
@@ -14,6 +15,14 @@ import { MobileCalendarView } from "@/components/mobile";
  */
 export default function CalendarPage() {
   const isMobile = useIsMobile();
+  // `?date=YYYY-MM-DD` (from the command palette) opens that day.
+  const { date: dateParam } = useSearch({ strict: false }) as {
+    date?: string;
+  };
+  const initialDate = React.useMemo(
+    () => (dateParam ? new Date(`${dateParam}T00:00:00`) : new Date()),
+    [dateParam]
+  );
   
   // Task detail panel state
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
@@ -96,6 +105,7 @@ export default function CalendarPage() {
     return (
       <>
         <MobileCalendarView
+          initialDate={initialDate}
           onTaskClick={handleTaskClick}
           onBlockClick={handleBlockClick}
           onViewTask={handleViewTask}
@@ -125,6 +135,7 @@ export default function CalendarPage() {
   return (
     <div className="h-[calc(100vh-3.5rem)]">
       <CalendarView
+        initialDate={initialDate}
         onTaskClick={handleTaskClick}
         onBlockClick={handleBlockClick}
         onEditBlock={handleEditBlock}

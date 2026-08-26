@@ -13,9 +13,11 @@ import {
   Terminal,
   LogOut,
   ChevronRight,
+  Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import { useSearch } from "@/hooks/useSearch";
 
 interface MenuItem {
   id: string;
@@ -127,6 +129,8 @@ function MenuSectionComponent({ section, isLast }: MenuSectionComponentProps) {
  */
 export function MobileMoreMenu({ onLogout }: MobileMoreMenuProps) {
   const { logout } = useAuth();
+  // Phones have no ⌘K, so the palette needs a visible entry point.
+  const { openSearch } = useSearch();
 
   const handleLogout = React.useCallback(() => {
     logout();
@@ -139,6 +143,12 @@ export function MobileMoreMenu({ onLogout }: MobileMoreMenuProps) {
     {
       title: "Work",
       items: [
+        {
+          id: "search",
+          icon: Search,
+          label: "Search tasks, ideas, events",
+          onClick: openSearch,
+        },
         {
           id: "backlog",
           icon: Inbox,
@@ -220,7 +230,7 @@ export function MobileMoreMenu({ onLogout }: MobileMoreMenuProps) {
         },
       ],
     },
-  ], [handleLogout]);
+  ], [handleLogout, openSearch]);
 
   return (
     // Definite height so the list scrolls internally and the "More" header

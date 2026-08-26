@@ -25,6 +25,12 @@ export function useSearchTasks(params: SearchTasksParams) {
       const filters: Record<string, string> = {
         limit: String(limit),
       };
+
+      // Server-side text search. Without it this only filtered the first page
+      // of tasks, so anything past `limit` never appeared in the palette.
+      if (query.trim()) {
+        filters.titleSearch = query.trim();
+      }
       
       // Status filter
       if (status === "active") {
