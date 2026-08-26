@@ -82,14 +82,14 @@ export function IdeaColumnView({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group/col flex h-full w-[272px] shrink-0 snap-start snap-always flex-col gap-2 rounded-xl border border-border/60 bg-muted/40 p-2.5 transition-colors",
+        "flex h-full w-[272px] shrink-0 snap-start snap-always flex-col gap-2 rounded-xl border border-border/60 bg-muted/40 p-2.5 transition-colors",
         isOver && "border-primary/40 bg-primary/5"
       )}
     >
       {/* Column header. No flex `gap` here — the grip handle manages its own
           spacing so it can collapse to zero width when not hovered.
           `shrink-0` keeps it pinned above the scrolling card list. */}
-      <div className="flex shrink-0 items-center px-1">
+      <div className="group/colhead flex shrink-0 items-center px-1">
         {renaming ? (
           <Input
             autoFocus
@@ -109,14 +109,14 @@ export function IdeaColumnView({
         ) : (
           <>
             {/* Drag handle collapses to zero width when idle (title stays
-                flush-left, aligned with the cards) and expands in-flow on
-                hover — so space is *made* for the icon and the title slides
-                right, rather than the icon overlapping anything. */}
+                flush-left, aligned with the cards) and expands in-flow when
+                the *header row* is hovered — hovering anywhere in the column
+                used to reveal it, which was distracting while reading cards. */}
             <button
               {...attributes}
               {...listeners}
               aria-label="Drag to reorder column"
-              className="flex w-0 shrink-0 cursor-grab touch-none items-center overflow-hidden text-muted-foreground/70 opacity-0 transition-all duration-150 group-hover/col:mr-1 group-hover/col:w-4 group-hover/col:opacity-100 active:cursor-grabbing"
+              className="flex w-0 shrink-0 cursor-grab touch-none items-center overflow-hidden text-muted-foreground/70 opacity-0 transition-all duration-150 group-hover/colhead:mr-1 group-hover/colhead:w-4 group-hover/colhead:opacity-100 active:cursor-grabbing"
             >
               <GripVertical className="h-4 w-4 shrink-0" />
             </button>

@@ -498,7 +498,10 @@ export function IdeaCard({ idea, boardId, columns, overlay }: IdeaCardProps) {
                 <MoreHorizontal className="h-3.5 w-3.5" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuContent
+              align="end"
+              className="w-52 overflow-visible"
+            >
               <IdeaMenuItems
                 family={DROPDOWN_FAMILY}
                 handlers={handlers}
