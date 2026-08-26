@@ -173,7 +173,7 @@ export function TaskCardContent({
       }}
     >
       {/* Time row (if scheduled) - above checkbox/title like Sunsama */}
-      {formattedTime && !isCompleted && (
+      {formattedTime && (
         <span className="text-[11px] text-muted-foreground">
           {formattedTime}
         </span>
@@ -226,10 +226,8 @@ export function TaskCardContent({
                   "shrink-0 flex items-center gap-0.5 rounded px-1.5 py-0.5",
                   "bg-muted/50",
                   "text-[11px] tabular-nums text-muted-foreground",
-                  "hover:bg-muted transition-colors cursor-pointer",
-                  isCompleted && "opacity-50"
+                  "hover:bg-muted transition-colors cursor-pointer"
                 )}
-                disabled={isCompleted}
               >
                 {formatDuration(task.estimatedMins)}
               </button>
@@ -335,7 +333,6 @@ export function TaskCardContent({
       {/* Subtasks preview - inline with small checkboxes */}
       {subtasksPreview &&
         subtasksPreview.length > 0 &&
-        !isCompleted &&
         !subtasksHidden && (
           <div className="pl-6 space-y-1 mt-0.5">
             {subtasksPreview.map((subtask) => (
@@ -383,7 +380,7 @@ export function TaskCardContent({
         )}
 
       {/* Bottom row: Tag/Project (right-aligned) */}
-      {tag && !isCompleted && (
+      {tag && (
         <div className="flex justify-end">
           <span
             className="text-[11px] px-1.5 py-0.5 rounded"

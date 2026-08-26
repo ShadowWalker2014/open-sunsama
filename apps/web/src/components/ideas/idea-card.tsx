@@ -350,7 +350,9 @@ export function IdeaCard({
       </div>
 
       {/* Optional notes preview (rich text) */}
-      {hasNotes && !isCompleted && (
+      {/* Notes preview stays after completion — checking a card off changes
+          the checkbox and strikes the title, nothing else. */}
+      {hasNotes && (
         <HtmlContent
           html={idea.notes!}
           className="pl-6 text-xs leading-snug text-muted-foreground line-clamp-2 [&_p]:m-0 [&_img]:hidden"
