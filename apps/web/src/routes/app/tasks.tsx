@@ -25,7 +25,7 @@ import {
 import { sortableKeyboardCoordinates, arrayMove } from "@dnd-kit/sortable";
 import { TaskRow } from "@/components/tasks/task-row";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { MobileTaskListView } from "@/components/mobile";
+import { MobileTasksView } from "@/components/mobile";
 
 type StatusFilter = "active" | "all" | "completed";
 
@@ -97,7 +97,7 @@ export default function TasksListPage() {
   const isMobile = useIsMobile();
 
   if (isMobile) {
-    return <MobileTaskListView />;
+    return <MobileTasksView />;
   }
 
   return <TasksListPageDesktop />;

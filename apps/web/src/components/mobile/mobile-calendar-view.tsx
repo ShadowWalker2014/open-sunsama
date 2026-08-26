@@ -9,6 +9,7 @@ import {
   endOfDay,
   addDays,
   subDays,
+  startOfWeek,
 } from "date-fns";
 import {
   Menu,
@@ -55,6 +56,7 @@ import {
   layoutOverlappingItems,
   type LayoutResult,
 } from "@/components/calendar/event-layout";
+import { MobileMultiDayView } from "./mobile-multi-day-view";
 import { UnscheduledTasksDrawer } from "./mobile-unscheduled-drawer";
 
 const DEFAULT_LAYOUT: LayoutResult = { lane: 0, columnCount: 1 };
@@ -75,6 +77,15 @@ interface MobileCalendarViewProps {
   /** Custom className */
   className?: string;
 }
+
+/** Day spans offered by the mobile calendar. */
+type CalendarDayCount = 1 | 3 | 7;
+const DAY_COUNT_KEY = "open-sunsama-mobile-calendar-days";
+const DAY_COUNT_OPTIONS: { value: CalendarDayCount; label: string }[] = [
+  { value: 1, label: "Day" },
+  { value: 3, label: "3 days" },
+  { value: 7, label: "Week" },
+];
 
 function generateHours(): number[] {
   return Array.from(
@@ -106,6 +117,18 @@ export function MobileCalendarView({
     startOfDay(initialDate)
   );
   const [drawerOpen, setDrawerOpen] = React.useState(false);
+  // 1 / 3 / 7-day modes, the standard phone-calendar set. Persisted so the
+  // chosen span survives navigation.
+  const [dayCount, setDayCount] = React.useState<CalendarDayCount>(() => {
+    if (typeof window === "undefined") return 1;
+    const stored = Number(localStorage.getItem(DAY_COUNT_KEY));
+    return stored === 3 || stored === 7 ? (stored as CalendarDayCount) : 1;
+  });
+
+  const changeDayCount = React.useCallback((next: CalendarDayCount) => {
+    setDayCount(next);
+    localStorage.setItem(DAY_COUNT_KEY, String(next));
+  }, []);
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
   const timelineRef = React.useRef<HTMLDivElement>(null);
 
@@ -135,6 +158,17 @@ export function MobileCalendarView({
       setSelectedDate(todayStart);
     }
   }, [now, selectedDate]);
+
+  // The days on screen. A week view snaps to the Monday of the selected
+  // week; 3-day rolls forward from the selected day, like Google Calendar.
+  const visibleDays = React.useMemo(() => {
+    if (dayCount === 1) return [selectedDate];
+    const first =
+      dayCount === 7
+        ? startOfWeek(selectedDate, { weekStartsOn: 1 })
+        : selectedDate;
+    return Array.from({ length: dayCount }, (_, i) => addDays(first, i));
+  }, [dayCount, selectedDate]);
 
   // Format date for API calls
   const dateString = format(selectedDate, "yyyy-MM-dd");
@@ -317,8 +351,8 @@ export function MobileCalendarView({
     []
   );
 
-  const goToPrevDay = () => setSelectedDate((d) => subDays(d, 1));
-  const goToNextDay = () => setSelectedDate((d) => addDays(d, 1));
+  const goToPrevDay = () => setSelectedDate((d) => subDays(d, dayCount));
+  const goToNextDay = () => setSelectedDate((d) => addDays(d, dayCount));
   const goToToday = () => setSelectedDate(startOfDay(new Date()));
 
   return (
@@ -362,10 +396,17 @@ export function MobileCalendarView({
 
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-lg font-semibold leading-tight">
-              {format(selectedDate, "EEEE")}
+              {dayCount === 1
+                ? format(selectedDate, "EEEE")
+                : `${format(visibleDays[0]!, "MMM d")} – ${format(
+                    visibleDays[visibleDays.length - 1]!,
+                    "MMM d"
+                  )}`}
             </h1>
-            <p className="text-xs text-muted-foreground leading-tight">
-              {format(selectedDate, "MMMM d, yyyy")}
+            <p className="text-xs leading-tight text-muted-foreground">
+              {dayCount === 1
+                ? format(selectedDate, "MMMM d, yyyy")
+                : format(visibleDays[0]!, "yyyy")}
             </p>
           </div>
 
@@ -390,15 +431,54 @@ export function MobileCalendarView({
               variant="ghost"
               size="icon"
               onClick={goToNextDay}
-              aria-label="Next day"
+              aria-label={dayCount === 1 ? "Next day" : "Next period"}
               className="h-9 w-9"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
+
+        {/* Day / 3 days / Week — the span switch every phone calendar has. */}
+        <div className="flex items-center rounded-lg bg-muted/60 p-0.5">
+          {DAY_COUNT_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => changeDayCount(option.value)}
+              aria-pressed={dayCount === option.value}
+              className={cn(
+                "h-7 flex-1 rounded-md text-xs font-medium transition-colors",
+                dayCount === option.value
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground"
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
       </header>
 
+      {/* 3-day / week: compact multi-column overview. Tapping a day header
+          drops back into this same view at 1 day, where the editing gestures
+          (drag to reschedule, tap an empty slot) live. */}
+      {dayCount > 1 && (
+        <MobileMultiDayView
+          days={visibleDays}
+          onSelectDate={(day) => {
+            setSelectedDate(startOfDay(day));
+            changeDayCount(1);
+          }}
+          onEventClick={handleExternalEventClick}
+          onBlockClick={(block) => {
+            onBlockClick?.(block);
+          }}
+        />
+      )}
+
+      {dayCount === 1 && (
+      <>
       {/* All-day banner — shown only when there's at least one all-day
           event for this day. Compact chips matching the desktop. */}
       {allDayEvents.length > 0 && (
@@ -588,8 +668,12 @@ export function MobileCalendarView({
           </div>
         </div>
       </ScrollArea>
+      </>
+      )}
 
-      {/* FAB for creating time blocks */}
+      {/* FAB for creating time blocks — 1-day only; the multi-day overview
+          has no slot to anchor a new block to. */}
+      {dayCount === 1 && (
       <button
         onClick={() => {
           // Default-time logic: when viewing today, anchor at the
@@ -621,6 +705,7 @@ export function MobileCalendarView({
       >
         <Plus className="h-6 w-6" />
       </button>
+      )}
 
       {/* External event detail sheet — read + edit + delete on tap. */}
       <CalendarEventDetailSheet
