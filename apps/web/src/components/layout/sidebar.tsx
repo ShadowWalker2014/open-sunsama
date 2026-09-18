@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Plus, Inbox, ChevronLeft, ChevronRight, Eraser } from "lucide-react";
+import { Plus, Inbox, Eraser, PanelLeftClose, PanelLeftOpen, Pin } from "lucide-react";
 import { useDroppable } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 import {
@@ -17,25 +17,41 @@ import { Button, ScrollArea, Skeleton } from "@/components/ui";
 import { AddTaskModal } from "@/components/kanban/add-task-modal.lazy";
 import { TaskModal } from "@/components/kanban/task-modal.lazy";
 import { CleanUpBacklogModal } from "@/components/backlog/clean-up-backlog-modal";
+import { useBacklogPeek } from "./use-backlog-peek";
 
-const SIDEBAR_COLLAPSED_KEY = "open-sunsama-sidebar-collapsed";
+const BACKLOG_PINNED_KEY = "open-sunsama-backlog-pinned";
+
+function readPinned(): boolean {
+  try {
+    return localStorage.getItem(BACKLOG_PINNED_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
 
 interface SidebarProps {
   className?: string;
 }
 
 /**
- * Linear-style sidebar showing the task backlog
- * Tasks without a scheduled date appear here
+ * Linear-style sidebar showing the task backlog (tasks without a date).
+ *
+ * Collapsed to a thin rail by default. Hovering the rail opens the backlog as
+ * an overlay above the board (a "peek"), and the pin button docks it open.
  */
 export function Sidebar({ className }: SidebarProps) {
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
   const [isCleanupOpen, setIsCleanupOpen] = React.useState(false);
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
-  const [isCollapsed, setIsCollapsed] = React.useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "true";
+  const [isPinned, setIsPinned] = React.useState(readPinned);
+  const panelRef = React.useRef<HTMLElement>(null);
+
+  const peek = useBacklogPeek({
+    panelRef,
+    enabled: !isPinned,
+    locked: isAddModalOpen || isCleanupOpen || selectedTask !== null,
   });
+  const isExpanded = isPinned || peek.open;
 
   // Use high limit to ensure we get all backlog tasks (API default is 50)
   const BACKLOG_LIMIT = 500;
@@ -57,6 +73,14 @@ export function Sidebar({ className }: SidebarProps) {
     },
   });
 
+  const setPanelRef = React.useCallback(
+    (node: HTMLElement | null) => {
+      panelRef.current = node;
+      setDroppableRef(node);
+    },
+    [setDroppableRef]
+  );
+
   // Separate pending and completed tasks
   // CRITICAL: Preserve the actively dragged task to prevent removeChild DOM errors
   const { pendingTasks, completedTasks } = React.useMemo(() => {
@@ -77,176 +101,219 @@ export function Sidebar({ className }: SidebarProps) {
     return { pendingTasks: pending, completedTasks: completed };
   }, [tasks, isDragging, activeTask]);
 
-  // For backwards compatibility with collapsed view count
-  const backlogTasks = pendingTasks;
-
-  const toggleCollapsed = React.useCallback(() => {
-    setIsCollapsed((prev) => {
-      const newValue = !prev;
-      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(newValue));
-      return newValue;
-    });
-  }, []);
-
-  // Collapsed view - thin bar with expand button
-  if (isCollapsed) {
-    return (
-      <aside
-        ref={setDroppableRef}
-        className={cn(
-          "flex h-full w-9 flex-col items-center border-r border-border/40 bg-background/50 py-2 transition-all duration-300 ease-in-out",
-          isOver && "bg-primary/5 border-primary/30", // Visual feedback when dragging over
-          className
-        )}
-      >
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          className="h-6 w-6"
-          onClick={toggleCollapsed}
-          title="Expand backlog"
-        >
-          <ChevronRight className="h-3.5 w-3.5" />
-        </Button>
-        <div className="mt-2 flex flex-col items-center gap-1">
-          <Inbox className="h-3.5 w-3.5 text-muted-foreground" />
-          {backlogTasks.length > 0 && (
-            <span className="text-[10px] text-muted-foreground">
-              {backlogTasks.length}
-            </span>
-          )}
-        </div>
-      </aside>
-    );
-  }
+  const setPinned = React.useCallback(
+    (pinned: boolean) => {
+      setIsPinned(pinned);
+      try {
+        localStorage.setItem(BACKLOG_PINNED_KEY, String(pinned));
+      } catch {
+        // Storage unavailable; the choice lasts for this session only.
+      }
+      // Collapsing leaves the pointer over the rail; don't re-open until it leaves.
+      if (!pinned) peek.dismiss();
+    },
+    [peek.dismiss]
+  );
 
   return (
-    <aside
-      ref={setDroppableRef}
+    // Reserves the rail's width in the layout (or the full width when pinned);
+    // the panel itself overlays the board while peeking.
+    <div
       className={cn(
-        "flex h-full w-60 flex-col border-r border-border/40 bg-background/50 transition-all duration-300 ease-in-out",
-        isOver && "bg-primary/5 border-primary/30", // Visual feedback when dragging over
+        "relative h-full flex-shrink-0 transition-[width] duration-200 ease-out",
+        isPinned ? "w-60" : "w-9",
         className
       )}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-border/40 px-3 py-2">
-        <div className="flex items-center gap-1.5">
-          <Inbox className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-[13px] font-medium">Backlog</span>
-          {backlogTasks.length > 0 && (
-            <span className="text-[11px] text-muted-foreground">
-              {backlogTasks.length}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-0.5">
-          {backlogTasks.length > 0 && (
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              className="h-6 w-6"
-              onClick={() => setIsCleanupOpen(true)}
-              title="Clean up backlog"
-            >
-              <Eraser className="h-3.5 w-3.5" />
-            </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            className="h-6 w-6"
-            onClick={() => setIsAddModalOpen(true)}
-            title="Add task"
-          >
-            <Plus className="h-3.5 w-3.5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            className="h-6 w-6"
-            onClick={toggleCollapsed}
-            title="Collapse backlog"
-          >
-            <ChevronLeft className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      </div>
+      <aside
+        ref={setPanelRef}
+        aria-label="Backlog"
+        {...peek.panelHandlers}
+        className={cn(
+          "absolute inset-y-0 left-0 z-30 flex overflow-hidden border-r border-border/40 bg-background",
+          // Instant while dragging so drop targets are measured where they are.
+          !peek.dragging && "transition-[width,box-shadow] duration-200 ease-out",
+          isExpanded ? "w-60" : "w-9",
+          peek.open && "shadow-[8px_0_24px_-12px_rgb(0_0_0/0.25)] dark:shadow-[8px_0_24px_-12px_rgb(0_0_0/0.7)]",
+          isOver && "border-primary/30"
+        )}
+      >
+        {/* Drop feedback when a task is dragged over the backlog */}
+        {isOver && <div className="pointer-events-none absolute inset-0 z-10 bg-primary/5" />}
 
-      {/* Task List */}
-      <ScrollArea className="flex-1">
-        <div className="p-1.5 space-y-0.5">
-          {isLoading ? (
-            <div className="space-y-1 p-1">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-8 w-full rounded" />
-              ))}
+        {/* Collapsed rail */}
+        <div
+          inert={isExpanded}
+          aria-hidden={isExpanded}
+          className={cn(
+            "absolute inset-y-0 left-0 flex w-9 flex-col items-center py-2 transition-opacity duration-150",
+            isExpanded ? "pointer-events-none opacity-0" : "opacity-100"
+          )}
+        >
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="h-6 w-6"
+            onClick={() => setPinned(true)}
+            title="Show backlog"
+            aria-label="Show backlog"
+            aria-expanded={false}
+          >
+            <PanelLeftOpen className="h-3.5 w-3.5" />
+          </Button>
+          <div className="mt-2 flex flex-col items-center gap-1">
+            <Inbox className="h-3.5 w-3.5 text-muted-foreground" />
+            {pendingTasks.length > 0 && (
+              <span className="text-[10px] text-muted-foreground">{pendingTasks.length}</span>
+            )}
+          </div>
+        </div>
+
+        {/* Panel: fixed width, revealed as the aside widens, so nothing reflows. */}
+        <div
+          inert={!isExpanded}
+          aria-hidden={!isExpanded}
+          className={cn(
+            "flex w-60 flex-shrink-0 flex-col transition-opacity duration-150",
+            isExpanded ? "opacity-100" : "pointer-events-none opacity-0"
+          )}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-border/40 px-3 py-2">
+            <div className="flex items-center gap-1.5">
+              <Inbox className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-[13px] font-medium">Backlog</span>
+              {pendingTasks.length > 0 && (
+                <span className="text-[11px] text-muted-foreground">
+                  {pendingTasks.length}
+                </span>
+              )}
             </div>
-          ) : pendingTasks.length === 0 && completedTasks.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <p className="text-sm text-muted-foreground">
-                No unscheduled tasks
-              </p>
-              <p className="text-xs text-muted-foreground/70 mt-1">
-                Tasks without a date appear here
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* Pending Tasks */}
-              <SortableContext
-                items={pendingTasks.map((t) => t.id)}
-                strategy={verticalListSortingStrategy}
+            <div className="flex items-center gap-0.5">
+              {pendingTasks.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className="h-6 w-6"
+                  onClick={() => setIsCleanupOpen(true)}
+                  title="Clean up backlog"
+                >
+                  <Eraser className="h-3.5 w-3.5" />
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                className="h-6 w-6"
+                onClick={() => setIsAddModalOpen(true)}
+                title="Add task"
               >
-                {pendingTasks.map((task) => (
-                  <SortableBacklogTaskCard
-                    key={task.id}
-                    task={task}
-                    onSelect={() => setSelectedTask(task)}
-                  />
-                ))}
-              </SortableContext>
+                <Plus className="h-3.5 w-3.5" />
+              </Button>
+              {isPinned ? (
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className="h-6 w-6"
+                  onClick={() => setPinned(false)}
+                  title="Collapse backlog"
+                  aria-label="Collapse backlog"
+                >
+                  <PanelLeftClose className="h-3.5 w-3.5" />
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className="h-6 w-6"
+                  onClick={() => setPinned(true)}
+                  title="Keep backlog open"
+                  aria-label="Keep backlog open"
+                >
+                  <Pin className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
+          </div>
 
-              {/* Empty pending state when there are only completed tasks */}
-              {pendingTasks.length === 0 && completedTasks.length > 0 && (
-                <div className="flex flex-col items-center justify-center py-6 text-center">
+          {/* Task List */}
+          <ScrollArea className="flex-1">
+            <div className="p-1.5 space-y-0.5">
+              {isLoading ? (
+                <div className="space-y-1 p-1">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="h-8 w-full rounded" />
+                  ))}
+                </div>
+              ) : pendingTasks.length === 0 && completedTasks.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
                   <p className="text-sm text-muted-foreground">
-                    All tasks completed!
+                    No unscheduled tasks
+                  </p>
+                  <p className="text-xs text-muted-foreground/70 mt-1">
+                    Tasks without a date appear here
                   </p>
                 </div>
-              )}
-
-              {/* Completed Tasks in Backlog */}
-              {completedTasks.length > 0 && (
-                <div className="pt-3 mt-3 border-t border-border/40">
-                  <p className="text-xs font-medium text-muted-foreground mb-2 px-1">
-                    Completed ({completedTasks.length})
-                  </p>
-                  <div className="space-y-1">
-                    {completedTasks.map((task) => (
-                      <BacklogTaskCard
+              ) : (
+                <>
+                  {/* Pending Tasks. Hidden rows keep their layout, so they stop
+                      being drop targets while the panel is closed. */}
+                  <SortableContext
+                    items={pendingTasks.map((t) => t.id)}
+                    strategy={verticalListSortingStrategy}
+                    disabled={{ draggable: false, droppable: !isExpanded }}
+                  >
+                    {pendingTasks.map((task) => (
+                      <SortableBacklogTaskCard
                         key={task.id}
                         task={task}
                         onSelect={() => setSelectedTask(task)}
                       />
                     ))}
-                  </div>
-                </div>
-              )}
+                  </SortableContext>
 
-              {/* Truncation warning */}
-              {maybeTruncated && (
-                <div className="pt-3 mt-3 border-t border-border/40 px-2 text-center">
-                  <p className="text-xs text-amber-600 dark:text-amber-400">
-                    Showing first {BACKLOG_LIMIT} tasks. Some tasks may be
-                    hidden.
-                  </p>
-                </div>
+                  {/* Empty pending state when there are only completed tasks */}
+                  {pendingTasks.length === 0 && completedTasks.length > 0 && (
+                    <div className="flex flex-col items-center justify-center py-6 text-center">
+                      <p className="text-sm text-muted-foreground">
+                        All tasks completed!
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Completed Tasks in Backlog */}
+                  {completedTasks.length > 0 && (
+                    <div className="pt-3 mt-3 border-t border-border/40">
+                      <p className="text-xs font-medium text-muted-foreground mb-2 px-1">
+                        Completed ({completedTasks.length})
+                      </p>
+                      <div className="space-y-1">
+                        {completedTasks.map((task) => (
+                          <BacklogTaskCard
+                            key={task.id}
+                            task={task}
+                            onSelect={() => setSelectedTask(task)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Truncation warning */}
+                  {maybeTruncated && (
+                    <div className="pt-3 mt-3 border-t border-border/40 px-2 text-center">
+                      <p className="text-xs text-amber-600 dark:text-amber-400">
+                        Showing first {BACKLOG_LIMIT} tasks. Some tasks may be
+                        hidden.
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
-            </>
-          )}
+            </div>
+          </ScrollArea>
         </div>
-      </ScrollArea>
+      </aside>
 
       {/* Add Task Modal */}
       <AddTaskModal
@@ -269,7 +336,7 @@ export function Sidebar({ className }: SidebarProps) {
           if (!open) setSelectedTask(null);
         }}
       />
-    </aside>
+    </div>
   );
 }
 

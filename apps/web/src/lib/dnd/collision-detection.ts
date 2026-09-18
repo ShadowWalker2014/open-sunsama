@@ -1,10 +1,7 @@
 import {
-  closestCenter,
   pointerWithin,
   rectIntersection,
-  getFirstCollision,
   type CollisionDetection,
-  type DroppableContainer,
 } from "@dnd-kit/core";
 
 /**
@@ -19,7 +16,7 @@ import {
  * - Return the most specific collision (task if hovering task, column otherwise)
  */
 export const taskPriorityCollision: CollisionDetection = (args) => {
-  const { droppableContainers, pointerCoordinates } = args;
+  const { droppableContainers } = args;
 
   // Separate columns and tasks
   const columns = droppableContainers.filter(
@@ -44,6 +41,13 @@ export const taskPriorityCollision: CollisionDetection = (args) => {
       droppableContainers: tasks,
     });
     return taskCollisions.length > 0 ? taskCollisions : [];
+  }
+
+  // The backlog can overlay the first day columns while it peeks open, so it
+  // wins whenever the pointer is inside it.
+  const backlogIndex = columnCollisions.findIndex((c) => c.id === "backlog");
+  if (backlogIndex > 0) {
+    columnCollisions.unshift(...columnCollisions.splice(backlogIndex, 1));
   }
 
   // We're over a column - now check if we're specifically over a task in that column
