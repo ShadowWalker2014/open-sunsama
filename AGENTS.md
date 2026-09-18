@@ -50,9 +50,11 @@ opensunsama/
 | `/tasks/:id/subtasks/*` | Yes   | Subtask CRUD                     |
 | `/time-blocks/*`        | Yes   | Time block CRUD + cascade resize |
 | `/api-keys/*`           | JWT   | API key management               |
+| `/mcp`                  | OAuth/API key | Remote MCP server (Streamable HTTP) |
+| `/oauth/*`, `/.well-known/*` | Mixed | OAuth 2.1 for MCP clients     |
 | `/uploads/*`            | Yes   | S3 file uploads                  |
 
-**Auth:** JWT (`Bearer <token>`) or API Key (`X-API-Key: os_<key>`)  
+**Auth:** JWT (`Bearer <token>`), API Key (`X-API-Key: os_<key>`), or MCP OAuth token (`Bearer osat_<token>`)  
 **Scopes:** `tasks:read`, `tasks:write`, `time-blocks:read`, `time-blocks:write`, `user:read`, `user:write`
 
 ### Web (`apps/web`)
@@ -98,9 +100,14 @@ opensunsama/
 
 ---
 
-## MCP Tools (24)
+## MCP (23 tools)
 
-Configure in Cursor/Claude with `OPENSUNSAMA_API_KEY` env var.
+Two ways in, same tools (`mcp/src/tools`, shared via `@open-sunsama/mcp/server`):
+
+- **Remote (recommended):** `https://api.opensunsama.com/mcp`, Streamable HTTP served by the API (`apps/api/src/routes/mcp.ts`). Auth is OAuth 2.1 from the API's own authorization server (`apps/api/src/routes/oauth.ts`, `lib/oauth/*`, tables `oauth_clients`/`oauth_authorization_codes`/`oauth_tokens`). The consent screen is the web route `/oauth/consent`. API keys also work (`X-API-Key` or `Bearer os_...`).
+- **Local stdio:** `npx @open-sunsama/mcp` with `OPENSUNSAMA_API_KEY`.
+
+E2E test of the OAuth flow against a local API: `MCP_E2E_API_URL=http://localhost:3001 bun run mcp/tests/oauth-e2e.ts`.
 
 | Category    | Tools                                                                                                                                                  |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |

@@ -15,6 +15,7 @@ COPY packages/database/package.json ./packages/database/
 COPY packages/types/package.json ./packages/types/
 COPY packages/utils/package.json ./packages/utils/
 COPY packages/api-client/package.json ./packages/api-client/
+COPY mcp/package.json ./mcp/
 
 # Install dependencies (allow lockfile updates for cross-platform compatibility)
 RUN bun install

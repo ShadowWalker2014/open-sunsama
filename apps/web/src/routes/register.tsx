@@ -7,6 +7,7 @@ import { AuthLayout, AuthHeader, AuthFooter } from "@/components/layout/auth-lay
 import { Button, Input, Label } from "@/components/ui";
 import { toast } from "@/hooks/use-toast";
 import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
+import { getSafeRedirect } from "@/lib/auth-redirect";
 
 interface RegisterForm {
   name: string;
@@ -18,6 +19,11 @@ interface RegisterForm {
 export default function RegisterPage() {
   useSEO(SEO_CONFIGS.register);
   const navigate = useNavigate();
+  const redirect = React.useMemo(getSafeRedirect, []);
+  const goNext = React.useCallback(() => {
+    if (redirect) void navigate({ href: redirect, replace: true });
+    else void navigate({ to: "/app" });
+  }, [navigate, redirect]);
   const { register: registerUser, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = React.useState(false);
   
@@ -33,9 +39,9 @@ export default function RegisterPage() {
   // Redirect if already authenticated
   React.useEffect(() => {
     if (isAuthenticated) {
-      void navigate({ to: "/app" });
+      goNext();
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, goNext]);
 
   const onSubmit = async (data: RegisterForm) => {
     setIsLoading(true);
@@ -45,7 +51,7 @@ export default function RegisterPage() {
         email: data.email,
         password: data.password,
       });
-      void navigate({ to: "/app" });
+      goNext();
     } catch (error) {
       toast({
         variant: "destructive",
@@ -162,6 +168,7 @@ export default function RegisterPage() {
         Already have an account?{" "}
         <Link
           to="/login"
+          search={redirect ? { redirect } : undefined}
           className="text-foreground hover:underline underline-offset-4"
         >
           Sign in

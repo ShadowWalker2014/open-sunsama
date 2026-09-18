@@ -33,7 +33,8 @@
   "packageManager": "bun@1.2.21",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "mcp"
   ],
   "scripts": {
     "dev": "turbo run dev --filter='!@open-sunsama/desktop' --filter='!@open-sunsama/mobile' --filter='!@open-sunsama/expo-mobile'",

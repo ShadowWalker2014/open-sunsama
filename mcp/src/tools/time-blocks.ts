@@ -8,6 +8,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { ApiClient, TimeBlock } from "../lib/api-client.js";
+import { defineTool } from "../lib/define-tool.js";
 
 /**
  * Format a time block for display with human-readable information
@@ -105,7 +106,7 @@ export function registerTimeBlockTools(
   apiClient: ApiClient
 ): void {
   // List time blocks with optional filters
-  server.tool(
+  defineTool(server,
     "list_time_blocks",
     `List time blocks from your calendar with optional filters.
 
@@ -198,7 +199,7 @@ start/end times, duration, description, color, and any linked task info.`,
   );
 
   // Get a specific time block by ID
-  server.tool(
+  defineTool(server,
     "get_time_block",
     `Get detailed information about a specific time block by its ID.
 
@@ -233,7 +234,7 @@ duration in minutes, description, color, and linked task details if any.`,
   );
 
   // Create a new time block
-  server.tool(
+  defineTool(server,
     "create_time_block",
     `Create a new time block to schedule focused work time on your calendar.
 
@@ -357,7 +358,7 @@ You can optionally link it to an existing task to track what you'll work on.`,
   );
 
   // Update an existing time block
-  server.tool(
+  defineTool(server,
     "update_time_block",
     `Update an existing time block's details.
 
@@ -481,7 +482,7 @@ To clear optional fields (description, color, taskId), pass null explicitly.`,
   );
 
   // Delete a time block
-  server.tool(
+  defineTool(server,
     "delete_time_block",
     `Delete a time block from your calendar.
 
@@ -517,7 +518,7 @@ Any linked task will NOT be deleted, only the link will be removed.`,
   );
 
   // Link or unlink a task to a time block
-  server.tool(
+  defineTool(server,
     "link_task_to_time_block",
     `Link a task to a time block, or unlink a task from a time block.
 
@@ -568,7 +569,7 @@ To unlink a task, pass null as the taskId.`,
   );
 
   // Get schedule for a specific day (convenience tool)
-  server.tool(
+  defineTool(server,
     "get_schedule_for_day",
     `Get all time blocks for a specific day, formatted as a schedule view.
 

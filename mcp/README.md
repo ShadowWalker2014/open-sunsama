@@ -1,6 +1,15 @@
 # Open Sunsama MCP Server
 
-An MCP (Model Context Protocol) server that enables AI agents like Claude, Cursor, and other AI assistants to manage your tasks, time blocks, and calendar through the Open Sunsama API.
+An MCP (Model Context Protocol) server that enables AI agents like Claude, ChatGPT, Cursor, and other AI assistants to manage your tasks, time blocks, and calendar through the Open Sunsama API.
+
+> **Most people don't need this package.** Open Sunsama hosts the same server at
+> **`https://api.opensunsama.com/mcp`** with OAuth sign-in. Add that URL to Claude
+> (Settings → Customize → Connectors), ChatGPT (Developer mode → Plugins), Claude Code, or
+> Cursor, then sign in and allow access. There's no API key. See the
+> [setup guides](https://opensunsama.com/docs/mcp/overview).
+>
+> Use this npm package (the local stdio server + API key) for clients without OAuth
+> support, scripts, CI, or self-hosted instances that aren't reachable from the internet.
 
 ## Features
 
@@ -18,9 +27,9 @@ An MCP (Model Context Protocol) server that enables AI agents like Claude, Curso
 
 ## Installation
 
-### Quick Start (Recommended)
+### Quick Start (local server)
 
-No installation required! Use `npx` to run directly:
+No installation required. Use `npx` to run it directly:
 
 ```json
 {
@@ -39,18 +48,23 @@ No installation required! Use `npx` to run directly:
 ### From Source (Development)
 
 ```bash
-# Clone the repository
+# Clone the repository (the mcp package is a workspace of the monorepo)
 git clone https://github.com/ShadowWalker2014/open-sunsama.git
-cd open-sunsama/mcp
-
-# Install dependencies
+cd open-sunsama
 bun install
 
 # Build
-bun run build
+bun run --filter=@open-sunsama/mcp build
 ```
 
+The tools live in `src/tools/` and are shared with the hosted server: the API imports
+`createOpenSunsamaMcpServer` from `@open-sunsama/mcp/server` and serves it at `/mcp`.
+
 ### Getting an API Key
+
+The fastest way: in the web app, open **Settings → MCP**, expand **Use an API key instead**, and click **Generate key**. The configs are filled in for you.
+
+Or create one with custom scopes:
 
 1. Open the Open Sunsama web app
 2. Go to **Settings** → **API Keys**
@@ -264,13 +278,23 @@ Run the test suite to verify your setup:
 # Set your API key
 export OPENSUNSAMA_API_KEY=os_your-api-key-here
 
-# Run all tests
-bun run test
+# Run all tests against the live API
+bun run test:live
 
 # Or run individual test suites
 bun run test:tasks
 bun run test:time-blocks
 bun run test:subtasks
+```
+
+### Hosted server OAuth flow
+
+`tests/oauth-e2e.ts` drives the full OAuth connector flow (discovery, registration, PKCE,
+consent, token refresh, revocation, CIMD clients, API keys) with the official MCP SDK
+client. Point it at a local API, since it creates a throwaway account:
+
+```bash
+MCP_E2E_API_URL=http://localhost:3001 bun run tests/oauth-e2e.ts
 ```
 
 ### Using MCP Inspector

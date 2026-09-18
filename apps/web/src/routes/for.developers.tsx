@@ -358,8 +358,8 @@ await mcp.callTool("open-sunsama", "create_task", {
             Let AI Agents Manage Your Schedule
           </h2>
           <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-            24+ MCP tools for programmatic task and schedule management.
-            Works with Cursor, Claude Desktop, and any MCP-compatible client.
+            23 MCP tools for programmatic task and schedule management. Connect with one URL
+            and OAuth sign-in from Claude, ChatGPT, Cursor, and any MCP-compatible client.
           </p>
         </div>
 
@@ -527,7 +527,7 @@ function FAQSection() {
     },
     {
       question: "How do MCP tools work?",
-      answer: "MCP (Model Context Protocol) is Anthropic's standard for connecting AI to tools. Configure the Open Sunsama MCP server with your API key, and AI agents can create tasks, schedule time blocks, manage subtasks, etc. Works in Cursor, Claude Desktop, and any MCP-compatible client.",
+      answer: "MCP (Model Context Protocol) is Anthropic's standard for connecting AI to tools. Add https://api.opensunsama.com/mcp to your AI assistant and sign in with OAuth. No API key needed. Agents can then create tasks, schedule time blocks, manage subtasks, and more. Works in Claude, ChatGPT, Cursor, Claude Code, VS Code, and any MCP-compatible client; the local npx server with an API key is still supported.",
     },
     {
       question: "Can I self-host this?",
@@ -658,7 +658,7 @@ export default function ForDevelopersPage() {
     },
     {
       question: "How do MCP tools work?",
-      answer: "MCP (Model Context Protocol) is Anthropic's standard for connecting AI to tools. Configure the Open Sunsama MCP server with your API key, and AI agents can create tasks, schedule time blocks, manage subtasks, etc. Works in Cursor, Claude Desktop, and any MCP-compatible client.",
+      answer: "MCP (Model Context Protocol) is Anthropic's standard for connecting AI to tools. Add https://api.opensunsama.com/mcp to your AI assistant and sign in with OAuth. No API key needed. Agents can then create tasks, schedule time blocks, manage subtasks, and more. Works in Claude, ChatGPT, Cursor, Claude Code, VS Code, and any MCP-compatible client; the local npx server with an API key is still supported.",
     },
     {
       question: "Can I self-host this?",

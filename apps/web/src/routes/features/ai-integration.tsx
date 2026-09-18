@@ -29,7 +29,7 @@ export default function AIIntegrationFeaturePage() {
     <FeatureLayout
       badge="Feature"
       title="AI Integration"
-      subtitle="Full MCP support lets AI agents schedule, manage, and optimize your day autonomously."
+      subtitle="Connect Claude, ChatGPT, or Cursor with one URL and let AI agents schedule, manage, and optimize your day."
     >
       {/* Visual Demo */}
       <section className="pb-12">
@@ -68,13 +68,13 @@ export default function AIIntegrationFeaturePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <FeatureItem
               icon={Bot}
-              title="24+ MCP Tools"
+              title="23 MCP Tools"
               description="Full suite of tools for tasks, time blocks, subtasks, and user management."
             />
             <FeatureItem
               icon={Key}
-              title="Granular Scopes"
-              description="Control exactly what AI agents can access with fine-grained API key permissions."
+              title="Sign In, Don't Paste Keys"
+              description="Connect with OAuth: approve exactly what each assistant can access, and disconnect it anytime."
             />
             <FeatureItem
               icon={Command}
@@ -104,7 +104,7 @@ export default function AIIntegrationFeaturePage() {
               </div>
             </div>
             <div>
-              <h3 className="text-[15px] font-semibold mb-2">API Key Scopes</h3>
+              <h3 className="text-[15px] font-semibold mb-2">Permissions You Approve</h3>
               <ul className="space-y-2">
                 {[
                   "tasks:read - View tasks and subtasks",
@@ -120,10 +120,11 @@ export default function AIIntegrationFeaturePage() {
               </ul>
             </div>
             <div>
-              <h3 className="text-[15px] font-semibold mb-2">Zero-Install Setup</h3>
+              <h3 className="text-[15px] font-semibold mb-2">One-URL Setup</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Configure MCP in Claude Desktop or Cursor with just your API key. 
-                No npm install required - the MCP server runs on our infrastructure.
+                Add <code className="rounded bg-muted px-1 py-0.5 text-xs">https://api.opensunsama.com/mcp</code> to
+                Claude, ChatGPT, or Cursor and sign in. No API key and no install: the MCP server runs on our
+                infrastructure. Prefer a local server? <code className="text-xs">npx @open-sunsama/mcp</code> still works.
               </p>
             </div>
           </div>

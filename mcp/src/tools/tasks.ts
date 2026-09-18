@@ -6,6 +6,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { ApiClient, Task } from "../lib/api-client.js";
+import { defineTool } from "../lib/define-tool.js";
 
 /**
  * Formats a task object for display in tool results
@@ -87,7 +88,7 @@ export function registerTaskTools(
   // ============================================================
   // LIST TASKS
   // ============================================================
-  server.tool(
+  defineTool(server,
     "list_tasks",
     `List tasks with optional filters. Returns tasks sorted by position by default.
 
@@ -183,7 +184,7 @@ Pagination: Use "page" and "limit" for large result sets.`,
   // ============================================================
   // GET TASK
   // ============================================================
-  server.tool(
+  defineTool(server,
     "get_task",
     `Get detailed information about a specific task by its ID.
 
@@ -213,7 +214,7 @@ Example: { "id": "task_abc123" }`,
   // ============================================================
   // CREATE TASK
   // ============================================================
-  server.tool(
+  defineTool(server,
     "create_task",
     `Create a new task.
 
@@ -287,7 +288,7 @@ Examples:
   // ============================================================
   // UPDATE TASK
   // ============================================================
-  server.tool(
+  defineTool(server,
     "update_task",
     `Update an existing task. Only provide fields you want to change.
 
@@ -378,7 +379,7 @@ Examples:
   // ============================================================
   // COMPLETE TASK
   // ============================================================
-  server.tool(
+  defineTool(server,
     "complete_task",
     `Mark a task as complete.
 
@@ -414,7 +415,7 @@ Example: { "id": "task_abc123" }`,
   // ============================================================
   // UNCOMPLETE TASK
   // ============================================================
-  server.tool(
+  defineTool(server,
     "uncomplete_task",
     `Mark a task as incomplete (reopen a completed task).
 
@@ -450,7 +451,7 @@ Example: { "id": "task_abc123" }`,
   // ============================================================
   // DELETE TASK
   // ============================================================
-  server.tool(
+  defineTool(server,
     "delete_task",
     `Permanently delete a task.
 
@@ -482,7 +483,7 @@ Example: { "id": "task_abc123" }`,
   // ============================================================
   // SCHEDULE TASK
   // ============================================================
-  server.tool(
+  defineTool(server,
     "schedule_task",
     `Move a task to a specific date or to the backlog.
 
@@ -530,7 +531,7 @@ Examples:
   // ============================================================
   // REORDER TASKS
   // ============================================================
-  server.tool(
+  defineTool(server,
     "reorder_tasks",
     `Reorder tasks within a specific date or backlog.
 

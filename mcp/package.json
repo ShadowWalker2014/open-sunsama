@@ -1,25 +1,33 @@
 {
   "name": "@open-sunsama/mcp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "MCP server for Open Sunsama - AI agent task and calendar management",
   "type": "module",
   "bin": {
     "open-sunsama-mcp": "./build/index.js"
   },
   "main": "./build/index.js",
+  "exports": {
+    ".": "./build/index.js",
+    "./server": {
+      "types": "./src/server.ts",
+      "default": "./src/server.ts"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node build/index.js",
-    "test": "bun run tests/test-all.ts",
+    "typecheck": "tsc --noEmit",
+    "test:live": "bun run tests/test-all.ts",
     "test:tasks": "bun run tests/test-tasks.ts",
     "test:time-blocks": "bun run tests/test-time-blocks.ts",
     "test:subtasks": "bun run tests/test-subtasks.ts",
     "inspector": "npx @modelcontextprotocol/inspector node build/index.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
-    "zod": "^3.23.8"
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

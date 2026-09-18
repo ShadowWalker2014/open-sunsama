@@ -6,18 +6,16 @@
  * A Model Context Protocol server that enables AI agents to manage tasks,
  * time blocks, and calendars through the Open Sunsama API.
  *
+ * Most users should connect the hosted server instead — no API key needed:
+ *   https://api.opensunsama.com/mcp  (OAuth; see https://opensunsama.com/docs/mcp/overview)
+ *
  * Usage:
  *   OPENSUNSAMA_API_KEY=os_xxx open-sunsama-mcp
  *   OPENSUNSAMA_API_KEY=os_xxx OPENSUNSAMA_API_URL=http://localhost:3001 open-sunsama-mcp (for self-hosted/local)
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { ApiClient } from "./lib/api-client.js";
-import { registerTaskTools } from "./tools/tasks.js";
-import { registerTimeBlockTools } from "./tools/time-blocks.js";
-import { registerSubtaskTools } from "./tools/subtasks.js";
-import { registerUserTools } from "./tools/user.js";
+import { createOpenSunsamaMcpServer } from "./server.js";
 
 // Configuration from environment variables
 const API_KEY = process.env.OPENSUNSAMA_API_KEY;
@@ -35,23 +33,10 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-// Create the MCP server
-const server = new McpServer({
-  name: "open-sunsama",
-  version: "1.0.0",
-});
-
-// Create the API client
-const apiClient = new ApiClient({
+const server = createOpenSunsamaMcpServer({
   baseUrl: API_URL,
   apiKey: API_KEY,
 });
-
-// Register all tools
-registerTaskTools(server, apiClient);
-registerTimeBlockTools(server, apiClient);
-registerSubtaskTools(server, apiClient);
-registerUserTools(server, apiClient);
 
 // Log to stderr (safe for stdio transport)
 console.error(`Open Sunsama MCP Server starting...`);

@@ -203,6 +203,8 @@ server {
 | ------------------ | ------- | ------------------------------- |
 | `ROLLOVER_ENABLED` | `true`  | Enable automatic task rollover  |
 | `REDIS_URL`        | -       | Redis URL for WebSocket scaling |
+| `API_URL`          | `http://localhost:3001` | Public API URL. It's the OAuth issuer for MCP connectors, so your connector URL is `${API_URL}/mcp` |
+| `WEB_APP_URL`      | `http://localhost:3000` | Public web app URL, where the MCP consent screen lives |
 
 ## Database Backup
 

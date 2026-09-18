@@ -11,5 +11,6 @@ export default defineConfig({
     '@open-sunsama/database',
     '@open-sunsama/types',
     '@open-sunsama/utils',
+    '@open-sunsama/mcp',
   ],
 });

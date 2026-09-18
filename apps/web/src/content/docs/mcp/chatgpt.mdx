@@ -1,0 +1,47 @@
+export const frontmatter = {
+  title: "ChatGPT Setup",
+  description:
+    "Connect Open Sunsama to ChatGPT as an MCP plugin connection with OAuth sign-in. Let ChatGPT read your schedule and plan your tasks.",
+  order: 3,
+  section: "mcp",
+};
+
+ChatGPT connects to Open Sunsama through developer mode, which can add any remote MCP server as a plugin connection. You sign in once with Open Sunsama, and no API key is involved.
+
+Developer mode is available on paid ChatGPT plans (Plus, Pro, Business, Enterprise, and Edu). On Business and Enterprise workspaces, an admin may need to allow it.
+
+## Add Open Sunsama to ChatGPT
+
+1. Turn on developer mode: open **Settings → Security and login** and turn on **Developer mode**.
+2. Go to [ChatGPT Plugins](https://chatgpt.com/plugins) and click the **+** button.
+3. Fill in the form:
+   - **Name:** Open Sunsama
+   - **Description:** My tasks, subtasks, and calendar time blocks
+   - **Connection:** the MCP server URL
+
+     ```
+     https://api.opensunsama.com/mcp
+     ```
+
+4. Create the connection. ChatGPT sees that Open Sunsama uses OAuth and opens the Open Sunsama sign-in page.
+5. Sign in and click **Allow access**. ChatGPT lists the Open Sunsama tools it found.
+
+## Use it in a chat
+
+Start a new conversation and add **Open Sunsama** from the tools menu (**+** in the message box). Then ask, for example:
+
+```
+"Plan my afternoon: list today's open tasks and block time for the top two."
+```
+
+ChatGPT asks you to confirm before it runs a tool that changes your data. Read-only tools, such as listing tasks, run without a prompt.
+
+## Disconnecting
+
+Remove the connection in [ChatGPT Plugins](https://chatgpt.com/plugins), or open **Open Sunsama → Settings → MCP → Connected apps** and click **Disconnect** next to ChatGPT. Access stops immediately.
+
+## Troubleshooting
+
+- **The sign-in page never opens**: check the URL ends in `/mcp`, then open the connection in [ChatGPT Plugins](https://chatgpt.com/plugins) and connect again.
+- **"Developer mode" is missing**: your plan or workspace doesn't allow it yet. Ask your workspace admin.
+- **Tools look out of date**: open the connection in ChatGPT Plugins and click **Refresh**.

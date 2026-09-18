@@ -120,7 +120,23 @@ Open Sunsama **opens the black box**.
 
 ### MCP Server (Model Context Protocol)
 
-Connect your AI assistant in seconds:
+Connect your AI assistant with one URL. There's no API key and no config file:
+
+```
+https://api.opensunsama.com/mcp
+```
+
+| Assistant | Where to add it |
+| --- | --- |
+| **Claude** (web, Desktop, mobile) | Settings → Customize → Connectors → Add |
+| **ChatGPT** | Settings → Security and login → Developer mode, then Plugins → **+** |
+| **Claude Code** | `claude mcp add --transport http open-sunsama https://api.opensunsama.com/mcp` |
+| **Cursor / VS Code** | One-click install from Settings → MCP in the app |
+
+Your assistant sends you to an Open Sunsama consent screen. You sign in, click **Allow access**, and you're connected. It's OAuth 2.1 with PKCE, and you can disconnect any app in Settings → MCP. Guides: [Claude](https://opensunsama.com/docs/mcp/claude) · [ChatGPT](https://opensunsama.com/docs/mcp/chatgpt) · [Cursor](https://opensunsama.com/docs/mcp/cursor).
+
+<details>
+<summary><strong>Prefer an API key? The local server still works</strong></summary>
 
 ```json
 // Claude Desktop: ~/Library/Application Support/Claude/claude_desktop_config.json
@@ -137,7 +153,11 @@ Connect your AI assistant in seconds:
 }
 ```
 
-**24 Tools Available:**
+Or send the key to the hosted server as an `X-API-Key` header. See [Local server & API keys](https://opensunsama.com/docs/mcp/local-server).
+
+</details>
+
+**23 tools available:**
 
 | Category        | Tools                                                                                                                                |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
@@ -190,8 +210,8 @@ curl https://api.opensunsama.com/time-blocks?date=2026-02-03 \
 The fastest way to get started:
 
 1. **Sign up** at [opensunsama.com](https://opensunsama.com)
-2. **Generate an API key** in Settings → API Keys
-3. **Connect your AI** using the MCP config above
+2. **Connect your AI** by adding `https://api.opensunsama.com/mcp` to Claude, ChatGPT, or Cursor
+3. **Sign in and allow access** when your assistant asks
 
 ### Self-Hosted
 
