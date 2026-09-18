@@ -221,7 +221,9 @@ function ConnectorInstructions({ client, copied, onCopy }: {
               <span className="font-medium">Connection</span>.
             </li>
             <li>
-              Create the connection, sign in to Open Sunsama when asked, and choose{" "}
+              Leave authentication on <span className="font-medium">OAuth</span>, check{" "}
+              <span className="font-medium">I understand and want to continue</span>, click{" "}
+              <span className="font-medium">Create</span>, sign in to Open Sunsama, and choose{" "}
               <span className="font-medium">Allow access</span>.
             </li>
           </Steps>

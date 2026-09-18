@@ -13,28 +13,29 @@ Developer mode is available on paid ChatGPT plans (Plus, Pro, Business, Enterpri
 ## Add Open Sunsama to ChatGPT
 
 1. Turn on developer mode: open **Settings → Security and login** and turn on **Developer mode**.
-2. Go to [ChatGPT Plugins](https://chatgpt.com/plugins) and click the **+** button.
+2. Go to [ChatGPT Plugins](https://chatgpt.com/plugins) and click the **+** button next to the search box. The **New Plugin** form opens.
 3. Fill in the form:
    - **Name:** Open Sunsama
    - **Description:** My tasks, subtasks, and calendar time blocks
-   - **Connection:** the MCP server URL
+   - **Connection:** keep **Server URL** and paste
 
      ```
      https://api.opensunsama.com/mcp
      ```
 
-4. Create the connection. ChatGPT sees that Open Sunsama uses OAuth and opens the Open Sunsama sign-in page.
-5. Sign in and click **Allow access**. ChatGPT lists the Open Sunsama tools it found.
+   - **Authentication:** leave it on **OAuth**. ChatGPT discovers the rest, so you don't need to change **Advanced OAuth settings**.
+4. Check **I understand and want to continue** and click **Create**. ChatGPT opens the Open Sunsama sign-in page.
+5. Sign in and click **Allow access**. ChatGPT takes you back and shows that the plugin is connected.
 
 ## Use it in a chat
 
-Start a new conversation and add **Open Sunsama** from the tools menu (**+** in the message box). Then ask, for example:
+Start a new conversation, click **+** in the message box, type **Open Sunsama**, and pick the plugin. Then ask, for example:
 
 ```
 "Plan my afternoon: list today's open tasks and block time for the top two."
 ```
 
-ChatGPT asks you to confirm before it runs a tool that changes your data. Read-only tools, such as listing tasks, run without a prompt.
+ChatGPT asks you to confirm before it deletes anything. Lookups and edits, such as listing, creating, or completing tasks, run without a prompt.
 
 ## Disconnecting
 
