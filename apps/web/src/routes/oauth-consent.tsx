@@ -258,7 +258,7 @@ export default function OAuthConsentPage() {
               className="h-9 text-[13px]"
               onClick={() => void navigate({ href: withRedirect("/register", currentPath) })}
             >
-              Create a free account
+              Create an account
             </Button>
           </div>
         )}

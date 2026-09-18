@@ -44,11 +44,13 @@ export function ProductComparisonSchema({
             description: mainProduct.description,
             applicationCategory: "ProductivityApplication",
             operatingSystem: "Web, Windows, macOS, Linux",
-            offers: {
-              "@type": "Offer",
-              price: mainProduct.price || "0",
-              priceCurrency: mainProduct.priceCurrency || "USD",
-            },
+            offers: mainProduct.price
+              ? {
+                  "@type": "Offer",
+                  price: mainProduct.price,
+                  priceCurrency: mainProduct.priceCurrency || "USD",
+                }
+              : undefined,
             url: mainProduct.url || "https://opensunsama.com",
           },
         },

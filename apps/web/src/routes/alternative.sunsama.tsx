@@ -6,14 +6,12 @@ import {
   Github,
   Check,
   X,
-  DollarSign,
   Shield,
   Users,
   Sparkles,
   ChevronDown,
   Timer,
   Layout,
-  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useInView } from "react-intersection-observer";
@@ -24,23 +22,21 @@ import { useState } from "react";
 import { SiteFooter, SiteHeader } from "@/components/landing/sections";
 
 /**
- * Price comparison table - the core conversion driver
+ * Feature comparison table
  */
-function PriceComparisonSection() {
+function FeatureComparisonSection() {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
 
   const features = [
-    { name: "Monthly cost", sunsama: "$20/month", openSunsama: "Free forever", highlight: true },
-    { name: "Annual cost", sunsama: "$240/year", openSunsama: "$0/year", highlight: true },
     { name: "Time blocking", sunsama: true, openSunsama: true },
     { name: "Calendar sync", sunsama: true, openSunsama: true },
     { name: "Focus mode with timer", sunsama: true, openSunsama: true },
     { name: "Kanban board", sunsama: true, openSunsama: true },
     { name: "Daily planning workflow", sunsama: true, openSunsama: true },
-    { name: "Open source", sunsama: false, openSunsama: true },
-    { name: "Self-hosted option", sunsama: false, openSunsama: true },
-    { name: "AI/MCP native", sunsama: "Limited", openSunsama: "Full support" },
-    { name: "API access", sunsama: "Enterprise only", openSunsama: "Free" },
+    { name: "Open source", sunsama: false, openSunsama: true, highlight: true },
+    { name: "Self-hosted option", sunsama: false, openSunsama: true, highlight: true },
+    { name: "AI/MCP native", sunsama: "Limited", openSunsama: "Any MCP client", highlight: true },
+    { name: "API access", sunsama: "Enterprise only", openSunsama: "Full REST API" },
   ];
 
   return (
@@ -51,7 +47,7 @@ function PriceComparisonSection() {
             See the Difference
           </h2>
           <p className="text-sm text-muted-foreground">
-            Same features. Zero cost. No compromises.
+            The same daily-planning features. Plus open source code and an AI connector.
           </p>
         </div>
 
@@ -90,9 +86,7 @@ function PriceComparisonSection() {
                         <X className="h-4 w-4 text-muted-foreground/30 mx-auto" />
                       )
                     ) : (
-                      <span className={cn(
-                        feature.highlight ? "text-muted-foreground line-through" : "text-muted-foreground"
-                      )}>
+                      <span className="text-muted-foreground">
                         {feature.sunsama}
                       </span>
                     )}
@@ -120,7 +114,7 @@ function PriceComparisonSection() {
         </div>
 
         <p className="text-center text-[11px] text-muted-foreground mt-4">
-          Pricing comparison as of January 2026. Sunsama pricing from their website.
+          Comparison as of January 2026. Sunsama features from their website.
         </p>
       </div>
     </section>
@@ -276,10 +270,10 @@ function WhySwitchSection() {
 
   const reasons = [
     {
-      icon: DollarSign,
-      title: "Save $240/year",
-      description: "Keep your money. Get the same daily planning features without the subscription.",
-      highlight: "$240",
+      icon: Sparkles,
+      title: "Works With Any AI Agent",
+      description: "Connect Claude, ChatGPT, Cursor, or any MCP client with one URL. Sign in with OAuth. No API key.",
+      highlight: "1 URL",
     },
     {
       icon: Shield,
@@ -288,10 +282,10 @@ function WhySwitchSection() {
       highlight: "100%",
     },
     {
-      icon: Lock,
-      title: "No Feature Gates",
-      description: "Every feature is available to everyone. No premium tiers, no artificial limits.",
-      highlight: "All",
+      icon: Layout,
+      title: "Keyboard-First Planning",
+      description: "Kanban board, time blocking, focus mode, and rollover. Open anything with the ⌘K command palette.",
+      highlight: "⌘K",
     },
     {
       icon: Users,
@@ -378,7 +372,7 @@ function SocialProofSection() {
               <div className="text-xs text-muted-foreground">Open Source</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">24+</div>
+              <div className="text-2xl font-bold">23</div>
               <div className="text-xs text-muted-foreground">MCP Tools</div>
             </div>
           </div>
@@ -392,14 +386,14 @@ function SocialProofSection() {
           >
             <Github className="h-4 w-4" />
             <span className="text-sm font-medium">Star on GitHub</span>
-            <span className="text-xs text-muted-foreground">Free & Open Source</span>
+            <span className="text-xs text-muted-foreground">Source on GitHub</span>
           </a>
 
           <p className="mt-6 text-sm text-muted-foreground max-w-md mx-auto">
-            "Finally, a daily planner that respects both my workflow and my wallet."
+            Connect Claude, ChatGPT, Cursor, or any MCP client with one URL. Sign in with OAuth. No API key.
           </p>
           <p className="text-[11px] text-muted-foreground mt-2">
-            — Developer switching from Sunsama
+            <code>https://api.opensunsama.com/mcp</code>
           </p>
         </div>
       </div>
@@ -415,8 +409,8 @@ function FAQSection() {
 
   const faqs = [
     {
-      question: "Is Open Sunsama really free?",
-      answer: "Yes, 100% free for individuals. Open Sunsama is open-source software. You can use our hosted version at no cost, or self-host it on your own servers. There are no hidden fees, no credit card required, and no premium tiers.",
+      question: "Can I control Open Sunsama from Claude or ChatGPT?",
+      answer: "Yes. Paste https://api.opensunsama.com/mcp into Claude, ChatGPT, Cursor, Claude Code, VS Code, or any MCP client, then sign in with OAuth. You don't need an API key. Your agent can then read your schedule, create tasks, and time-block your day.",
     },
     {
       question: "Can I import my data from Sunsama?",
@@ -424,7 +418,7 @@ function FAQSection() {
     },
     {
       question: "What features does Open Sunsama have?",
-      answer: "All the core features you love: time blocking with calendar sync (Google, Outlook, iCloud), focus mode with built-in timer, kanban board for task management, daily planning workflow, and full keyboard navigation. Plus extras like AI/MCP integration for automation.",
+      answer: "All the core features you love: time blocking with two-way calendar sync (Google, Outlook, iCloud), focus mode with a built-in timer, a kanban board for daily planning, rollover of unfinished tasks, a ⌘K command palette, and full keyboard navigation. It runs on the web, on desktop, and on mobile.",
     },
     {
       question: "Is my data private and secure?",
@@ -436,7 +430,7 @@ function FAQSection() {
     },
     {
       question: "How does the AI/MCP integration work?",
-      answer: "Open Sunsama includes 24+ MCP (Model Context Protocol) tools that let AI assistants like Claude manage your schedule. Create tasks, schedule time blocks, check your calendar—all through natural language with your AI assistant.",
+      answer: "Open Sunsama's MCP (Model Context Protocol) server gives your AI assistant 23 tools to read and update your tasks, subtasks, and time blocks. Tools that delete data are marked as destructive, so Claude and ChatGPT ask before running them. You can disconnect any assistant under Settings → MCP.",
     },
   ];
 
@@ -501,22 +495,22 @@ function FinalCTASection() {
         )}
       >
         <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-6 rounded-full border border-primary/30 bg-primary/10 text-[11px] font-medium text-primary">
-          <DollarSign className="h-3 w-3" />
-          Save $240/year
+          <Sparkles className="h-3 w-3" />
+          Works with any AI agent
         </div>
 
         <h2 className="text-2xl md:text-3xl font-semibold tracking-tight mb-3">
           Ready to switch?
         </h2>
         <p className="text-sm text-muted-foreground mb-8 max-w-md mx-auto">
-          Stop paying $20/month for features you can get for free. 
-          Join thousands who've made the switch.
+          Plan your day on a kanban board, time-block it on your calendar,
+          and let Claude or ChatGPT help you run it.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button size="lg" className="h-11 px-6 text-sm" asChild>
             <Link to="/register">
-              Start Free Now
+              Get started
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -529,7 +523,7 @@ function FinalCTASection() {
         </div>
 
         <p className="mt-6 text-[11px] text-muted-foreground">
-          No credit card required • Free forever • Open source
+          Open source • Works with any AI agent • Self-hostable
         </p>
       </div>
     </section>
@@ -537,8 +531,8 @@ function FinalCTASection() {
 }
 
 /**
- * Free Sunsama Alternative Landing Page
- * High-conversion page targeting "free sunsama alternative" searches
+ * Open-Source Sunsama Alternative Landing Page
+ * High-conversion page targeting "sunsama alternative" searches
  */
 export default function AlternativeSunsamaPage() {
   useSEO(SEO_CONFIGS.alternative.sunsama);
@@ -546,8 +540,8 @@ export default function AlternativeSunsamaPage() {
 
   const faqItems = [
     {
-      question: "Is Open Sunsama really free?",
-      answer: "Yes, 100% free for individuals. Open Sunsama is open-source software. You can use our hosted version at no cost, or self-host it on your own servers. There are no hidden fees, no credit card required, and no premium tiers.",
+      question: "Can I control Open Sunsama from Claude or ChatGPT?",
+      answer: "Yes. Paste https://api.opensunsama.com/mcp into Claude, ChatGPT, Cursor, Claude Code, VS Code, or any MCP client, then sign in with OAuth. You don't need an API key. Your agent can then read your schedule, create tasks, and time-block your day.",
     },
     {
       question: "Can I import my data from Sunsama?",
@@ -555,7 +549,7 @@ export default function AlternativeSunsamaPage() {
     },
     {
       question: "What features does Open Sunsama have?",
-      answer: "All the core features you love: time blocking with calendar sync (Google, Outlook, iCloud), focus mode with built-in timer, kanban board for task management, daily planning workflow, and full keyboard navigation. Plus extras like AI/MCP integration for automation.",
+      answer: "All the core features you love: time blocking with two-way calendar sync (Google, Outlook, iCloud), focus mode with a built-in timer, a kanban board for daily planning, rollover of unfinished tasks, a ⌘K command palette, and full keyboard navigation. It runs on the web, on desktop, and on mobile.",
     },
     {
       question: "Is my data private and secure?",
@@ -567,7 +561,7 @@ export default function AlternativeSunsamaPage() {
     },
     {
       question: "How does the AI/MCP integration work?",
-      answer: "Open Sunsama includes 24+ MCP (Model Context Protocol) tools that let AI assistants like Claude manage your schedule. Create tasks, schedule time blocks, check your calendar—all through natural language with your AI assistant.",
+      answer: "Open Sunsama's MCP (Model Context Protocol) server gives your AI assistant 23 tools to read and update your tasks, subtasks, and time blocks. Tools that delete data are marked as destructive, so Claude and ChatGPT ask before running them. You can disconnect any assistant under Settings → MCP.",
     },
   ];
 
@@ -577,21 +571,17 @@ export default function AlternativeSunsamaPage() {
       <ProductComparisonSchema
         mainProduct={{
           name: "Open Sunsama",
-          description: "Free, open-source daily planner with time blocking, focus mode, and calendar sync. The best free alternative to Sunsama.",
+          description: "Open-source daily planner with time blocking, focus mode, and two-way calendar sync. Works with Claude, ChatGPT, and any MCP client.",
           url: "https://opensunsama.com",
-          price: "0",
-          priceCurrency: "USD",
         }}
         comparedProducts={[
           {
             name: "Sunsama",
-            description: "Premium daily planner with time blocking and calendar integration for professionals.",
+            description: "Daily planner with time blocking and calendar integration for professionals.",
             url: "https://sunsama.com",
-            price: "20",
-            priceCurrency: "USD",
           },
         ]}
-        articleTitle="Open Sunsama vs Sunsama: Free Alternative Comparison"
+        articleTitle="Open Sunsama vs Sunsama: Open-Source Alternative Comparison"
         articleUrl="https://opensunsama.com/alternative/sunsama"
       />
       <div className="min-h-screen bg-background text-foreground font-sans antialiased">
@@ -625,7 +615,7 @@ export default function AlternativeSunsamaPage() {
               )}
             >
               <Sparkles className="h-3 w-3 text-green-500" />
-              <span className="text-green-600 dark:text-green-400">Free Forever</span>
+              <span className="text-green-600 dark:text-green-400">Open Source & AI Native</span>
             </div>
 
             {/* Headline */}
@@ -635,7 +625,7 @@ export default function AlternativeSunsamaPage() {
                 heroInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
               )}
             >
-              The Free{" "}
+              The Open-Source{" "}
               <span className="text-primary">Sunsama Alternative</span>
             </h1>
 
@@ -646,9 +636,9 @@ export default function AlternativeSunsamaPage() {
                 heroInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
               )}
             >
-              Everything you love about Sunsama—daily planning, time blocking, 
-              focus mode—without the <span className="line-through">$20/month</span> subscription. 
-              Open source. No credit card required.
+              Everything you love about Sunsama—daily planning, time blocking,
+              focus mode—in an open-source app. Connect Claude, ChatGPT, or any
+              AI agent with one URL.
             </p>
 
             {/* CTAs */}
@@ -660,7 +650,7 @@ export default function AlternativeSunsamaPage() {
             >
               <Button size="lg" className="h-11 px-6 text-sm" asChild>
                 <Link to="/register">
-                  Start Free
+                  Get started
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -681,22 +671,22 @@ export default function AlternativeSunsamaPage() {
             >
               <div className="flex items-center gap-1.5">
                 <Check className="h-3.5 w-3.5 text-green-500" />
-                <span>No credit card</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Check className="h-3.5 w-3.5 text-green-500" />
-                <span>Free forever</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Check className="h-3.5 w-3.5 text-green-500" />
                 <span>Open source</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Check className="h-3.5 w-3.5 text-green-500" />
+                <span>Works with any AI agent</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Check className="h-3.5 w-3.5 text-green-500" />
+                <span>Self-hostable</span>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Price Comparison */}
-        <PriceComparisonSection />
+        {/* Feature Comparison */}
+        <FeatureComparisonSection />
 
         {/* Visual Demo */}
         <VisualDemoSection />

@@ -57,7 +57,7 @@ export function FeatureLayout({
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
               <Button size="sm" className="h-9 px-4 text-[13px]" asChild>
                 <Link to="/register">
-                  Try for free
+                  Get started
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </Button>
@@ -84,7 +84,7 @@ export function FeatureLayout({
               Ready to try it?
             </h2>
             <p className="text-sm text-muted-foreground mb-6">
-              Open source, free for individuals, and ready for Claude and ChatGPT.
+              Open source, built for focus, and controllable from any AI agent.
             </p>
             <Button size="sm" className="h-9 px-4 text-[13px]" asChild>
               <Link to="/register">

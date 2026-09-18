@@ -191,7 +191,6 @@ function ComparisonTable() {
     { name: "Focus mode", todoist: false, us: true, highlight: true },
     { name: "Time tracking", todoist: false, us: "Built-in timer", highlight: true },
     { name: "Calendar sync", todoist: "Add-on", us: true },
-    { name: "Price", todoist: "$0-6/month", us: "Free", highlight: true },
     { name: "Open source", todoist: false, us: true },
   ];
 
@@ -398,8 +397,8 @@ export default function TodoistAlternativePage() {
       answer: "Unlike Todoist's calendar integrations which are add-ons, Open Sunsama's time blocking is native. Drag any task to your timeline, resize to adjust duration, and the system tracks estimated vs actual time automatically.",
     },
     {
-      question: "Is it really free like Todoist's free tier?",
-      answer: "Yes, completely free for individuals. Unlike Todoist Pro, you get all features including calendar sync, time blocking, and focus mode at no cost. We're open source with an optional paid tier for teams.",
+      question: "Can I control it from Claude or ChatGPT?",
+      answer: "Yes. Add https://api.opensunsama.com/mcp to Claude, ChatGPT, Cursor, Claude Code, VS Code, or any MCP client, then sign in with OAuth. No API key. Your agent can then create tasks, schedule time blocks, and read your day.",
     },
     {
       question: "Does it have priorities like Todoist?",
@@ -467,7 +466,7 @@ export default function TodoistAlternativePage() {
             >
               Love Todoist's simplicity but need time blocking? 
               Open Sunsama combines task lists with a visual calendar. 
-              <span className="text-primary font-medium"> Upgrade your workflow for free.</span>
+              <span className="text-primary font-medium"> Plan it yourself or from any AI agent.</span>
             </p>
 
             {/* CTAs */}
@@ -479,7 +478,7 @@ export default function TodoistAlternativePage() {
             >
               <Button size="sm" className="h-9 px-4 text-[13px]" asChild>
                 <Link to="/register">
-                  Try Free
+                  Get started
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </Button>
@@ -499,15 +498,15 @@ export default function TodoistAlternativePage() {
             >
               <span className="flex items-center gap-1">
                 <Check className="h-3 w-3 text-primary" />
-                No credit card required
-              </span>
-              <span className="flex items-center gap-1">
-                <Check className="h-3 w-3 text-primary" />
-                Free forever
-              </span>
-              <span className="flex items-center gap-1">
-                <Check className="h-3 w-3 text-primary" />
                 Open source
+              </span>
+              <span className="flex items-center gap-1">
+                <Check className="h-3 w-3 text-primary" />
+                Works with any AI agent
+              </span>
+              <span className="flex items-center gap-1">
+                <Check className="h-3 w-3 text-primary" />
+                Self-hostable
               </span>
             </div>
           </div>
@@ -613,8 +612,8 @@ export default function TodoistAlternativePage() {
                 answer="Unlike Todoist's calendar integrations which are add-ons, Open Sunsama's time blocking is native. Drag any task to your timeline, resize to adjust duration, and the system tracks estimated vs actual time automatically."
               />
               <FAQItem
-                question="Is it really free like Todoist's free tier?"
-                answer="Yes, completely free for individuals. Unlike Todoist Pro, you get all features including calendar sync, time blocking, and focus mode at no cost. We're open source with an optional paid tier for teams."
+                question="Can I control it from Claude or ChatGPT?"
+                answer="Yes. Add https://api.opensunsama.com/mcp to Claude, ChatGPT, Cursor, Claude Code, VS Code, or any MCP client, then sign in with OAuth. No API key. Your agent can then create tasks, schedule time blocks, and read your day."
               />
               <FAQItem
                 question="Does it have priorities like Todoist?"
@@ -639,12 +638,12 @@ export default function TodoistAlternativePage() {
             </h2>
             <p className="text-sm text-muted-foreground mb-8 max-w-md mx-auto">
               Upgrade from Todoist lists to scheduled time blocks. 
-              <span className="text-primary font-medium"> Free forever. No credit card.</span>
+              <span className="text-primary font-medium"> Open source, and ready for your AI agent.</span>
             </p>
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
               <Button size="sm" className="h-10 px-5 text-[13px]" asChild>
                 <Link to="/register">
-                  Start Free
+                  Try Open Sunsama
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </Button>
@@ -656,7 +655,7 @@ export default function TodoistAlternativePage() {
               </Button>
             </div>
             <p className="mt-5 text-[11px] text-muted-foreground">
-              No credit card required • Free forever • Open source
+              Open source • Works with any AI agent • Self-hostable
             </p>
           </div>
         </section>

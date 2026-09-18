@@ -13,12 +13,12 @@ export function BlogCTA() {
           Ready to take control of your day?
         </h2>
         <p className="text-sm text-muted-foreground mb-6">
-          Join thousands using Open Sunsama for better daily planning.
+          The open-source daily planner you can control from any AI agent.
         </p>
         <div className="flex flex-col sm:flex-row gap-2 justify-center">
           <Button size="sm" className="h-9 px-4 text-[13px]" asChild>
             <Link to="/register">
-              Create free account
+              Get started
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </Button>

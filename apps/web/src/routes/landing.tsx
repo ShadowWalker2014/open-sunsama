@@ -8,7 +8,7 @@ import { AiSection } from "@/components/landing/ai-section";
 import { Hero } from "@/components/landing/hero";
 import {
   ComparisonSection,
-  ExtrasSection,
+  FeaturesSection,
   FinalCta,
   OpenSourceSection,
   SiteFooter,
@@ -24,9 +24,9 @@ export default function LandingPage() {
       <SiteHeader />
       <main>
         <Hero />
-        <AiSection />
+        <FeaturesSection />
         <StorySection />
-        <ExtrasSection />
+        <AiSection />
         <OpenSourceSection />
         <ComparisonSection />
         <FinalCta />

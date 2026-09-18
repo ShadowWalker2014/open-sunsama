@@ -322,11 +322,10 @@ function ComparisonSection() {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
 
   const features = [
-    { name: "Price", tiimo: "$15/month", structured: "$12/month", openSunsama: "Free forever", highlight: true },
     { name: "Visual time blocking", tiimo: true, structured: true, openSunsama: true },
     { name: "Focus mode with timer", tiimo: false, structured: false, openSunsama: true, highlight: true },
     { name: "Full task management", tiimo: false, structured: false, openSunsama: true },
-    { name: "Calendar sync (Google, Outlook)", tiimo: false, structured: "Limited", openSunsama: true },
+    { name: "Calendar sync (Google, Outlook, iCloud)", tiimo: false, structured: "Limited", openSunsama: true },
     { name: "Kanban board", tiimo: false, structured: false, openSunsama: true },
     { name: "Desktop app", tiimo: false, structured: true, openSunsama: true },
     { name: "Keyboard shortcuts", tiimo: false, structured: false, openSunsama: true },
@@ -341,7 +340,7 @@ function ComparisonSection() {
             How We Compare to ADHD Apps
           </h2>
           <p className="text-sm text-muted-foreground">
-            Same visual approach. More features. Zero cost.
+            Same visual approach. More features. Open source.
           </p>
         </div>
 
@@ -422,7 +421,7 @@ function ComparisonSection() {
         </div>
 
         <p className="text-center text-[11px] text-muted-foreground mt-4">
-          Pricing as of February 2026. All trademarks belong to their respective owners.
+          Comparison as of February 2026. All trademarks belong to their respective owners.
         </p>
       </div>
     </section>
@@ -518,8 +517,8 @@ function FAQSection() {
       answer: "Focus Mode includes a timer that helps you stay aware of passing time. You can set it to gently remind you when a session ends. It's not about limiting your hyperfocus—it's about giving you awareness so you can decide whether to continue or switch.",
     },
     {
-      question: "Is it free? What's the catch?",
-      answer: "Completely free, no catch. Open Sunsama is open-source software built by people who understand ADHD struggles. No credit card required, no premium tiers, no 'unlock this feature for $9.99' walls. The code is public on GitHub.",
+      question: "Can an AI assistant help me plan my day?",
+      answer: "Yes. Add https://api.opensunsama.com/mcp to Claude, ChatGPT, or any MCP client and sign in with OAuth. No API key needed. Then just say 'plan my day.' It can list your tasks, schedule them, and build your time blocks for you. That helps on days when getting started is the hardest part.",
     },
   ];
 
@@ -599,7 +598,7 @@ function FinalCTASection() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button size="lg" className="h-11 px-6 text-sm" asChild>
             <Link to="/register">
-              Start Free Now
+              Get started
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -612,7 +611,7 @@ function FinalCTASection() {
         </div>
 
         <p className="mt-6 text-[11px] text-muted-foreground">
-          No credit card required • No overwhelm • Free forever
+          Open source • No overwhelm • Works with your AI assistant
         </p>
       </div>
     </section>
@@ -649,8 +648,8 @@ export default function ForADHDPage() {
       answer: "Focus Mode includes a timer that helps you stay aware of passing time. You can set it to gently remind you when a session ends. It's not about limiting your hyperfocus—it's about giving you awareness so you can decide whether to continue or switch.",
     },
     {
-      question: "Is it free? What's the catch?",
-      answer: "Completely free, no catch. Open Sunsama is open-source software built by people who understand ADHD struggles. No credit card required, no premium tiers, no 'unlock this feature for $9.99' walls. The code is public on GitHub.",
+      question: "Can an AI assistant help me plan my day?",
+      answer: "Yes. Add https://api.opensunsama.com/mcp to Claude, ChatGPT, or any MCP client and sign in with OAuth. No API key needed. Then just say 'plan my day.' It can list your tasks, schedule them, and build your time blocks for you. That helps on days when getting started is the hardest part.",
     },
   ];
 
@@ -659,11 +658,9 @@ export default function ForADHDPage() {
       <FAQSchema items={faqItems} />
       <SoftwareApplicationSchema
         name="Open Sunsama"
-        description="Daily planner designed for ADHD minds. Visual time blocking for time blindness, one-task focus mode to reduce overwhelm, and clean interface that doesn't overstimulate. Free and open source."
+        description="Daily planner designed for ADHD minds. Visual time blocking for time blindness, one-task focus mode to reduce overwhelm, and clean interface that doesn't overstimulate. Open source, and works with AI assistants like Claude and ChatGPT."
         applicationCategory="ProductivityApplication"
         operatingSystem="Web, Windows, macOS, Linux"
-        price="0"
-        priceCurrency="USD"
         featureList={[
           "Visual time blocking for time blindness",
           "One-task focus mode with timer",
@@ -674,7 +671,7 @@ export default function ForADHDPage() {
           "Harness hyperfocus sessions",
           "Task time estimates",
           "Calendar sync",
-          "Free forever (no premium tiers)",
+          "Plan your day from Claude, ChatGPT, or any MCP client",
         ]}
         url="https://opensunsama.com/for/adhd"
       />
@@ -721,7 +718,7 @@ export default function ForADHDPage() {
               )}
             >
               Visual time blocking to fight time blindness. One task at a time to reduce overwhelm. 
-              Focus mode to harness hyperfocus. And it's completely free.
+              Focus mode to harness hyperfocus. Open source, and it works with the AI assistant you already use.
             </p>
 
             {/* CTAs */}
@@ -733,7 +730,7 @@ export default function ForADHDPage() {
             >
               <Button size="lg" className="h-11 px-6 text-sm" asChild>
                 <Link to="/register">
-                  Try Free
+                  Try Open Sunsama
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -754,11 +751,11 @@ export default function ForADHDPage() {
             >
               <div className="flex items-center gap-1.5">
                 <Check className="h-3.5 w-3.5 text-green-500" />
-                <span>No credit card</span>
+                <span>Open source</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Check className="h-3.5 w-3.5 text-green-500" />
-                <span>Free forever</span>
+                <span>Works with any AI agent</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Check className="h-3.5 w-3.5 text-green-500" />

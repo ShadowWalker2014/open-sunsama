@@ -6,7 +6,6 @@ import {
   Check,
   X,
   Hand,
-  DollarSign,
   Zap,
   Timer,
   Command,
@@ -69,7 +68,6 @@ function ComparisonTable() {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
 
   const features = [
-    { name: "Price", motion: "$19-34/month", us: "Free", highlight: true },
     { name: "Scheduling approach", motion: "AI auto-schedules", us: "Manual (you decide)", highlight: true },
     { name: "Override control", motion: "Limited", us: "Full control", highlight: true },
     { name: "Time blocking", motion: true, us: true },
@@ -316,7 +314,7 @@ export default function MotionAlternativePage() {
     },
     {
       question: "Can I still use AI features if I want them?",
-      answer: "Absolutely. Open Sunsama supports 24+ MCP tools for AI integration. The difference is YOU choose when to use AI assistance. It's available on demand, not forced by default.",
+      answer: "Yes. Add https://api.opensunsama.com/mcp to Claude, ChatGPT, Cursor, Claude Code, VS Code, or any MCP client, then sign in with OAuth. No API key. The difference is that YOU choose when AI helps. It works on demand, not by default.",
     },
     {
       question: "How does calendar sync work?",
@@ -327,8 +325,8 @@ export default function MotionAlternativePage() {
       answer: "Full P0-P3 priority system. Sort tasks by priority, drag them to reorder, and see priority badges at a glance. You decide what's important, not an algorithm.",
     },
     {
-      question: "Is it really free?",
-      answer: "Yes. Open Sunsama is free for individuals, forever. We're open source with an optional paid tier for teams. No trial that expires, no credit card required.",
+      question: "Can I self-host it?",
+      answer: "Yes. The source code is on GitHub. Clone the repo, run it with Docker, and keep your tasks on your own server.",
     },
   ];
 
@@ -338,18 +336,14 @@ export default function MotionAlternativePage() {
       <ProductComparisonSchema
         mainProduct={{
           name: "Open Sunsama",
-          description: "Free, open-source daily planner with manual time blocking and full user control. No forced AI scheduling.",
+          description: "Open-source daily planner with manual time blocking and full user control. No forced AI scheduling.",
           url: "https://opensunsama.com",
-          price: "0",
-          priceCurrency: "USD",
         }}
         comparedProducts={[
           {
             name: "Motion",
             description: "AI-powered calendar and project management app that automatically schedules tasks.",
             url: "https://usemotion.com",
-            price: "19",
-            priceCurrency: "USD",
           },
         ]}
         articleTitle="Open Sunsama vs Motion: Manual Control Alternative"
@@ -408,7 +402,7 @@ export default function MotionAlternativePage() {
             >
               Love Motion's time-blocking concept but hate the rigid AI? 
               Open Sunsama gives you the same power with complete manual control. 
-              <span className="text-primary font-medium"> And it's free.</span>
+              <span className="text-primary font-medium"> And any AI agent can drive it.</span>
             </p>
 
             {/* CTAs */}
@@ -420,7 +414,7 @@ export default function MotionAlternativePage() {
             >
               <Button size="sm" className="h-9 px-4 text-[13px]" asChild>
                 <Link to="/register">
-                  Try Free
+                  Get started
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </Button>
@@ -440,15 +434,15 @@ export default function MotionAlternativePage() {
             >
               <span className="flex items-center gap-1">
                 <Check className="h-3 w-3 text-primary" />
-                No credit card required
-              </span>
-              <span className="flex items-center gap-1">
-                <Check className="h-3 w-3 text-primary" />
-                Free forever tier
-              </span>
-              <span className="flex items-center gap-1">
-                <Check className="h-3 w-3 text-primary" />
                 Open source
+              </span>
+              <span className="flex items-center gap-1">
+                <Check className="h-3 w-3 text-primary" />
+                Works with any AI agent
+              </span>
+              <span className="flex items-center gap-1">
+                <Check className="h-3 w-3 text-primary" />
+                Self-hostable
               </span>
             </div>
           </div>
@@ -474,9 +468,9 @@ export default function MotionAlternativePage() {
                 delay={0}
               />
               <PainPointCard
-                icon={DollarSign}
-                pain="$19/month with no free tier is too expensive"
-                solution="Open Sunsama is completely free for individuals. No hidden costs, no trial that expires."
+                icon={Sparkles}
+                pain="I want to plan with my own AI, not only the one built into the app"
+                solution="Connect Claude, ChatGPT, Cursor, or any MCP client with one URL and OAuth sign-in. No API key."
                 delay={100}
               />
               <PainPointCard
@@ -591,7 +585,7 @@ export default function MotionAlternativePage() {
               />
               <FAQItem
                 question="Can I still use AI features if I want them?"
-                answer="Absolutely. Open Sunsama supports 24+ MCP tools for AI integration. The difference is YOU choose when to use AI assistance. It's available on demand, not forced by default."
+                answer="Yes. Add https://api.opensunsama.com/mcp to Claude, ChatGPT, Cursor, Claude Code, VS Code, or any MCP client, then sign in with OAuth. No API key. The difference is that YOU choose when AI helps. It works on demand, not by default."
               />
               <FAQItem
                 question="How does calendar sync work?"
@@ -602,8 +596,8 @@ export default function MotionAlternativePage() {
                 answer="Full P0-P3 priority system. Sort tasks by priority, drag them to reorder, and see priority badges at a glance. You decide what's important, not an algorithm."
               />
               <FAQItem
-                question="Is it really free?"
-                answer="Yes. Open Sunsama is free for individuals, forever. We're open source with an optional paid tier for teams. No trial that expires, no credit card required."
+                question="Can I self-host it?"
+                answer="Yes. The source code is on GitHub. Clone the repo, run it with Docker, and keep your tasks on your own server."
               />
             </div>
           </div>
@@ -619,12 +613,12 @@ export default function MotionAlternativePage() {
               Take Back Control of Your Schedule
             </h2>
             <p className="text-sm text-muted-foreground mb-8 max-w-md mx-auto">
-              Start free—no AI surprises. Your time, your decisions.
+              No AI surprises. Your time, your decisions.
             </p>
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
               <Button size="sm" className="h-10 px-5 text-[13px]" asChild>
                 <Link to="/register">
-                  Create Free Account
+                  Create an account
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </Button>
@@ -636,7 +630,7 @@ export default function MotionAlternativePage() {
               </Button>
             </div>
             <p className="mt-5 text-[11px] text-muted-foreground">
-              No credit card required • Free forever • Open source
+              Open source • Works with any AI agent • Self-hostable
             </p>
           </div>
         </section>

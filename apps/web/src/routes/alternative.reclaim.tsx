@@ -6,7 +6,6 @@ import {
   Check,
   X,
   Hand,
-  DollarSign,
   Timer,
   GripVertical,
   RefreshCw,
@@ -29,14 +28,16 @@ import { SiteFooter, SiteHeader } from "@/components/landing/sections";
  * High-converting Google Ads landing page targeting "reclaim ai alternative" searches
  */
 
-function PriceComparisonCard() {
+function AgentConnectCard() {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
 
-  const plans = [
-    { name: "Starter", reclaim: "$10/month", us: "Free", savings: "$120/year" },
-    { name: "Pro", reclaim: "$18/month", us: "Free", savings: "$216/year" },
-    { name: "Team", reclaim: "$22/month", us: "Free", savings: "$264/year" },
-    { name: "Self-hosted", reclaim: "Not available", us: "Free", highlight: true },
+  const clients = [
+    { name: "Claude", setup: "Paste the URL, sign in with OAuth" },
+    { name: "ChatGPT", setup: "Paste the URL, sign in with OAuth" },
+    { name: "Cursor", setup: "One-click install" },
+    { name: "VS Code", setup: "One-click install" },
+    { name: "Claude Code", setup: "claude mcp add, then sign in" },
+    { name: "Any MCP client", setup: "Streamable HTTP + OAuth", highlight: true },
   ];
 
   return (
@@ -50,26 +51,19 @@ function PriceComparisonCard() {
       <table className="w-full text-[13px]">
         <thead>
           <tr className="border-b border-border/40 bg-muted/30">
-            <th className="text-left px-4 py-3 font-medium text-muted-foreground">Plan</th>
-            <th className="px-4 py-3 font-medium text-muted-foreground text-center">Reclaim AI</th>
-            <th className="px-4 py-3 font-medium text-primary text-center">Open Sunsama</th>
+            <th className="text-left px-4 py-3 font-medium text-muted-foreground">AI agent</th>
+            <th className="px-4 py-3 font-medium text-primary text-center">How it connects</th>
           </tr>
         </thead>
         <tbody>
-          {plans.map((plan, i) => (
+          {clients.map((client, i) => (
             <tr key={i} className={cn(
               "border-b border-border/40 last:border-0",
-              plan.highlight && "bg-primary/5"
+              client.highlight && "bg-primary/5"
             )}>
-              <td className="px-4 py-3 text-muted-foreground">{plan.name}</td>
+              <td className="px-4 py-3 text-muted-foreground">{client.name}</td>
               <td className="px-4 py-3 text-center">
-                <span className="text-muted-foreground">{plan.reclaim}</span>
-              </td>
-              <td className="px-4 py-3 text-center">
-                <span className="font-medium text-primary">{plan.us}</span>
-                {plan.savings && (
-                  <span className="ml-2 text-[10px] text-primary/70">Save {plan.savings}</span>
-                )}
+                <span className="font-medium text-primary">{client.setup}</span>
               </td>
             </tr>
           ))}
@@ -123,7 +117,6 @@ function ComparisonTable() {
     { name: "Open source", reclaim: false, us: true, highlight: true },
     { name: "Self-hosted option", reclaim: false, us: true, highlight: true },
     { name: "Full API access", reclaim: "Limited", us: "Full MCP/REST" },
-    { name: "Price", reclaim: "$10-18/mo", us: "Free", highlight: true },
   ];
 
   return (
@@ -330,7 +323,7 @@ export default function ReclaimAlternativePage() {
     },
     {
       question: "Can I still auto-schedule if I want to?",
-      answer: "Open Sunsama doesn't auto-schedule by default, which many users prefer. However, you can build your own automations using our full API and 24+ MCP tools. This gives you AI scheduling on YOUR terms, not the app's.",
+      answer: "Open Sunsama doesn't auto-schedule by default, which many users prefer. However, you can ask Claude or ChatGPT to plan your day, or build your own automations with our full REST API and 23 MCP tools. This gives you AI scheduling on YOUR terms, not the app's.",
     },
     {
       question: "Does it sync both ways with my calendar?",
@@ -341,8 +334,8 @@ export default function ReclaimAlternativePage() {
       answer: "Habits and recurring tasks are coming soon. In the meantime, you can create recurring time blocks manually or via the API. Many users find this gives them more flexibility than Reclaim's automated habits.",
     },
     {
-      question: "Is it really free forever?",
-      answer: "Yes. Open Sunsama is free for individuals, forever. We're open source with an optional paid tier for teams. No trial that expires, no credit card required, no feature gates that suddenly appear.",
+      question: "Can I self-host it?",
+      answer: "Yes. The code is on GitHub. Clone the repo and run docker-compose to start PostgreSQL, the API, and the MCP connector on your own server. The self-hosting guide covers the web app and production setup.",
     },
   ];
 
@@ -389,7 +382,7 @@ export default function ReclaimAlternativePage() {
                 heroInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
               )}
             >
-              The <span className="text-primary">Free</span> Reclaim Alternative
+              The <span className="text-primary">Open-Source</span> Reclaim Alternative
             </h1>
 
             {/* Subheadline */}
@@ -399,9 +392,10 @@ export default function ReclaimAlternativePage() {
                 heroInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
               )}
             >
-              Get powerful time blocking without the $18/month AI subscription. 
-              You control your schedule. Open source and{" "}
-              <span className="text-primary font-medium">free forever.</span>
+              Get powerful time blocking without an AI moving your day around.
+              You control your schedule, and your own AI agent helps when you ask.
+              Open source and{" "}
+              <span className="text-primary font-medium">self-hostable.</span>
             </p>
 
             {/* CTAs */}
@@ -413,7 +407,7 @@ export default function ReclaimAlternativePage() {
             >
               <Button size="sm" className="h-9 px-4 text-[13px]" asChild>
                 <Link to="/register">
-                  Start Free
+                  Get started
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </Button>
@@ -433,33 +427,34 @@ export default function ReclaimAlternativePage() {
             >
               <span className="flex items-center gap-1">
                 <Check className="h-3 w-3 text-primary" />
-                No credit card required
-              </span>
-              <span className="flex items-center gap-1">
-                <Check className="h-3 w-3 text-primary" />
-                Free forever
-              </span>
-              <span className="flex items-center gap-1">
-                <Check className="h-3 w-3 text-primary" />
                 Open source
+              </span>
+              <span className="flex items-center gap-1">
+                <Check className="h-3 w-3 text-primary" />
+                Works with any AI agent
+              </span>
+              <span className="flex items-center gap-1">
+                <Check className="h-3 w-3 text-primary" />
+                Self-hostable
               </span>
             </div>
           </div>
         </section>
 
-        {/* Price Comparison Section */}
+        {/* Bring Your Own AI Section */}
         <section className="py-16 border-t border-border/40 bg-muted/10">
           <div className="container px-4 mx-auto max-w-3xl">
             <div className="text-center mb-10">
               <h2 className="text-lg font-semibold tracking-tight mb-2">
-                Stop Paying for Time Blocking
+                Bring the AI You Already Use
               </h2>
               <p className="text-sm text-muted-foreground">
-                Reclaim charges $10-18/month. Open Sunsama is free.
+                Reclaim schedules with its own AI. Open Sunsama connects to yours at{" "}
+                <code className="text-foreground">https://api.opensunsama.com/mcp</code>
               </p>
             </div>
 
-            <PriceComparisonCard />
+            <AgentConnectCard />
           </div>
         </section>
 
@@ -497,7 +492,7 @@ export default function ReclaimAlternativePage() {
               <BenefitCard
                 icon={Code2}
                 title="Full API/MCP Access"
-                description="24+ MCP tools for YOUR automations. Build your own integrations. No locked ecosystem."
+                description="23 MCP tools and a REST API for YOUR automations. Build your own integrations. No locked ecosystem."
                 delay={150}
               />
               <BenefitCard
@@ -565,7 +560,7 @@ export default function ReclaimAlternativePage() {
               />
               <FAQItem
                 question="Can I still auto-schedule if I want to?"
-                answer="Open Sunsama doesn't auto-schedule by default, which many users prefer. However, you can build your own automations using our full API and 24+ MCP tools. This gives you AI scheduling on YOUR terms, not the app's."
+                answer="Open Sunsama doesn't auto-schedule by default, which many users prefer. However, you can ask Claude or ChatGPT to plan your day, or build your own automations with our full REST API and 23 MCP tools. This gives you AI scheduling on YOUR terms, not the app's."
               />
               <FAQItem
                 question="Does it sync both ways with my calendar?"
@@ -576,8 +571,8 @@ export default function ReclaimAlternativePage() {
                 answer="Habits and recurring tasks are coming soon. In the meantime, you can create recurring time blocks manually or via the API. Many users find this gives them more flexibility than Reclaim's automated habits."
               />
               <FAQItem
-                question="Is it really free forever?"
-                answer="Yes. Open Sunsama is free for individuals, forever. We're open source with an optional paid tier for teams. No trial that expires, no credit card required, no feature gates that suddenly appear."
+                question="Can I self-host it?"
+                answer="Yes. The code is on GitHub. Clone the repo and run docker-compose to start PostgreSQL, the API, and the MCP connector on your own server. The self-hosting guide covers the web app and production setup."
               />
             </div>
           </div>
@@ -587,18 +582,18 @@ export default function ReclaimAlternativePage() {
         <section className="py-20 border-t border-border/40">
           <div className="container px-4 mx-auto max-w-xl text-center">
             <div className="flex items-center justify-center h-14 w-14 rounded-2xl bg-primary/10 text-primary mx-auto mb-6">
-              <DollarSign className="h-7 w-7" />
+              <Hand className="h-7 w-7" />
             </div>
             <h2 className="text-xl md:text-2xl font-semibold tracking-tight mb-3">
-              Stop Paying for Time Blocking
+              Take Back Control of Your Schedule
             </h2>
             <p className="text-sm text-muted-foreground mb-8 max-w-md mx-auto">
-              Free forever. No AI required. Your schedule, your control.
+              Open source. No AI required. Your schedule, your control.
             </p>
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
               <Button size="sm" className="h-10 px-5 text-[13px]" asChild>
                 <Link to="/register">
-                  Create Free Account
+                  Create an account
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </Button>
@@ -610,7 +605,7 @@ export default function ReclaimAlternativePage() {
               </Button>
             </div>
             <p className="mt-5 text-[11px] text-muted-foreground">
-              No credit card required • Free forever • Open source
+              Open source • Works with any AI agent • Self-hostable
             </p>
           </div>
         </section>

@@ -233,10 +233,13 @@ const openSourceTaskManagerRoute = createRoute({
   component: lazyRouteComponent(() => import("./routes/open-source-task-manager")),
 });
 
+// Old SEO URL, still linked from blog posts; the time-blocking feature page replaces it.
 const freeTimeBlockingAppRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/free-time-blocking-app",
-  component: lazyRouteComponent(() => import("./routes/free-time-blocking-app")),
+  beforeLoad: () => {
+    throw redirect({ to: "/features/time-blocking", replace: true });
+  },
 });
 
 // Docs parent route - just renders Outlet for children

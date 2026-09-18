@@ -128,8 +128,8 @@ function TechStackSection() {
     },
     {
       icon: Bot,
-      title: "24+ MCP Tools",
-      description: "Native AI integration. Let Claude, GPT, or any MCP-compatible agent manage your tasks.",
+      title: "23 MCP Tools",
+      description: "Native AI integration. Let Claude, ChatGPT, Cursor, or any MCP client manage your tasks.",
     },
     {
       icon: Cpu,
@@ -422,7 +422,7 @@ function ComparisonSection() {
     { name: "Time blocking", vikunja: false, focalboard: false, openSunsama: true },
     { name: "Focus mode", vikunja: false, focalboard: false, openSunsama: true },
     { name: "Calendar sync", vikunja: "Limited", focalboard: false, openSunsama: true },
-    { name: "MCP/AI tools", vikunja: false, focalboard: false, openSunsama: "24+ tools" },
+    { name: "MCP/AI tools", vikunja: false, focalboard: false, openSunsama: "23 tools" },
     { name: "Desktop app", vikunja: false, focalboard: true, openSunsama: true },
     { name: "Command palette", vikunja: false, focalboard: false, openSunsama: true },
     { name: "Modern UI", vikunja: "Basic", focalboard: "Basic", openSunsama: true },
@@ -705,14 +705,14 @@ function FinalCTASection() {
           Own Your Productivity Stack
         </h2>
         <p className="text-sm text-muted-foreground mb-8 max-w-md mx-auto">
-          Stop renting your task manager. Self-host for complete control, 
-          or use our hosted version for free.
+          Self-host it for complete control, or use the hosted app and
+          connect Claude, ChatGPT, or Cursor with one URL.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button size="lg" className="h-11 px-6 text-sm" asChild>
             <Link to="/register">
-              Start Free
+              Get started
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -725,7 +725,7 @@ function FinalCTASection() {
         </div>
 
         <p className="mt-6 text-[11px] text-muted-foreground">
-          MIT License • Free forever • Self-host or cloud
+          Source on GitHub • Works with any AI agent • Self-host or cloud
         </p>
       </div>
     </section>
@@ -772,18 +772,16 @@ export default function OpenSourceTaskManagerPage() {
       <FAQSchema items={faqItems} />
       <SoftwareApplicationSchema
         name="Open Sunsama"
-        description="Open source task manager with time blocking, calendar sync, and focus mode. Full TypeScript codebase, self-hostable with Docker, MIT licensed. Free forever."
+        description="Open source task manager with time blocking, calendar sync, and focus mode. Full TypeScript codebase, self-hostable with Docker, and controllable from any MCP client."
         applicationCategory="ProductivityApplication"
         operatingSystem="Web, Windows, macOS, Linux"
-        price="0"
-        priceCurrency="USD"
         featureList={[
-          "100% open source (MIT license)",
+          "Open source, with the code on GitHub",
           "Self-hostable with Docker",
           "Full REST API access",
           "TypeScript + React + Vite stack",
           "PostgreSQL + Drizzle ORM",
-          "24+ MCP tools for AI agents",
+          "Hosted MCP server for Claude, ChatGPT, Cursor, and any MCP client",
           "Calendar sync (Google, Outlook, iCloud)",
           "Focus mode with timer",
           "Kanban task management",
@@ -869,7 +867,7 @@ export default function OpenSourceTaskManagerPage() {
             >
               <Button size="lg" className="h-11 px-6 text-sm" asChild>
                 <Link to="/register">
-                  Start Free
+                  Get started
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -890,7 +888,7 @@ export default function OpenSourceTaskManagerPage() {
             >
               <div className="flex items-center gap-1.5">
                 <Check className="h-3.5 w-3.5 text-green-500" />
-                <span>MIT License</span>
+                <span>Source on GitHub</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Check className="h-3.5 w-3.5 text-green-500" />

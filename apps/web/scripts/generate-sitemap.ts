@@ -70,12 +70,6 @@ const STATIC_PAGES: SitemapEntry[] = [
     priority: 0.9,
   },
   {
-    loc: "/free-time-blocking-app",
-    lastmod: "",
-    changefreq: "weekly",
-    priority: 0.9,
-  },
-  {
     loc: "/open-source-task-manager",
     lastmod: "",
     changefreq: "weekly",

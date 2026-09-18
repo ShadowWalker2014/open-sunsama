@@ -4,14 +4,14 @@
 
 # Open Sunsama
 
-### The open-source daily planner your AI can actually use.
+### Daily planning, done right.
 
-Plan your day on a kanban board, time-block it on a calendar, and let **Claude** or **ChatGPT** run it with you.<br />
-A free, self-hostable **Sunsama alternative** with a built-in MCP connector. Connect in one click, with no API key.
+The open-source daily planner for time-blocking, focused work, and seamless AI integration.<br />
+**AI native:** control it from any agent, including **Claude**, **ChatGPT**, Cursor, Claude Code, or any MCP client, with one URL and no API key.
 
 <br />
 
-[![Try it free](https://img.shields.io/badge/Try_it_free-opensunsama.com-F97316?style=for-the-badge)](https://opensunsama.com)
+[![Open the app](https://img.shields.io/badge/Open_the_app-opensunsama.com-F97316?style=for-the-badge)](https://opensunsama.com)
 [![Connect Claude](https://img.shields.io/badge/Claude-Add_connector-D97757?style=for-the-badge&logo=claude&logoColor=white)](#-connect-claude-or-chatgpt-in-30-seconds)
 [![Connect ChatGPT](https://img.shields.io/badge/ChatGPT-Add_app-10A37F?style=for-the-badge)](#-connect-claude-or-chatgpt-in-30-seconds)
 [![GitHub stars](https://img.shields.io/github/stars/ShadowWalker2014/open-sunsama?style=for-the-badge&logo=github&color=yellow)](https://github.com/ShadowWalker2014/open-sunsama/stargazers)
@@ -236,9 +236,9 @@ Trello-style boards for bets and side projects. Promote an idea to a real task w
 
 | | **Open Sunsama** | Typical closed planners |
 | --- | :---: | :---: |
-| Price | **Free** (self-host or cloud) | Paid subscription |
 | Open source & self-hostable | ✅ | ❌ |
-| One-click Claude & ChatGPT connector (MCP + OAuth) | ✅ | Rare |
+| AI native: control it from any agent over MCP | ✅ | ❌ |
+| One-click Claude & ChatGPT connector (OAuth) | ✅ | Rare |
 | Full REST API with scoped keys | ✅ | Limited |
 | Daily planning board + time blocking | ✅ | ✅ |
 | Focus timer, routines, rollover | ✅ | Varies |
@@ -285,7 +285,7 @@ Scopes: `tasks:read` `tasks:write` `time-blocks:read` `time-blocks:write` `ideas
 
 ## 🚀 Get started
 
-**Cloud:** sign up free at [opensunsama.com](https://opensunsama.com), then [connect your AI](#-connect-claude-or-chatgpt-in-30-seconds).
+**Cloud:** create an account at [opensunsama.com](https://opensunsama.com), then [connect your AI](#-connect-claude-or-chatgpt-in-30-seconds).
 
 **Self-host with Docker:**
 
@@ -398,9 +398,9 @@ An open-source daily planner and task manager inspired by Sunsama. You plan each
 </details>
 
 <details>
-<summary><b>Is it a free Sunsama alternative?</b></summary>
+<summary><b>Is it an open-source Sunsama alternative?</b></summary>
 <br />
-Yes. The hosted app at opensunsama.com is free to use, and you can self-host it for free for personal, educational, and non-profit use. See <a href="#-license">License</a> for commercial use.
+Yes. It covers Sunsama's daily-planning loop (a kanban board, time blocking, focus mode, and calendar sync), the code is on GitHub, and you can self-host it. On top of that, any AI agent can run it over MCP. See <a href="#-license">License</a> for the terms.
 </details>
 
 <details>
@@ -441,7 +441,7 @@ git commit -m "feat: add amazing feature"
 
 ## 📄 License
 
-**Free for non-commercial use** under a custom license: personal, educational, non-profit, open-source projects, and evaluation. Commercial use by for-profit companies requires an enterprise license. See [LICENSE](LICENSE).
+Open Sunsama uses a custom **non-commercial license**. It covers personal, educational, non-profit, and open-source use, plus evaluation. Commercial use by for-profit companies requires an enterprise license. See [LICENSE](LICENSE).
 
 <br />
 
