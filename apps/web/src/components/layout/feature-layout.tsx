@@ -1,8 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { type ReactNode } from "react";
-import { ArrowRight, Github } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/seo";
+import { SiteFooter, SiteHeader } from "@/components/landing/sections";
 
 /**
  * Layout wrapper for feature-specific landing pages
@@ -13,11 +14,14 @@ export function FeatureLayout({
   title,
   subtitle,
   badge,
+  visual,
 }: {
   children: ReactNode;
   title: string;
   subtitle: string;
   badge?: string;
+  /** Hero visual under the CTAs, e.g. a real product screenshot. */
+  visual?: ReactNode;
 }) {
   return (
     <div className="min-h-screen bg-background text-foreground font-sans antialiased">
@@ -26,32 +30,7 @@ export function FeatureLayout({
         <div className="absolute top-0 right-1/4 w-[500px] h-[400px] bg-primary/[0.03] blur-[100px] rounded-full" />
       </div>
 
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-12 items-center justify-between px-4 mx-auto max-w-5xl">
-          <Link to="/" className="flex items-center gap-2">
-            <img
-              src="/open-sunsama-logo.png"
-              alt="Open Sunsama"
-              className="h-7 w-7 rounded-lg object-cover"
-            />
-            <span className="text-[13px] font-semibold">Open Sunsama</span>
-          </Link>
-          <div className="flex items-center gap-1.5">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 px-3 text-xs"
-              asChild
-            >
-              <Link to="/login">Sign in</Link>
-            </Button>
-            <Button size="sm" className="h-8 px-3 text-xs" asChild>
-              <Link to="/register">Get Started</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       <main className="relative">
         {/* Breadcrumb navigation */}
@@ -94,6 +73,8 @@ export function FeatureLayout({
           </div>
         </section>
 
+        {visual && <section className="px-4 pb-16 md:pb-20">{visual}</section>}
+
         {children}
 
         {/* Final CTA */}
@@ -103,7 +84,7 @@ export function FeatureLayout({
               Ready to try it?
             </h2>
             <p className="text-sm text-muted-foreground mb-6">
-              Open source, AI-native, and fast.
+              Open source, free for individuals, and ready for Claude and ChatGPT.
             </p>
             <Button size="sm" className="h-9 px-4 text-[13px]" asChild>
               <Link to="/register">
@@ -115,52 +96,7 @@ export function FeatureLayout({
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border/40 py-6">
-        <div className="container px-4 mx-auto max-w-5xl">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-3">
-            <div className="flex items-center gap-2">
-              <img
-                src="/open-sunsama-logo.png"
-                alt="Open Sunsama"
-                className="h-5 w-5 rounded object-cover"
-              />
-              <span className="text-[11px] text-muted-foreground">
-                © 2026 Open Sunsama
-              </span>
-            </div>
-            <nav className="flex items-center gap-4 text-[11px] text-muted-foreground">
-              <Link
-                to="/blog"
-                search={{}}
-                className="hover:text-foreground transition-colors"
-              >
-                Blog
-              </Link>
-              <Link
-                to="/privacy"
-                className="hover:text-foreground transition-colors"
-              >
-                Privacy
-              </Link>
-              <Link
-                to="/terms"
-                className="hover:text-foreground transition-colors"
-              >
-                Terms
-              </Link>
-              <a
-                href="https://github.com/ShadowWalker2014/open-sunsama"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-foreground transition-colors"
-              >
-                <Github className="h-3.5 w-3.5" />
-              </a>
-            </nav>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

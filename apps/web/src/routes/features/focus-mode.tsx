@@ -1,4 +1,5 @@
 import { FeatureLayout } from "@/components/layout/feature-layout";
+import { FeatureShot } from "@/components/landing/product-shot";
 import { Timer, FileText, BarChart3, ArrowRight } from "lucide-react";
 import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
 
@@ -27,55 +28,11 @@ export default function FocusModeFeaturePage() {
 
   return (
     <FeatureLayout
+      visual={<FeatureShot name="focus" alt="Focus mode with one task, its subtasks, and a running timer" />}
       badge="Feature"
       title="Focus Mode"
       subtitle="Work on one task at a time with built-in timer, rich notes, and progress tracking."
     >
-      {/* Visual Demo */}
-      <section className="pb-12">
-        <div className="container px-4 mx-auto max-w-4xl">
-          <div className="rounded-xl border border-border/40 bg-card/50 p-1 shadow-lg">
-            <div className="rounded-lg border border-border/40 bg-background overflow-hidden">
-              {/* Mock focus mode */}
-              <div className="p-6 md:p-8 text-center">
-                <div className="mb-4">
-                  <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-1 rounded">
-                    P0
-                  </span>
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Design System Audit</h3>
-                <p className="text-xs text-muted-foreground mb-6">Est: 1h 30m</p>
-                
-                {/* Timer */}
-                <div className="mb-6">
-                  <div className="text-4xl font-mono font-semibold tracking-wider">
-                    00:45:23
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">Time elapsed</p>
-                </div>
-
-                {/* Progress */}
-                <div className="max-w-xs mx-auto mb-6">
-                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                    <span>Progress</span>
-                    <span>50%</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
-                    <div className="h-full w-1/2 bg-primary rounded-full" />
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex justify-center gap-2">
-                  <div className="px-4 py-2 rounded-lg bg-muted text-xs font-medium">Pause</div>
-                  <div className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium">Complete</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Features */}
       <section className="py-12 border-t border-border/40 bg-muted/10">
         <div className="container px-4 mx-auto max-w-4xl">

@@ -1,6 +1,6 @@
 import { FeatureLayout } from "@/components/layout/feature-layout";
+import { FeatureShot } from "@/components/landing/product-shot";
 import { Layers, Zap, CheckSquare, ArrowRight } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
 
 function FeatureItem({
@@ -28,61 +28,11 @@ export default function KanbanFeaturePage() {
 
   return (
     <FeatureLayout
+      visual={<FeatureShot name="board" alt="Open Sunsama board: prioritized tasks by day with a time-blocked schedule" />}
       badge="Feature"
       title="Visual Kanban Board"
       subtitle="Organize your day with a high-performance, minimalist Kanban board designed for speed and clarity."
     >
-      {/* Visual Demo */}
-      <section className="pb-12">
-        <div className="container px-4 mx-auto max-w-4xl">
-          <div className="rounded-xl border border-border/40 bg-card/50 p-1 shadow-lg">
-            <div className="rounded-lg border border-border/40 bg-background overflow-hidden">
-              {/* Mock kanban */}
-              <div className="p-4 md:p-6 flex gap-4 overflow-x-auto">
-                {[
-                  { day: "Mon", tasks: [
-                    { title: "Review specs", p: "P1" },
-                    { title: "Design audit", p: "P0", active: true },
-                    { title: "Team sync", p: "P2" }
-                  ]},
-                  { day: "Tue", tasks: [
-                    { title: "API docs", p: "P1" },
-                    { title: "Bug fixes", p: "P3" }
-                  ]},
-                  { day: "Wed", tasks: [
-                    { title: "Refactor", p: "P0" }
-                  ]}
-                ].map((col, i) => (
-                  <div key={i} className="flex-shrink-0 w-48 space-y-3">
-                    <div className="flex justify-between items-center px-1">
-                      <span className="text-xs font-semibold">{col.day}</span>
-                      <span className="text-[10px] text-muted-foreground">{col.tasks.length}</span>
-                    </div>
-                    <div className="space-y-2">
-                      {col.tasks.map((task, j) => (
-                        <div key={j} className={cn(
-                          "p-3 rounded-lg border bg-card/50 space-y-2",
-                          task.active && "border-primary/30 shadow-sm"
-                        )}>
-                          <span className={cn(
-                            "text-[10px] font-medium px-1.5 py-0.5 rounded",
-                            task.p === "P0" ? "bg-red-500/10 text-red-500" :
-                            task.p === "P1" ? "bg-orange-500/10 text-orange-500" :
-                            task.p === "P2" ? "bg-blue-500/10 text-blue-500" :
-                            "bg-slate-500/10 text-slate-500"
-                          )}>{task.p}</span>
-                          <p className="text-xs font-medium">{task.title}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Features */}
       <section className="py-12 border-t border-border/40 bg-muted/10">
         <div className="container px-4 mx-auto max-w-4xl">

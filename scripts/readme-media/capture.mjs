@@ -173,6 +173,59 @@ async function shotAround(page, name, locator, margin = { x: 120, y: 90 }) {
 const tasks = await api("GET", "/tasks?date=2026-09-22");
 const roadmap = tasks.find((t) => t.title.startsWith("Finalize Q4 roadmap"));
 
+/**
+ * Full-frame light + dark WebP assets for the marketing site
+ * (apps/web/public/landing/). Run with ONLY=web to skip the README pass.
+ */
+async function captureWebAssets() {
+  const webOut = path.resolve(import.meta.dirname, "../../apps/web/public/landing");
+  mkdirSync(webOut, { recursive: true });
+  for (const theme of ["light", "dark"]) {
+    const { context, page } = await newPage({ theme });
+    const save = async (name) => {
+      const buf = await page.screenshot();
+      await sharp(buf).webp({ quality: 84, effort: 6 }).toFile(path.join(webOut, `${name}-${theme}.webp`));
+      console.log("web asset", `${name}-${theme}`);
+    };
+    await page.goto(`${WEB}/app/board`);
+    await settle(page, 2000);
+    await save("board");
+    await page.getByText("Finalize Q4 roadmap for leadership review").first().click();
+    await settle(page, 1200);
+    await save("task-detail");
+    await page.keyboard.press("Escape");
+    await page.goto(`${WEB}/app/calendar`);
+    await settle(page);
+    await page.getByRole("tab", { name: "Week", exact: true }).click();
+    await settle(page, 1500);
+    await scrollCalendarToMorning(page);
+    await save("calendar-week");
+    await page.goto(`${WEB}/app/board`);
+    await settle(page, 1500);
+    await page.keyboard.press("Meta+k");
+    await page.waitForTimeout(500);
+    await page.keyboard.type("review", { delay: 40 });
+    await page.waitForTimeout(1000);
+    await save("command-palette");
+    await page.keyboard.press("Escape");
+    await page.goto(`${WEB}/app/focus/${roadmap.id}`);
+    await settle(page, 1500);
+    await save("focus");
+    await page.goto(`${WEB}/app/ideas`);
+    await settle(page);
+    await save("ideas");
+    await context.close();
+  }
+  // Restore the light theme the README shots expect.
+  await newPage().then(({ context }) => context.close());
+}
+
+if (process.env.ONLY === "web") {
+  await captureWebAssets();
+  await browser.close();
+  process.exit(0);
+}
+
 // Set CONNECT_APPS=0 on re-runs so Connected apps isn't duplicated.
 if (process.env.CONNECT_APPS !== "0") {
   await connectApp(...CLAUDE);

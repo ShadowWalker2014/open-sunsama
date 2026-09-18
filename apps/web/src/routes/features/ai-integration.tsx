@@ -1,4 +1,5 @@
 import { FeatureLayout } from "@/components/layout/feature-layout";
+import { AssistantDemo } from "@/components/landing/ai-section";
 import { Bot, Key, Command, ArrowRight } from "lucide-react";
 import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
 
@@ -27,41 +28,11 @@ export default function AIIntegrationFeaturePage() {
 
   return (
     <FeatureLayout
+      visual={<div className="mx-auto max-w-4xl"><AssistantDemo /></div>}
       badge="Feature"
       title="AI Integration"
       subtitle="Connect Claude, ChatGPT, or Cursor with one URL and let AI agents schedule, manage, and optimize your day."
     >
-      {/* Visual Demo */}
-      <section className="pb-12">
-        <div className="container px-4 mx-auto max-w-4xl">
-          <div className="rounded-xl border border-border/40 bg-card/50 p-1 shadow-lg">
-            <div className="rounded-lg border border-border/40 bg-background overflow-hidden">
-              {/* Mock MCP interaction */}
-              <div className="p-4 md:p-6 font-mono text-xs">
-                <div className="space-y-3">
-                  <div className="flex items-start gap-2">
-                    <span className="text-muted-foreground">→</span>
-                    <span className="text-primary">create_task</span>
-                    <span className="text-muted-foreground">{"{"}</span>
-                  </div>
-                  <div className="pl-6 text-muted-foreground">
-                    <div>"title": "Review Q4 planning doc",</div>
-                    <div>"priority": "P1",</div>
-                    <div>"scheduledDate": "2026-01-30",</div>
-                    <div>"estimatedMins": 45</div>
-                  </div>
-                  <div className="text-muted-foreground">{"}"}</div>
-                  <div className="flex items-start gap-2 mt-4 text-green-500">
-                    <span>✓</span>
-                    <span>Task created: tsk_a8x2k9m</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Features */}
       <section className="py-12 border-t border-border/40 bg-muted/10">
         <div className="container px-4 mx-auto max-w-4xl">

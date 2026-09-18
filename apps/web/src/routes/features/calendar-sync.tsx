@@ -1,4 +1,5 @@
 import { FeatureLayout } from "@/components/layout/feature-layout";
+import { FeatureShot } from "@/components/landing/product-shot";
 import { Calendar, RefreshCw, Shield } from "lucide-react";
 import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
 
@@ -27,44 +28,11 @@ export default function CalendarSyncFeaturePage() {
 
   return (
     <FeatureLayout
+      visual={<FeatureShot name="calendar-week" alt="Week calendar with time blocks alongside synced calendar events" />}
       badge="Feature"
       title="Calendar Sync"
       subtitle="Bidirectional sync with Google Calendar, Outlook, and iCloud. Your events and time blocks stay in perfect harmony."
     >
-      {/* Visual Demo */}
-      <section className="pb-12">
-        <div className="container px-4 mx-auto max-w-4xl">
-          <div className="rounded-xl border border-border/40 bg-card/50 p-1 shadow-lg">
-            <div className="rounded-lg border border-border/40 bg-background overflow-hidden">
-              {/* Mock calendar providers */}
-              <div className="p-4 md:p-6">
-                <div className="grid grid-cols-3 gap-4">
-                  {[
-                    { name: "Google", color: "bg-red-500", connected: true },
-                    { name: "Outlook", color: "bg-blue-500", connected: true },
-                    { name: "iCloud", color: "bg-slate-500", connected: false },
-                  ].map((provider, i) => (
-                    <div key={i} className="rounded-lg border border-border/40 bg-card/50 p-4 text-center">
-                      <div className={`h-10 w-10 ${provider.color} rounded-lg mx-auto mb-3 flex items-center justify-center`}>
-                        <Calendar className="h-5 w-5 text-white" />
-                      </div>
-                      <p className="text-xs font-medium">{provider.name}</p>
-                      <p className="text-[10px] text-muted-foreground mt-1">
-                        {provider.connected ? (
-                          <span className="text-green-500">● Connected</span>
-                        ) : (
-                          <span>Not connected</span>
-                        )}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Features */}
       <section className="py-12 border-t border-border/40 bg-muted/10">
         <div className="container px-4 mx-auto max-w-4xl">

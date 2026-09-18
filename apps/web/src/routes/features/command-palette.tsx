@@ -1,4 +1,5 @@
 import { FeatureLayout } from "@/components/layout/feature-layout";
+import { FeatureShot } from "@/components/landing/product-shot";
 import { Command, Search, Keyboard, ArrowRight } from "lucide-react";
 import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
 
@@ -27,51 +28,11 @@ export default function CommandPaletteFeaturePage() {
 
   return (
     <FeatureLayout
+      visual={<FeatureShot name="command-palette" alt="Command palette searching across tasks and ideas" />}
       badge="Feature"
       title="Command Palette"
       subtitle="Access everything with ⌘K. Search tasks, run commands, and navigate your workflow instantly."
     >
-      {/* Visual Demo */}
-      <section className="pb-12">
-        <div className="container px-4 mx-auto max-w-4xl">
-          <div className="rounded-xl border border-border/40 bg-card/50 p-1 shadow-lg">
-            <div className="rounded-lg border border-border/40 bg-background overflow-hidden">
-              {/* Mock command palette */}
-              <div className="p-4 md:p-6">
-                <div className="rounded-lg border border-border/40 bg-card/50 max-w-md mx-auto">
-                  {/* Search input */}
-                  <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border/40">
-                    <Search className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Search tasks or type a command...</span>
-                  </div>
-                  {/* Results */}
-                  <div className="p-2 space-y-1">
-                    <div className="flex items-center gap-3 px-2 py-1.5 rounded-md bg-primary/10">
-                      <div className="h-6 w-6 rounded bg-primary/20 flex items-center justify-center">
-                        <span className="text-[10px] font-medium text-primary">A</span>
-                      </div>
-                      <span className="text-xs font-medium">Add New Task</span>
-                    </div>
-                    <div className="flex items-center gap-3 px-2 py-1.5 rounded-md hover:bg-muted/50">
-                      <div className="h-6 w-6 rounded bg-muted flex items-center justify-center">
-                        <span className="text-[10px] font-medium">⌘K</span>
-                      </div>
-                      <span className="text-xs text-muted-foreground">Open Calendar</span>
-                    </div>
-                    <div className="flex items-center gap-3 px-2 py-1.5 rounded-md hover:bg-muted/50">
-                      <div className="h-6 w-6 rounded bg-muted flex items-center justify-center">
-                        <span className="text-[10px] font-medium">?</span>
-                      </div>
-                      <span className="text-xs text-muted-foreground">Keyboard Shortcuts</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Features */}
       <section className="py-12 border-t border-border/40 bg-muted/10">
         <div className="container px-4 mx-auto max-w-4xl">

@@ -184,6 +184,61 @@ const motionAlternativeRoute = createRoute({
   component: lazyRouteComponent(() => import("./routes/alternative.motion")),
 });
 
+// Comparison, audience, and SEO landing pages (listed in the sitemap).
+const sunsamaAlternativeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/alternative/sunsama",
+  component: lazyRouteComponent(() => import("./routes/alternative.sunsama")),
+});
+
+const todoistAlternativeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/alternative/todoist",
+  component: lazyRouteComponent(() => import("./routes/alternative.todoist")),
+});
+
+const akiflowAlternativeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/alternative/akiflow",
+  component: lazyRouteComponent(() => import("./routes/alternative.akiflow")),
+});
+
+const reclaimAlternativeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/alternative/reclaim",
+  component: lazyRouteComponent(() => import("./routes/alternative.reclaim")),
+});
+
+const forAdhdRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/for/adhd",
+  component: lazyRouteComponent(() => import("./routes/for.adhd")),
+});
+
+const forDevelopersRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/for/developers",
+  component: lazyRouteComponent(() => import("./routes/for.developers")),
+});
+
+const forRemoteWorkersRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/for/remote-workers",
+  component: lazyRouteComponent(() => import("./routes/for.remote-workers")),
+});
+
+const openSourceTaskManagerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/open-source-task-manager",
+  component: lazyRouteComponent(() => import("./routes/open-source-task-manager")),
+});
+
+const freeTimeBlockingAppRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/free-time-blocking-app",
+  component: lazyRouteComponent(() => import("./routes/free-time-blocking-app")),
+});
+
 // Docs parent route - just renders Outlet for children
 const docsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -324,6 +379,15 @@ const routeTree = rootRoute.addChildren([
   blogPostRoute,
   docsRoute.addChildren([docsIndexRoute, docsSplatRoute]),
   motionAlternativeRoute,
+  sunsamaAlternativeRoute,
+  todoistAlternativeRoute,
+  akiflowAlternativeRoute,
+  reclaimAlternativeRoute,
+  forAdhdRoute,
+  forDevelopersRoute,
+  forRemoteWorkersRoute,
+  openSourceTaskManagerRoute,
+  freeTimeBlockingAppRoute,
   kanbanFeatureRoute,
   timeBlockingFeatureRoute,
   focusModeFeatureRoute,

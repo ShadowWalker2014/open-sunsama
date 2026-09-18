@@ -919,3 +919,58 @@ html.font-jetbrains body {
     @apply ring-2 ring-primary ring-offset-2;
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Marketing site (components/landing): backdrops and motion keyframes.
+ * ------------------------------------------------------------------------- */
+.landing-grid {
+  background-image:
+    linear-gradient(to right, hsl(var(--border) / 0.7) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(var(--border) / 0.7) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 70% 55% at 50% 0%, #000 30%, transparent 75%);
+}
+
+.landing-grid-dark {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.06) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 80% 70% at 80% 10%, #000 20%, transparent 70%);
+}
+
+@keyframes landing-drift {
+  0%, 100% { transform: translate(-50%, 0) scale(1); }
+  50% { transform: translate(calc(-50% + 40px), 24px) scale(1.06); }
+}
+
+@keyframes landing-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes landing-ring {
+  0% { box-shadow: 0 0 0 0 var(--ring, hsl(var(--primary) / 0.4)); }
+  100% { box-shadow: 0 0 0 10px transparent; }
+}
+
+@keyframes landing-line {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes landing-caret {
+  50% { opacity: 0; }
+}
+
+/* Feature-page shot: leans back, then settles flat on load. */
+@keyframes landing-settle {
+  from { opacity: 0; transform: rotateX(12deg) translateY(28px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+.landing-settle {
+  animation: landing-settle 1100ms cubic-bezier(0.2, 0.8, 0.2, 1) 250ms both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-settle { animation: none; }
+}
