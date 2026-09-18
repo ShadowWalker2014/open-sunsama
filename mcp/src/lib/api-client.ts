@@ -5,7 +5,12 @@
 
 export interface ApiClientConfig {
   baseUrl: string;
-  apiKey: string;
+  /** API key sent as `X-API-Key` (the stdio CLI). */
+  apiKey?: string;
+  /** Extra headers, e.g. `Authorization: Bearer <oauth token>` (remote MCP). */
+  headers?: Record<string, string>;
+  /** Custom fetch, e.g. the API's in-process `app.fetch` for the remote MCP. */
+  fetch?: typeof globalThis.fetch;
 }
 
 export interface ApiResponse<T> {
@@ -28,11 +33,16 @@ export interface ApiResponse<T> {
 
 export class ApiClient {
   private baseUrl: string;
-  private apiKey: string;
+  private authHeaders: Record<string, string>;
+  private fetchImpl: typeof globalThis.fetch;
 
   constructor(config: ApiClientConfig) {
     this.baseUrl = config.baseUrl.replace(/\/$/, ""); // Remove trailing slash
-    this.apiKey = config.apiKey;
+    this.authHeaders = {
+      ...(config.apiKey ? { "X-API-Key": config.apiKey } : {}),
+      ...config.headers,
+    };
+    this.fetchImpl = config.fetch ?? globalThis.fetch;
   }
 
   private async request<T>(
@@ -58,7 +68,7 @@ export class ApiClient {
     }
 
     const headers: Record<string, string> = {
-      "X-API-Key": this.apiKey,
+      ...this.authHeaders,
       "Content-Type": "application/json",
     };
 
@@ -72,7 +82,7 @@ export class ApiClient {
     }
 
     try {
-      const response = await fetch(url, options);
+      const response = await this.fetchImpl(url, options);
       const data = await response.json();
       return data as ApiResponse<T>;
     } catch (error) {

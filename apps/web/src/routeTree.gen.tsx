@@ -65,6 +65,14 @@ const registerRoute = createRoute({
   component: RegisterPage,
 });
 
+// OAuth consent for MCP connectors (Claude, ChatGPT, ...). Top-level so it
+// works whether or not the visitor is signed in yet.
+const oauthConsentRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/oauth/consent",
+  component: lazyRouteComponent(() => import("./routes/oauth-consent")),
+});
+
 const forgotPasswordRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/forgot-password",
@@ -306,6 +314,7 @@ const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
   registerRoute,
+  oauthConsentRoute,
   forgotPasswordRoute,
   resetPasswordRoute,
   privacyRoute,

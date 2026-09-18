@@ -47,5 +47,5 @@ apps/desktop/src-tauri
 # Mobile app (not needed for web/api builds)
 apps/mobile/.expo
 
-# MCP (separate project)
-mcp
+# MCP package build output (its source is a workspace the API bundles)
+mcp/build

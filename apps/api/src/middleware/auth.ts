@@ -5,17 +5,34 @@
 
 import type { Context, MiddlewareHandler } from 'hono';
 import { getDb, eq, and, apiKeys } from '@open-sunsama/database';
-import { AuthenticationError, verifyApiKey } from '@open-sunsama/utils';
+import {
+  AuthenticationError,
+  AuthorizationError,
+  verifyApiKey,
+  API_KEY_PREFIX,
+  LEGACY_API_KEY_PREFIX,
+} from '@open-sunsama/utils';
 import { verifyToken } from '../lib/jwt.js';
+import { validateAccessToken } from '../lib/oauth/tokens.js';
+import { ACCESS_TOKEN_PREFIX } from '../lib/oauth/config.js';
 
 /**
  * Extended context variables for authenticated requests
  */
 export interface AuthVariables {
   userId: string;
-  authMethod: 'jwt' | 'api-key';
+  authMethod: 'jwt' | 'api-key' | 'oauth';
   apiKeyId?: string;
+  /** Scopes for API keys and OAuth tokens; JWT sessions have full access. */
   apiKeyScopes?: string[];
+}
+
+/** Who a request authenticated as, independent of Hono context. */
+export interface Principal {
+  userId: string;
+  authMethod: AuthVariables['authMethod'];
+  apiKeyId?: string;
+  scopes?: string[];
 }
 
 /**
@@ -113,71 +130,123 @@ export const apiKeyAuth: MiddlewareHandler<{ Variables: AuthVariables }> = async
   await next();
 };
 
-/**
- * Combined authentication middleware
- * Supports both JWT (Bearer token) and API key authentication
- * Tries JWT first, then API key
- */
-export const auth: MiddlewareHandler<{ Variables: AuthVariables }> = async (c, next) => {
-  const bearerToken = extractBearerToken(c.req.header('Authorization'));
-  const apiKey = extractApiKey(c);
+function isApiKey(value: string): boolean {
+  return value.startsWith(API_KEY_PREFIX) || value.startsWith(LEGACY_API_KEY_PREFIX);
+}
 
-  // Try JWT authentication first
+async function authenticateApiKey(apiKey: string): Promise<Principal> {
+  const db = getDb();
+  const keys = await db.select().from(apiKeys).where(eq(apiKeys.isActive, true));
+
+  for (const key of keys) {
+    if (verifyApiKey(apiKey, key.keyHash)) {
+      if (key.expiresAt && new Date(key.expiresAt) < new Date()) {
+        continue;
+      }
+      await db.update(apiKeys).set({ lastUsedAt: new Date() }).where(eq(apiKeys.id, key.id));
+      return {
+        userId: key.userId,
+        authMethod: 'api-key',
+        apiKeyId: key.id,
+        scopes: key.scopes || [],
+      };
+    }
+  }
+  throw new AuthenticationError('Invalid or expired API key');
+}
+
+/**
+ * Resolve the caller from its credentials. Accepts, in order:
+ * - OAuth access token (`Bearer osat_...`) from the MCP connector flow
+ * - API key sent as a bearer token (`Bearer os_...`), for MCP clients that
+ *   only let you set an Authorization header
+ * - JWT session token (`Bearer <jwt>`), falling back to `X-API-Key` if invalid
+ * - API key (`X-API-Key: os_...`)
+ * Returns null when no credential is present; throws on a bad one.
+ */
+export async function authenticateRequest(
+  authorizationHeader: string | undefined,
+  apiKeyHeader: string | undefined
+): Promise<Principal | null> {
+  const bearerToken = extractBearerToken(authorizationHeader);
+  const apiKey = apiKeyHeader || null;
+
+  if (bearerToken?.startsWith(ACCESS_TOKEN_PREFIX)) {
+    const token = await validateAccessToken(bearerToken);
+    if (!token) {
+      throw new AuthenticationError('Invalid or expired access token');
+    }
+    return { userId: token.userId, authMethod: 'oauth', scopes: token.scopes };
+  }
+
+  if (bearerToken && isApiKey(bearerToken)) {
+    return authenticateApiKey(bearerToken);
+  }
+
   if (bearerToken) {
     try {
       const { userId } = verifyToken(bearerToken);
-      c.set('userId', userId);
-      c.set('authMethod', 'jwt');
-      return next();
+      return { userId, authMethod: 'jwt' };
     } catch {
-      // JWT failed, will try API key if present
       if (!apiKey) {
         throw new AuthenticationError('Invalid or expired token');
       }
     }
   }
 
-  // Try API key authentication
   if (apiKey) {
-    const db = getDb();
-    
-    const keys = await db
-      .select()
-      .from(apiKeys)
-      .where(eq(apiKeys.isActive, true));
-
-    for (const key of keys) {
-      if (verifyApiKey(apiKey, key.keyHash)) {
-        // Check if key is expired
-        if (key.expiresAt && new Date(key.expiresAt) < new Date()) {
-          continue;
-        }
-
-        // Update last used timestamp
-        await db
-          .update(apiKeys)
-          .set({ lastUsedAt: new Date() })
-          .where(eq(apiKeys.id, key.id));
-
-        c.set('userId', key.userId);
-        c.set('authMethod', 'api-key');
-        c.set('apiKeyId', key.id);
-        c.set('apiKeyScopes', key.scopes || []);
-        
-        return next();
-      }
-    }
-
-    throw new AuthenticationError('Invalid or expired API key');
+    return authenticateApiKey(apiKey);
   }
 
-  throw new AuthenticationError('Authentication required');
+  return null;
+}
+
+/**
+ * OAuth tokens come from third-party MCP connectors, so they only reach the
+ * routes the MCP tools call, each gated by the matching read/write scope.
+ * Everything else (uploads, calendars, notifications, ...) stays off-limits.
+ */
+const OAUTH_ROUTE_SCOPES: Array<{ path: RegExp; read: string; write: string }> = [
+  { path: /^\/tasks(\/|$)/, read: 'tasks:read', write: 'tasks:write' },
+  { path: /^\/time-blocks(\/|$)/, read: 'time-blocks:read', write: 'time-blocks:write' },
+  { path: /^\/auth\/me$/, read: 'user:read', write: 'user:write' },
+];
+
+function assertOAuthRouteAllowed(method: string, path: string, scopes: string[]): void {
+  const rule = OAUTH_ROUTE_SCOPES.find((r) => r.path.test(path));
+  if (!rule) {
+    throw new AuthorizationError('This connector token can only be used through the MCP server');
+  }
+  const needed = method === 'GET' || method === 'HEAD' ? rule.read : rule.write;
+  if (!scopes.includes(needed)) {
+    throw new AuthorizationError(`Insufficient permissions. Required scopes: ${needed}`);
+  }
+}
+
+/**
+ * Combined authentication middleware
+ * Supports JWT sessions, API keys, and OAuth access tokens
+ */
+export const auth: MiddlewareHandler<{ Variables: AuthVariables }> = async (c, next) => {
+  const principal = await authenticateRequest(c.req.header('Authorization'), extractApiKey(c) ?? undefined);
+  if (!principal) {
+    throw new AuthenticationError('Authentication required');
+  }
+  if (principal.authMethod === 'oauth') {
+    assertOAuthRouteAllowed(c.req.method, c.req.path, principal.scopes ?? []);
+  }
+
+  c.set('userId', principal.userId);
+  c.set('authMethod', principal.authMethod);
+  if (principal.apiKeyId) c.set('apiKeyId', principal.apiKeyId);
+  if (principal.scopes) c.set('apiKeyScopes', principal.scopes);
+  return next();
 };
 
 /**
  * Scope check middleware factory
  * Creates middleware that checks if the authenticated request has required scopes
- * Only applies to API key authentication; JWT has full access
+ * Applies to API keys and OAuth tokens; JWT has full access
  */
 export function requireScopes(...requiredScopes: string[]): MiddlewareHandler<{ Variables: AuthVariables }> {
   return async (c, next) => {

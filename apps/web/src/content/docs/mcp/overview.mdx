@@ -1,152 +1,120 @@
 export const frontmatter = {
   title: "MCP Overview",
   description:
-    "Learn how to connect AI agents to Open Sunsama using the Model Context Protocol (MCP). Enable Claude, GPT, and other AI assistants to manage your tasks.",
+    "Connect Claude, ChatGPT, Cursor, and other AI assistants to Open Sunsama with one URL. Sign in once with OAuth: no API keys, no config files.",
   order: 1,
   section: "mcp",
 };
 
-The Open Sunsama MCP server allows AI agents to interact with your tasks, time blocks, and calendar. This enables powerful workflows where AI assistants can help you plan your day, create tasks from conversations, and track your productivity.
+Open Sunsama runs a hosted [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server. Add one URL to your AI assistant, sign in, and it can read and plan your day: tasks, subtasks, and calendar time blocks.
 
-## What is MCP?
+## Connect in one step
 
-The **Model Context Protocol (MCP)** is an open standard for connecting AI assistants to external tools and data sources. It allows AI models like Claude and GPT to:
-
-- Read your task list and schedule
-- Create and update tasks
-- Schedule time blocks
-- Mark tasks as complete
-- Help you plan and organize your work
-
-## Why Use MCP with Open Sunsama?
-
-Instead of manually copying task details between your AI assistant and Open Sunsama, the MCP integration allows seamless communication:
-
-- **"What's on my schedule today?"** - AI reads your tasks and time blocks
-- **"Create a task to review the Q1 report"** - AI creates the task directly
-- **"Schedule 2 hours for deep work tomorrow morning"** - AI creates the time block
-- **"Mark that task as complete"** - AI updates the task status
-
-## Supported AI Platforms
-
-The Open Sunsama MCP server works with any AI platform that supports MCP:
-
-| Platform              | Status          |
-| --------------------- | --------------- |
-| Claude Desktop        | Fully supported |
-| Claude for Enterprise | Fully supported |
-| OpenCode              | Fully supported |
-| Cursor                | Fully supported |
-| Other MCP clients     | Compatible      |
-
-## Getting Started
-
-### 1. Get an API Key
-
-1. Log into [Open Sunsama](https://opensunsama.com/app)
-2. Go to **Settings** → **API Keys**
-3. Click **Generate New Key**
-4. Select these scopes:
-   - `tasks:read`
-   - `tasks:write`
-   - `time-blocks:read`
-   - `time-blocks:write`
-   - `user:read`
-5. Copy the key (starts with `os_live_`)
-
-### 2. Install the MCP Server
-
-```bash
-# Install globally
-npm install -g @open-sunsama/mcp
-
-# Or use npx
-npx @open-sunsama/mcp
-```
-
-### 3. Configure Your AI Client
-
-The configuration depends on your AI platform. See the specific setup guides:
-
-- [Claude Desktop Setup](/docs/mcp/claude-desktop)
-- [Cursor Setup](/docs/mcp/cursor)
-
-## Available Tools
-
-The MCP server provides 24 tools organized into categories:
-
-### Task Tools
-
-| Tool              | Description                                      |
-| ----------------- | ------------------------------------------------ |
-| `list_tasks`      | List tasks with filters (date, status, priority) |
-| `get_task`        | Get a specific task by ID                        |
-| `create_task`     | Create a new task                                |
-| `update_task`     | Update task details                              |
-| `complete_task`   | Mark a task as complete                          |
-| `uncomplete_task` | Mark a task as incomplete                        |
-| `delete_task`     | Delete a task                                    |
-| `schedule_task`   | Move a task to a specific date                   |
-| `reorder_tasks`   | Change task order within a day                   |
-
-### Time Block Tools
-
-| Tool                      | Description                    |
-| ------------------------- | ------------------------------ |
-| `list_time_blocks`        | List time blocks with filters  |
-| `get_time_block`          | Get a specific time block      |
-| `create_time_block`       | Create a new time block        |
-| `update_time_block`       | Update time block details      |
-| `delete_time_block`       | Delete a time block            |
-| `link_task_to_time_block` | Connect a task to a time block |
-| `get_schedule_for_day`    | Get formatted daily schedule   |
-
-### Subtask Tools
-
-| Tool             | Description               |
-| ---------------- | ------------------------- |
-| `list_subtasks`  | List subtasks for a task  |
-| `create_subtask` | Add a subtask             |
-| `toggle_subtask` | Toggle subtask completion |
-| `update_subtask` | Update subtask details    |
-| `delete_subtask` | Delete a subtask          |
-
-### User Tools
-
-| Tool                  | Description           |
-| --------------------- | --------------------- |
-| `get_user_profile`    | Get current user info |
-| `update_user_profile` | Update preferences    |
-
-## Example Prompts
-
-Here are some example prompts you can use with your AI assistant:
+Paste this connector URL into your AI assistant:
 
 ```
-"What tasks do I have today?"
-
-"Create a P0 task to fix the production bug with notes: Server returning 500 errors on /api/users endpoint"
-
-"Schedule a 2-hour deep work block tomorrow from 9am to 11am"
-
-"Mark the task about reviewing PR #123 as complete"
-
-"Move all my backlog tasks to tomorrow"
-
-"What's my schedule look like for Monday?"
-
-"Add subtasks to my 'Launch feature' task: Write tests, Update docs, Deploy to staging"
+https://api.opensunsama.com/mcp
 ```
 
-## Security
+Your assistant opens an Open Sunsama sign-in page. You approve access, and you're connected. There's no API key to create, copy, or rotate.
 
-- Your API key is stored locally on your machine
-- All communication uses HTTPS
-- API keys have scoped permissions (you control what the AI can access)
-- You can revoke keys anytime from Settings
+| Assistant | How to add it | Guide |
+| --- | --- | --- |
+| **Claude** (claude.ai, Desktop, mobile) | Settings → Connectors → Add custom connector | [Claude setup](/docs/mcp/claude) |
+| **ChatGPT** | Settings → Apps → Developer mode → Create app | [ChatGPT setup](/docs/mcp/chatgpt) |
+| **Claude Code** | `claude mcp add --transport http open-sunsama https://api.opensunsama.com/mcp` | [Claude setup](/docs/mcp/claude#claude-code) |
+| **Cursor** | One-click install, or add the URL to `mcp.json` | [Cursor setup](/docs/mcp/cursor) |
+| **VS Code** | Add the URL as an `http` server in `.vscode/mcp.json` | [Local & other clients](/docs/mcp/local-server#vs-code) |
+| **Any other MCP client** | Add the URL as a Streamable HTTP server with OAuth | [Local & other clients](/docs/mcp/local-server) |
 
-## Next Steps
+The quickest way to get these steps is in the app. Go to **Settings → MCP**, where the URL and instructions for each assistant are ready to copy.
 
-- [Claude Desktop Setup](/docs/mcp/claude-desktop) - Detailed setup instructions
-- [Cursor Setup](/docs/mcp/cursor) - Configure MCP in Cursor
-- [Tasks API](/docs/api/tasks) - Full API reference
+## What your assistant can do
+
+Once connected, ask in plain language:
+
+```
+"What's on my plate today?"
+
+"Create a P1 task to review the Q3 roadmap for Thursday, 45 minutes."
+
+"Block 9–11am tomorrow for deep work on the launch plan and link it to that task."
+
+"Move everything I didn't finish today to tomorrow."
+
+"Add subtasks to 'Launch feature': write tests, update docs, deploy to staging."
+```
+
+## How sign-in works
+
+The connector uses OAuth 2.1, the same standard as "Sign in with Google". Here's what happens when you click **Connect**:
+
+1. Your assistant registers itself with Open Sunsama and sends you to our consent screen.
+2. You sign in (or create a free account). The screen shows which app is asking and what it can access.
+3. You click **Allow access**. The assistant gets a short-lived token scoped to your account only.
+
+The assistant never sees your password. Access tokens expire after an hour and refresh automatically. You can disconnect any app at any time in **Settings → MCP → Connected apps**, which revokes its access immediately.
+
+Technical details for client developers:
+
+- Streamable HTTP transport at `https://api.opensunsama.com/mcp` (stateless, JSON responses).
+- Protected resource metadata at `/.well-known/oauth-protected-resource` (RFC 9728) and authorization server metadata at `/.well-known/oauth-authorization-server` (RFC 8414).
+- Authorization code flow with PKCE (S256). Clients register with Client ID Metadata Documents or dynamic client registration (RFC 7591).
+- Refresh tokens rotate on every use. The authorization response carries `iss` (RFC 9207). Tokens are bound to the `/mcp` resource (RFC 8707).
+
+## Available tools
+
+The server provides 23 tools. Each is annotated as read-only or destructive, so your assistant can ask before it deletes anything.
+
+### Tasks
+
+| Tool | Description |
+| --- | --- |
+| `list_tasks` | List tasks by date, date range, backlog, or completion |
+| `get_task` | Get a task by ID |
+| `create_task` | Create a task (title, notes, date, priority, estimate) |
+| `update_task` | Update task details |
+| `complete_task` / `uncomplete_task` | Mark a task done or reopen it |
+| `delete_task` | Delete a task |
+| `schedule_task` | Move a task to a date or the backlog |
+| `reorder_tasks` | Change task order within a day |
+
+### Time blocks
+
+| Tool | Description |
+| --- | --- |
+| `list_time_blocks` | List time blocks by date, range, or task |
+| `get_time_block` | Get a time block by ID |
+| `create_time_block` | Create a calendar block |
+| `update_time_block` | Move or resize a block |
+| `delete_time_block` | Delete a block |
+| `link_task_to_time_block` | Put a task on the calendar |
+| `get_schedule_for_day` | See a whole day's tasks and blocks at once |
+
+### Subtasks
+
+| Tool | Description |
+| --- | --- |
+| `list_subtasks` | List a task's subtasks |
+| `create_subtask` | Add a subtask |
+| `toggle_subtask` | Check or uncheck a subtask |
+| `update_subtask` | Rename or reorder a subtask |
+| `delete_subtask` | Delete a subtask |
+
+### Profile
+
+| Tool | Description |
+| --- | --- |
+| `get_user_profile` | Your name, email, and timezone |
+| `update_user_profile` | Update your name or timezone |
+
+## Prefer an API key?
+
+The local command-line server (`npx @open-sunsama/mcp`) and API-key access still work. Use them for clients that can't do OAuth, scripts, or self-hosted setups. See [Local server & API keys](/docs/mcp/local-server).
+
+## Troubleshooting
+
+- **"Couldn't reach the MCP server"**: check that the URL is exactly `https://api.opensunsama.com/mcp`, with no trailing slash and nothing after `/mcp`.
+- **The sign-in page says the link expired**: the consent link is valid for 15 minutes. Click **Connect** in your assistant again.
+- **The assistant stopped working after a while**: open **Settings → MCP → Connected apps**. If the app isn't listed, reconnect it from your assistant.
+- **Self-hosting?** Replace the host with your own API URL, for example `https://api.your-domain.com/mcp`, and set `API_URL` and `WEB_APP_URL` on the API service.

@@ -1,0 +1,53 @@
+export const frontmatter = {
+  title: "Claude Setup",
+  description:
+    "Add Open Sunsama to Claude as a custom connector. Works on claude.ai, Claude Desktop, the Claude mobile apps, and Claude Code.",
+  order: 2,
+  section: "mcp",
+};
+
+Add Open Sunsama to Claude once and it works everywhere you use Claude: claude.ai, Claude Desktop, the iOS and Android apps, and Cowork. Custom connectors are available on every Claude plan. The Free plan allows one custom connector.
+
+## Claude (web, Desktop, and mobile)
+
+1. Open [Claude → Settings → Connectors](https://claude.ai/settings/connectors).
+2. Click **Add custom connector**.
+3. Enter the name **Open Sunsama** and this URL:
+
+   ```
+   https://api.opensunsama.com/mcp
+   ```
+
+   Leave **Advanced settings** empty; Claude registers itself automatically.
+4. Click **Add**, then click **Connect** on the new connector.
+5. Sign in to Open Sunsama and click **Allow access**. Claude takes you back to Settings, and the connector shows as connected.
+
+To use it in a chat, click the **+** button in the message box, open **Connectors**, and make sure **Open Sunsama** is on. Then ask, for example, *"What's on my schedule today?"*
+
+### Team and Enterprise plans
+
+An organization owner adds the connector first. In **Organization settings → Connectors**, click **Add**, choose **Custom → Web**, and enter the URL above. Each member then opens **Settings → Connectors**, finds Open Sunsama, and clicks **Connect** to sign in with their own Open Sunsama account.
+
+## Claude Code
+
+Run this in your terminal:
+
+```bash
+claude mcp add --transport http open-sunsama https://api.opensunsama.com/mcp
+```
+
+Start Claude Code, run `/mcp`, select **open-sunsama**, and choose **Authenticate**. Your browser opens the Open Sunsama consent screen. After you allow access, the tools are available in every session.
+
+Add `--scope user` to make the server available in all your projects, not just the current one.
+
+## Permissions and disconnecting
+
+Claude can view and edit your tasks, subtasks, and time blocks, and read your profile (name, email, timezone). Tools that delete data are marked as destructive, so Claude asks before it runs them.
+
+To disconnect, remove the connector in Claude, or open **Open Sunsama → Settings → MCP → Connected apps** and click **Disconnect**. Access stops immediately.
+
+## Troubleshooting
+
+- **"Couldn't reach the MCP server"**: check the URL is exactly `https://api.opensunsama.com/mcp`.
+- **The connector shows as disconnected**: click **Connect** again and approve access. This happens after you disconnect it from Open Sunsama's settings.
+- **Claude doesn't use the tools**: make sure the connector is on for the conversation (**+** → **Connectors**), or mention Open Sunsama in your request.

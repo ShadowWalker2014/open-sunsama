@@ -6,6 +6,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { ApiClient, User, UserPreferences } from "../lib/api-client.js";
+import { defineTool } from "../lib/define-tool.js";
 
 /**
  * Format user profile for display
@@ -58,7 +59,7 @@ export function registerUserTools(
   apiClient: ApiClient
 ): void {
   // Get current user profile
-  server.tool(
+  defineTool(server,
     "get_user_profile",
     "Get the current authenticated user's profile information. Returns the user's name, email, timezone, avatar URL, and preferences (theme mode, color theme, font family). This is useful for personalizing interactions or understanding the user's settings.",
     {},
@@ -87,7 +88,7 @@ export function registerUserTools(
   );
 
   // Update user profile
-  server.tool(
+  defineTool(server,
     "update_user_profile",
     "Update the current user's profile information. You can update the user's display name, timezone, avatar URL, and preferences (theme mode, color theme, font family). At least one field must be provided. The timezone should be a valid IANA timezone identifier (e.g., 'America/New_York', 'Europe/London', 'Asia/Tokyo').",
     {

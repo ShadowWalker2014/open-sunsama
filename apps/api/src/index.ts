@@ -31,6 +31,9 @@ import { taskSeriesRouter } from "./routes/task-series.js";
 import { ideasRouter } from "./routes/ideas.js";
 import { ideaSubtasksRouter } from "./routes/idea-subtasks.js";
 import { webhooksRouter } from "./routes/webhooks.js";
+import { oauthRouter } from "./routes/oauth.js";
+import { wellKnownRouter } from "./routes/well-known.js";
+import { createMcpRouter } from "./routes/mcp.js";
 import { registerAllWorkers } from "./workers/index.js";
 import {
   stopPgBoss,
@@ -47,13 +50,33 @@ const app = new Hono();
 
 // Global middleware
 app.use("*", logger());
+
+const allowedOrigins = process.env.CORS_ORIGIN?.split(",") || ["http://localhost:3000"];
+// OAuth discovery/token endpoints and the MCP endpoint are called by
+// third-party clients (including browser-based ones like MCP Inspector), so
+// they answer any origin. They never rely on cookies.
+const PUBLIC_CORS_PATHS = ["/.well-known/", "/oauth/token", "/oauth/register", "/oauth/revoke", "/mcp"];
+
 app.use(
   "*",
   cors({
-    origin: process.env.CORS_ORIGIN?.split(",") || ["http://localhost:3000"],
-    allowHeaders: ["Content-Type", "Authorization", "X-API-Key"],
+    origin: (origin, c) => {
+      const path = c.req.path;
+      if (PUBLIC_CORS_PATHS.some((p) => path === p || path.startsWith(p))) {
+        return origin || "*";
+      }
+      return allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+    },
+    allowHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-API-Key",
+      "Mcp-Session-Id",
+      "Mcp-Protocol-Version",
+      "Last-Event-ID",
+    ],
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    exposeHeaders: ["X-Total-Count", "X-Page", "X-Limit"],
+    exposeHeaders: ["X-Total-Count", "X-Page", "X-Limit", "Mcp-Session-Id", "WWW-Authenticate"],
     maxAge: 86400,
     credentials: true,
   })
@@ -145,6 +168,8 @@ app.get("/", (c) => {
       calendarEvents: "/calendar-events",
       releases: "/releases",
       ideas: "/ideas",
+      mcp: "/mcp",
+      oauth: "/oauth",
     },
   });
 });
@@ -171,6 +196,10 @@ app.route("/ideas", ideaSubtasksRouter); // /ideas/:ideaId/subtasks
 // Public — no auth (provider webhooks). Identity verified by per-
 // channel state stored when we registered the watch.
 app.route("/webhooks", webhooksRouter);
+// Remote MCP server + the OAuth 2.1 authorization server that protects it.
+app.route("/.well-known", wellKnownRouter);
+app.route("/oauth", oauthRouter);
+app.route("/mcp", createMcpRouter((request) => app.fetch(request)));
 
 // Error handling
 app.onError(errorHandler);
@@ -291,6 +320,8 @@ async function startServer(): Promise<void> {
    ║   - *    /calendars  Calendar settings                    ║
    ║   - *    /calendar-events Calendar events                 ║
    ║   - *    /releases/*  Desktop releases                    ║
+   ║   - POST /mcp       Remote MCP (OAuth or API key)         ║
+   ║   - *    /oauth/*   OAuth 2.1 for MCP clients             ║
   ║                                                           ║
   ║   Background Jobs:                                        ║
   ║   - Task Rollover (${process.env.ROLLOVER_ENABLED !== "false" ? "enabled" : "disabled"})                           ║

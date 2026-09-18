@@ -1343,7 +1343,7 @@ export default function LandingPage() {
               <FeatureCard
                 icon={Bot}
                 title="AI native"
-                description="Full MCP support. Let AI agents manage your schedule."
+                description="Connect Claude or ChatGPT with one URL. Let AI agents manage your schedule."
                 delay={150}
                 href="/features/ai-integration"
               />
@@ -1374,7 +1374,7 @@ export default function LandingPage() {
             <div className="grid grid-cols-4 gap-4 text-center">
               {[
                 { value: "100%", label: "Open source", icon: Github },
-                { value: "24+", label: "MCP tools", icon: Bot },
+                { value: "23", label: "MCP tools", icon: Bot },
                 { value: "<50ms", label: "Latency", icon: Zap },
                 { value: "∞", label: "Self-host", icon: Shield },
               ].map((stat, i) => (

@@ -7,9 +7,9 @@ import type { Command } from "./commands";
 export const MCP_COMMANDS: Command[] = [
   {
     id: "mcp-settings",
-    title: "MCP Settings",
+    title: "Connect AI assistants (MCP)",
     category: "settings",
-    keywords: ["mcp", "ai", "agent", "cursor", "claude", "api", "setup", "integration"],
+    keywords: ["mcp", "ai", "agent", "cursor", "claude", "chatgpt", "connector", "oauth", "api", "setup", "integration"],
     icon: "Cpu",
     priority: 15,
     action: (ctx) => {

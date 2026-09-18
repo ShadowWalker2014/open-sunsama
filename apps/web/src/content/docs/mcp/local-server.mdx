@@ -1,0 +1,120 @@
+export const frontmatter = {
+  title: "Local Server & API Keys",
+  description:
+    "Run the Open Sunsama MCP server locally with npx and an API key, or call the hosted server with an API key header. For VS Code, Windsurf, scripts, and self-hosting.",
+  order: 6,
+  section: "mcp",
+};
+
+The [connector URL](/docs/mcp/overview) with OAuth sign-in is the easiest way to connect. API keys are still fully supported. Use them when:
+
+- your MCP client can't do OAuth,
+- you're wiring up a script, CI job, or agent that runs without a browser, or
+- you're running a self-hosted instance.
+
+## Get an API key
+
+In Open Sunsama, open **Settings → MCP**, expand **Use an API key instead**, and click **Generate key**. The generated configs below are filled in with your key. You can also create keys with custom scopes under **Settings → API Keys**.
+
+The tools need these scopes: `tasks:read`, `tasks:write`, `time-blocks:read`, `time-blocks:write`, `user:read`, and `user:write`.
+
+## Option A: local server (stdio)
+
+The npm package `@open-sunsama/mcp` runs on your machine and talks to the API with your key. It needs Node.js 18 or newer.
+
+### Cursor
+
+`~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "open-sunsama": {
+      "command": "npx",
+      "args": ["-y", "@open-sunsama/mcp"],
+      "env": { "OPENSUNSAMA_API_KEY": "os_your_key_here" }
+    }
+  }
+}
+```
+
+### Claude Desktop
+
+See [Claude Desktop setup](/docs/mcp/claude-desktop#alternative-local-server-with-an-api-key).
+
+### VS Code
+
+VS Code also supports the hosted server with OAuth. Add this to `.vscode/mcp.json`, and VS Code opens the sign-in page on first start:
+
+```json
+{
+  "servers": {
+    "open-sunsama": { "type": "http", "url": "https://api.opensunsama.com/mcp" }
+  }
+}
+```
+
+To use the local server with a key instead:
+
+```json
+{
+  "servers": {
+    "open-sunsama": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@open-sunsama/mcp"],
+      "env": { "OPENSUNSAMA_API_KEY": "os_your_key_here" }
+    }
+  }
+}
+```
+
+### Windsurf
+
+`~/.codeium/windsurf/mcp_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "open-sunsama": {
+      "command": "npx",
+      "args": ["-y", "@open-sunsama/mcp"],
+      "env": { "OPENSUNSAMA_API_KEY": "os_your_key_here" }
+    }
+  }
+}
+```
+
+### Self-hosted instances
+
+Add `OPENSUNSAMA_API_URL` next to the key:
+
+```json
+"env": {
+  "OPENSUNSAMA_API_KEY": "os_your_key_here",
+  "OPENSUNSAMA_API_URL": "https://api.your-domain.com"
+}
+```
+
+## Option B: hosted server with an API key header
+
+Clients that support remote servers but not OAuth can send the key as a header to the hosted endpoint:
+
+```json
+{
+  "mcpServers": {
+    "open-sunsama": {
+      "url": "https://api.opensunsama.com/mcp",
+      "headers": { "X-API-Key": "os_your_key_here" }
+    }
+  }
+}
+```
+
+`Authorization: Bearer os_your_key_here` works too.
+
+## Keeping keys safe
+
+- Keys don't expire until you revoke them. Revoke unused keys in **Settings → API Keys**.
+- Anyone with the key has the key's scopes on your account. Don't commit it to a repository.
+- Prefer the OAuth connector on shared machines: tokens expire hourly, and you can disconnect an app without touching your keys.

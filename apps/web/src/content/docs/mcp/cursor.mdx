@@ -1,181 +1,60 @@
 export const frontmatter = {
   title: "Cursor Setup",
   description:
-    "Configure the Open Sunsama MCP server in Cursor IDE. Let AI help you manage tasks while coding.",
-  order: 3,
+    "Connect Open Sunsama to Cursor with one click. Sign in with OAuth and manage tasks while you code, with no API key to paste.",
+  order: 4,
   section: "mcp",
 };
 
-Cursor is an AI-powered IDE that supports MCP servers. This guide shows you how to connect Open Sunsama to Cursor, enabling you to manage tasks while coding without leaving your editor.
+Cursor connects to Open Sunsama's hosted MCP server and signs you in with OAuth. You can manage tasks and your calendar without leaving the editor.
 
-## Prerequisites
+## Option 1: One-click install
 
-- [Cursor](https://cursor.com) installed
-- An Open Sunsama account
-- An API key with required scopes
+Open **Open Sunsama → Settings → MCP → Cursor** and click **Add to Cursor**. Cursor opens with the server pre-filled. Click **Install**, then **Connect**, and approve access in the browser window that opens.
 
-## Step 1: Get Your API Key
+## Option 2: Add it to `mcp.json`
 
-1. Log into [Open Sunsama](https://opensunsama.com/app)
-2. Go to **Settings** → **API Keys**
-3. Click **Generate New Key**
-4. Select scopes: `tasks:read`, `tasks:write`, `time-blocks:read`, `time-blocks:write`, `user:read`
-5. Copy the key
-
-## Step 2: Configure Cursor
-
-1. Open Cursor Settings (`Cmd/Ctrl + ,`)
-2. Search for "MCP" in the settings search bar
-3. Find **MCP Servers** configuration
-4. Click **Edit in settings.json**
-
-Add the Open Sunsama server:
-
-```json
-{
-  "mcp.servers": {
-    "open-sunsama": {
-      "command": "npx",
-      "args": ["-y", "@open-sunsama/mcp"],
-      "env": {
-        "OPENSUNSAMA_API_KEY": "os_live_your_api_key_here"
-      }
-    }
-  }
-}
-```
-
-## Step 3: Restart Cursor
-
-1. Close all Cursor windows
-2. Reopen Cursor
-3. The MCP server will start automatically
-
-## Step 4: Verify Connection
-
-Open Cursor's AI chat (`Cmd/Ctrl + L`) and ask:
-
-```
-@open-sunsama What tasks do I have today?
-```
-
-## Using Open Sunsama in Cursor
-
-### While Coding
-
-```
-@open-sunsama Create a task: Refactor authentication middleware - P1,
-estimated 2 hours, notes: Move JWT validation to separate file
-```
-
-### Bug Tracking
-
-```
-@open-sunsama Create a P0 task to fix the null pointer exception in
-UserService.getById() - schedule for today
-```
-
-### Time Management
-
-```
-@open-sunsama What's my schedule look like? Do I have time for a
-3-hour code review session this afternoon?
-```
-
-### End of Coding Session
-
-```
-@open-sunsama Mark the "Implement user auth" task as complete and
-schedule a 1-hour code review for tomorrow at 10am
-```
-
-## Alternative: Environment Variable
-
-Instead of putting the API key in settings, you can use an environment variable:
-
-1. Add to your shell profile (`~/.zshrc` or `~/.bashrc`):
-
-   ```bash
-   export OPENSUNSAMA_API_KEY="os_live_your_key_here"
-   ```
-
-2. Update Cursor settings:
+1. Add this to `~/.cursor/mcp.json` for all projects, or `.cursor/mcp.json` for just one:
 
    ```json
    {
-     "mcp.servers": {
+     "mcpServers": {
        "open-sunsama": {
-         "command": "npx",
-         "args": ["-y", "@open-sunsama/mcp"]
+         "url": "https://api.opensunsama.com/mcp"
        }
      }
    }
    ```
 
-3. Restart your terminal and Cursor
+2. Open **Cursor Settings → MCP**. Next to **open-sunsama**, click **Connect** (it may say **Needs login**).
+3. Sign in to Open Sunsama in the browser and click **Allow access**. The server turns green and lists its tools.
+
+## Using Open Sunsama in Cursor
+
+In Agent chat, ask naturally or mention the server:
+
+```
+Create a P1 task: refactor the auth middleware, 2 hours, notes: move JWT validation to its own file
+```
+
+```
+What's on my schedule this afternoon? Do I have time for a 3-hour code review?
+```
+
+```
+Mark "Implement user auth" complete and block 10–11am tomorrow for its code review
+```
+
+### Create tasks from TODOs
+
+Select a `// TODO:` comment and ask: *"Create a P2 task from this TODO for Friday."*
+
+## Using an API key instead
+
+If you'd rather not use OAuth (for example on a shared machine or in CI), use the local server with an API key. See [Local server & API keys](/docs/mcp/local-server#cursor).
 
 ## Troubleshooting
 
-### Server Not Starting
-
-Check if npx can run the server:
-
-```bash
-OPENSUNSAMA_API_KEY=your_key npx @open-sunsama/mcp
-```
-
-You should see:
-
-```
-Open Sunsama MCP Server starting...
-API URL: https://api.opensunsama.com
-API Key: os_live_xx...
-```
-
-### Tools Not Appearing
-
-1. Ensure the MCP server is configured in settings
-2. Restart Cursor completely
-3. Check the Output panel for MCP errors
-
-### Authentication Errors
-
-1. Verify API key is correct
-2. Check key hasn't been revoked
-3. Ensure key has required scopes
-
-## Tips for Developers
-
-### Create Tasks from TODOs
-
-When you write a TODO comment in code:
-
-```javascript
-// TODO: Optimize database query for user search
-```
-
-Ask Cursor:
-
-```
-@open-sunsama Create a task from this TODO comment with P2 priority
-```
-
-### Track Code Review Time
-
-```
-@open-sunsama Create a time block called "Code Review: PR #847"
-for today 2pm-4pm and link it to my code review task
-```
-
-### Sprint Planning
-
-```
-@open-sunsama List all my tasks for this week and help me estimate
-if I can finish them by Friday
-```
-
-## Next Steps
-
-- [MCP Tools Reference](/docs/mcp/tools) - All available tools
-- [Tasks API](/docs/api/tasks) - API details
-- [Claude Desktop Setup](/docs/mcp/claude-desktop) - Alternative setup
+- **Stuck on "Needs login"**: click **Connect** again. If the browser doesn't open, copy the link Cursor shows into your browser.
+- **Tools not appearing**: toggle the server off and on in **Cursor Settings → MCP**, or reload the window.
+- **Signed in to the wrong account**: in Open Sunsama, open **Settings → MCP → Connected apps**, disconnect Cursor, and connect again.
