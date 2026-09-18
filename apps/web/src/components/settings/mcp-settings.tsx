@@ -195,7 +195,8 @@ function ConnectorInstructions({ client, copied, onCopy }: {
               <span className="font-medium">MCP server URL</span>, and click <span className="font-medium">Continue</span>.
             </li>
             <li>
-              Click <span className="font-medium">Connect</span>, sign in to Open Sunsama, and choose{" "}
+              Keep the detected sign-in settings and click <span className="font-medium">Add</span>. Then click{" "}
+              <span className="font-medium">Connect</span>, sign in to Open Sunsama, and choose{" "}
               <span className="font-medium">Allow access</span>.
             </li>
           </Steps>
