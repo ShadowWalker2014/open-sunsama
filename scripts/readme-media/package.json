@@ -1,0 +1,14 @@
+{
+  "name": "@open-sunsama/readme-media",
+  "private": true,
+  "type": "module",
+  "description": "Seeds the demo workspace and captures README screenshots/video (see header comments in each script).",
+  "scripts": {
+    "seed": "bun run seed-demo.ts",
+    "capture": "node capture.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0",
+    "sharp": "^0.35.4"
+  }
+}
