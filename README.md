@@ -128,8 +128,8 @@ https://api.opensunsama.com/mcp
 
 | Assistant | Where to add it |
 | --- | --- |
-| **Claude** (web, Desktop, mobile) | Settings → Connectors → Add custom connector |
-| **ChatGPT** | Settings → Apps → Developer mode → Create app (OAuth) |
+| **Claude** (web, Desktop, mobile) | Settings → Customize → Connectors → Add |
+| **ChatGPT** | Settings → Security and login → Developer mode, then Plugins → **+** |
 | **Claude Code** | `claude mcp add --transport http open-sunsama https://api.opensunsama.com/mcp` |
 | **Cursor / VS Code** | One-click install from Settings → MCP in the app |
 

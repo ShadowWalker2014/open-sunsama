@@ -4,7 +4,7 @@ An MCP (Model Context Protocol) server that enables AI agents like Claude, ChatG
 
 > **Most people don't need this package.** Open Sunsama hosts the same server at
 > **`https://api.opensunsama.com/mcp`** with OAuth sign-in. Add that URL to Claude
-> (Settings → Connectors), ChatGPT (Settings → Apps → Developer mode), Claude Code, or
+> (Settings → Customize → Connectors), ChatGPT (Developer mode → Plugins), Claude Code, or
 > Cursor, then sign in and allow access. There's no API key. See the
 > [setup guides](https://opensunsama.com/docs/mcp/overview).
 >

@@ -187,11 +187,12 @@ function ConnectorInstructions({ client, copied, onCopy }: {
         <div className="space-y-3">
           <Steps>
             <li>
-              In Claude, open <span className="font-medium">Settings → Connectors</span>.
+              In Claude, open <span className="font-medium">Settings → Customize → Connectors</span> and click{" "}
+              <span className="font-medium">Add</span>.
             </li>
             <li>
-              Click <span className="font-medium">Add custom connector</span>, name it{" "}
-              <span className="font-medium">Open Sunsama</span>, and paste the connector URL.
+              Name it <span className="font-medium">Open Sunsama</span>, paste the connector URL as the{" "}
+              <span className="font-medium">MCP server URL</span>, and click <span className="font-medium">Continue</span>.
             </li>
             <li>
               Click <span className="font-medium">Connect</span>, sign in to Open Sunsama, and choose{" "}
@@ -202,7 +203,7 @@ function ConnectorInstructions({ client, copied, onCopy }: {
             Works in claude.ai, Claude Desktop, and the Claude mobile apps. On Team and Enterprise plans,
             an owner adds it under Organization settings → Connectors first.
           </p>
-          <ExternalButton href="https://claude.ai/settings/connectors">Open Claude connectors</ExternalButton>
+          <ExternalButton href="https://claude.ai/new#customize/connectors">Open Claude connectors</ExternalButton>
         </div>
       );
     case "chatgpt":
@@ -210,23 +211,23 @@ function ConnectorInstructions({ client, copied, onCopy }: {
         <div className="space-y-3">
           <Steps>
             <li>
-              In ChatGPT, open <span className="font-medium">Settings → Apps</span> and turn on{" "}
-              <span className="font-medium">Developer mode</span> under Advanced settings.
+              In ChatGPT, open <span className="font-medium">Settings → Security and login</span> and turn on{" "}
+              <span className="font-medium">Developer mode</span>.
             </li>
             <li>
-              Click <span className="font-medium">Create app</span>, name it{" "}
-              <span className="font-medium">Open Sunsama</span>, paste the connector URL, and pick{" "}
-              <span className="font-medium">OAuth</span> for authentication.
+              Go to <span className="font-medium">Plugins</span>, click <span className="font-medium">+</span>, name
+              it <span className="font-medium">Open Sunsama</span>, and paste the connector URL under{" "}
+              <span className="font-medium">Connection</span>.
             </li>
             <li>
-              Click <span className="font-medium">Create</span>, sign in to Open Sunsama, and choose{" "}
+              Create the connection, sign in to Open Sunsama when asked, and choose{" "}
               <span className="font-medium">Allow access</span>.
             </li>
           </Steps>
           <p className="text-xs text-muted-foreground">
             Developer mode is available on paid ChatGPT plans. Workspace admins may need to allow it.
           </p>
-          <ExternalButton href="https://chatgpt.com/#settings/Connectors">Open ChatGPT settings</ExternalButton>
+          <ExternalButton href="https://chatgpt.com/plugins">Open ChatGPT plugins</ExternalButton>
         </div>
       );
     case "claude-code":
