@@ -92,35 +92,35 @@ export function useSEO(config: SEOConfig) {
 export const SEO_CONFIGS = {
   landing: {
     title: "Open Sunsama",
-    description: "The open-source daily planner your AI can use. Plan on a kanban board, time-block your calendar, and connect Claude or ChatGPT in one click. A free, self-hostable Sunsama alternative.",
+    description: "Daily planning, done right. The open-source daily planner for time-blocking, focused work, and AI integration. Control it from any agent: Claude, ChatGPT, Cursor, or any MCP client.",
     canonical: "/",
   },
   alternatives: {
     motion: {
-      title: "Motion App Alternative - Free & Manual Control",
-      description: "The best free alternative to Motion. Manual time blocking without rigid AI. You control your schedule. Open source, no subscription.",
+      title: "Motion Alternative - Manual Control, Open Source",
+      description: "An open-source alternative to Motion. Manual time blocking without rigid auto-scheduling, calendar sync, focus mode, and control from any AI agent.",
       canonical: "/alternative/motion",
     },
     reclaim: {
-      title: "Free Reclaim Alternative - Time Blocking Without AI Lock-in",
-      description: "The best free alternative to Reclaim AI. Manual time blocking, calendar sync, focus mode. No subscription, open source.",
+      title: "Reclaim Alternative - Time Blocking Without AI Lock-in",
+      description: "An open-source alternative to Reclaim AI. Manual time blocking, calendar sync, focus mode, and control from Claude, ChatGPT, or any MCP client.",
       canonical: "/alternative/reclaim",
     },
     akiflow: {
-      title: "Free Akiflow Alternative - Same Manual Control, Zero Cost",
-      description: "The best free alternative to Akiflow. Manual time blocking, keyboard-first design, calendar sync. Save $228/year. Open source.",
+      title: "Akiflow Alternative - Keyboard-First and Open Source",
+      description: "An open-source alternative to Akiflow. Manual time blocking, a keyboard-first design, calendar sync, and control from any AI agent.",
       canonical: "/alternative/akiflow",
     },
     todoist: {
       title: "Todoist Alternative with Built-in Time Blocking",
-      description: "Todoist tasks with native time blocking. Visual calendar scheduling, focus mode, priority system. Free alternative to Todoist + calendar plugins.",
+      description: "Todoist-style tasks with native time blocking. Visual calendar scheduling, focus mode, priorities, and an open-source codebase you can self-host.",
       canonical: "/alternative/todoist",
     },
   },
   alternative: {
     sunsama: {
-      title: "Free Sunsama Alternative",
-      description: "The best free alternative to Sunsama. Time blocking, calendar sync, focus mode, and kanban boards. Open source, no credit card required. Save $240/year.",
+      title: "Open-Source Sunsama Alternative",
+      description: "The open-source alternative to Sunsama. Time blocking, calendar sync, focus mode, and kanban boards, and you can control it all from any AI agent.",
       canonical: "/alternative/sunsama",
     },
   },
@@ -137,7 +137,7 @@ export const SEO_CONFIGS = {
   },
   register: {
     title: "Create Account",
-    description: "Create a free Open Sunsama account. Start time-blocking your day and boosting productivity.",
+    description: "Create your Open Sunsama account. Start time-blocking your day and connect the AI agent you already use.",
     canonical: "/register",
     noindex: true,
   },
@@ -169,7 +169,7 @@ export const SEO_CONFIGS = {
     },
     aiIntegration: {
       title: "AI & MCP Integration",
-      description: "Let AI agents manage your schedule with 24+ MCP tools. Create tasks, schedule time blocks, and automate your workflow programmatically.",
+      description: "Control your planner from any AI agent. 23 MCP tools let Claude, ChatGPT, Cursor, and any MCP client create tasks and schedule time blocks.",
       canonical: "/features/ai-integration",
     },
     commandPalette: {
@@ -185,29 +185,24 @@ export const SEO_CONFIGS = {
   },
   forAudiences: {
     adhd: {
-      title: "Best Daily Planner for ADHD - Free",
-      description: "The best free ADHD daily planner app. Visual time blocking, focus mode for one task at a time, and a calm interface designed for ADHD minds.",
+      title: "Daily Planner for ADHD - Visual and Calm",
+      description: "A daily planner for ADHD minds. Visual time blocking, focus mode for one task at a time, gentle rollover, and a calm interface.",
       canonical: "/for/adhd",
     },
     developers: {
       title: "Daily Planner for Developers - Keyboard-First & Open Source",
-      description: "The daily planner built for developers. Command palette, full API access, 24+ MCP tools, open source. Keyboard-first productivity.",
+      description: "The daily planner built for developers. Command palette, full REST API, 23 MCP tools, and open source. Drive it from Claude Code or Cursor.",
       canonical: "/for/developers",
     },
     remoteWorkers: {
-      title: "Daily Planner for Remote Workers - Free",
-      description: "The daily planner for remote work. Time blocking, focus mode, calendar sync. Set boundaries and protect your productivity. Free.",
+      title: "Daily Planner for Remote Workers",
+      description: "The daily planner for remote work. Time blocking, focus mode, and calendar sync to set boundaries and protect your focus time.",
       canonical: "/for/remote-workers",
     },
   },
-  freeTimeBlockingApp: {
-    title: "Free Time Blocking App - No Subscription Required",
-    description: "The best free time blocking app. Calendar sync, focus mode, kanban boards. Save $200+/year vs Sunsama, Motion, Reclaim. Open source.",
-    canonical: "/free-time-blocking-app",
-  },
   openSourceTaskManager: {
-    title: "Open Source Task Manager - Self-Hosted & Free",
-    description: "The best open source task manager with time blocking. Self-host with Docker, full API access, 24+ MCP tools. Own your data.",
+    title: "Open Source Task Manager - Self-Hosted",
+    description: "An open-source task manager with time blocking. Self-host with Docker, full REST API, 23 MCP tools, and control from any AI agent. Own your data.",
     canonical: "/open-source-task-manager",
   },
 } as const;

@@ -135,7 +135,7 @@ export function BlogLayout({
               The open-source daily planner for focused work.
             </p>
             <Button size="sm" className="h-9 px-4 text-[13px]" asChild>
-              <Link to="/register">Get Started Free</Link>
+              <Link to="/register">Get started</Link>
             </Button>
           </div>
         </section>

@@ -51,8 +51,8 @@ function WhyDevelopersSection() {
     },
     {
       icon: Bot,
-      title: "24+ MCP Tools",
-      description: "Let AI agents manage your schedule. Native integration with Cursor, Claude, and other MCP-compatible tools.",
+      title: "23 MCP Tools",
+      description: "Let AI agents manage your schedule. Connect Claude Code, Cursor, Claude, or ChatGPT with one URL and OAuth sign-in.",
     },
     {
       icon: Keyboard,
@@ -520,7 +520,7 @@ function FAQSection() {
     },
     {
       question: "Can I integrate with my dev workflow?",
-      answer: "Yes. Full REST API for scripting, 24+ MCP tools for AI agents, and the desktop app has global hotkeys (Cmd+Shift+T to create a task from anywhere). Many developers use the MCP server with Cursor to create tasks while coding.",
+      answer: "Yes. Full REST API for scripting, 23 MCP tools for AI agents, and the desktop app has global hotkeys (Cmd+Shift+T to create a task from anywhere). Many developers use the MCP server with Cursor to create tasks while coding.",
     },
     {
       question: "What about Jira/GitHub issues?",
@@ -532,11 +532,11 @@ function FAQSection() {
     },
     {
       question: "Can I self-host this?",
-      answer: "Yes. Full Docker setup available. PostgreSQL database, S3-compatible storage for attachments. The entire codebase is MIT-licensed on GitHub. Deploy to Railway, Render, your own servers—wherever you want.",
+      answer: "Yes. Full Docker setup available. PostgreSQL database, S3-compatible storage for attachments. The full source is on GitHub under a non-commercial license. Deploy to Railway, Render, your own servers—wherever you want.",
     },
     {
-      question: "Is it actually free?",
-      answer: "Completely free and open source. No premium tiers, no feature gates, no 'sign up to unlock'. The hosted version at opensunsama.com is free to use. If you want full control, self-host it. The code is public.",
+      question: "Can I drive it from Claude Code or Cursor?",
+      answer: "Yes. Add https://api.opensunsama.com/mcp as an MCP server in Claude Code or Cursor, then sign in with OAuth. No API key needed. Your agent can then add a task for the bug you just found, or block two hours tomorrow for a code review, without you leaving the editor.",
     },
   ];
 
@@ -616,7 +616,7 @@ function FinalCTASection() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button size="lg" className="h-11 px-6 text-sm" asChild>
             <Link to="/register">
-              Start Free
+              Get started
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -629,7 +629,7 @@ function FinalCTASection() {
         </div>
 
         <p className="mt-6 text-[11px] text-muted-foreground">
-          No credit card required • MIT License • Self-hostable
+          Open source • Works with any AI agent • Self-hostable
         </p>
       </div>
     </section>
@@ -651,7 +651,7 @@ export default function ForDevelopersPage() {
     },
     {
       question: "Can I integrate with my dev workflow?",
-      answer: "Yes. Full REST API for scripting, 24+ MCP tools for AI agents, and the desktop app has global hotkeys (Cmd+Shift+T to create a task from anywhere). Many developers use the MCP server with Cursor to create tasks while coding.",
+      answer: "Yes. Full REST API for scripting, 23 MCP tools for AI agents, and the desktop app has global hotkeys (Cmd+Shift+T to create a task from anywhere). Many developers use the MCP server with Cursor to create tasks while coding.",
     },
     {
       question: "What about Jira/GitHub issues?",
@@ -663,11 +663,11 @@ export default function ForDevelopersPage() {
     },
     {
       question: "Can I self-host this?",
-      answer: "Yes. Full Docker setup available. PostgreSQL database, S3-compatible storage for attachments. The entire codebase is MIT-licensed on GitHub. Deploy to Railway, Render, your own servers—wherever you want.",
+      answer: "Yes. Full Docker setup available. PostgreSQL database, S3-compatible storage for attachments. The full source is on GitHub under a non-commercial license. Deploy to Railway, Render, your own servers—wherever you want.",
     },
     {
-      question: "Is it actually free?",
-      answer: "Completely free and open source. No premium tiers, no feature gates, no 'sign up to unlock'. The hosted version at opensunsama.com is free to use. If you want full control, self-host it. The code is public.",
+      question: "Can I drive it from Claude Code or Cursor?",
+      answer: "Yes. Add https://api.opensunsama.com/mcp as an MCP server in Claude Code or Cursor, then sign in with OAuth. No API key needed. Your agent can then add a task for the bug you just found, or block two hours tomorrow for a code review, without you leaving the editor.",
     },
   ];
 
@@ -676,21 +676,19 @@ export default function ForDevelopersPage() {
       <FAQSchema items={faqItems} />
       <SoftwareApplicationSchema
         name="Open Sunsama"
-        description="Daily planner built for developers. Keyboard-first workflow, command palette (Cmd+K), full REST API, 24+ MCP tools for AI automation, and open source on GitHub. Free forever."
+        description="Daily planner built for developers. Keyboard-first workflow, command palette (Cmd+K), full REST API, 23 MCP tools for AI agents, and source on GitHub. Connect Claude Code, Cursor, Claude, or ChatGPT with one URL and OAuth sign-in."
         applicationCategory="ProductivityApplication"
         operatingSystem="Web, Windows, macOS, Linux"
-        price="0"
-        priceCurrency="USD"
         featureList={[
           "Command palette (Cmd+K)",
           "Keyboard-first navigation",
           "Full REST API access",
-          "24+ MCP tools for AI agents",
+          "23 MCP tools for AI agents",
           "TypeScript + React + Vite stack",
           "Self-hostable with Docker",
           "Focus mode with timer",
           "Global hotkeys (desktop app)",
-          "Open source (MIT license)",
+          "Open source on GitHub",
           "PostgreSQL + Drizzle ORM",
         ]}
         url="https://opensunsama.com/for/developers"
@@ -750,7 +748,7 @@ export default function ForDevelopersPage() {
             >
               <Button size="lg" className="h-11 px-6 text-sm" asChild>
                 <Link to="/register">
-                  Start Free
+                  Get started
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -771,7 +769,7 @@ export default function ForDevelopersPage() {
             >
               <div className="flex items-center gap-1.5">
                 <Check className="h-3.5 w-3.5 text-green-500" />
-                <span>MIT License</span>
+                <span>Open source</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Check className="h-3.5 w-3.5 text-green-500" />

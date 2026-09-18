@@ -453,7 +453,6 @@ function ComparisonSection() {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
 
   const features = [
-    { name: "Price", slack: "$8.75/user/mo", asana: "$11/user/mo", openSunsama: "Free forever", highlight: true },
     { name: "Personal time blocking", slack: false, asana: false, openSunsama: true, highlight: true },
     { name: "Focus mode", slack: false, asana: false, openSunsama: true },
     { name: "Daily planning ritual", slack: false, asana: false, openSunsama: true },
@@ -588,8 +587,8 @@ function FAQSection() {
       answer: "Time blocks are stored in your local time zone. When you travel or change zones, your schedule adjusts. If you work with a distributed team, you can see your meetings in your time zone while blocking focus time around them.",
     },
     {
-      question: "Is it really free?",
-      answer: "Completely free, no catch. Open Sunsama is open-source software. No credit card required, no premium tiers, no 'upgrade for time blocking' walls. The code is public on GitHub. You can even self-host it if you want full control.",
+      question: "Can I plan my workday from Claude or ChatGPT?",
+      answer: "Yes. Add https://api.opensunsama.com/mcp to Claude, ChatGPT, or any MCP client and sign in with OAuth. No API key needed. Then ask it to plan your day: it can list your tasks, schedule them, and block focus time for you. Open Sunsama is also open source, so you can self-host it if you want full control.",
     },
   ];
 
@@ -669,7 +668,7 @@ function FinalCTASection() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button size="lg" className="h-11 px-6 text-sm" asChild>
             <Link to="/register">
-              Create Free Account
+              Create an account
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -682,7 +681,7 @@ function FinalCTASection() {
         </div>
 
         <p className="mt-6 text-[11px] text-muted-foreground">
-          No credit card required • Works across time zones • Free forever
+          Open source • Works across time zones • Works with any AI agent
         </p>
       </div>
     </section>
@@ -719,8 +718,8 @@ export default function ForRemoteWorkersPage() {
       answer: "Time blocks are stored in your local time zone. When you travel or change zones, your schedule adjusts. If you work with a distributed team, you can see your meetings in your time zone while blocking focus time around them.",
     },
     {
-      question: "Is it really free?",
-      answer: "Completely free, no catch. Open Sunsama is open-source software. No credit card required, no premium tiers, no 'upgrade for time blocking' walls. The code is public on GitHub. You can even self-host it if you want full control.",
+      question: "Can I plan my workday from Claude or ChatGPT?",
+      answer: "Yes. Add https://api.opensunsama.com/mcp to Claude, ChatGPT, or any MCP client and sign in with OAuth. No API key needed. Then ask it to plan your day: it can list your tasks, schedule them, and block focus time for you. Open Sunsama is also open source, so you can self-host it if you want full control.",
     },
   ];
 
@@ -729,11 +728,9 @@ export default function ForRemoteWorkersPage() {
       <FAQSchema items={faqItems} />
       <SoftwareApplicationSchema
         name="Open Sunsama"
-        description="Daily planner for remote workers. Time block your day, protect focus time, set work-life boundaries, and sync across time zones. Desktop app works offline. Free forever."
+        description="Daily planner for remote workers. Time block your day, protect focus time, set work-life boundaries, and sync across time zones. Desktop app works offline. Open source, and works with Claude, ChatGPT, and any MCP client."
         applicationCategory="ProductivityApplication"
         operatingSystem="Web, Windows, macOS, Linux"
-        price="0"
-        priceCurrency="USD"
         featureList={[
           "Visual time blocking",
           "Focus mode for deep work",
@@ -745,6 +742,7 @@ export default function ForRemoteWorkersPage() {
           "Task time estimates",
           "Protected personal time blocks",
           "Evening shutdown routine",
+          "Plan your day from Claude, ChatGPT, or any MCP client",
         ]}
         url="https://opensunsama.com/for/remote-workers"
       />
@@ -791,7 +789,7 @@ export default function ForRemoteWorkersPage() {
               )}
             >
               Time block your day. Protect your focus time. Set clear boundaries between work and life.
-              Free and works across time zones.
+              Works across time zones, and with any AI agent.
             </p>
 
             {/* CTAs */}
@@ -803,7 +801,7 @@ export default function ForRemoteWorkersPage() {
             >
               <Button size="lg" className="h-11 px-6 text-sm" asChild>
                 <Link to="/register">
-                  Start Free
+                  Get started
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -824,7 +822,7 @@ export default function ForRemoteWorkersPage() {
             >
               <div className="flex items-center gap-1.5">
                 <Check className="h-3.5 w-3.5 text-green-500" />
-                <span>No credit card</span>
+                <span>Open source</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Check className="h-3.5 w-3.5 text-green-500" />

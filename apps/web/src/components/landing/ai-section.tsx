@@ -313,13 +313,13 @@ export function AiSection() {
       <div className="container mx-auto grid max-w-6xl items-center gap-14 px-4 xl:grid-cols-[0.85fr_1.15fr]">
         <div className="mx-auto min-w-0 max-w-2xl xl:mx-0 xl:max-w-none">
           <Reveal>
-            <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-primary">AI connector</p>
+            <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-primary">AI native</p>
             <h2 className="mt-3 text-[32px] font-semibold leading-[1.08] tracking-[-0.03em] md:text-[44px]">
-              Claude and ChatGPT, with the keys to your calendar.
+              Control your planner from any agent.
             </h2>
             <p className="mt-4 text-[16px] leading-relaxed text-muted-foreground">
-              Your assistant can read your plan, create and prioritize tasks, time-block your day, and check
-              things off, all through Open Sunsama's secure MCP connector.
+              Claude, ChatGPT, Cursor, Claude Code, VS Code, or an agent you built yourself. Connect it once and
+              it can read your plan, create and prioritize tasks, time-block your day, and check things off.
             </p>
           </Reveal>
 

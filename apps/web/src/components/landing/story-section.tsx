@@ -106,7 +106,7 @@ export function StorySection() {
   });
 
   return (
-    <section id="features" className="relative scroll-mt-16 border-t border-border/50 py-24 md:py-28">
+    <section id="tour" className="relative scroll-mt-16 border-t border-border/50 py-24 md:py-28">
       <div className="container mx-auto max-w-6xl px-4">
         <Reveal className="mx-auto max-w-2xl text-center">
           <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-primary">How it works</p>

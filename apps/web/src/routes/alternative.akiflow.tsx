@@ -6,7 +6,6 @@ import {
   Github,
   Check,
   X,
-  DollarSign,
   Timer,
   Command,
   GripVertical,
@@ -31,7 +30,7 @@ import { SiteFooter, SiteHeader } from "@/components/landing/sections";
 /**
  * Akiflow Alternative Landing Page
  * High-converting landing page targeting "akiflow alternative" searches
- * Emphasizes: same manual time-blocking philosophy, but free
+ * Emphasizes: same manual time-blocking philosophy, plus open source and AI native
  */
 
 function LoveCard({
@@ -65,7 +64,7 @@ function LoveCard({
   );
 }
 
-function PriceComparison() {
+function SideBySide() {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
 
   return (
@@ -85,11 +84,10 @@ function PriceComparison() {
           <span className="text-sm font-medium text-muted-foreground">Akiflow</span>
         </div>
         <div className="mb-3">
-          <span className="text-3xl font-bold">$19</span>
-          <span className="text-muted-foreground text-sm">/month</span>
+          <span className="text-2xl font-bold">Closed source</span>
         </div>
         <p className="text-xs text-muted-foreground mb-4">
-          = $228/year (no free tier)
+          Hosted by Akiflow. No self-hosting.
         </p>
         <div className="space-y-2 text-xs text-muted-foreground">
           <div className="flex items-center gap-2">
@@ -110,7 +108,7 @@ function PriceComparison() {
       {/* Open Sunsama Card */}
       <div className="p-6 rounded-xl border-2 border-primary/50 bg-primary/5 relative">
         <div className="absolute -top-3 right-4 px-2 py-0.5 rounded-md bg-primary text-primary-foreground text-[10px] font-medium">
-          SAVE $228/YEAR
+          AI NATIVE
         </div>
         <div className="flex items-center gap-2 mb-4">
           <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center">
@@ -119,11 +117,10 @@ function PriceComparison() {
           <span className="text-sm font-medium">Open Sunsama</span>
         </div>
         <div className="mb-3">
-          <span className="text-3xl font-bold text-primary">$0</span>
-          <span className="text-muted-foreground text-sm">/forever</span>
+          <span className="text-2xl font-bold text-primary">Open source</span>
         </div>
         <p className="text-xs text-muted-foreground mb-4">
-          Same features. Zero cost.
+          Self-host it, or connect any AI agent with one URL.
         </p>
         <div className="space-y-2 text-xs">
           <div className="flex items-center gap-2">
@@ -140,7 +137,7 @@ function PriceComparison() {
           </div>
           <div className="flex items-center gap-2">
             <Check className="h-3.5 w-3.5 text-primary" />
-            <span className="font-medium">+ Focus mode, open source, self-hosted</span>
+            <span className="font-medium">+ Focus mode, rollover, and an MCP connector</span>
           </div>
         </div>
       </div>
@@ -152,7 +149,6 @@ function ComparisonTable() {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
 
   const features = [
-    { name: "Price", akiflow: "$19/month", us: "Free", highlight: true },
     { name: "Manual time blocking", akiflow: true, us: true },
     { name: "Calendar sync", akiflow: true, us: true },
     { name: "Command palette", akiflow: true, us: true },
@@ -161,7 +157,7 @@ function ComparisonTable() {
     { name: "Focus mode", akiflow: false, us: true, highlight: true },
     { name: "Open source", akiflow: false, us: true, highlight: true },
     { name: "Self-hosted option", akiflow: false, us: true, highlight: true },
-    { name: "MCP/API access", akiflow: "Limited", us: "24+ tools" },
+    { name: "MCP/API access", akiflow: "Limited", us: "23 MCP tools + REST API" },
   ];
 
   return (
@@ -403,8 +399,8 @@ export default function AkiflowAlternativePage() {
       answer: "Open Sunsama is currently focused on individual productivity. We're exploring team features for the future. If you need team scheduling now, Akiflow might still be a better fit.",
     },
     {
-      question: "Why is it free?",
-      answer: "We believe everyone deserves great productivity tools. Open Sunsama is open source with an optional paid tier for teams and enterprise. Individual use is free forever—no tricks, no trial that expires.",
+      question: "Can I control it from Claude or ChatGPT?",
+      answer: "Yes. Paste https://api.opensunsama.com/mcp into Claude, ChatGPT, Cursor, Claude Code, VS Code, or any MCP client, then sign in with OAuth. You don't need an API key. Your agent can then plan your day, create tasks, and time-block your calendar.",
     },
   ];
 
@@ -440,8 +436,8 @@ export default function AkiflowAlternativePage() {
                 heroInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
               )}
             >
-              <DollarSign className="h-3 w-3 text-primary" />
-              <span className="text-primary">Same Philosophy, Free Price</span>
+              <Code className="h-3 w-3 text-primary" />
+              <span className="text-primary">Same Philosophy, Open Source</span>
             </div>
 
             {/* Headline */}
@@ -451,7 +447,7 @@ export default function AkiflowAlternativePage() {
                 heroInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
               )}
             >
-              The Free{" "}
+              The Open-Source{" "}
               <span className="text-primary">Akiflow</span> Alternative
             </h1>
 
@@ -462,9 +458,10 @@ export default function AkiflowAlternativePage() {
                 heroInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
               )}
             >
-              Love Akiflow's manual time-blocking approach but not the $19/month price? 
-              Open Sunsama gives you the same control for{" "}
-              <span className="text-primary font-medium">free</span>.
+              Love Akiflow's manual time-blocking approach? Open Sunsama gives you
+              the same control. It's{" "}
+              <span className="text-primary font-medium">open source</span>, and
+              Claude or ChatGPT can plan your day with you.
             </p>
 
             {/* CTAs */}
@@ -476,7 +473,7 @@ export default function AkiflowAlternativePage() {
             >
               <Button size="sm" className="h-9 px-4 text-[13px]" asChild>
                 <Link to="/register">
-                  Try Free
+                  Try Open Sunsama
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </Button>
@@ -496,15 +493,15 @@ export default function AkiflowAlternativePage() {
             >
               <span className="flex items-center gap-1">
                 <Check className="h-3 w-3 text-primary" />
-                No credit card required
-              </span>
-              <span className="flex items-center gap-1">
-                <Check className="h-3 w-3 text-primary" />
-                Free forever
-              </span>
-              <span className="flex items-center gap-1">
-                <Check className="h-3 w-3 text-primary" />
                 Open source
+              </span>
+              <span className="flex items-center gap-1">
+                <Check className="h-3 w-3 text-primary" />
+                Works with any AI agent
+              </span>
+              <span className="flex items-center gap-1">
+                <Check className="h-3 w-3 text-primary" />
+                Self-hostable
               </span>
             </div>
           </div>
@@ -518,7 +515,7 @@ export default function AkiflowAlternativePage() {
                 What Akiflow Users Love (And Get Here Too)
               </h2>
               <p className="text-sm text-muted-foreground">
-                Everything you love about Akiflow's approach—included for free.
+                Everything you love about Akiflow's approach—in an open-source app.
               </p>
             </div>
 
@@ -563,19 +560,19 @@ export default function AkiflowAlternativePage() {
           </div>
         </section>
 
-        {/* Price Comparison Section */}
+        {/* Side-by-Side Section */}
         <section className="py-16 border-t border-border/40">
           <div className="container px-4 mx-auto max-w-3xl">
             <div className="text-center mb-10">
               <h2 className="text-lg font-semibold tracking-tight mb-2">
-                Same Features. Save $228/Year.
+                Same Features. Open Code. Your AI Agent.
               </h2>
               <p className="text-sm text-muted-foreground">
-                Why pay for something you can get for free?
+                Read the code, run it on your own server, and plan from Claude or ChatGPT.
               </p>
             </div>
 
-            <PriceComparison />
+            <SideBySide />
           </div>
         </section>
 
@@ -619,7 +616,7 @@ export default function AkiflowAlternativePage() {
                 Why Switch to Open Sunsama?
               </h2>
               <p className="text-sm text-muted-foreground">
-                Beyond the free price tag, here's what you gain.
+                Here's what you gain beyond the daily planner.
               </p>
             </div>
 
@@ -648,7 +645,7 @@ export default function AkiflowAlternativePage() {
                 </div>
                 <h3 className="text-sm font-semibold mb-2">AI When You Want It</h3>
                 <p className="text-xs text-muted-foreground">
-                  24+ MCP tools for AI assistance. Use it on demand, never forced.
+                  Connect Claude, ChatGPT, or Cursor with one URL and OAuth sign-in. Use it on demand, never forced.
                 </p>
               </div>
             </div>
@@ -683,8 +680,8 @@ export default function AkiflowAlternativePage() {
                 answer="Open Sunsama is currently focused on individual productivity. We're exploring team features for the future. If you need team scheduling now, Akiflow might still be a better fit."
               />
               <FAQItem
-                question="Why is it free?"
-                answer="We believe everyone deserves great productivity tools. Open Sunsama is open source with an optional paid tier for teams and enterprise. Individual use is free forever—no tricks, no trial that expires."
+                question="Can I control it from Claude or ChatGPT?"
+                answer="Yes. Paste https://api.opensunsama.com/mcp into Claude, ChatGPT, Cursor, Claude Code, VS Code, or any MCP client, then sign in with OAuth. You don't need an API key. Your agent can then plan your day, create tasks, and time-block your calendar."
               />
             </div>
           </div>
@@ -697,15 +694,15 @@ export default function AkiflowAlternativePage() {
               <Keyboard className="h-7 w-7" />
             </div>
             <h2 className="text-xl md:text-2xl font-semibold tracking-tight mb-3">
-              Same Manual Control. Zero Cost.
+              Same Manual Control. Open Source.
             </h2>
             <p className="text-sm text-muted-foreground mb-8 max-w-md mx-auto">
-              Start free—keep your keyboard-first workflow. No surprises.
+              Keep your keyboard-first workflow, and let your AI agent help plan the day.
             </p>
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
               <Button size="sm" className="h-10 px-5 text-[13px]" asChild>
                 <Link to="/register">
-                  Create Free Account
+                  Create an account
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </Button>
@@ -717,7 +714,7 @@ export default function AkiflowAlternativePage() {
               </Button>
             </div>
             <p className="mt-5 text-[11px] text-muted-foreground">
-              No credit card required • Free forever • Open source
+              Open source • Works with any AI agent • Self-hostable
             </p>
           </div>
         </section>

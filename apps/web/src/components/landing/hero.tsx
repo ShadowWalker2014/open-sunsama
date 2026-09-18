@@ -8,8 +8,8 @@ import { useIntro, useReducedMotion, useScrollProgress } from "./motion";
 import { BrowserFrame, ThemedShot, type ShotName } from "./product-shot";
 
 const HEADLINE = [
-  { text: "The daily planner", accent: false },
-  { text: "your AI can actually use.", accent: true },
+  { text: "Daily planning,", accent: false },
+  { text: "done right.", accent: true },
 ];
 
 const VIEWS: Array<{ id: ShotName; label: string; icon: typeof LayoutGrid; alt: string }> = [
@@ -35,7 +35,7 @@ const VIEWS: Array<{ id: ShotName; label: string; icon: typeof LayoutGrid; alt: 
 ];
 
 const AUTOPLAY_MS = 4800;
-const WORKS_WITH = ["Claude", "ChatGPT", "Claude Code", "Cursor", "VS Code"];
+const WORKS_WITH = ["Claude", "ChatGPT", "Claude Code", "Cursor", "VS Code", "Any MCP client"];
 
 /** Staggered intro: each item transitions from its "before" state after mount. */
 function introStyle(ready: boolean, delay: number, reduced: boolean): React.CSSProperties {
@@ -266,7 +266,7 @@ export function Hero() {
             <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground">
               New
             </span>
-            Connect Claude &amp; ChatGPT in one click
+            Control your planner from any AI agent
             <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>
@@ -309,8 +309,8 @@ export function Hero() {
           className="mx-auto mt-6 max-w-2xl text-[16px] leading-relaxed text-muted-foreground md:text-[18px]"
           style={introStyle(ready, 520, reduced)}
         >
-          Plan today on a board, time-block your week, and focus on one thing at a time. Then let
-          Claude or ChatGPT run it with you. Free and open source.
+          The open-source daily planner for time-blocking, focused work, and seamless AI integration.
+          Control it from any agent: Claude, ChatGPT, Cursor, or your own.
         </p>
 
         <div
@@ -319,7 +319,7 @@ export function Hero() {
         >
           <Button size="lg" className="h-11 rounded-lg px-5 text-[14px] shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.6)]" asChild>
             <Link to="/register">
-              Start planning free
+              Get started
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -335,7 +335,7 @@ export function Hero() {
           className="mt-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-2 text-[12px] text-muted-foreground"
           style={introStyle(ready, 760, reduced)}
         >
-          <span className="mr-1">Works with</span>
+          <span className="mr-1">Control it from</span>
           {WORKS_WITH.map((name) => (
             <span
               key={name}

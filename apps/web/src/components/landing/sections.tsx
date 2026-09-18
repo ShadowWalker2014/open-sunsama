@@ -2,16 +2,15 @@ import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
+  Bot,
   Check,
+  Clock,
   Command,
   Download,
   Github,
-  Keyboard,
-  MonitorSmartphone,
-  Moon,
+  LayoutGrid,
   RefreshCw,
-  Repeat,
-  Terminal,
+  Timer,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -79,7 +78,7 @@ export function SiteHeader() {
         <nav className="hidden items-center gap-0.5 md:flex">
           {[
             { label: "Features", href: "/#features" },
-            { label: "AI connector", href: "/#ai" },
+            { label: "AI native", href: "/#ai" },
           ].map((item) => (
             <a
               key={item.label}
@@ -136,83 +135,84 @@ export function SiteHeader() {
 }
 
 // ---------------------------------------------------------------------------
-// Everything else
+// Features
 // ---------------------------------------------------------------------------
 
-const EXTRAS = [
+const FEATURES = [
   {
-    icon: RefreshCw,
-    title: "Calendar sync",
-    body: "Two-way sync with Google Calendar, Outlook, and iCloud, so meetings and focus time live together.",
-    href: "/features/calendar-sync",
+    icon: Clock,
+    title: "Time blocking",
+    body: "Drag tasks onto your calendar to create a realistic daily plan.",
+    href: "/features/time-blocking",
   },
   {
-    icon: Repeat,
-    title: "Routines and rollover",
-    body: "Recurring tasks for the things you do every week. Unfinished work rolls to tomorrow without guilt.",
+    icon: LayoutGrid,
+    title: "Kanban board",
+    body: "Organize tasks visually with drag-and-drop prioritization.",
+    href: "/features/kanban",
   },
   {
-    icon: MonitorSmartphone,
-    title: "Web, desktop, and mobile",
-    body: "Native apps for macOS, Windows, Linux, iOS, and Android, with a global quick-add hotkey on desktop.",
-    href: "/download",
+    icon: Timer,
+    title: "Focus mode",
+    body: "Work on one task at a time with a built-in timer.",
+    href: "/features/focus-mode",
   },
   {
-    icon: Keyboard,
-    title: "Keyboard-first",
-    body: "Every action has a shortcut. Press ? anywhere to see them, and ⌘K to jump to anything.",
+    icon: Bot,
+    title: "AI native",
+    body: "Control your planner from any agent. Connect Claude, ChatGPT, Cursor, or any MCP client with one URL.",
+    href: "/features/ai-integration",
+    agents: ["Claude", "ChatGPT", "Cursor", "Claude Code"],
+  },
+  {
+    icon: Command,
+    title: "Command palette",
+    body: "Access everything with ⌘K. Search tasks, run commands, and navigate fast.",
     href: "/features/command-palette",
   },
   {
-    icon: Moon,
-    title: "Light, dark, and themes",
-    body: "Pick a color palette and a font, or follow your system. Easy on the eyes at 7am and 11pm.",
-  },
-  {
-    icon: Terminal,
-    title: "REST API",
-    body: "Everything in the app is available over HTTP with scoped API keys, for scripts and automations.",
-    href: "/docs/api/authentication",
+    icon: RefreshCw,
+    title: "Calendar sync",
+    body: "Two-way sync with Google, Outlook, and iCloud calendars.",
+    href: "/features/calendar-sync",
   },
 ];
 
-export function ExtrasSection() {
+export function FeaturesSection() {
   return (
-    <section className="border-t border-border/50 py-24">
+    <section id="features" className="scroll-mt-16 border-t border-border/50 py-24">
       <div className="container mx-auto max-w-6xl px-4">
-        <Reveal className="max-w-2xl">
-          <h2 className="text-[28px] font-semibold leading-tight tracking-[-0.03em] md:text-[36px]">
-            Everything else you'd expect, done carefully.
-          </h2>
+        <Reveal className="mx-auto max-w-2xl text-center">
+          <h2 className="text-[32px] font-semibold leading-[1.08] tracking-[-0.03em] md:text-[44px]">Built for focus.</h2>
+          <p className="mt-4 text-[16px] leading-relaxed text-muted-foreground">Everything you need to plan your day.</p>
         </Reveal>
-        <div className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-border/70 bg-border/70 sm:grid-cols-2 lg:grid-cols-3">
-          {EXTRAS.map((item, i) => {
-            const content = (
-              <>
+        <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-border/70 bg-border/70 sm:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.map((item, i) => (
+            <Reveal key={item.title} delay={i * 60} className="h-full min-w-0 bg-background">
+              <Link to={item.href} className="group relative block h-full p-6 transition-colors hover:bg-muted/40">
                 <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform duration-300 group-hover:-translate-y-0.5">
                   <item.icon className="h-4 w-4" />
                 </span>
                 <h3 className="mt-4 flex items-center gap-1.5 text-[15px] font-semibold">
                   {item.title}
-                  {item.href && (
-                    <ArrowRight className="h-3.5 w-3.5 -translate-x-1 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
-                  )}
+                  <ArrowRight className="h-3.5 w-3.5 -translate-x-1 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
                 </h3>
                 <p className="mt-1.5 text-[14px] leading-relaxed text-muted-foreground">{item.body}</p>
-              </>
-            );
-            return (
-              <Reveal key={item.title} delay={i * 60} className="h-full bg-background">
-                {item.href ? (
-                  <Link to={item.href} className="group block h-full p-6 transition-colors hover:bg-muted/40">
-                    {content}
-                  </Link>
-                ) : (
-                  <div className="group h-full p-6">{content}</div>
+                {item.agents && (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {item.agents.map((agent) => (
+                      <span
+                        key={agent}
+                        className="rounded-md border border-primary/25 bg-primary/5 px-1.5 py-0.5 text-[11px] font-medium text-foreground/80"
+                      >
+                        {agent}
+                      </span>
+                    ))}
+                  </div>
                 )}
-              </Reveal>
-            );
-          })}
+              </Link>
+            </Reveal>
+          ))}
         </div>
       </div>
     </section>
@@ -252,8 +252,8 @@ const SNIPPETS = [
 const STATS = [
   { value: "100%", label: "Open source" },
   { value: "23", label: "MCP tools" },
-  { value: "1", label: "URL to connect" },
-  { value: "$0", label: "For individuals" },
+  { value: "1", label: "URL for any agent" },
+  { value: "∞", label: "Self-host" },
 ];
 
 export function OpenSourceSection() {
@@ -354,13 +354,13 @@ export function OpenSourceSection() {
 // ---------------------------------------------------------------------------
 
 const ROWS: Array<{ name: string; others: boolean | string }> = [
+  { name: "Daily planning board and time blocking", others: true },
+  { name: "Google, Outlook, and iCloud sync", others: true },
+  { name: "Focus mode with a built-in timer", others: "Varies" },
+  { name: "AI native: control it from any agent", others: false },
   { name: "One-click Claude & ChatGPT connector", others: "Rare" },
   { name: "Open source and self-hostable", others: false },
   { name: "Full REST API with scoped keys", others: "Limited" },
-  { name: "Daily planning board and time blocking", others: true },
-  { name: "Focus timer, routines, and rollover", others: "Varies" },
-  { name: "Google, Outlook, and iCloud sync", others: true },
-  { name: "Free for individuals", others: false },
 ];
 
 export function ComparisonSection() {
@@ -368,9 +368,8 @@ export function ComparisonSection() {
     <section className="border-t border-border/50 py-24">
       <div className="container mx-auto max-w-3xl px-4">
         <Reveal className="text-center">
-          <h2 className="text-[28px] font-semibold tracking-[-0.03em] md:text-[36px]">
-            The features you need, none of the lock-in.
-          </h2>
+          <h2 className="text-[28px] font-semibold tracking-[-0.03em] md:text-[36px]">Why Open Sunsama?</h2>
+          <p className="mt-3 text-[16px] text-muted-foreground">The features you need, none of the lock-in.</p>
         </Reveal>
         <Reveal delay={100} className="mt-10 overflow-hidden rounded-2xl border border-border/70">
           <table className="w-full text-[14px]">
@@ -437,15 +436,15 @@ export function FinalCta() {
       <Reveal className="container mx-auto max-w-2xl px-4 text-center">
         <img src="/open-sunsama-logo.png" alt="" className="mx-auto h-12 w-12 rounded-2xl shadow-lg" />
         <h2 className="mt-6 text-[34px] font-semibold leading-[1.08] tracking-[-0.035em] md:text-[48px]">
-          Plan tomorrow in five minutes.
+          Ready to take control?
         </h2>
         <p className="mx-auto mt-4 max-w-lg text-[16px] leading-relaxed text-muted-foreground">
-          Free for individuals, open source forever, and ready for your AI the moment you sign up.
+          Plan your day on a board, time-block your calendar, and run it all from the AI agent you already use.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-2.5 sm:flex-row">
           <Button size="lg" className="h-11 rounded-lg px-5 text-[14px] shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.6)]" asChild>
             <Link to="/register">
-              Create your free account
+              Get started
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -456,7 +455,7 @@ export function FinalCta() {
             </Link>
           </Button>
         </div>
-        <p className="mt-4 text-[12px] text-muted-foreground">No credit card · Works with Claude and ChatGPT · Self-host anytime</p>
+        <p className="mt-4 text-[12px] text-muted-foreground">Open source · Works with Claude, ChatGPT, and any MCP client · Self-host anytime</p>
       </Reveal>
     </section>
   );
@@ -495,7 +494,6 @@ const FOOTER_COLUMNS: Array<{ title: string; links: Array<[string, string]> }> =
       ["Remote workers", "/for/remote-workers"],
       ["ADHD", "/for/adhd"],
       ["Open-source task manager", "/open-source-task-manager"],
-      ["Free time-blocking app", "/free-time-blocking-app"],
     ],
   },
   {
@@ -520,7 +518,7 @@ export function SiteFooter() {
             <span className="text-[14px] font-semibold">Open Sunsama</span>
           </Link>
           <p className="mt-3 max-w-[240px] text-[13px] leading-relaxed text-muted-foreground">
-            The open-source daily planner your AI can actually use.
+            The open-source daily planner you can control from any AI agent.
           </p>
           <a
             href={GITHUB_URL}

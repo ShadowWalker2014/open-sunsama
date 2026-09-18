@@ -20,7 +20,7 @@ export function SoftwareApplicationSchema({
   description,
   applicationCategory = "ProductivityApplication",
   operatingSystem = "Web, Windows, macOS, Linux",
-  price = "0",
+  price,
   priceCurrency = "USD",
   aggregateRating,
   featureList,
@@ -40,11 +40,9 @@ export function SoftwareApplicationSchema({
       "operatingSystem": operatingSystem,
       "url": url,
       "downloadUrl": "https://opensunsama.com/download",
-      "offers": {
-        "@type": "Offer",
-        "price": price,
-        "priceCurrency": priceCurrency
-      },
+      "offers": price
+        ? { "@type": "Offer", "price": price, "priceCurrency": priceCurrency }
+        : undefined,
       "author": {
         "@type": "Organization",
         "name": "Open Sunsama",
