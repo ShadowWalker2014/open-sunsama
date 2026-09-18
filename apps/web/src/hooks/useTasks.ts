@@ -16,6 +16,7 @@ import { getApi } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
+import { trackGoal } from "@/lib/analytics";
 import { taskKeys, timeBlockKeys } from "@/lib/query-keys";
 
 /**
@@ -323,6 +324,7 @@ export function useCreateTask() {
       });
     },
     onSuccess: (newTask, input, context) => {
+      trackGoal("create_task");
       // Replace optimistic placeholder with real server task.
       if (context?.tempId) {
         queryClient.removeQueries({
@@ -891,6 +893,7 @@ export function useCompleteTask() {
       });
     },
     onSuccess: (updatedTask, variables, context) => {
+      if (variables.completed) trackGoal("complete_task");
       writeTaskToCaches(queryClient, updatedTask);
 
       // Undo toggles completion back. When completing also moved the task to

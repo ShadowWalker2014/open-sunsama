@@ -56,7 +56,13 @@
     <!-- DNS Prefetch for API -->
     <link rel="dns-prefetch" href="https://api.opensunsama.com" />
     
-    <!-- DataFast Analytics -->
+    <!-- DataFast Analytics. The queue stub buffers goals fired before the script loads. -->
+    <script id="datafast-queue">
+      window.datafast = window.datafast || function () {
+        window.datafast.q = window.datafast.q || [];
+        window.datafast.q.push(arguments);
+      };
+    </script>
     <script
       defer
       data-website-id="dfid_jPL5UjXncdpECKfScGiHQ"

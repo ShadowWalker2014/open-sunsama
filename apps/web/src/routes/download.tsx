@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useInView } from "react-intersection-observer";
 import { cn } from "@/lib/utils";
 import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
+import { trackGoal } from "@/lib/analytics";
 
 // Platform configuration
 type PlatformKey = "windows" | "macos-arm64" | "macos-x64" | "linux";
@@ -227,7 +228,11 @@ function PlatformCard({
             className="h-8 px-3 text-xs"
             asChild
           >
-            <a href={release.downloadUrl} download>
+            <a
+              href={release.downloadUrl}
+              download
+              onClick={() => trackGoal("download_app", { platform: release.platform })}
+            >
               <Download className="h-3.5 w-3.5" />
               Download
             </a>
@@ -378,7 +383,11 @@ export default function DownloadPage() {
             {!isLoading && detectedRelease && (
               <div className="space-y-3">
                 <Button size="lg" className="h-10 px-5 text-[13px]" asChild>
-                  <a href={detectedRelease.downloadUrl} download>
+                  <a
+                    href={detectedRelease.downloadUrl}
+                    download
+                    onClick={() => trackGoal("download_app", { platform: detectedRelease.platform })}
+                  >
                     <detectedPlatformInfo.icon className="h-4 w-4" />
                     Download for {detectedPlatformInfo.shortName}
                   </a>

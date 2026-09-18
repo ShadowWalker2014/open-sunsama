@@ -15,6 +15,7 @@ import { Button } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { useSEO } from "@/hooks/useSEO";
 import { withRedirect } from "@/lib/auth-redirect";
+import { trackGoal } from "@/lib/analytics";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
@@ -125,6 +126,11 @@ export default function OAuthConsentPage() {
       const body = await res.json();
       if (!res.ok || !body.redirectTo) {
         throw new Error(body.error_description ?? "Something went wrong. Please try connecting again.");
+      }
+      if (decision === "allow") {
+        trackGoal("connect_ai", { client: details?.client.name ?? "unknown" });
+        // The goal is sent by XHR, which navigating away would cancel.
+        await new Promise((resolve) => setTimeout(resolve, 300));
       }
       window.location.assign(body.redirectTo as string);
     } catch (error) {

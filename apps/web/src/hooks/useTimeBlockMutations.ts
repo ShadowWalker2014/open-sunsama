@@ -9,6 +9,7 @@ import type {
 import { getApi } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 import { timeBlockKeys } from "@/lib/query-keys";
+import { trackGoal } from "@/lib/analytics";
 
 /**
  * Create a new time block
@@ -22,6 +23,7 @@ export function useCreateTimeBlock() {
       return await api.timeBlocks.create(data);
     },
     onSuccess: (newTimeBlock) => {
+      trackGoal("create_time_block");
       // Invalidate and refetch time block lists
       queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
 
@@ -129,6 +131,7 @@ export function useQuickSchedule() {
       return await api.timeBlocks.quickSchedule(data);
     },
     onSuccess: (newTimeBlock) => {
+      trackGoal("create_time_block");
       queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
       queryClient.setQueryData(
         timeBlockKeys.detail(newTimeBlock.id),
@@ -163,6 +166,7 @@ export function useAutoSchedule() {
       return await api.timeBlocks.autoSchedule(data);
     },
     onSuccess: (newTimeBlock) => {
+      trackGoal("create_time_block");
       queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
       queryClient.setQueryData(
         timeBlockKeys.detail(newTimeBlock.id),

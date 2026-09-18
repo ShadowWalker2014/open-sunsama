@@ -8,6 +8,7 @@ import {
   type TimerStoppedEvent,
 } from "@/lib/websocket";
 import { taskKeys, timerKeys } from "@/lib/query-keys";
+import { trackGoal } from "@/lib/analytics";
 
 // Re-export so existing `import { timerKeys } from "@/hooks/useTimer"`
 // callers keep working while the canonical source lives in lib/query-keys.
@@ -233,6 +234,7 @@ export function useTimer({
     api.tasks
       .timerStart(taskId)
       .then((result) => {
+        trackGoal("start_focus");
         // Reconcile with server's authoritative timestamp
         if (result.task.timerStartedAt) {
           setState((prev) => ({
