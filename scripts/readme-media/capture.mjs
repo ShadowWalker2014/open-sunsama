@@ -154,6 +154,22 @@ async function shot(page, name, options = {}) {
   console.log("captured", name);
 }
 
+/** Screenshot a dialog plus some of the dimmed page around it, so it reads at README size. */
+async function shotAround(page, name, locator, margin = { x: 120, y: 90 }) {
+  const box = await locator.boundingBox();
+  const viewport = page.viewportSize();
+  const x = Math.max(0, box.x - margin.x);
+  const y = Math.max(0, box.y - margin.y);
+  await shot(page, name, {
+    clip: {
+      x,
+      y,
+      width: Math.min(viewport.width - x, box.width + margin.x * 2),
+      height: Math.min(viewport.height - y, box.height + margin.y * 2),
+    },
+  });
+}
+
 const tasks = await api("GET", "/tasks?date=2026-09-22");
 const roadmap = tasks.find((t) => t.title.startsWith("Finalize Q4 roadmap"));
 
@@ -172,7 +188,7 @@ if (process.env.CONNECT_APPS !== "0") {
 
   await page.getByText("Finalize Q4 roadmap for leadership review").first().click();
   await settle(page, 1200);
-  await shot(page, "task-detail");
+  await shotAround(page, "task-detail", page.getByRole("dialog").first());
   await page.keyboard.press("Escape");
 
   await page.goto(`${WEB}/app/calendar`);
@@ -196,7 +212,7 @@ if (process.env.CONNECT_APPS !== "0") {
   await page.waitForTimeout(500);
   await page.keyboard.type("review", { delay: 60 });
   await page.waitForTimeout(1000);
-  await shot(page, "command-palette");
+  await shotAround(page, "command-palette", page.getByRole("dialog").first(), { x: 160, y: 70 });
   await page.keyboard.press("Escape");
 
   // Timer state is server-side; start it in the DB relative to DEMO_NOW for a running timer.
@@ -287,9 +303,13 @@ await browser.close();
 
 // --- Optimize ------------------------------------------------------------------
 for (const file of readdirSync(RAW).filter((f) => f.endsWith(".png"))) {
-  await sharp(path.join(RAW, file))
-    .png({ palette: true, quality: 92, effort: 10, compressionLevel: 9 })
-    .toFile(path.join(OUT, file));
+  let image = sharp(path.join(RAW, file));
+  if (file.startsWith("consent-")) {
+    // Trim the empty page around the consent card, then add even breathing room.
+    const trimmed = await image.trim({ threshold: 12 }).toBuffer();
+    image = sharp(trimmed).extend({ top: 56, bottom: 56, left: 56, right: 56, background: "#ffffff" });
+  }
+  await image.png({ palette: true, quality: 92, effort: 10, compressionLevel: 9 }).toFile(path.join(OUT, file));
 }
 
 const webm = path.join(RAW, "demo.webm");
