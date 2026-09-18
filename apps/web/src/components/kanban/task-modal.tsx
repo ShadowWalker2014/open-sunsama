@@ -76,6 +76,7 @@ import { useTimeBlocks, useUpdateTimeBlock } from "@/hooks/useTimeBlocks";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
   Input,
   DropdownMenu,
   DropdownMenuContent,
@@ -945,7 +946,12 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden [&>button]:hidden">
+        <DialogContent
+          className="max-w-2xl p-0 gap-0 overflow-hidden [&>button]:hidden"
+          aria-describedby={undefined}
+        >
+          {/* The visible title is an editable field; screen readers get it here. */}
+          <DialogTitle className="sr-only">{renderTask.title || "Task"}</DialogTitle>
           {/* Title row with inline actions */}
           <div className="flex items-start gap-2.5 px-4 pt-4 pb-2.5 sm:gap-3 sm:px-6 sm:pt-5 sm:pb-3">
             {/* Checkbox */}

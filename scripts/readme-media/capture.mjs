@@ -117,7 +117,6 @@ async function newPage({ theme = "light", width = 1440, height = 900, scale = 2,
     ({ token, user, localMcp, publicMcp }) => {
       localStorage.setItem("open_sunsama_token", token);
       localStorage.setItem("open_sunsama_user", JSON.stringify(user));
-      localStorage.setItem("open-sunsama-sidebar-collapsed", "true");
       // The local stack renders its own API URL; show the hosted one in every frame.
       const rewrite = (root) => {
         const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);

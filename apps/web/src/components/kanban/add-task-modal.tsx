@@ -9,6 +9,7 @@ import {
   Dialog,
   DialogContent,
   DialogFooter,
+  DialogTitle,
   Button,
   Input,
   Label,
@@ -176,7 +177,8 @@ export function AddTaskModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-0 gap-0 overflow-hidden">
+      <DialogContent className="max-w-md p-0 gap-0 overflow-hidden" aria-describedby={undefined}>
+        <DialogTitle className="sr-only">Add task</DialogTitle>
         <form ref={formRef} onSubmit={handleSubmit}>
           {/* Header - Title input */}
           <div className="px-4 pt-4 pb-3 border-b">
