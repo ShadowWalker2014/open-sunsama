@@ -10,6 +10,7 @@ import { isApiError } from "@open-sunsama/api-client";
 import { getApiClient } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 import { calendarKeys } from "@/lib/query-keys";
+import { trackGoal } from "@/lib/analytics";
 
 /**
  * Map a write-back API error into a human-readable {title, description}
@@ -272,6 +273,7 @@ export function useConnectICloud() {
       return response.data;
     },
     onSuccess: () => {
+      trackGoal("connect_calendar", { provider: "icloud" });
       queryClient.invalidateQueries({ queryKey: calendarKeys.accounts() });
       queryClient.invalidateQueries({ queryKey: calendarKeys.calendars() });
 

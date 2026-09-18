@@ -17,6 +17,7 @@ import { useSearch, useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { calendarKeys } from "@/hooks/useCalendars";
+import { trackGoal } from "@/lib/analytics";
 import {
   Sheet,
   SheetContent,
@@ -151,6 +152,7 @@ export default function SettingsPage() {
     // Handle OAuth redirect - set tab to calendars and force refetch
     if (isCalendarRedirect && !hasHandledRedirect.current) {
       hasHandledRedirect.current = true;
+      trackGoal("connect_calendar", { provider: searchParams.provider ?? "unknown" });
 
       // Force set the active tab to calendars
       setActiveTab("calendars");

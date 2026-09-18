@@ -16,6 +16,7 @@ import {
   getTokenExpiryMs,
 } from "@/lib/api";
 import { clearPersistedCache } from "@/lib/query-persister";
+import { trackGoal } from "@/lib/analytics";
 
 // Refresh the access token this long before it expires. With the default 7d
 // token lifetime, an active user is renewed roughly a day before expiry, so
@@ -210,6 +211,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return await api.auth.register(data);
     },
     onSuccess: (data) => {
+      trackGoal("signup");
       storeAuthData(data.token, data.user);
       setToken(data.token);
       setCachedUser(data.user);
