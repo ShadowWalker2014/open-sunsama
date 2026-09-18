@@ -1,4 +1,5 @@
 import { FeatureLayout } from "@/components/layout/feature-layout";
+import { FeatureShot } from "@/components/landing/product-shot";
 import { Clock, Calendar, RefreshCw, ArrowRight } from "lucide-react";
 import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
 
@@ -27,50 +28,11 @@ export default function TimeBlockingFeaturePage() {
 
   return (
     <FeatureLayout
+      visual={<FeatureShot name="calendar-week" alt="Week calendar full of color-coded time blocks linked to tasks" />}
       badge="Feature"
       title="Time Blocking"
       subtitle="Drag tasks onto your timeline to create focused work sessions and a realistic daily plan."
     >
-      {/* Visual Demo */}
-      <section className="pb-12">
-        <div className="container px-4 mx-auto max-w-4xl">
-          <div className="rounded-xl border border-border/40 bg-card/50 p-1 shadow-lg">
-            <div className="rounded-lg border border-border/40 bg-background overflow-hidden">
-              {/* Mock timeline */}
-              <div className="p-4 md:p-6">
-                <div className="flex gap-4">
-                  {/* Time labels */}
-                  <div className="w-12 shrink-0 space-y-6 text-[10px] text-muted-foreground">
-                    <div>9:00</div>
-                    <div>10:00</div>
-                    <div>11:00</div>
-                    <div>12:00</div>
-                  </div>
-                  {/* Timeline */}
-                  <div className="flex-1 space-y-2 relative">
-                    <div className="h-12 rounded-lg bg-blue-500/10 border border-blue-500/20 p-2 flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-blue-500" />
-                      <span className="text-xs font-medium">Morning standup</span>
-                    </div>
-                    <div className="h-20 rounded-lg bg-primary/10 border border-primary/30 p-2 flex flex-col justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 rounded-full bg-primary" />
-                        <span className="text-xs font-medium">Deep work: API Design</span>
-                      </div>
-                      <span className="text-[10px] text-muted-foreground">1h 30m</span>
-                    </div>
-                    <div className="h-10 rounded-lg bg-orange-500/10 border border-orange-500/20 p-2 flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-orange-500" />
-                      <span className="text-xs font-medium">Lunch</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Features */}
       <section className="py-12 border-t border-border/40 bg-muted/10">
         <div className="container px-4 mx-auto max-w-4xl">

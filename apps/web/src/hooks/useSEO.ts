@@ -92,7 +92,7 @@ export function useSEO(config: SEOConfig) {
 export const SEO_CONFIGS = {
   landing: {
     title: "Open Sunsama",
-    description: "The open-source alternative to Sunsama. Time-block your day, manage tasks with a visual kanban board, sync with Google Calendar, Outlook & iCloud. Free, self-hostable, AI-native.",
+    description: "The open-source daily planner your AI can use. Plan on a kanban board, time-block your calendar, and connect Claude or ChatGPT in one click. A free, self-hostable Sunsama alternative.",
     canonical: "/",
   },
   alternatives: {

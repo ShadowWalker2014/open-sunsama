@@ -1,23 +1,17 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  Calendar,
   ArrowRight,
   Github,
   Check,
   X,
   Hand,
   DollarSign,
-  Zap,
   Timer,
-  Command,
   GripVertical,
   RefreshCw,
-  Bot,
   ChevronDown,
-  Clock,
   MousePointer,
-  Lock,
   Unlock,
   Server,
   Code2,
@@ -28,6 +22,7 @@ import { useInView } from "react-intersection-observer";
 import { cn } from "@/lib/utils";
 import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
 import { Breadcrumbs, FAQSchema } from "@/components/seo";
+import { SiteFooter, SiteHeader } from "@/components/landing/sections";
 
 /**
  * Reclaim AI Alternative Landing Page
@@ -360,35 +355,7 @@ export default function ReclaimAlternativePage() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/[0.03] blur-[100px] rounded-full" />
       </div>
 
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-12 items-center justify-between px-4 mx-auto max-w-5xl">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="flex items-center justify-center h-7 w-7 rounded-md bg-primary text-primary-foreground">
-              <Calendar className="h-3.5 w-3.5" />
-            </div>
-            <span className="text-[13px] font-semibold">Open Sunsama</span>
-          </Link>
-
-          <nav className="hidden md:flex items-center gap-0.5">
-            <Button variant="ghost" size="sm" className="h-8 px-3 text-xs" asChild>
-              <Link to="/blog" search={{}}>Blog</Link>
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8 px-3 text-xs" asChild>
-              <Link to="/download">Download</Link>
-            </Button>
-          </nav>
-
-          <div className="flex items-center gap-1.5">
-            <Button variant="ghost" size="sm" className="h-8 px-3 text-xs" asChild>
-              <Link to="/login">Sign in</Link>
-            </Button>
-            <Button size="sm" className="h-8 px-3 text-xs" asChild>
-              <Link to="/register">Try Free</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       <main className="relative">
         {/* Breadcrumb navigation */}
@@ -649,40 +616,7 @@ export default function ReclaimAlternativePage() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border/40 py-6">
-        <div className="container px-4 mx-auto max-w-5xl">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-3">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center h-5 w-5 rounded bg-primary/10">
-                <Calendar className="h-2.5 w-2.5 text-primary" />
-              </div>
-              <span className="text-[11px] text-muted-foreground">
-                © 2026 Open Sunsama
-              </span>
-            </div>
-            <nav className="flex items-center gap-4 text-[11px] text-muted-foreground">
-              <Link to="/blog" className="hover:text-foreground transition-colors">
-                Blog
-              </Link>
-              <Link to="/privacy" className="hover:text-foreground transition-colors">
-                Privacy
-              </Link>
-              <Link to="/terms" className="hover:text-foreground transition-colors">
-                Terms
-              </Link>
-              <a
-                href="https://github.com/ShadowWalker2014/open-sunsama"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-foreground transition-colors"
-              >
-                <Github className="h-3.5 w-3.5" />
-              </a>
-            </nav>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
       </div>
     </>
   );
