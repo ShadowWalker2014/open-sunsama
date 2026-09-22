@@ -2,9 +2,9 @@ import * as React from "react";
 import { ChevronDown, Clock, ArrowUp, ArrowDown } from "lucide-react";
 import type { TaskPriority } from "@open-sunsama/types";
 import { cn, TIME_PRESETS, formatTimeDisplayCompact } from "@/lib/utils";
-import { useCreateTask, useTasks, useReorderTasks } from "@/hooks/useTasks";
+import { useCreateTask } from "@/hooks/useTasks";
 import { useCreateSubtask } from "@/hooks/useSubtaskMutations";
-import { useAddTaskPosition } from "@/hooks/useAddTaskPosition";
+import { useAddTaskPosition, usePlaceNewTask } from "@/hooks/useAddTaskPosition";
 import {
   Dialog,
   DialogContent,
@@ -75,14 +75,9 @@ export function AddTaskModal({
 
   const createTask = useCreateTask();
   const createSubtask = useCreateSubtask();
-  const reorderTasks = useReorderTasks();
+  const placeNewTask = usePlaceNewTask(scheduledDate);
   const titleInputRef = React.useRef<HTMLInputElement>(null);
   const formRef = React.useRef<HTMLFormElement>(null);
-
-  // Fetch existing tasks for the date so we can reorder after adding to top
-  const { data: existingTasks } = useTasks(
-    scheduledDate ? { scheduledDate } : undefined
-  );
 
   // Focus title input when modal opens
   React.useEffect(() => {
@@ -153,18 +148,7 @@ export function AddTaskModal({
       );
     }
 
-    // Reorder to top if requested and we have a scheduled date
-    if (addPosition === "top" && scheduledDate) {
-      const currentTaskIds = (existingTasks ?? [])
-        .filter((t) => !t.completedAt && t.id !== newTask.id)
-        .sort((a, b) => a.position - b.position)
-        .map((t) => t.id);
-
-      await reorderTasks.mutateAsync({
-        date: scheduledDate,
-        taskIds: [newTask.id, ...currentTaskIds],
-      });
-    }
+    await placeNewTask(newTask.id, addPosition);
 
     onOpenChange(false);
   };
