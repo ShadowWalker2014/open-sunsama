@@ -1,9 +1,10 @@
 import * as React from "react";
 import { createPortal } from "react-dom";
-import { Send } from "lucide-react";
+import { ArrowDown, ArrowUp, Send } from "lucide-react";
 import type { TaskPriority } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { useCreateTask } from "@/hooks/useTasks";
+import { useAddTaskPosition, usePlaceNewTask } from "@/hooks/useAddTaskPosition";
 
 const PRIORITY_COLORS: Record<TaskPriority, string> = {
   P0: "bg-red-500 text-white",
@@ -42,6 +43,9 @@ export function MobileAddTaskSheet({
   const [bottomOffset, setBottomOffset] = React.useState(0);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const createTask = useCreateTask();
+  const { addPosition, setAddPosition } = useAddTaskPosition();
+  const placeNewTask = usePlaceNewTask(scheduledDate);
+  const isAddingToTop = addPosition === "top";
 
   // Focus input when opened — runs synchronously in the user gesture chain
   // because the component is always mounted (not conditionally rendered)
@@ -88,11 +92,12 @@ export function MobileAddTaskSheet({
     // Blur input first to dismiss keyboard before closing sheet
     inputRef.current?.blur();
 
-    await createTask.mutateAsync({
+    const newTask = await createTask.mutateAsync({
       title: title.trim(),
       scheduledDate: scheduledDate || undefined,
       priority,
     });
+    await placeNewTask(newTask.id, addPosition);
 
     onOpenChange(false);
   };
@@ -172,7 +177,8 @@ export function MobileAddTaskSheet({
 
           {/* Priority chips — onPointerDown preventDefault keeps keyboard open */}
           <div className="flex items-center gap-2 mt-2">
-            <span className="text-xs text-muted-foreground mr-1">Priority</span>
+            {/* Hidden on the narrowest phones so the position toggle fits */}
+            <span className="mr-1 hidden text-xs text-muted-foreground min-[360px]:inline">Priority</span>
             {PRIORITIES.map((p) => (
               <button
                 key={p}
@@ -188,6 +194,23 @@ export function MobileAddTaskSheet({
                 {p}
               </button>
             ))}
+
+            {/* Insert position — the same preference as the desktop toggle */}
+            <button
+              type="button"
+              onPointerDown={(e) => e.preventDefault()}
+              onClick={() => setAddPosition(isAddingToTop ? "bottom" : "top")}
+              aria-label={isAddingToTop ? "Adding to top" : "Adding to bottom"}
+              className={cn(
+                "ml-auto flex h-7 items-center gap-1 rounded-full border px-2.5 text-xs font-medium transition-colors",
+                isAddingToTop
+                  ? "border-primary/60 bg-primary/5 text-primary"
+                  : "border-border text-muted-foreground"
+              )}
+            >
+              {isAddingToTop ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />}
+              {isAddingToTop ? "Top" : "Bottom"}
+            </button>
           </div>
         </div>
       </div>

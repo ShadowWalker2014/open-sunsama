@@ -971,8 +971,17 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
             {/* Title */}
             <textarea
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              // Titles are one line; pasted line breaks become spaces.
+              onChange={(e) => setTitle(e.target.value.replace(/[\r\n]+/g, " "))}
               onBlur={() => title !== renderTask.title && handleSave()}
+              onKeyDown={(e) => {
+                // Enter saves and closes, like the other task dialogs.
+                if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+                  e.preventDefault();
+                  void handleOpenChange(false);
+                }
+              }}
+              enterKeyHint="done"
               rows={1}
               className={cn(
                 "flex-1 min-w-0 resize-none border-none p-0 text-base sm:text-lg font-semibold shadow-none focus:outline-none focus:ring-0 bg-transparent leading-snug",

@@ -8,6 +8,7 @@
 import * as React from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useReorderTasks, useTasks } from "@/hooks/useTasks";
 import { DEFAULT_PREFERENCES } from "@/lib/themes";
 import type { User, UserPreferences } from "@open-sunsama/types";
 
@@ -55,4 +56,30 @@ export function useAddTaskPosition(): UseAddTaskPositionResult {
   );
 
   return { addPosition, setAddPosition };
+}
+
+/**
+ * Returns a function that moves a just-created task to the top of its list
+ * when that's the chosen position. The server appends new tasks to the
+ * bottom, so "bottom" needs nothing. A task without a date goes to the
+ * backlog, and it moves to the top of the backlog.
+ */
+export function usePlaceNewTask(scheduledDate: string | null | undefined) {
+  const reorderTasks = useReorderTasks();
+  // Same filters as the day view and the backlog sidebar, so the cache is shared.
+  const { data: existingTasks } = useTasks(
+    scheduledDate ? { scheduledDate } : { backlog: true, limit: 500 }
+  );
+
+  return async (newTaskId: string, position: AddTaskPosition) => {
+    if (position !== "top") return;
+    const otherOpenTaskIds = (existingTasks ?? [])
+      .filter((t) => !t.completedAt && t.id !== newTaskId && !t.id.startsWith("optimistic-"))
+      .sort((a, b) => a.position - b.position)
+      .map((t) => t.id);
+    await reorderTasks.mutateAsync({
+      date: scheduledDate || "backlog",
+      taskIds: [newTaskId, ...otherOpenTaskIds],
+    });
+  };
 }
