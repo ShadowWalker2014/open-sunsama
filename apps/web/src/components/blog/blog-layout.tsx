@@ -31,6 +31,8 @@ export function BlogLayout({
 }: BlogLayoutProps) {
   const [headings, setHeadings] = useState<TOCHeading[]>([]);
   const canonicalUrl = `/blog/${post.slug}`;
+  // Each cover has a 1200x630 JPEG twin: not every social crawler reads WebP
+  const ogImage = post.image?.replace(/\.webp$/, "-og.jpg");
 
   // Extract headings after content renders
   useEffect(() => {
@@ -53,7 +55,7 @@ export function BlogLayout({
         title={`${post.title} | Open Sunsama Blog`}
         description={post.description}
         canonicalUrl={canonicalUrl}
-        ogImage={post.image || "/og-image.png"}
+        ogImage={ogImage || "/og-image.png"}
         ogType="article"
         publishedTime={post.date}
         author={post.author}

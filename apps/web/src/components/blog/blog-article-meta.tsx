@@ -77,7 +77,7 @@ export function BlogArticleMeta({ post, canonicalUrl }: BlogArticleMetaProps) {
           <img
             src={post.image}
             alt={post.title}
-            loading="lazy"
+            fetchPriority="high"
             decoding="async"
             className="w-full h-auto"
           />
