@@ -37,22 +37,11 @@ package.json (root)           ← SOURCE OF TRUTH
 ## Release Workflow
 
 ```bash
-# 1. Edit root package.json version (e.g., "1.0.0" → "1.1.0")
-
-# 2. Sync all apps
-bun run version:sync
-
-# 3. Build (as needed)
-cd apps/desktop && unset CI && bunx tauri build    # Desktop
-cd apps/mobile && bunx tauri ios build             # iOS
-cd apps/mobile && bunx tauri android build         # Android
-
-# 4. Commit and tag
-git add -A
-git commit -m "release: v1.1.0"
-git tag -a v1.1.0 -m "Release v1.1.0"
-git push && git push --tags
+bun run release          # patch
+bun run release minor    # or major, or an exact x.y.z
 ```
+
+This does steps 1-3 of the golden rules, commits, tags and pushes. The tag starts the desktop build. See `.skills/desktop-releases/SKILL.md`.
 
 ## Verify Sync
 

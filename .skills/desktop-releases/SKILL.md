@@ -8,44 +8,36 @@ Guide for building and releasing the Open Sunsama desktop app across all platfor
 
 | Action | Command |
 |--------|---------|
-| **Trigger Release** | `git tag v1.x.x && git push origin v1.x.x` |
-| **Manual Trigger** | GitHub → Actions → Desktop Release → Run workflow |
-| **Check Status** | GitHub → Actions → Desktop Release |
+| **Release** | `bun run release` (patch), `bun run release minor`, or `bun run release 1.2.3` |
+| **Rebuild a version** | GitHub → Actions → Desktop Release → Run workflow → version `1.x.x` |
+| **Re-run one platform** | Open the failed run → **Re-run failed jobs** (the API upserts, so re-runs are safe) |
+| **Check Status** | https://github.com/ShadowWalker2014/open-sunsama/actions/workflows/desktop-release.yml |
 | **Downloads Page** | https://opensunsama.com/download |
 
 ---
 
 ## Release Workflow
 
-### 1. Update Version (Required First)
+From a clean, up-to-date `main`:
 
 ```bash
-# Edit version in root package.json
-# Then sync to all apps:
-bun run version:sync
-git add -A && git commit -m "chore: bump version to 1.x.x"
-git push
+bun run release
 ```
 
-### 2. Create Release Tag
+`scripts/release.mjs` bumps the root version, runs `version:sync`, updates `AGENTS.md`, commits `release: vX.Y.Z`, tags, and pushes. The tag push starts the workflow, which:
 
-```bash
-git tag v1.x.x
-git push origin v1.x.x
-```
+1. Builds each platform in parallel (about 15 minutes, 60-minute timeout per job)
+2. Uploads the installer, updater file and signature to S3
+3. Registers each platform with `POST /releases` (upsert)
+4. Runs a `verify` job that fails unless all four platforms serve the new version and each download returns HTTP 200
 
-This triggers the GitHub Actions workflow which:
-1. Builds for all platforms (macOS arm64/x64, Windows, Linux)
-2. Uploads artifacts to S3 bucket
-3. Registers releases in database via API
-4. Downloads page auto-updates with new builds
+### Why the builds are fast
 
-### 3. Manual Trigger (Alternative)
+- **The desktop app ships without marketing images.** `apps/desktop/scripts/prepare-frontend.mjs` copies `apps/web/dist` to `apps/desktop/dist` without `blog-*`, `landing/` and `og-image.png` (about 570 MB). The desktop app redirects `/` to `/app` or `/login`, so it never shows those pages.
+- **Each platform builds only the package it ships:** `app,dmg` on macOS, `appimage` on Linux, `nsis` on Windows. The unused Linux `.rpm` used to take 5 hours.
+- **Rust builds are cached** with `Swatinem/rust-cache`.
 
-1. Go to **GitHub → Actions → Desktop Release**
-2. Click **Run workflow**
-3. Select branch (usually `main`)
-4. Click **Run workflow** button
+**macOS updater files get arch-specific names.** Tauri names both Mac updaters `Open Sunsama.app.tar.gz`, so the workflow uploads them as `Open Sunsama_<version>_macos-arm64.app.tar.gz` and `..._macos-x64.app.tar.gz`. Before this, the second Mac build overwrote the first, and one architecture's auto-update failed its signature check.
 
 ---
 
