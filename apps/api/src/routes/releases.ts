@@ -23,6 +23,7 @@ import {
   platformParamSchema,
   tauriUpdateParamSchema,
   TAURI_TARGET_MAP,
+  TAURI_OS_TARGETS,
 } from '../validation/releases.js';
 
 const releasesRouter = new Hono();
@@ -116,60 +117,80 @@ releasesRouter.get('/latest', async (c) => {
   });
 });
 
-/** 
+/** Compare two x.y.z versions: negative if a < b, 0 if equal, positive if a > b. */
+function compareVersions(a: string, b: string): number {
+  const pa = a.split('.').map(Number);
+  const pb = b.split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    const diff = (pa[i] || 0) - (pb[i] || 0);
+    if (diff !== 0) return diff;
+  }
+  return 0;
+}
+
+/**
  * GET /releases/update/:target/:current_version - Tauri updater endpoint
- * Returns 204 if no update available, or Tauri-compatible JSON if update exists
+ * Returns 204 if no update is available.
+ *
+ * Installed apps send the OS alone as `target` (darwin, linux, windows); for those we return
+ * Tauri's static format with a `platforms` entry per architecture so the app can pick its own.
+ * A full `{os}-{arch}` target gets the single-platform dynamic format.
  */
 releasesRouter.get('/update/:target/:current_version', zValidator('param', tauriUpdateParamSchema), async (c) => {
   const { target, current_version } = c.req.valid('param');
-  const platform = TAURI_TARGET_MAP[target];
-
-  if (!platform) {
-    return c.body(null, 204);
-  }
-
+  const tauriTargets = TAURI_OS_TARGETS[target] ?? [target];
   const db = getDb();
 
-  // Get the latest release for this platform
-  const [latestRelease] = await db
-    .select()
-    .from(releases)
-    .where(eq(releases.platform, platform))
-    .orderBy(desc(releases.createdAt))
-    .limit(1);
+  const latest = (
+    await Promise.all(
+      tauriTargets.map(async (tauriTarget) => {
+        const platform = TAURI_TARGET_MAP[tauriTarget];
+        if (!platform) return null;
+        const [release] = await db
+          .select()
+          .from(releases)
+          .where(eq(releases.platform, platform))
+          .orderBy(desc(releases.createdAt))
+          .limit(1);
+        return release ? { tauriTarget, release } : null;
+      })
+    )
+  ).filter((entry): entry is NonNullable<typeof entry> => entry !== null);
 
-  if (!latestRelease) {
+  const newestVersion = latest
+    .map(({ release }) => release.version)
+    .sort(compareVersions)
+    .pop();
+
+  if (!newestVersion || compareVersions(newestVersion, current_version) <= 0) {
     return c.body(null, 204);
   }
 
-  // Compare versions - if current version >= latest, no update needed
-  const currentParts = current_version.split('.').map(Number);
-  const latestParts = latestRelease.version.split('.').map(Number);
-
-  let isNewer = false;
-  for (let i = 0; i < 3; i++) {
-    if ((latestParts[i] || 0) > (currentParts[i] || 0)) {
-      isNewer = true;
-      break;
-    }
-    if ((latestParts[i] || 0) < (currentParts[i] || 0)) {
-      break;
-    }
-  }
-
-  if (!isNewer) {
-    return c.body(null, 204);
-  }
-
-  // Return Tauri-compatible update JSON
-  // Use updaterUrl (tar.gz/nsis.zip) for Tauri updater, fallback to downloadUrl
-  return c.json({
-    version: latestRelease.version,
-    url: latestRelease.updaterUrl || latestRelease.downloadUrl,
-    signature: latestRelease.signature || '',
-    pub_date: latestRelease.createdAt.toISOString(),
-    notes: latestRelease.releaseNotes || `Update to version ${latestRelease.version}`,
+  // Only offer builds that are actually at the newest version, so an architecture whose
+  // build failed never installs an older binary labelled as the new version.
+  const current = latest.filter(({ release }) => release.version === newestVersion);
+  const [first] = current;
+  const updateFields = (release: (typeof current)[number]['release']) => ({
+    // Use updaterUrl (tar.gz / setup.exe / AppImage) for Tauri, falling back to downloadUrl
+    url: release.updaterUrl || release.downloadUrl,
+    signature: release.signature || '',
   });
+  const meta = {
+    version: newestVersion,
+    pub_date: first!.release.createdAt.toISOString(),
+    notes: first!.release.releaseNotes || `Update to version ${newestVersion}`,
+  };
+
+  if (TAURI_OS_TARGETS[target]) {
+    return c.json({
+      ...meta,
+      platforms: Object.fromEntries(
+        current.map(({ tauriTarget, release }) => [tauriTarget, updateFields(release)])
+      ),
+    });
+  }
+
+  return c.json({ ...meta, ...updateFields(first!.release) });
 });
 
 /** GET /releases/:platform - Get latest release for specific platform */

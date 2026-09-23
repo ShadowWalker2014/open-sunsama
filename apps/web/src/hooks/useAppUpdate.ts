@@ -50,7 +50,7 @@ export function useAppUpdate(): AppUpdateState {
         setStatus('idle');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to check for updates');
+      setError(err instanceof Error ? err.message : String(err || 'Failed to check for updates'));
       setStatus('error');
     }
   }, []);
@@ -69,7 +69,7 @@ export function useAppUpdate(): AppUpdateState {
       // If we get here, relaunch didn't happen (shouldn't normally reach this)
       setStatus('installing');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to install update');
+      setError(err instanceof Error ? err.message : String(err || 'Failed to install update'));
       setStatus('error');
     }
   }, []);

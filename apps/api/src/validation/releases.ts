@@ -21,7 +21,20 @@ export const TAURI_TARGET_MAP: Record<string, (typeof RELEASE_PLATFORMS)[number]
   'windows-x86_64': 'windows',
 };
 
-export const TAURI_TARGETS = Object.keys(TAURI_TARGET_MAP) as [string, ...string[]];
+/**
+ * Tauri's updater fills `{{target}}` with the OS alone (darwin, linux, windows) and picks
+ * its own `{os}-{arch}` entry from a static-format response. Map each OS to its targets.
+ */
+export const TAURI_OS_TARGETS: Record<string, string[]> = {
+  darwin: ['darwin-aarch64', 'darwin-x86_64'],
+  linux: ['linux-x86_64'],
+  windows: ['windows-x86_64'],
+};
+
+export const TAURI_TARGETS = [
+  ...Object.keys(TAURI_TARGET_MAP),
+  ...Object.keys(TAURI_OS_TARGETS),
+] as [string, ...string[]];
 
 /**
  * Schema for creating a release
