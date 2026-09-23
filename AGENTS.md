@@ -186,6 +186,12 @@ Quick reference:
 - **Downloads page:** https://opensunsama.com/download
 - **Platforms:** macOS (arm64/x64), Windows, Linux
 
+### Release rules (enforced by CI)
+
+- **The desktop app bundles the web app.** A web change reaches desktop users only after the next release. Ship with `bun run release`, never by hand-tagging: the build fails if the tag doesn't match `apps/desktop/src-tauri/tauri.conf.json`.
+- **Keep large files out of the desktop bundle.** `apps/desktop/scripts/prepare-frontend.mjs` drops marketing images (`blog-*`, `landing/`, `og-image.png`) and fails the build if the rest passes 60 MB. If it fails, exclude or shrink the new files; don't raise the limit. Oversized bundles once made each installer 600 MB and the Linux build 5 hours.
+- **A release is done when the `verify` job is green.** It checks that all four platforms serve the new version and that each download and updater URL returns HTTP 200. If one platform fails, use **Re-run failed jobs**; re-runs are safe.
+
 ### macOS Code Signing
 
 **Apple Developer Account:** Circo, Inc.
