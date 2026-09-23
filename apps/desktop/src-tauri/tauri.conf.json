@@ -6,8 +6,8 @@
   "build": {
     "beforeDevCommand": "cd ../web && bun run dev",
     "devUrl": "http://localhost:3000",
-    "beforeBuildCommand": "cd ../web && bun run build",
-    "frontendDist": "../../web/dist"
+    "beforeBuildCommand": "cd ../web && bun run build && cd ../desktop && node scripts/prepare-frontend.mjs",
+    "frontendDist": "../dist"
   },
   "app": {
     "windows": [

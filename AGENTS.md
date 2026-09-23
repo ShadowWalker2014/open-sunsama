@@ -181,7 +181,7 @@ Quick reference:
 
 Quick reference:
 
-- **Trigger release:** `git tag v1.x.x && git push origin v1.x.x`
+- **Release:** `bun run release` (bumps, syncs, commits, tags and pushes; about 15 minutes to all platforms)
 - **Manual trigger:** GitHub → Actions → Desktop Release → Run workflow
 - **Downloads page:** https://opensunsama.com/download
 - **Platforms:** macOS (arm64/x64), Windows, Linux
@@ -365,7 +365,7 @@ PG Boss has built-in recovery mechanisms:
 - **Tauri HTTP plugin required** — WKWebView on macOS blocks cross-origin fetch from `tauri://` custom protocol. All API requests route through `@tauri-apps/plugin-http` (Rust-based) to bypass this. See `apps/web/src/lib/api.ts` `desktopFetch` wrapper.
 - **Signing key password cannot be empty** — GitHub Actions doesn't support empty string secrets. Use a real password.
 - **`strip = false` in Cargo.toml** — Required for `__TAURI_BUNDLE_TYPE` variable used by updater plugin.
-- **Duplicate release versions** — The API rejects duplicate version+platform combos (400). Clean up DB before re-running failed builds.
+- **Re-running a release is safe** — `POST /releases` upserts on version + platform, so re-running a failed job replaces its row.
 
 ---
 

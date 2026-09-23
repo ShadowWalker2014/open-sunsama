@@ -11,6 +11,10 @@ on:
         required: false
         default: ''
 
+concurrency:
+  group: desktop-release-${{ github.event.inputs.version && format('v{0}', github.event.inputs.version) || github.ref_name }}
+  cancel-in-progress: true
+
 env:
   API_URL: https://api.opensunsama.com
 
@@ -21,7 +25,7 @@ jobs:
       matrix:
         include:
           - platform: macos-latest
-            args: --target aarch64-apple-darwin
+            args: --target aarch64-apple-darwin --bundles app,dmg
             name: macOS-arm64
             artifact_name: macos-arm64
             file_pattern: '*.dmg'
@@ -29,7 +33,7 @@ jobs:
             updater_bundle_path: apps/desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos
             updater_file_pattern: '*.app.tar.gz'
           - platform: macos-latest
-            args: --target x86_64-apple-darwin
+            args: --target x86_64-apple-darwin --bundles app,dmg
             name: macOS-x64
             artifact_name: macos-x64
             file_pattern: '*.dmg'
@@ -37,7 +41,7 @@ jobs:
             updater_bundle_path: apps/desktop/src-tauri/target/x86_64-apple-darwin/release/bundle/macos
             updater_file_pattern: '*.app.tar.gz'
           - platform: ubuntu-22.04
-            args: ''
+            args: --bundles appimage
             name: Linux
             artifact_name: linux
             file_pattern: '*.AppImage'
@@ -45,7 +49,7 @@ jobs:
             updater_bundle_path: apps/desktop/src-tauri/target/release/bundle/appimage
             updater_file_pattern: '*.AppImage'
           - platform: windows-latest
-            args: ''
+            args: --bundles nsis
             name: Windows
             artifact_name: windows
             file_pattern: '*-setup.exe'
@@ -54,6 +58,7 @@ jobs:
             updater_file_pattern: '*-setup.exe'
 
     runs-on: ${{ matrix.platform }}
+    timeout-minutes: 60
     outputs:
       version: ${{ steps.version.outputs.version }}
     
@@ -80,6 +85,12 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+          key: ${{ matrix.artifact_name }}
 
       # macOS: Import Apple Developer Certificate for code signing
       - name: Import Apple Developer Certificate
@@ -120,13 +131,6 @@ jobs:
 
       - name: Install dependencies
         run: bun install
-
-      - name: Build web app
-        working-directory: apps/web
-        env:
-          VITE_API_URL: ${{ env.API_URL }}
-          VITE_WS_URL: wss://api.opensunsama.com
-        run: bun run build
 
       # macOS: Build with signing and notarization
       - name: Build Tauri app (macOS)
@@ -237,12 +241,15 @@ jobs:
           S3_DEST="s3://${{ secrets.AWS_S3_BUCKET_NAME }}/releases/v${{ steps.version.outputs.version }}"
           S3_OPTS="--endpoint-url ${{ secrets.AWS_ENDPOINT_URL }}"
 
-          # Upload regular bundle
-          aws s3 sync "${{ matrix.bundle_path }}" "$S3_DEST" $S3_OPTS
+          aws s3 cp "${{ steps.find_file.outputs.path }}" "$S3_DEST/${{ steps.find_file.outputs.file }}" $S3_OPTS
 
-          # Upload updater bundle (if different directory)
-          if [ "${{ matrix.updater_bundle_path }}" != "${{ matrix.bundle_path }}" ]; then
-            aws s3 sync "${{ matrix.updater_bundle_path }}" "$S3_DEST" $S3_OPTS
+          UPDATER_FILE="${{ steps.find_updater.outputs.updater_file }}"
+          if [ -n "$UPDATER_FILE" ]; then
+            for f in "$UPDATER_FILE" "$UPDATER_FILE.sig"; do
+              if [ "${{ matrix.updater_bundle_path }}/$f" != "${{ steps.find_file.outputs.path }}" ] && [ -f "${{ matrix.updater_bundle_path }}/$f" ]; then
+                aws s3 cp "${{ matrix.updater_bundle_path }}/$f" "$S3_DEST/$f" $S3_OPTS
+              fi
+            done
           fi
 
       - name: Register release with API
@@ -278,14 +285,33 @@ jobs:
           path: ${{ steps.find_file.outputs.path }}
           retention-days: 30
 
-  notify:
+  verify:
     needs: build
     runs-on: ubuntu-latest
     if: always()
-    
+
     steps:
-      - name: Summary
+      - name: Check every platform serves this version
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
         run: |
-          echo "## Desktop Release v${{ needs.build.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          LATEST=$(curl -sf "$API_URL/releases/latest")
+          FAILED=0
+          echo "## Desktop Release v$VERSION" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Downloads available at: https://opensunsama.com/download" >> $GITHUB_STEP_SUMMARY
+          echo "| Platform | Live version | Size | Download |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | --- | --- | --- |" >> $GITHUB_STEP_SUMMARY
+          for p in macos-arm64 macos-x64 windows linux; do
+            LIVE=$(echo "$LATEST" | jq -r ".data[\"$p\"].version // \"missing\"")
+            SIZE=$(echo "$LATEST" | jq -r ".data[\"$p\"].fileSize // 0")
+            URL=$(echo "$LATEST" | jq -r ".data[\"$p\"].downloadUrl // \"\"")
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' -I "$URL" || echo 000)
+            echo "| $p | $LIVE | $((SIZE / 1024 / 1024)) MB | HTTP $STATUS |" >> $GITHUB_STEP_SUMMARY
+            if [ "$LIVE" != "$VERSION" ] || [ "$STATUS" != "200" ]; then
+              echo "::error::$p serves $LIVE (download HTTP $STATUS), expected $VERSION"
+              FAILED=1
+            fi
+          done
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Downloads: https://opensunsama.com/download" >> $GITHUB_STEP_SUMMARY
+          exit $FAILED

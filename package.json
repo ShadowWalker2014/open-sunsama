@@ -59,6 +59,7 @@
     "db:migrate": "turbo run db:migrate --filter=@open-sunsama/database",
     "db:push": "turbo run db:push --filter=@open-sunsama/database",
     "db:studio": "turbo run db:studio --filter=@open-sunsama/database",
+    "release": "node scripts/release.mjs",
     "version:sync": "node -e \"const v=require('./package.json').version; const fs=require('fs'); ['apps/api/package.json','apps/web/package.json','apps/desktop/package.json','apps/desktop/src-tauri/tauri.conf.json','apps/mobile/package.json','apps/mobile/src-tauri/tauri.conf.json','apps/expo-mobile/package.json'].forEach(f=>{const j=JSON.parse(fs.readFileSync(f));j.version=v;fs.writeFileSync(f,JSON.stringify(j,null,2)+'\\n');console.log('✓',f,'→',v)});\""
   },
   "devDependencies": {
