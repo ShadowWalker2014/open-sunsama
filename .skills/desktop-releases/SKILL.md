@@ -37,6 +37,8 @@ bun run release
 - **Each platform builds only the package it ships:** `app,dmg` on macOS, `appimage` on Linux, `nsis` on Windows. The unused Linux `.rpm` used to take 5 hours.
 - **Rust builds are cached** with `Swatinem/rust-cache`.
 
+**macOS updater files get arch-specific names.** Tauri names both Mac updaters `Open Sunsama.app.tar.gz`, so the workflow uploads them as `Open Sunsama_<version>_macos-arm64.app.tar.gz` and `..._macos-x64.app.tar.gz`. Before this, the second Mac build overwrote the first, and one architecture's auto-update failed its signature check.
+
 ---
 
 ## Build Outputs

@@ -220,6 +220,14 @@ jobs:
           fi
           echo "updater_file=$UPDATER_FILE" >> $GITHUB_OUTPUT
 
+          # Both macOS builds name their updater "Open Sunsama.app.tar.gz"; give each an
+          # arch-specific name in S3 so one build can't overwrite the other's.
+          case "$UPDATER_FILE" in
+            *.app.tar.gz) UPDATER_KEY="Open Sunsama_${{ steps.version.outputs.version }}_${{ matrix.artifact_name }}.app.tar.gz" ;;
+            *) UPDATER_KEY="$UPDATER_FILE" ;;
+          esac
+          echo "updater_key=$UPDATER_KEY" >> $GITHUB_OUTPUT
+
           # Read signature file content
           SIG_FILE="${UPDATER_FILE}.sig"
           if [ -f "$SIG_FILE" ]; then
@@ -244,12 +252,14 @@ jobs:
           aws s3 cp "${{ steps.find_file.outputs.path }}" "$S3_DEST/${{ steps.find_file.outputs.file }}" $S3_OPTS
 
           UPDATER_FILE="${{ steps.find_updater.outputs.updater_file }}"
+          UPDATER_KEY="${{ steps.find_updater.outputs.updater_key }}"
           if [ -n "$UPDATER_FILE" ]; then
-            for f in "$UPDATER_FILE" "$UPDATER_FILE.sig"; do
-              if [ "${{ matrix.updater_bundle_path }}/$f" != "${{ steps.find_file.outputs.path }}" ] && [ -f "${{ matrix.updater_bundle_path }}/$f" ]; then
-                aws s3 cp "${{ matrix.updater_bundle_path }}/$f" "$S3_DEST/$f" $S3_OPTS
-              fi
-            done
+            if [ "${{ matrix.updater_bundle_path }}/$UPDATER_FILE" != "${{ steps.find_file.outputs.path }}" ]; then
+              aws s3 cp "${{ matrix.updater_bundle_path }}/$UPDATER_FILE" "$S3_DEST/$UPDATER_KEY" $S3_OPTS
+            fi
+            if [ -f "${{ matrix.updater_bundle_path }}/$UPDATER_FILE.sig" ]; then
+              aws s3 cp "${{ matrix.updater_bundle_path }}/$UPDATER_FILE.sig" "$S3_DEST/$UPDATER_KEY.sig" $S3_OPTS
+            fi
           fi
 
       - name: Register release with API
@@ -258,7 +268,7 @@ jobs:
           # Build updater URL if updater file exists
           UPDATER_URL=""
           if [ -n "${{ steps.find_updater.outputs.updater_file }}" ]; then
-            UPDATER_URL="${{ env.API_URL }}/uploads/releases/v${{ steps.version.outputs.version }}/${{ steps.find_updater.outputs.updater_file }}"
+            UPDATER_URL="${{ env.API_URL }}/uploads/releases/v${{ steps.version.outputs.version }}/${{ steps.find_updater.outputs.updater_key }}"
           fi
 
           # Escape signature for JSON (replace newlines)
@@ -305,7 +315,10 @@ jobs:
             LIVE=$(echo "$LATEST" | jq -r ".data[\"$p\"].version // \"missing\"")
             SIZE=$(echo "$LATEST" | jq -r ".data[\"$p\"].fileSize // 0")
             URL=$(echo "$LATEST" | jq -r ".data[\"$p\"].downloadUrl // \"\"")
-            STATUS=$(curl -s -o /dev/null -w '%{http_code}' -I "$URL" || echo 000)
+            UPDATER=$(echo "$LATEST" | jq -r ".data[\"$p\"].updaterUrl // \"\"")
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' -I "${URL// /%20}" || echo 000)
+            UPDATER_STATUS=$(curl -s -o /dev/null -w '%{http_code}' -I "${UPDATER// /%20}" || echo 000)
+            [ "$UPDATER_STATUS" != "200" ] && STATUS="$STATUS, updater $UPDATER_STATUS"
             echo "| $p | $LIVE | $((SIZE / 1024 / 1024)) MB | HTTP $STATUS |" >> $GITHUB_STEP_SUMMARY
             if [ "$LIVE" != "$VERSION" ] || [ "$STATUS" != "200" ]; then
               echo "::error::$p serves $LIVE (download HTTP $STATUS), expected $VERSION"
