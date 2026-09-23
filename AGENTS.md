@@ -357,7 +357,7 @@ PG Boss has built-in recovery mechanisms:
 
 **Ed25519 signing key:** `~/.tauri/opensunsama.key` (password: `opensunsama-updater-2026`)
 **GitHub Secrets:** `TAURI_SIGNING_PRIVATE_KEY`, `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`
-**Update endpoint:** `GET /releases/update/:target/:current_version` (returns 204 or Tauri JSON)
+**Update endpoint:** `GET /releases/update/:target/:current_version` (returns 204 or Tauri JSON). Tauri fills `{{target}}` with the OS alone (`darwin`, `linux`, `windows`), so the API answers those with Tauri's static format: one `platforms` entry per `{os}-{arch}`. Installed apps depend on this URL shape; don't change it.
 
 ### Critical CI/CD Notes
 
