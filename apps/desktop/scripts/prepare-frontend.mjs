@@ -17,10 +17,25 @@ const isMarketingAsset = (path) => {
 rmSync(dest, { recursive: true, force: true });
 cpSync(src, dest, { recursive: true, filter: (path) => !isMarketingAsset(path) });
 
-const sizeOf = (dir) =>
-  readdirSync(dir, { withFileTypes: true }).reduce((total, entry) => {
+const files = (dir) =>
+  readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const path = join(dir, entry.name);
-    return total + (entry.isDirectory() ? sizeOf(path) : statSync(path).size);
-  }, 0);
+    return entry.isDirectory() ? files(path) : [{ path, size: statSync(path).size }];
+  });
+const mb = (bytes) => (bytes / 1024 / 1024).toFixed(1);
+const shipped = files(dest);
+const total = shipped.reduce((sum, f) => sum + f.size, 0);
+console.log(`${basename(dest)}: ${mb(total)} MB`);
 
-console.log(`${basename(dest)}: ${(sizeOf(dest) / 1024 / 1024).toFixed(1)} MB (web dist was ${(sizeOf(src) / 1024 / 1024).toFixed(1)} MB)`);
+// Guard: the desktop frontend is ~20 MB. If it grows past the limit, someone added large
+// files to apps/web/public that the desktop app would ship. Exclude them in
+// isMarketingAsset above (or shrink them) instead of raising the limit.
+const LIMIT_MB = 60;
+if (total > LIMIT_MB * 1024 * 1024) {
+  console.error(`\n✗ Desktop frontend is ${mb(total)} MB (limit ${LIMIT_MB} MB). Largest files:`);
+  shipped
+    .sort((a, b) => b.size - a.size)
+    .slice(0, 15)
+    .forEach((f) => console.error(`  ${mb(f.size).padStart(7)} MB  ${relative(dest, f.path)}`));
+  process.exit(1);
+}

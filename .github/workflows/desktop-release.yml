@@ -76,6 +76,17 @@ jobs:
             echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
           fi
 
+      # The version baked into the app must match the version we register, or the auto-updater
+      # keeps offering the same update forever. Use `bun run release` to keep them in sync.
+      - name: Check version matches tauri.conf.json
+        shell: bash
+        run: |
+          APP_VERSION=$(node -p "require('./apps/desktop/src-tauri/tauri.conf.json').version")
+          if [ "$APP_VERSION" != "${{ steps.version.outputs.version }}" ]; then
+            echo "::error::Building ${{ steps.version.outputs.version }} but tauri.conf.json says $APP_VERSION. Release with 'bun run release' so the tag and app version match."
+            exit 1
+          fi
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
