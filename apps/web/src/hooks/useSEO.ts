@@ -169,7 +169,7 @@ export const SEO_CONFIGS = {
     },
     aiIntegration: {
       title: "AI & MCP Integration",
-      description: "Control your planner from any AI agent. 23 MCP tools let Claude, ChatGPT, Cursor, and any MCP client create tasks and schedule time blocks.",
+      description: "Control your planner from any AI agent. 24 MCP tools let Claude, ChatGPT, Cursor, and any MCP client create tasks and schedule time blocks.",
       canonical: "/features/ai-integration",
     },
     commandPalette: {
@@ -191,7 +191,7 @@ export const SEO_CONFIGS = {
     },
     developers: {
       title: "Daily Planner for Developers - Keyboard-First & Open Source",
-      description: "The daily planner built for developers. Command palette, full REST API, 23 MCP tools, and open source. Drive it from Claude Code or Cursor.",
+      description: "The daily planner built for developers. Command palette, full REST API, 24 MCP tools, and open source. Drive it from Claude Code or Cursor.",
       canonical: "/for/developers",
     },
     remoteWorkers: {
@@ -202,7 +202,7 @@ export const SEO_CONFIGS = {
   },
   openSourceTaskManager: {
     title: "Open Source Task Manager - Self-Hosted",
-    description: "An open-source task manager with time blocking. Self-host with Docker, full REST API, 23 MCP tools, and control from any AI agent. Own your data.",
+    description: "An open-source task manager with time blocking. Self-host with Docker, full REST API, 24 MCP tools, and control from any AI agent. Own your data.",
     canonical: "/open-source-task-manager",
   },
 } as const;

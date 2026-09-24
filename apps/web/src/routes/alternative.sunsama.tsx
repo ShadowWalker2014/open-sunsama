@@ -430,7 +430,7 @@ function FAQSection() {
     },
     {
       question: "How does the AI/MCP integration work?",
-      answer: "Open Sunsama's MCP (Model Context Protocol) server gives your AI assistant 23 tools to read and update your tasks, subtasks, and time blocks. Tools that delete data are marked as destructive, so Claude and ChatGPT ask before running them. You can disconnect any assistant under Settings → MCP.",
+      answer: "Open Sunsama's MCP (Model Context Protocol) server gives your AI assistant 24 tools to read and update your tasks, subtasks, and time blocks. Tools that delete data are marked as destructive, so Claude and ChatGPT ask before running them. You can disconnect any assistant under Settings → MCP.",
     },
   ];
 
@@ -561,7 +561,7 @@ export default function AlternativeSunsamaPage() {
     },
     {
       question: "How does the AI/MCP integration work?",
-      answer: "Open Sunsama's MCP (Model Context Protocol) server gives your AI assistant 23 tools to read and update your tasks, subtasks, and time blocks. Tools that delete data are marked as destructive, so Claude and ChatGPT ask before running them. You can disconnect any assistant under Settings → MCP.",
+      answer: "Open Sunsama's MCP (Model Context Protocol) server gives your AI assistant 24 tools to read and update your tasks, subtasks, and time blocks. Tools that delete data are marked as destructive, so Claude and ChatGPT ask before running them. You can disconnect any assistant under Settings → MCP.",
     },
   ];
 

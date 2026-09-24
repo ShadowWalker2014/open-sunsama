@@ -157,7 +157,7 @@ function ComparisonTable() {
     { name: "Focus mode", akiflow: false, us: true, highlight: true },
     { name: "Open source", akiflow: false, us: true, highlight: true },
     { name: "Self-hosted option", akiflow: false, us: true, highlight: true },
-    { name: "MCP/API access", akiflow: "Limited", us: "23 MCP tools + REST API" },
+    { name: "MCP/API access", akiflow: "Limited", us: "24 MCP tools + REST API" },
   ];
 
   return (
