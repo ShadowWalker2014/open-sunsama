@@ -44,6 +44,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder /app/apps/api/dist ./dist
 COPY --from=builder /app/apps/api/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
+# SQL migrations, applied by `node dist/migrate.js` or on start with MIGRATE_ON_START=true
+COPY --from=builder /app/packages/database/drizzle ./drizzle
+# Start command for the self-hosted compose stack (generates missing secrets)
+COPY apps/api/docker-start.sh ./
 
 # Expose port
 ENV PORT=3001

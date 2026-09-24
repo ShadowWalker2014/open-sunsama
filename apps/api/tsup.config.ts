@@ -1,7 +1,8 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  // migrate.ts is the one-off runner: `node dist/migrate.js`
+  entry: ['src/index.ts', 'src/migrate.ts'],
   format: ['esm'],
   dts: true,
   clean: true,

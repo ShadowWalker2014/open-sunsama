@@ -1,147 +1,63 @@
 export const frontmatter = {
   title: "Docker Deployment",
   description:
-    "Deploy Open Sunsama using Docker and Docker Compose. Complete guide for self-hosting your own instance.",
+    "Self-host Open Sunsama with Docker Compose: one command builds the API and web app, starts PostgreSQL and creates the database tables.",
   order: 1,
   section: "self-hosting",
 };
 
-Open Sunsama can be self-hosted using Docker for maximum privacy and control. This guide covers deploying with Docker Compose.
+One command builds Open Sunsama from source, starts PostgreSQL, and creates the database tables. You get the web app, the REST API, and the MCP connector for AI agents, all on your own machine or server.
 
 ## Prerequisites
 
-- Docker 20.10+
-- Docker Compose 2.0+
-- 2GB RAM minimum
-- Domain name (for HTTPS)
+- Docker 20.10+ with Docker Compose 2.24+ (check with `docker compose version`)
+- 2 GB of RAM or more (building the web app needs it)
+- For a server: a domain name and a reverse proxy for HTTPS
 
 ## Quick Start
-
-### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/ShadowWalker2014/open-sunsama.git
 cd open-sunsama
+docker compose up -d --build
 ```
 
-### 2. Configure Environment
+The first build takes a few minutes. Then open `http://localhost:3000` and create your account. To check the API, run `curl http://localhost:3001/health`.
 
-Copy the example environment file:
+This starts four containers:
+
+- **postgres:** PostgreSQL 16. Its port is published on `127.0.0.1:5431` only, so it is never reachable from the internet.
+- **api:** the API on port 3001. On every start it applies any new database migrations. On the first start it also generates `JWT_SECRET` and `CALENDAR_ENCRYPTION_KEY` and stores them in the `api_secrets` volume, so logins survive restarts.
+- **redis:** Redis, which relays live updates between the API and open browser tabs. Also bound to localhost.
+- **web:** the web app on port 3000.
+
+`docker compose up -d postgres` starts only PostgreSQL, on `localhost:5431`. That is the setup for [running from source](https://github.com/ShadowWalker2014/open-sunsama#-get-started).
+
+## Run on a Server
+
+### 1. Set your public URLs
+
+Create a `.env` file in the repository root:
 
 ```bash
-cp .env.example .env
-```
-
-Edit `.env` with your configuration:
-
-```bash
-# Database
-DATABASE_URL=postgresql://postgres:your_password@db:5432/opensunsama
-
-# API
-JWT_SECRET=your-super-secret-jwt-key-min-32-chars
-PORT=3001
-CORS_ORIGIN=https://your-domain.com
-
-# Web App
-VITE_API_URL=https://api.your-domain.com
-```
-
-### 3. Start Services
-
-```bash
-docker compose up -d
-```
-
-This starts:
-
-- PostgreSQL database
-- Open Sunsama API (port 3001)
-- Open Sunsama Web (port 3000)
-
-### 4. Run Migrations
-
-```bash
-docker compose exec api bun run db:migrate
-```
-
-### 5. Access the App
-
-Open `http://localhost:3000` in your browser.
-
-## Production Deployment
-
-### Docker Compose File
-
-Create `docker-compose.prod.yml`:
-
-```yaml
-version: "3.8"
-
-services:
-  db:
-    image: postgres:15-alpine
-    restart: always
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: opensunsama
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  api:
-    image: ghcr.io/shadowwalker2014/open-sunsama-api:latest
-    restart: always
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      DATABASE_URL: postgresql://postgres:${DB_PASSWORD}@db:5432/opensunsama
-      JWT_SECRET: ${JWT_SECRET}
-      PORT: 3001
-      CORS_ORIGIN: ${CORS_ORIGIN}
-    ports:
-      - "3001:3001"
-
-  web:
-    image: ghcr.io/shadowwalker2014/open-sunsama-web:latest
-    restart: always
-    depends_on:
-      - api
-    environment:
-      VITE_API_URL: ${API_URL}
-    ports:
-      - "3000:3000"
-
-volumes:
-  postgres_data:
-```
-
-### Environment Variables
-
-Create `.env.prod`:
-
-```bash
-DB_PASSWORD=secure-database-password
-JWT_SECRET=your-jwt-secret-at-least-32-characters
-CORS_ORIGIN=https://tasks.your-domain.com
 API_URL=https://api.tasks.your-domain.com
+WEB_APP_URL=https://tasks.your-domain.com
+POSTGRES_PASSWORD=a-long-random-password
 ```
 
-### Start Production
+The web app has `API_URL` built into its JavaScript, and the API uses `WEB_APP_URL` for CORS. Both must match the exact addresses people type in the browser, including `https://`.
+
+`POSTGRES_PASSWORD` only takes effect when the database volume is first created. Set it before your first start.
+
+### 2. Start the stack
 
 ```bash
-docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+docker compose up -d --build
 ```
 
-## Reverse Proxy (Nginx)
+### 3. Put HTTPS in front
 
-Configure Nginx for HTTPS:
+Point `WEB_APP_URL` at port 3000 and `API_URL` at port 3001. The API also serves a WebSocket at `/ws`, so the proxy must pass the `Upgrade` header. With Nginx:
 
 ```nginx
 # API
@@ -185,45 +101,76 @@ server {
 }
 ```
 
-## Configuration Options
+Ports 3000 and 3001 are published on all interfaces. On a public server, let your firewall allow only 80 and 443.
 
-### Required Environment Variables
+## Configuration
 
-| Variable       | Description                           |
-| -------------- | ------------------------------------- |
-| `DATABASE_URL` | PostgreSQL connection string          |
-| `JWT_SECRET`   | Secret for JWT signing (min 32 chars) |
-| `PORT`         | API server port                       |
-| `CORS_ORIGIN`  | Allowed origins for CORS              |
-| `VITE_API_URL` | API URL for the web app               |
+Docker Compose reads `.env` from the repository root. After you change it, run `docker compose up -d --build` again. The rebuild matters only for `API_URL`, since the web app bakes it in.
 
-### Optional Environment Variables
+### Core settings
 
-| Variable           | Default | Description                     |
-| ------------------ | ------- | ------------------------------- |
-| `ROLLOVER_ENABLED` | `true`  | Enable automatic task rollover  |
-| `REDIS_URL`        | -       | Redis URL for WebSocket scaling |
-| `API_URL`          | `http://localhost:3001` | Public API URL. It's the OAuth issuer for MCP connectors, so your connector URL is `${API_URL}/mcp` |
-| `WEB_APP_URL`      | `http://localhost:3000` | Public web app URL, where the MCP consent screen lives |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | - | Google OAuth client for Google Calendar sync. Add `${API_URL}/calendar/oauth/google/callback` as an authorized redirect URI |
-| `WEBHOOK_BASE_URL` | `API_URL` | Public https URL Google Calendar sends change notifications to (`${WEBHOOK_BASE_URL}/webhooks/google/calendar`). If neither this nor `API_URL` is a public https URL, the server skips push notifications and polls Google every 5 minutes instead |
+| Variable                  | Default                 | Description                                                                                                                  |
+| ------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `API_URL`                 | `http://localhost:3001` | Public API URL. The web app calls it, and it is the OAuth issuer for MCP connectors, so your connector URL is `${API_URL}/mcp` |
+| `WEB_APP_URL`             | `http://localhost:3000` | Public web app URL. Used for CORS, email links, and the MCP consent screen                                                  |
+| `POSTGRES_PASSWORD`       | `opensunsama`           | Database password, read when the volume is first created                                                                     |
+| `JWT_SECRET`              | generated               | Signs login tokens. Set your own with `openssl rand -base64 32`                                                              |
+| `CALENDAR_ENCRYPTION_KEY` | generated               | Encrypts stored calendar credentials. Set your own with `openssl rand -hex 32`                                              |
+| `ROLLOVER_ENABLED`        | `true`                  | Moves unfinished tasks to the next day at midnight                                                                           |
+
+If you set `JWT_SECRET` or `CALENDAR_ENCRYPTION_KEY` yourself, the generated values are ignored. Changing `JWT_SECRET` signs everyone out. Changing `CALENDAR_ENCRYPTION_KEY` means reconnecting calendars.
+
+### Features that need your own keys
+
+Tasks, time blocks, focus mode, rollover, the REST API and the MCP connector work without any keys. These features call outside services:
+
+| Feature                        | Variables                                                                                                    |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| Google Calendar sync           | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`. The redirect URI is `${API_URL}/calendar/oauth/google/callback`   |
+| Instant Google Calendar updates | `WEBHOOK_BASE_URL` (defaults to `API_URL`). Google sends change notifications to `${WEBHOOK_BASE_URL}/webhooks/google/calendar`. Without a public `https://` URL, the server polls Google every 5 minutes instead |
+| Outlook Calendar sync          | `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`. The redirect URI is `${API_URL}/calendar/oauth/outlook/callback` |
+| Email (reminders and summaries) | `RESEND_API_KEY`, `FROM_EMAIL`                                                                              |
+| File uploads                   | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET_NAME`, `AWS_ENDPOINT_URL`, `AWS_DEFAULT_REGION` (any S3-compatible storage) |
+| Push notifications             | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (generate with `npx web-push generate-vapid-keys`)   |
+
+## Desktop and Mobile Apps
+
+The desktop and mobile apps on the [download page](/download) connect only to `https://api.opensunsama.com`. Their API address is fixed when they are built, so they can't sign in to your server. Use the web app in your browser instead.
+
+To run the desktop app against your server, build it yourself: set `VITE_API_URL` (and `VITE_WS_URL`, for example `wss://api.tasks.your-domain.com`) when you build `apps/desktop`, and add your API's `https://` and `wss://` URLs to the `http:default` allow list in `apps/desktop/src-tauri/capabilities/default.json`.
+
+AI agents work with your server too. Add `${API_URL}/mcp` as a connector. Claude and ChatGPT need it served over public HTTPS.
+
+## Updating
+
+```bash
+git pull
+docker compose up -d --build
+```
+
+The API applies new migrations when it starts. To run them on their own:
+
+```bash
+docker compose run --rm api node dist/migrate.js
+```
 
 ## Database Backup
 
 ### Manual Backup
 
 ```bash
-docker compose exec db pg_dump -U postgres opensunsama > backup.sql
+docker compose exec postgres pg_dump -U opensunsama opensunsama > backup.sql
 ```
 
 ### Automated Backup Script
 
 ```bash
 #!/bin/bash
+cd /path/to/open-sunsama
 BACKUP_DIR=/var/backups/opensunsama
 DATE=$(date +%Y%m%d_%H%M%S)
 
-docker compose exec -T db pg_dump -U postgres opensunsama | gzip > $BACKUP_DIR/backup_$DATE.sql.gz
+docker compose exec -T postgres pg_dump -U opensunsama opensunsama | gzip > $BACKUP_DIR/backup_$DATE.sql.gz
 
 # Keep last 7 days
 find $BACKUP_DIR -name "backup_*.sql.gz" -mtime +7 -delete
@@ -238,24 +185,7 @@ Add to crontab:
 ### Restore
 
 ```bash
-gunzip < backup.sql.gz | docker compose exec -T db psql -U postgres opensunsama
-```
-
-## Updating
-
-### Pull Latest Images
-
-```bash
-docker compose pull
-docker compose up -d
-```
-
-### Run Migrations
-
-After updating, run any new migrations:
-
-```bash
-docker compose exec api bun run db:migrate
+gunzip < backup.sql.gz | docker compose exec -T postgres psql -U opensunsama opensunsama
 ```
 
 ## Monitoring
@@ -276,45 +206,27 @@ docker compose logs -f api
 curl http://localhost:3001/health
 ```
 
-Expected response:
-
-```json
-{
-  "status": "ok",
-  "pgBossRunning": true
-}
-```
+A healthy API answers with `"status": "ok"` and `"pgBossRunning": true` under `jobs`. PG Boss runs rollover, reminders and calendar sync.
 
 ## Troubleshooting
 
-### Database Connection Failed
+### The API keeps restarting
 
-1. Check if PostgreSQL is running:
-   ```bash
-   docker compose ps db
-   ```
-2. Verify connection string in `DATABASE_URL`
-3. Check database logs:
-   ```bash
-   docker compose logs db
-   ```
+Run `docker compose logs api`. A line starting with `[Migrations] Failed` means the database schema couldn't be updated. The error below it names the table or column.
 
-### API Not Starting
+### CORS errors in the browser
 
-1. Check logs:
-   ```bash
-   docker compose logs api
-   ```
-2. Verify all required environment variables
-3. Ensure database migrations ran successfully
+`WEB_APP_URL` must equal the address in your browser's address bar, including `https://` and any port. Fix `.env`, then run `docker compose up -d`.
 
-### CORS Errors
+### The web app calls `localhost:3001` on your server
 
-1. Verify `CORS_ORIGIN` matches your web app domain
-2. Include protocol: `https://tasks.your-domain.com`
+The web app was built before you set `API_URL`. Rebuild it with `docker compose up -d --build`.
+
+### Port 5431, 6379, 3000 or 3001 is already in use
+
+Stop whatever uses the port, or change the host side of the mapping in `docker-compose.yml`, for example `"127.0.0.1:5433:5432"`.
 
 ## Next Steps
 
-- [Railway Deployment](/docs/self-hosting/railway) - One-click deployment
-- [API Reference](/docs/api/authentication) - API documentation
+- [API Reference](/docs/api/authentication) - REST API documentation
 - [MCP Setup](/docs/mcp/overview) - Connect AI agents
