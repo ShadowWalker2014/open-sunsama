@@ -49,13 +49,14 @@ opensunsama/
 | `/tasks/*`              | Yes   | Task CRUD + reorder              |
 | `/tasks/:id/subtasks/*` | Yes   | Subtask CRUD                     |
 | `/time-blocks/*`        | Yes   | Time block CRUD + cascade resize |
+| `/calendar-events`      | Yes   | Synced events (`date` or `from`/`to`; `calendar:read`) |
 | `/api-keys/*`           | JWT   | API key management               |
 | `/mcp`                  | OAuth/API key | Remote MCP server (Streamable HTTP) |
 | `/oauth/*`, `/.well-known/*` | Mixed | OAuth 2.1 for MCP clients     |
 | `/uploads/*`            | Yes   | S3 file uploads                  |
 
 **Auth:** JWT (`Bearer <token>`), API Key (`X-API-Key: os_<key>`), or MCP OAuth token (`Bearer osat_<token>`)  
-**Scopes:** `tasks:read`, `tasks:write`, `time-blocks:read`, `time-blocks:write`, `user:read`, `user:write`
+**Scopes:** `tasks:read`, `tasks:write`, `time-blocks:read`, `time-blocks:write`, `calendar:read`, `user:read`, `user:write`
 
 ### Web (`apps/web`)
 
@@ -100,7 +101,7 @@ opensunsama/
 
 ---
 
-## MCP (23 tools)
+## MCP (24 tools)
 
 Two ways in, same tools (`mcp/src/tools`, shared via `@open-sunsama/mcp/server`):
 
@@ -113,6 +114,7 @@ E2E test of the OAuth flow against a local API: `MCP_E2E_API_URL=http://localhos
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Tasks       | `list_tasks`, `get_task`, `create_task`, `update_task`, `complete_task`, `uncomplete_task`, `delete_task`, `schedule_task`, `reorder_tasks`            |
 | Time Blocks | `list_time_blocks`, `get_time_block`, `create_time_block`, `update_time_block`, `delete_time_block`, `link_task_to_time_block`, `get_schedule_for_day` |
+| Calendar    | `list_calendar_events` (read-only events synced from Google/Outlook/iCloud; also shown in `get_schedule_for_day`)                                   |
 | Subtasks    | `list_subtasks`, `create_subtask`, `toggle_subtask`, `update_subtask`, `delete_subtask`                                                                |
 | User        | `get_user_profile`, `update_user_profile`                                                                                                              |
 
@@ -171,7 +173,7 @@ Quick reference:
 
 - **Source of truth:** `package.json` (root)
 - **Sync command:** `bun run version:sync`
-- **Current version:** v1.0.12
+- **Current version:** v1.0.13
 
 ---
 

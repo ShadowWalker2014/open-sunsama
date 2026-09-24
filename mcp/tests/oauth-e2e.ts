@@ -9,6 +9,10 @@
  * Needs a running API that can issue sessions for a throwaway account, so run
  * it against a local stack, never production:
  *   MCP_E2E_API_URL=http://localhost:3101 bun run tests/oauth-e2e.ts
+ *
+ * Set MCP_E2E_DATABASE_URL to that stack's database to also seed synced
+ * calendar events and check list_calendar_events / get_schedule_for_day
+ * against them (there is no API to create synced events without a provider).
  */
 
 import { createHash, randomBytes } from "node:crypto";
@@ -120,6 +124,64 @@ async function mcpCall(token: string, method: string, params: unknown = {}, id =
   return { status: res.status, body: await json(res), headers: res.headers };
 }
 
+function toolText(result: { content?: unknown }): string {
+  return ((result.content as Array<{ text?: string }>) ?? []).map((c) => c.text ?? "").join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// Calendar fixtures: a Tokyo user (UTC+9) with a Work and a Personal calendar
+// ---------------------------------------------------------------------------
+
+const CAL_DAY = "2030-01-15";
+
+async function seedCalendar(session: string): Promise<boolean> {
+  const dbUrl = process.env.MCP_E2E_DATABASE_URL;
+  if (!dbUrl) return false;
+  const headers = { "Content-Type": "application/json", Authorization: `Bearer ${session}` };
+  await fetch(`${API}/auth/me`, { method: "PATCH", headers, body: JSON.stringify({ timezone: "Asia/Tokyo" }) });
+  const me = await json(await fetch(`${API}/auth/me`, { headers }));
+  const userId = me.data.id as string;
+
+  const { SQL } = await import("bun");
+  const db = new SQL(dbUrl);
+  const [account] = await db`
+    INSERT INTO calendar_accounts (user_id, provider, provider_account_id, email)
+    VALUES (${userId}, 'google', ${"e2e-" + userId}, 'e2e@example.com') RETURNING id`;
+  const calendar = async (name: string, enabled: boolean) =>
+    (
+      await db`
+        INSERT INTO calendars (account_id, user_id, external_id, name, is_enabled)
+        VALUES (${account.id}, ${userId}, ${name}, ${name}, ${enabled}) RETURNING id`
+    )[0].id as string;
+  const work = await calendar("Work", true);
+  const personal = await calendar("Personal", true);
+  const hidden = await calendar("Hidden", false);
+
+  const event = (
+    calendarId: string,
+    title: string,
+    start: string,
+    end: string,
+    extra: { allDay?: boolean; location?: string; description?: string; status?: string; response?: string } = {}
+  ) => db`
+    INSERT INTO calendar_events (calendar_id, user_id, external_id, title, description, location, start_time, end_time, is_all_day, status, response_status)
+    VALUES (${calendarId}, ${userId}, ${title}, ${title}, ${extra.description ?? null}, ${extra.location ?? null},
+            ${new Date(start)}, ${new Date(end)}, ${extra.allDay ?? false}, ${extra.status ?? "confirmed"}, ${extra.response ?? null})`;
+
+  // 10:00-11:00 Tokyo on CAL_DAY.
+  await event(work, "Design review", "2030-01-15T01:00:00Z", "2030-01-15T02:00:00Z", { location: "Room 4", description: "SECRET-DESCRIPTION" });
+  await event(work, "Company offsite", "2030-01-15T00:00:00Z", "2030-01-16T00:00:00Z", { allDay: true });
+  await event(work, "Skipped sync", "2030-01-15T06:00:00Z", "2030-01-15T06:30:00Z", { response: "declined" });
+  await event(personal, "Dentist", "2030-01-15T08:00:00Z", "2030-01-15T09:00:00Z");
+  await event(work, "Cancelled meeting", "2030-01-15T03:00:00Z", "2030-01-15T04:00:00Z", { status: "cancelled" });
+  await event(hidden, "Hidden calendar event", "2030-01-15T02:00:00Z", "2030-01-15T03:00:00Z");
+  // The day before in Tokyo: an all-day event, and 23:00-23:30 Tokyo (14:00Z).
+  await event(work, "Yesterday holiday", "2030-01-14T00:00:00Z", "2030-01-15T00:00:00Z", { allDay: true });
+  await event(work, "Late call", "2030-01-14T14:00:00Z", "2030-01-14T14:30:00Z");
+  await db.close();
+  return true;
+}
+
 // ---------------------------------------------------------------------------
 // In-memory OAuth client provider for the SDK
 // ---------------------------------------------------------------------------
@@ -224,7 +286,15 @@ async function main() {
   check("connected after auth", client.getServerVersion()?.name === "open-sunsama", client.getServerVersion());
 
   const { tools } = await client.listTools();
-  check("lists all 23 tools", tools.length === 23, tools.length);
+  check("lists all 24 tools", tools.length === 24, tools.length);
+  const calendarTool = tools.find((t) => t.name === "list_calendar_events");
+  check("list_calendar_events is read-only", calendarTool?.annotations?.readOnlyHint === true, calendarTool?.annotations);
+  check(
+    "list_calendar_events needs calendar:read",
+    JSON.stringify(calendarTool?._meta?.securitySchemes) === JSON.stringify([{ type: "oauth2", scopes: ["calendar:read"] }]),
+    calendarTool?._meta
+  );
+  check("OAuth grant includes calendar:read", provider.savedTokens?.scope?.split(" ").includes("calendar:read") === true, provider.savedTokens?.scope);
   const createTask = tools.find((t) => t.name === "create_task");
   check("tools carry titles", tools.every((t) => typeof t.title === "string" && t.title.length > 0));
   check(
@@ -259,6 +329,64 @@ async function main() {
   check("complete_task works", !done.isError, done.content);
   const profile = await client.callTool({ name: "get_user_profile", arguments: {} });
   check("get_user_profile works", JSON.stringify(profile.content).includes("mcp-e2e-"), profile.content);
+
+  console.log("\nCalendar events");
+  const seeded = await seedCalendar(session);
+  if (!seeded) {
+    const empty = toolText(await client.callTool({ name: "list_calendar_events", arguments: { date: CAL_DAY } }));
+    check("list_calendar_events with no calendars", empty.startsWith("No calendar events"), empty);
+    const day = toolText(await client.callTool({ name: "get_schedule_for_day", arguments: { date: CAL_DAY } }));
+    check("get_schedule_for_day has both sections", day.includes("CALENDAR EVENTS") && day.includes("No calendar events.") && day.includes("TIME BLOCKS"), day);
+    console.log("  (set MCP_E2E_DATABASE_URL to seed events and run the full calendar checks)");
+  } else {
+    const dayResult = await client.callTool({ name: "list_calendar_events", arguments: { date: CAL_DAY } });
+    const day = toolText(dayResult);
+    check("list_calendar_events succeeds", !dayResult.isError, day);
+    check("times are in the user's timezone", day.includes("(times in Asia/Tokyo)") && day.includes("10:00 - 11:00: Design review [Work] @ Room 4"), day);
+    check("all-day event on the day is listed first", day.split("\n")[1] === "All day: Company offsite [Work]", day);
+    check("declined event is marked", day.includes("Skipped sync [Work] (declined)"), day);
+    check("events from every enabled calendar", day.includes("17:00 - 18:00: Dentist [Personal]"), day);
+    check("previous local day's events are excluded", !day.includes("Yesterday holiday") && !day.includes("Late call"), day);
+    check("cancelled events are excluded", !day.includes("Cancelled meeting"), day);
+    check("disabled calendars are excluded", !day.includes("Hidden calendar event"), day);
+    check("descriptions are never returned", !day.includes("SECRET-DESCRIPTION"), day);
+
+    const range = toolText(await client.callTool({ name: "list_calendar_events", arguments: { from: "2030-01-14", to: CAL_DAY } }));
+    check(
+      "range groups events by local day",
+      range.includes("2030-01-14:\n  All day: Yesterday holiday [Work]\n  23:00 - 23:30: Late call [Work]") && range.includes(`${CAL_DAY}:`),
+      range
+    );
+    const personalOnly = toolText(await client.callTool({ name: "list_calendar_events", arguments: { date: CAL_DAY, calendars: ["personal"] } }));
+    check("calendar filter by name", personalOnly.includes("Dentist") && !personalOnly.includes("Design review"), personalOnly);
+    const tooLong = await client.callTool({ name: "list_calendar_events", arguments: { from: "2030-01-01", to: "2030-03-01" } });
+    check("ranges over 31 days are refused", tooLong.isError === true, tooLong.content);
+
+    await client.callTool({
+      name: "create_time_block",
+      arguments: { title: "Deep work", date: CAL_DAY, startTime: "13:00", endTime: "15:00" },
+    });
+    const schedule = toolText(await client.callTool({ name: "get_schedule_for_day", arguments: { date: CAL_DAY } }));
+    const eventsAt = schedule.indexOf("CALENDAR EVENTS");
+    const blocksAt = schedule.indexOf("TIME BLOCKS");
+    check(
+      "get_schedule_for_day shows events and time blocks in separate sections",
+      eventsAt >= 0 && blocksAt > eventsAt &&
+        schedule.slice(eventsAt, blocksAt).includes("10:00 - 11:00: Design review") &&
+        schedule.slice(blocksAt).includes("13:00 - 15:00: Deep work"),
+      schedule
+    );
+
+    const rest = await fetch(`${API}/calendar-events?date=${CAL_DAY}`, { headers: { Authorization: `Bearer ${provider.savedTokens!.access_token}` } });
+    const restBody = await json(rest);
+    check("REST GET /calendar-events?date= uses local days", rest.status === 200 && restBody.data?.length === 5 && restBody.meta?.timezone === "Asia/Tokyo", restBody);
+    const writeEvent = await fetch(`${API}/calendar-events`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${provider.savedTokens!.access_token}` },
+      body: JSON.stringify({ calendarId: "x", title: "x" }),
+    });
+    check("OAuth token cannot write calendar events", writeEvent.status === 403, writeEvent.status);
+  }
   await client.close();
 
   console.log("\nRefresh rotation");
@@ -407,6 +535,8 @@ async function main() {
         body: JSON.stringify({ title: "x", date: today, startTime: "09:00", endTime: "10:00" }),
       });
       check(`${cimd.name}: REST write outside scope → 403`, restWrite.status === 403, restWrite.status);
+      const noCalendar = await mcpCall(t.body.access_token, "tools/call", { name: "list_calendar_events", arguments: { date: today } });
+      check(`${cimd.name}: calendar tool without calendar:read explains how to reconnect`, noCalendar.body.result?.isError === true && JSON.stringify(noCalendar.body).includes("connect it again"), noCalendar.body);
     } catch (error) {
       check(`${cimd.name}: flow`, false, error);
     }
@@ -438,6 +568,39 @@ async function main() {
   check("X-API-Key works on /mcp", viaHeader.status === 200 && !(await json(viaHeader)).result?.isError);
   check("Bearer os_ API key works on /mcp", (await mcpCall(apiKey, "tools/list")).status === 200);
   check("bad bearer → 401", (await mcpCall("osat_bogus", "tools/list")).status === 401);
+
+  console.log("\nGrants from before calendar:read existed");
+  {
+    const cimdClaude = { clientId: "https://claude.ai/oauth/mcp-oauth-client-metadata", redirect: "https://claude.ai/api/mcp/auth_callback" };
+    const p = pkce();
+    const url = new URL(`${API}/oauth/authorize`);
+    Object.entries({ response_type: "code", client_id: cimdClaude.clientId, redirect_uri: cimdClaude.redirect, code_challenge: p.challenge, code_challenge_method: "S256", state: "s2", resource: MCP_URL.toString(), scope: "time-blocks:read tasks:read" }).forEach(([k, v]) => url.searchParams.set(k, v));
+    const cb = await consent(url, session);
+    const t = await tokenRequest({ grant_type: "authorization_code", code: cb.searchParams.get("code")!, client_id: cimdClaude.clientId, redirect_uri: cimdClaude.redirect, code_verifier: p.verifier, resource: MCP_URL.toString() });
+    const schedule = await mcpCall(t.body.access_token, "tools/call", { name: "get_schedule_for_day", arguments: { date: CAL_DAY } });
+    const text = JSON.stringify(schedule.body);
+    check("get_schedule_for_day still works without calendar:read", schedule.body.result?.isError !== true && text.includes("TIME BLOCKS"), schedule.body);
+    check("…and says how to add calendar access", text.includes("Not included") && text.includes("calendar:read"), schedule.body);
+    const restNoScope = await fetch(`${API}/calendar-events?date=${CAL_DAY}`, { headers: { Authorization: `Bearer ${t.body.access_token}` } });
+    check("REST GET /calendar-events without calendar:read → 403", restNoScope.status === 403, restNoScope.status);
+  }
+
+  console.log("\nAPI keys and calendar:read");
+  for (const [label, scopes, expected] of [
+    ["calendar:read key reads events", ["calendar:read"], 200],
+    ["legacy user:read key still reads events", ["user:read"], 200],
+    ["tasks-only key is refused", ["tasks:read"], 401],
+  ] as const) {
+    const key = (await json(
+      await fetch(`${API}/api-keys`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session}` },
+        body: JSON.stringify({ name: label, scopes }),
+      })
+    )).data?.key as string;
+    const res = await fetch(`${API}/calendar-events?date=${CAL_DAY}`, { headers: { "X-API-Key": key } });
+    check(label, res.status === expected, res.status);
+  }
   check("GET /mcp → 405", (await fetch(MCP_URL)).status === 405);
 
   console.log(`\n${passed} passed, ${failed} failed`);

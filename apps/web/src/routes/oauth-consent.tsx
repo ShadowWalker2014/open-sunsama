@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowLeftRight, BadgeCheck, CalendarClock, CheckSquare, Loader2, ShieldAlert, UserRound } from "lucide-react";
+import { ArrowLeftRight, BadgeCheck, CalendarClock, CalendarDays, CheckSquare, Loader2, ShieldAlert, UserRound } from "lucide-react";
 import { AuthLayout } from "@/components/layout/auth-layout";
 import { AppLogo } from "@/components/settings/app-logo";
 import { Button } from "@/components/ui";
@@ -44,6 +44,12 @@ const PERMISSION_GROUPS = [
     write: "time-blocks:write",
   },
   {
+    icon: CalendarDays,
+    label: "Meetings from your connected calendars",
+    read: "calendar:read",
+    write: null,
+  },
+  {
     icon: UserRound,
     label: "Profile (name, email, timezone)",
     read: "user:read",
@@ -51,9 +57,9 @@ const PERMISSION_GROUPS = [
   },
 ] as const;
 
-function describeAccess(scopes: string[], read: string, write: string): string | null {
+function describeAccess(scopes: string[], read: string, write: string | null): string | null {
   const canRead = scopes.includes(read);
-  const canWrite = scopes.includes(write);
+  const canWrite = write !== null && scopes.includes(write);
   if (canRead && canWrite) return "View and edit";
   if (canWrite) return "Edit";
   if (canRead) return "View";

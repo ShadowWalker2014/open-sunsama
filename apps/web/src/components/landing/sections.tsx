@@ -260,7 +260,7 @@ const SNIPPETS = [
 ];
 
 const STATS = [
-  { value: "23", label: "MCP tools" },
+  { value: "24", label: "MCP tools" },
   { value: "1", label: "URL for any agent" },
   { value: "3", label: "Desktop apps" },
   { value: "REST", label: "Public API" },

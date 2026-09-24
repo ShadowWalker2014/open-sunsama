@@ -1,45 +1,126 @@
-version: '3.8'
-
-# Docker Compose configuration for local development
-# Run: docker-compose up -d
+# Local development stack: postgres -> redis -> migrate -> api -> web
+#
+# Run: docker compose up
+# Then open http://localhost:3000
+#
+# Service-to-service URLs below use compose network names (postgres, redis).
+# The root .env holds the localhost equivalents for host tooling; see the note
+# at the top of that file.
 
 services:
   # PostgreSQL database
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: opensunsama
-      POSTGRES_PASSWORD: opensunsama
-      POSTGRES_DB: opensunsama
+      POSTGRES_USER: ${POSTGRES_USER:-opensunsama}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-opensunsama}
+      POSTGRES_DB: ${POSTGRES_DB:-opensunsama}
+    # Published on 5431 so it does not collide with a system postgres on 5432.
     ports:
-      - "5432:5432"
+      - "5431:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U opensunsama"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-opensunsama}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
-  # API server (optional - use for testing production build)
+  # Redis - WebSocket pub/sub fan-out
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # One-shot schema sync (drizzle-kit push). The API does not migrate on startup,
+  # so this has to complete before it boots or every query hits a missing table.
+  # See Dockerfile.migrate for why this is `push` and not `migrate`.
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile.migrate
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-opensunsama}:${POSTGRES_PASSWORD:-opensunsama}@postgres:5432/${POSTGRES_DB:-opensunsama}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  # API server
   api:
     build:
       context: .
       dockerfile: Dockerfile.api
     environment:
-      DATABASE_URL: postgresql://opensunsama:opensunsama@postgres:5432/opensunsama
-      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-min-32-chars-long}
-      CORS_ORIGIN: http://localhost:3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-opensunsama}:${POSTGRES_PASSWORD:-opensunsama}@postgres:5432/${POSTGRES_DB:-opensunsama}
+      REDIS_URL: redis://redis:6379
       PORT: 3001
-      ROLLOVER_ENABLED: "true"
+      NODE_ENV: ${NODE_ENV:-development}
+
+      # Browser-reachable URLs - used for OAuth redirects, email links and CORS,
+      # so these stay on localhost rather than compose service names.
+      API_URL: ${API_URL:-http://localhost:3001}
+      WEB_APP_URL: ${WEB_APP_URL:-http://localhost:3000}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required - see .env}
+      CALENDAR_ENCRYPTION_KEY: ${CALENDAR_ENCRYPTION_KEY:?CALENDAR_ENCRYPTION_KEY is required - 64 hex chars, see .env}
+      # Encrypts calendar tokens AND task-source integration credentials.
+      # Defaults to CALENDAR_ENCRYPTION_KEY so existing deployments keep
+      # decrypting what they already stored - the two must match.
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-${CALENDAR_ENCRYPTION_KEY}}
+
+      ROLLOVER_ENABLED: ${ROLLOVER_ENABLED:-true}
+      RECURRING_ENABLED: ${RECURRING_ENABLED:-true}
+      EMAIL_WORKERS_ENABLED: ${EMAIL_WORKERS_ENABLED:-false}
+      CALENDAR_SYNC_ENABLED: ${CALENDAR_SYNC_ENABLED:-false}
+
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-}
+
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID:-}
+      MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      FROM_EMAIL: ${FROM_EMAIL:-}
     ports:
       - "3001:3001"
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
-    profiles:
-      - api  # Only run when explicitly requested with --profile api
+
+  # Web app - static Vite build served by `serve`
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      # Vite inlines these at build time; changing them requires a rebuild
+      # (docker compose up --build web).
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3001}
+        VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:3001}
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_started
+    restart: unless-stopped
 
 volumes:
   postgres_data:
+  redis_data:

@@ -16,8 +16,19 @@ import {
   calendars,
   calendarAccounts,
   calendarEvents,
+  users,
 } from '@open-sunsama/database';
-import { auth, requireScopes, type AuthVariables } from '../middleware/auth.js';
+import {
+  auth,
+  requireScopes,
+  requireAnyScope,
+  type AuthVariables,
+} from '../middleware/auth.js';
+import {
+  localDayWindow,
+  eventFallsInWindow,
+  type LocalDayWindow,
+} from '../lib/calendar-day-window.js';
 import {
   calendarEventsQuerySchema,
   parseCalendarIds,
@@ -39,22 +50,52 @@ import { publishEvent } from '../lib/websocket/index.js';
 const calendarEventsRouter = new Hono<{ Variables: AuthVariables }>();
 calendarEventsRouter.use('*', auth);
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+
 /**
  * GET /calendar-events
- * List calendar events for a date range from enabled calendars
+ * List calendar events from enabled calendars.
+ *
+ * - `from`/`to` as ISO instants: events overlapping that span (the web app).
+ * - `date`, or `from`/`to` as YYYY-MM-DD: events on those whole days in the
+ *   user's timezone, `to` inclusive (MCP tools, API keys).
+ *
+ * `calendar:read` is the scope for this; `user:read` still works because
+ * API keys used it before `calendar:read` existed.
  */
 calendarEventsRouter.get(
   '/',
-  requireScopes('user:read'),
+  requireAnyScope('calendar:read', 'user:read'),
   zValidator('query', calendarEventsQuerySchema),
   async (c) => {
     const userId = c.get('userId');
-    const { from, to, calendarIds: calendarIdsParam } = c.req.valid('query');
+    const query = c.req.valid('query');
+    const calendarIdsParam = query.calendarIds;
     const db = getDb();
 
-    // Parse date range
-    const fromDate = new Date(from);
-    const toDate = new Date(to);
+    const [user] = await db
+      .select({ timezone: users.timezone })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+    const userTimezone = user?.timezone || 'UTC';
+
+    // Local-day mode when the caller speaks in dates, not instants.
+    const dayWindow: LocalDayWindow | null = query.date
+      ? localDayWindow(query.date, query.date, userTimezone)
+      : DATE_ONLY.test(query.from!) && DATE_ONLY.test(query.to!)
+        ? localDayWindow(query.from!, query.to!, userTimezone)
+        : null;
+
+    // SQL range; in day mode widened a day each side so all-day events,
+    // stored at UTC midnight, are fetched and then matched by date below.
+    const fromDate = dayWindow
+      ? new Date(dayWindow.start.getTime() - DAY_MS)
+      : new Date(query.from!);
+    const toDate = dayWindow
+      ? new Date(dayWindow.end.getTime() + DAY_MS)
+      : new Date(query.to!);
 
     // Parse optional calendar IDs filter
     const calendarIds = parseCalendarIds(calendarIdsParam);
@@ -86,6 +127,7 @@ calendarEventsRouter.get(
       return c.json({
         success: true,
         data: [],
+        meta: { total: 0, timezone: dayWindow?.timezone ?? userTimezone },
       });
     }
 
@@ -138,8 +180,12 @@ calendarEventsRouter.get(
       calendarsInfo.map((cal) => [cal.id, cal])
     );
 
+    const inRange = dayWindow
+      ? events.filter((event) => eventFallsInWindow(event, dayWindow))
+      : events;
+
     // Enrich events with calendar info
-    const enrichedEvents = events.map((event) => {
+    const enrichedEvents = inRange.map((event) => {
       const calendar = calendarsMap.get(event.calendarId);
       return {
         ...event,
@@ -157,9 +203,11 @@ calendarEventsRouter.get(
       success: true,
       data: enrichedEvents,
       meta: {
-        from: fromDate.toISOString(),
-        to: toDate.toISOString(),
+        from: (dayWindow?.start ?? fromDate).toISOString(),
+        to: (dayWindow?.end ?? toDate).toISOString(),
         total: enrichedEvents.length,
+        timezone: dayWindow?.timezone ?? userTimezone,
+        ...(dayWindow ? { fromDate: dayWindow.fromDate, toDate: dayWindow.toDate } : {}),
       },
     });
   }
