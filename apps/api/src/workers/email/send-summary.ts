@@ -3,7 +3,7 @@
  * Fetches user's tasks and sends the daily summary email
  */
 import type PgBoss from 'pg-boss';
-import { getDb, eq, and, isNull } from '@open-sunsama/database';
+import { getDb, eq, and } from '@open-sunsama/database';
 import { users, tasks } from '@open-sunsama/database/schema';
 import type { SendDailySummaryPayload } from './daily-summary.js';
 import { 
@@ -18,7 +18,7 @@ import {
 export async function processSendDailySummary(
   job: PgBoss.Job<SendDailySummaryPayload>
 ): Promise<void> {
-  const { userId, timezone, date } = job.data;
+  const { userId, date } = job.data;
   const db = getDb();
   const startTime = Date.now();
 

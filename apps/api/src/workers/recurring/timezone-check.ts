@@ -3,7 +3,7 @@
  * Runs every minute to detect series that need new instances generated
  */
 import type PgBoss from "pg-boss";
-import { getDb, eq, and, lt, lte, isNull, sql } from "@open-sunsama/database";
+import { getDb, eq, and, sql } from "@open-sunsama/database";
 import { taskSeries, tasks, users } from "@open-sunsama/database/schema";
 import { toZonedTime } from "date-fns-tz";
 import {
@@ -155,7 +155,7 @@ function getNthWeekdayOfMonth(
  * Runs every minute to catch timezone-based generation
  */
 export async function processRecurringTaskCheck(
-  job: PgBoss.Job<RecurringCheckPayload>
+  _job: PgBoss.Job<RecurringCheckPayload>
 ): Promise<void> {
   const db = getDb();
   const boss = await getPgBoss();

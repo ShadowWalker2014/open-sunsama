@@ -254,8 +254,7 @@ export function KanbanCalendarPanel({
         : 8 * HOUR_HEIGHT; // Default to 8 AM
       scrollContainerRef.current.scrollTop = scrollTo;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateString, isToday]);
+    }, [dateString, isToday]);
 
   // Mouse event handlers for drag
   const handleTimelineMouseMove = (e: React.MouseEvent) => {

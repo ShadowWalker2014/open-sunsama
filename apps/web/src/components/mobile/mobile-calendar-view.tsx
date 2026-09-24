@@ -322,8 +322,7 @@ export function MobileCalendarView({
       "[data-radix-scroll-area-viewport]"
     );
     if (viewport) viewport.scrollTop = scrollPosition;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateString]);
+    }, [dateString]);
 
   const isLoading = isLoadingTasks || isLoadingBlocks;
 

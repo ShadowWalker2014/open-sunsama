@@ -5,8 +5,8 @@
  * description, schema, and handler.
  */
 
-import type { McpServer, ToolCallback } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { ZodRawShape } from "zod";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { z, ZodRawShape } from "zod";
 
 type ToolScope =
   | "tasks:read"
@@ -23,6 +23,14 @@ interface ToolMetadata {
   destructive?: boolean;
   idempotent?: boolean;
 }
+
+type ToolHandler<Shape extends ZodRawShape> = (
+  input: { [Key in keyof Shape]: z.infer<Shape[Key]> }
+) => unknown | Promise<unknown>;
+
+type ToolRegistrar = {
+  registerTool(name: string, config: object, handler: unknown): void;
+};
 
 const TOOL_METADATA: Record<string, ToolMetadata> = {
   // Tasks
@@ -80,7 +88,7 @@ export function defineTool<Shape extends ZodRawShape>(
   name: string,
   description: string,
   inputSchema: Shape,
-  handler: ToolCallback<Shape>
+  handler: ToolHandler<Shape>
 ): void {
   const meta = TOOL_METADATA[name];
   if (!meta) {
@@ -89,7 +97,9 @@ export function defineTool<Shape extends ZodRawShape>(
 
   const securitySchemes = [{ type: "oauth2", scopes: meta.scopes }];
 
-  server.registerTool(
+  // The SDK's callback generic recursively expands each Zod schema, which can
+  // exceed TypeScript's heap for this server's complete tool set.
+  (server as unknown as ToolRegistrar).registerTool(
     name,
     {
       title: meta.title,

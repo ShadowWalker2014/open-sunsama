@@ -5,12 +5,8 @@
 import type PgBoss from "pg-boss";
 import { getDb, eq, and, sql } from "@open-sunsama/database";
 import { taskSeries, tasks } from "@open-sunsama/database/schema";
-import { format } from "date-fns";
 import { publishEvent } from "../../lib/websocket/index.js";
 import type { GenerateRecurringTaskPayload } from "./utils.js";
-
-// Target for unique constraint conflict (series_id, scheduled_date)
-const SERIES_DATE_UNIQUE_TARGET = sql`(series_id, scheduled_date) WHERE series_id IS NOT NULL`;
 
 /**
  * Generate a single recurring task instance

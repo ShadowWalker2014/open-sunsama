@@ -22,16 +22,6 @@ function extractSlug(path: string): string {
 }
 
 /**
- * Calculate reading time based on content length
- * Assumes average reading speed of 200 words per minute
- */
-function calculateReadingTime(content: string): number {
-  const wordsPerMinute = 200;
-  const words = content.trim().split(/\s+/).length;
-  return Math.ceil(words / wordsPerMinute);
-}
-
-/**
  * Get all blog posts sorted by date (newest first)
  */
 export function getAllBlogPosts(): BlogPost[] {
