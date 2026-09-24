@@ -1,18 +1,24 @@
 /**
  * Scroll-told feature tour: the product frame stays pinned while each step's
- * copy scrolls past, and the frame cross-fades (and gently zooms) to the
- * matching real screenshot. On small screens it becomes a simple stack.
+ * copy scrolls past, and the frame cross-fades to that step's real recording,
+ * which plays muted while its step is active. On small screens it becomes a
+ * simple stack of clips that play as they scroll into view.
  */
 
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Calendar, Command, Lightbulb, LayoutGrid, Timer } from "lucide-react";
+import { ArrowRight, Calendar, CheckCircle2, Command, Lightbulb, LayoutGrid, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Reveal, useScrollProgress } from "./motion";
 import { BrowserFrame, ThemedShot, type ShotName } from "./product-shot";
+import { Clip } from "@/components/blog/media";
+import { useIsDark, usePrefersReducedMotion } from "@/components/blog/media/hooks";
+import { BLOG_MEDIA } from "@/lib/blog-media";
 
 interface Step {
   shot: ShotName;
+  /** Real recording from blog-media.json; the screenshot shows until it plays. */
+  clip?: string;
   icon: typeof LayoutGrid;
   eyebrow: string;
   title: string;
@@ -25,6 +31,7 @@ interface Step {
 const STEPS: Step[] = [
   {
     shot: "board",
+    clip: "plan-day",
     icon: LayoutGrid,
     eyebrow: "Plan",
     title: "Plan today on a board.",
@@ -34,6 +41,7 @@ const STEPS: Step[] = [
   },
   {
     shot: "calendar-week",
+    clip: "time-block",
     icon: Calendar,
     eyebrow: "Time-block",
     title: "Give every task a time.",
@@ -43,6 +51,7 @@ const STEPS: Step[] = [
   },
   {
     shot: "focus",
+    clip: "focus",
     icon: Timer,
     eyebrow: "Focus",
     title: "Then do one thing at a time.",
@@ -52,6 +61,7 @@ const STEPS: Step[] = [
   },
   {
     shot: "command-palette",
+    clip: "command-palette",
     icon: Command,
     eyebrow: "Navigate",
     title: "Find anything with ⌘K.",
@@ -60,7 +70,17 @@ const STEPS: Step[] = [
     zoom: { scale: 1.12, origin: "50% 42%" },
   },
   {
+    shot: "task-detail",
+    clip: "shutdown",
+    icon: CheckCircle2,
+    eyebrow: "Shut down",
+    title: "Close the day on purpose.",
+    body: "Check off what you finished. Anything left rolls over to tomorrow, so nothing slips through and you can stop on time.",
+    zoom: { scale: 1, origin: "50% 0%" },
+  },
+  {
     shot: "ideas",
+    clip: "ideas",
     icon: Lightbulb,
     eyebrow: "Someday",
     title: "Park ideas without losing them.",
@@ -96,6 +116,65 @@ function StepCopy({ step, active }: { step: Step; active: boolean }) {
   );
 }
 
+/** Recordings fade in from and out to the page color; loop inside the fades. */
+const FADE_SECONDS = 0.5;
+
+/**
+ * The pinned frame's content for one step: its recording, playing only while
+ * the step is active, over the still screenshot (shown before it loads, and to
+ * readers who prefer reduced motion).
+ */
+function StepMedia({ step, active }: { step: Step; active: boolean }) {
+  const theme = useIsDark() ? "dark" : "light";
+  const reducedMotion = usePrefersReducedMotion();
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const src = step.clip ? BLOG_MEDIA.clips[step.clip]?.[theme] : undefined;
+
+  React.useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (active && !reducedMotion) {
+      if (video.currentTime < FADE_SECONDS) video.currentTime = FADE_SECONDS;
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  }, [active, reducedMotion, src]);
+
+  const loopInsideFades = () => {
+    const video = videoRef.current;
+    if (video?.duration && video.currentTime > video.duration - FADE_SECONDS) {
+      video.currentTime = FADE_SECONDS;
+    }
+  };
+
+  return (
+    <>
+      <ThemedShot name={step.shot} alt={step.title} className={src ? "absolute inset-0 h-full object-cover object-top" : undefined} />
+      {src && (
+        <video
+          key={theme}
+          ref={videoRef}
+          src={src.mp4}
+          poster={src.poster}
+          muted
+          playsInline
+          preload="none"
+          aria-label={step.title}
+          onTimeUpdate={loopInsideFades}
+          onEnded={() => {
+            const video = videoRef.current;
+            if (!video) return;
+            video.currentTime = FADE_SECONDS;
+            video.play().catch(() => {});
+          }}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      )}
+    </>
+  );
+}
+
 export function StorySection() {
   const [active, setActive] = React.useState(0);
   const containerRef = useScrollProgress<HTMLDivElement>("sticky", {
@@ -114,8 +193,8 @@ export function StorySection() {
             A calmer way to run your day.
           </h2>
           <p className="mt-4 text-[16px] leading-relaxed text-muted-foreground">
-            Sunsama-style daily planning: decide what matters, give it a time, and do it. Every screen below
-            is the real app.
+            Sunsama-style daily planning: decide what matters, give it a time, and do it. Every clip below
+            is a real recording of the app.
           </p>
         </Reveal>
 
@@ -145,12 +224,17 @@ export function StorySection() {
                           i === active ? "opacity-100" : "opacity-0"
                         )}
                         style={{
-                          transform: i === active ? `scale(${step.zoom.scale})` : `scale(${step.zoom.scale * 0.98})`,
+                          // Recordings already frame their subject; only stills zoom in
+                          transform: step.clip
+                            ? `scale(${i === active ? 1 : 0.98})`
+                            : i === active
+                              ? `scale(${step.zoom.scale})`
+                              : `scale(${step.zoom.scale * 0.98})`,
                           transformOrigin: step.zoom.origin,
                         }}
                         aria-hidden={i !== active}
                       >
-                        <ThemedShot name={step.shot} alt={step.title} />
+                        <StepMedia step={step} active={i === active} />
                       </div>
                     ))}
                   </div>
@@ -177,9 +261,13 @@ export function StorySection() {
           {STEPS.map((step) => (
             <Reveal key={step.shot} className="space-y-6">
               <StepCopy step={step} active />
-              <BrowserFrame>
-                <ThemedShot name={step.shot} alt={step.title} />
-              </BrowserFrame>
+              {step.clip ? (
+                <Clip id={step.clip} />
+              ) : (
+                <BrowserFrame>
+                  <ThemedShot name={step.shot} alt={step.title} />
+                </BrowserFrame>
+              )}
             </Reveal>
           ))}
         </div>

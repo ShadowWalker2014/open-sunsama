@@ -1,0 +1,47 @@
+# Open Sunsama
+
+> Open Sunsama is an open-source daily planner for time blocking and focused work. Plan tasks on a kanban board, block time on a calendar, work in focus mode, and control it all from any AI agent (Claude, ChatGPT, Cursor, Claude Code or any MCP client). It runs on the web, macOS, Windows, Linux and mobile, and you can self-host it.
+
+## Product
+
+- [Home](https://opensunsama.com/): What Open Sunsama is and how daily planning works in it
+- [Download](https://opensunsama.com/download): Desktop apps for macOS, Windows and Linux
+- [Open-source task manager](https://opensunsama.com/open-source-task-manager): Why it is open source and how to self-host it
+
+## Features
+
+- [Kanban board](https://opensunsama.com/features/kanban): Plan each day as a column of tasks
+- [Time blocking](https://opensunsama.com/features/time-blocking): Drag tasks onto a calendar timeline
+- [Focus mode](https://opensunsama.com/features/focus-mode): Work on one task with a timer
+- [AI integration](https://opensunsama.com/features/ai-integration): Control your planner from any AI agent over MCP
+- [Command palette](https://opensunsama.com/features/command-palette): Keyboard-first navigation with Cmd+K
+- [Calendar sync](https://opensunsama.com/features/calendar-sync): Two-way sync with Google Calendar, Outlook and iCloud
+
+## Docs
+
+- [Getting started](https://opensunsama.com/docs/getting-started): Set up your account and plan your first day
+- [MCP overview](https://opensunsama.com/docs/mcp/overview): Connect Claude, ChatGPT, Cursor and other agents with one URL and OAuth
+- [Connect Claude](https://opensunsama.com/docs/mcp/claude): Add Open Sunsama as a Claude connector
+- [Connect ChatGPT](https://opensunsama.com/docs/mcp/chatgpt): Add Open Sunsama to ChatGPT
+- [REST API: tasks](https://opensunsama.com/docs/api/tasks): Create and update tasks from code
+- [Self-hosting with Docker](https://opensunsama.com/docs/self-hosting/docker): Run your own instance
+
+## Comparisons
+
+- [Sunsama alternative](https://opensunsama.com/alternative/sunsama): How Open Sunsama compares with Sunsama
+- [Motion alternative](https://opensunsama.com/alternative/motion): How Open Sunsama compares with Motion
+- [Reclaim alternative](https://opensunsama.com/alternative/reclaim): How Open Sunsama compares with Reclaim
+- [Akiflow alternative](https://opensunsama.com/alternative/akiflow): How Open Sunsama compares with Akiflow
+- [Todoist alternative](https://opensunsama.com/alternative/todoist): How Open Sunsama compares with Todoist
+
+## Guides
+
+- [The complete guide to time blocking](https://opensunsama.com/blog/complete-guide-time-blocking): The method, templates and apps
+- [What is time blocking?](https://opensunsama.com/blog/what-is-time-blocking): A definition, its history and why it works
+- [How to plan your day](https://opensunsama.com/blog/how-to-plan-your-day): Ten steps for a planned workday
+- [The complete guide to daily planning](https://opensunsama.com/blog/complete-daily-planning-guide): Methods, habits and tools
+- [Switching from Sunsama to Open Sunsama](https://opensunsama.com/blog/replace-sunsama-open-sunsama): A step-by-step migration
+- [Sunsama alternatives compared](https://opensunsama.com/blog/best-free-sunsama-alternatives): Daily planners side by side
+- [Motion vs Sunsama](https://opensunsama.com/blog/motion-vs-sunsama): Two AI planners compared
+- [Open-source productivity apps](https://opensunsama.com/blog/best-open-source-productivity-apps): Self-hostable tools for tasks, notes and time
+- [All blog posts](https://opensunsama.com/blog): Every guide and comparison

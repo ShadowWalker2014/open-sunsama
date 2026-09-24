@@ -1,7 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useLayoutEffect, useState } from "react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SiteFooter, SiteHeader } from "@/components/landing/sections";
 import { ArticleSchema, Breadcrumbs, SEOHead } from "@/components/seo";
+import { lastUpdated } from "@/lib/blog";
 import type { BlogPost } from "@/types/blog";
 import {
   TableOfContents,
@@ -9,10 +12,10 @@ import {
   type TOCHeading,
 } from "./table-of-contents";
 import { ShareButtons } from "./share-buttons";
-import { BlogLayoutHeader } from "./blog-layout-header";
-import { BlogLayoutFooter } from "./blog-layout-footer";
 import { BlogArticleMeta } from "./blog-article-meta";
 import { BlogRelatedPosts } from "./blog-related-posts";
+import { BlogFaqs } from "./blog-faqs";
+import { BlogCTA } from "./blog-cta";
 
 interface BlogLayoutProps {
   children: ReactNode;
@@ -20,9 +23,42 @@ interface BlogLayoutProps {
   relatedPosts?: BlogPost[];
 }
 
+/** Compact sign-up card under the table of contents. */
+function TryCard() {
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-card p-5 shadow-[0_16px_40px_-24px_hsl(var(--shadow-color)/0.35)] dark:border-white/[0.08]">
+      <div className="pointer-events-none absolute -right-10 -top-12 h-32 w-32 rounded-full bg-[radial-gradient(closest-side,hsl(var(--primary)/0.22),transparent)] blur-xl" />
+      <img
+        src="/open-sunsama-logo.png"
+        alt=""
+        width={32}
+        height={32}
+        className="relative h-8 w-8 rounded-lg object-cover"
+      />
+      <p className="relative mt-3 text-[14px] font-semibold tracking-tight">
+        Plan your day in Open Sunsama
+      </p>
+      <p className="relative mt-1 text-[12.5px] leading-relaxed text-muted-foreground">
+        Time blocking, focus mode, and any AI agent. Open source.
+      </p>
+      <Button
+        size="sm"
+        className="relative mt-4 h-8 w-full rounded-lg text-[12.5px]"
+        asChild
+      >
+        <Link to="/register">
+          Get started
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      </Button>
+    </div>
+  );
+}
+
 /**
- * Layout wrapper for individual blog post pages
- * Compact style matching the app design system
+ * Article page. One grid for the whole article, so breadcrumbs, title, cover
+ * and body share a left edge; the TOC column is always reserved on desktop so
+ * nothing shifts when the headings are read.
  */
 export function BlogLayout({
   children,
@@ -34,23 +70,13 @@ export function BlogLayout({
   // Each cover has a 1200x630 JPEG twin: not every social crawler reads WebP
   const ogImage = post.image?.replace(/\.webp$/, "-og.jpg");
 
-  // Extract headings after content renders
-  useEffect(() => {
-    // Wait for MDX content to render
-    const timer = setTimeout(() => {
-      const extractedHeadings = extractHeadings();
-      setHeadings(extractedHeadings);
-    }, 100);
-    return () => clearTimeout(timer);
+  // The MDX body is already in the DOM here; reading it before paint keeps the sidebar from jumping
+  useLayoutEffect(() => {
+    setHeadings(extractHeadings());
   }, [post.slug]);
 
-  // Show TOC if 5+ headings OR reading time > 8 min
-  const showTOC =
-    headings.length >= 5 || (post.readingTime && post.readingTime > 8);
-
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans antialiased">
-      {/* Dynamic SEO Meta Tags */}
+    <div className="min-h-screen overflow-x-clip bg-background font-sans text-foreground antialiased">
       <SEOHead
         title={`${post.title} | Open Sunsama Blog`}
         description={post.description}
@@ -58,6 +84,7 @@ export function BlogLayout({
         ogImage={ogImage || "/og-image.png"}
         ogType="article"
         publishedTime={post.date}
+        modifiedTime={lastUpdated(post)}
         author={post.author}
       />
 
@@ -65,86 +92,74 @@ export function BlogLayout({
         title={post.title}
         description={post.description}
         datePublished={post.date}
+        dateModified={lastUpdated(post)}
         author={post.author}
         image={post.image}
         slug={post.slug}
       />
 
-      {/* Subtle background */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[400px] bg-primary/[0.03] blur-[100px] rounded-full" />
-      </div>
-
-      {/* Header */}
-      <BlogLayoutHeader />
+      <SiteHeader />
 
       <main className="relative">
-        {/* Breadcrumb navigation */}
-        <div className="container px-4 mx-auto max-w-3xl pt-6">
-          <Breadcrumbs
-            items={[{ label: "Blog", href: "/blog" }, { label: post.title }]}
-          />
+        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[640px]">
+          <div className="landing-grid absolute inset-0 opacity-60 dark:opacity-35" />
+          <div className="absolute left-1/2 top-[-200px] h-[460px] w-[900px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,hsl(var(--primary)/0.12),transparent)] blur-2xl" />
         </div>
 
-        {/* Article header */}
-        <article className="py-8 md:py-12">
-          <BlogArticleMeta post={post} canonicalUrl={canonicalUrl} />
+        <div className="container mx-auto max-w-3xl px-4 pt-8 md:pt-12 lg:max-w-[68rem]">
+          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_15rem] lg:gap-16 xl:grid-cols-[minmax(0,1fr)_16rem] xl:gap-20">
+            <article className="min-w-0 pb-16">
+              <Breadcrumbs
+                items={[
+                  { label: "Blog", href: "/blog" },
+                  { label: post.title },
+                ]}
+              />
 
-          {/* Article content with optional TOC sidebar */}
-          <div className="container px-4 mx-auto mt-8 md:mt-12">
-            <div
-              className={
-                showTOC ? "max-w-5xl mx-auto flex gap-8" : "max-w-3xl mx-auto"
-              }
-            >
-              {/* Main content */}
-              <div className={showTOC ? "flex-1 min-w-0 max-w-3xl" : ""}>
-                <div className="blog-prose">{children}</div>
-
-                {/* Share buttons at bottom */}
-                <div className="mt-8 pt-6 border-t border-border/40 flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    Enjoyed this article?
-                  </span>
-                  <ShareButtons
-                    title={post.title}
-                    url={canonicalUrl}
-                    description={post.description}
-                  />
-                </div>
+              <div className="mt-6">
+                <BlogArticleMeta post={post} canonicalUrl={canonicalUrl} />
               </div>
 
-              {/* TOC sidebar (desktop only) */}
-              {showTOC && (
-                <aside className="hidden lg:block w-56 flex-shrink-0">
-                  <TableOfContents headings={headings} />
-                </aside>
-              )}
-            </div>
-          </div>
-        </article>
+              <div className="blog-prose mt-12 md:mt-14">
+                {children}
+                <BlogFaqs faqs={post.faqs} />
+              </div>
 
-        {/* Related posts */}
+              <div className="mt-14 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/70 bg-muted/30 px-5 py-4 dark:border-white/[0.08] dark:bg-white/[0.02]">
+                <p className="text-[14px] font-medium">
+                  Found this useful? Pass it on.
+                </p>
+                <ShareButtons
+                  title={post.title}
+                  url={canonicalUrl}
+                  description={post.description}
+                />
+              </div>
+            </article>
+
+            {/* Desktop sidebar: sticky contents plus a sign-up card */}
+            <aside className="hidden lg:block">
+              <div className="sticky top-24 flex max-h-[calc(100vh-7rem)] flex-col gap-8 pt-1">
+                {headings.length >= 3 && (
+                  <TableOfContents
+                    headings={headings}
+                    className="static max-h-none min-h-0 shrink overflow-auto"
+                  />
+                )}
+                <div className="shrink-0">
+                  <TryCard />
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+
         <BlogRelatedPosts posts={relatedPosts} />
 
-        {/* CTA */}
-        <section className="py-12 border-t border-border/40">
-          <div className="container px-4 mx-auto max-w-xl text-center">
-            <h2 className="text-lg font-semibold tracking-tight mb-2">
-              Ready to try Open Sunsama?
-            </h2>
-            <p className="text-sm text-muted-foreground mb-6">
-              The open-source daily planner for focused work.
-            </p>
-            <Button size="sm" className="h-9 px-4 text-[13px]" asChild>
-              <Link to="/register">Get started</Link>
-            </Button>
-          </div>
-        </section>
+        <BlogCTA />
       </main>
 
-      {/* Footer */}
-      <BlogLayoutFooter />
+      <SiteFooter />
     </div>
   );
 }

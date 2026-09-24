@@ -8,7 +8,7 @@ import type { BlogMeta, BlogPost, BlogPostWithComponent } from "@/types/blog";
 // Dynamically import all MDX files from blog content directory
 // Each blog post lives in its own folder: /content/blog/{slug}/index.mdx
 const blogModules = import.meta.glob<{
-  default: React.ComponentType;
+  default: BlogPostWithComponent["Component"];
   frontmatter?: BlogMeta;
 }>("/src/content/blog/*/index.mdx", { eager: true });
 
@@ -21,18 +21,28 @@ function extractSlug(path: string): string {
   return match?.[1] ?? "";
 }
 
-/**
- * Calculate reading time based on content length
- * Assumes average reading speed of 200 words per minute
- */
-function calculateReadingTime(content: string): number {
-  const wordsPerMinute = 200;
-  const words = content.trim().split(/\s+/).length;
-  return Math.ceil(words / wordsPerMinute);
+function toPost(slug: string, frontmatter: BlogMeta): BlogPost {
+  return {
+    slug,
+    title: frontmatter.title,
+    description: frontmatter.description,
+    date: frontmatter.date,
+    updated: frontmatter.updated,
+    author: frontmatter.author,
+    tags: frontmatter.tags || [],
+    image: frontmatter.image,
+    readingTime: frontmatter.readingTime,
+    faqs: frontmatter.faqs,
+  };
+}
+
+/** The date a post last changed: `updated` when set, else `date` */
+export function lastUpdated(post: Pick<BlogPost, "date" | "updated">): string {
+  return post.updated ?? post.date;
 }
 
 /**
- * Get all blog posts sorted by date (newest first)
+ * Get all blog posts, most recently updated first
  */
 export function getAllBlogPosts(): BlogPost[] {
   const posts: BlogPost[] = [];
@@ -47,21 +57,12 @@ export function getAllBlogPosts(): BlogPost[] {
       continue;
     }
 
-    posts.push({
-      slug,
-      title: frontmatter.title,
-      description: frontmatter.description,
-      date: frontmatter.date,
-      author: frontmatter.author,
-      tags: frontmatter.tags || [],
-      image: frontmatter.image,
-      readingTime: frontmatter.readingTime,
-    });
+    posts.push(toPost(slug, frontmatter));
   }
 
-  // Sort by date, newest first
-  return posts.sort((a, b) => 
-    new Date(b.date).getTime() - new Date(a.date).getTime()
+  return posts.sort(
+    (a, b) =>
+      new Date(lastUpdated(b)).getTime() - new Date(lastUpdated(a)).getTime()
   );
 }
 
@@ -82,17 +83,7 @@ export function getBlogPost(slug: string): BlogPostWithComponent | null {
     return null;
   }
 
-  return {
-    slug,
-    title: frontmatter.title,
-    description: frontmatter.description,
-    date: frontmatter.date,
-    author: frontmatter.author,
-    tags: frontmatter.tags || [],
-    image: frontmatter.image,
-    readingTime: frontmatter.readingTime,
-    Component: module.default,
-  };
+  return { ...toPost(slug, frontmatter), Component: module.default };
 }
 
 /**
@@ -139,7 +130,10 @@ export function getRelatedPosts(currentSlug: string, limit = 3): BlogPost[] {
   // Sort by score (descending) then by date (descending)
   scoredPosts.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
-    return new Date(b.post.date).getTime() - new Date(a.post.date).getTime();
+    return (
+      new Date(lastUpdated(b.post)).getTime() -
+      new Date(lastUpdated(a.post)).getTime()
+    );
   });
 
   return scoredPosts.slice(0, limit).map((sp) => sp.post);

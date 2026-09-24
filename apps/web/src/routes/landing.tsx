@@ -1,13 +1,14 @@
 /**
- * Marketing home page. Sections live in components/landing; every product
- * screen is a real screenshot of the demo workspace (scripts/readme-media).
+ * Marketing home page. Sections live in components/landing. The hero uses a
+ * real screenshot (fast first paint); the sections below use real recordings
+ * of the app from src/lib/blog-media.json.
  */
 
 import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
 import { AiSection } from "@/components/landing/ai-section";
+import { FaqSection } from "@/components/landing/faq-section";
 import { Hero } from "@/components/landing/hero";
 import {
-  ComparisonSection,
   FeaturesSection,
   FinalCta,
   OpenSourceSection,
@@ -24,11 +25,11 @@ export default function LandingPage() {
       <SiteHeader />
       <main>
         <Hero />
-        <FeaturesSection />
         <StorySection />
         <AiSection />
+        <FeaturesSection />
         <OpenSourceSection />
-        <ComparisonSection />
+        <FaqSection />
         <FinalCta />
       </main>
       <SiteFooter />

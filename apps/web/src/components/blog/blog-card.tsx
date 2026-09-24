@@ -1,146 +1,173 @@
 import { Link } from "@tanstack/react-router";
-import { Calendar, Clock, ChevronRight, User } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { format, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
+import { primaryTopic } from "@/lib/blog-topics";
 import type { BlogPost } from "@/types/blog";
-import { format } from "date-fns";
+import { BlogCover } from "./blog-cover";
 
-interface BlogCardProps {
-  post: BlogPost;
-  featured?: boolean;
+/** "Feb 1, 2026", or "Updated Mar 3, 2026" once a post has been revised */
+export function cardDate({ date, updated }: BlogPost) {
+  if (updated && updated !== date) {
+    return `Updated ${format(parseISO(updated), "MMM d, yyyy")}`;
+  }
+  return format(parseISO(date), "MMM d, yyyy");
 }
 
+export function TopicPill({
+  label,
+  className,
+}: {
+  label: string;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full border border-primary/20 bg-primary/[0.07] px-2.5 py-0.5 text-[11.5px] font-medium text-primary dark:border-primary/25 dark:bg-primary/10",
+        className
+      )}
+    >
+      {label}
+    </span>
+  );
+}
+
+/** Cover box shared by every card: fixed 2:1 so nothing shifts as images load. */
+function CardCover({
+  post,
+  className,
+}: {
+  post: BlogPost;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "relative aspect-[2/1] overflow-hidden bg-muted/60 dark:bg-white/[0.03]",
+        className
+      )}
+    >
+      {post.image ? (
+        <BlogCover
+          src={post.image}
+          alt=""
+          className="transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] group-hover:scale-[1.035] motion-reduce:transition-none"
+        />
+      ) : (
+        <div className="landing-grid absolute inset-0 opacity-60" />
+      )}
+    </div>
+  );
+}
+
+function CardMeta({ post, className }: { post: BlogPost; className?: string }) {
+  return (
+    <p
+      className={cn(
+        "flex flex-wrap items-center gap-x-2 text-[12.5px] text-muted-foreground",
+        className
+      )}
+    >
+      <span>{cardDate(post)}</span>
+      {post.readingTime && (
+        <>
+          <span aria-hidden className="text-muted-foreground/50">
+            ·
+          </span>
+          <span>{post.readingTime} min read</span>
+        </>
+      )}
+    </p>
+  );
+}
+
+const CARD_SURFACE =
+  "group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_24px_60px_-28px_hsl(var(--shadow-color)/0.45),0_10px_24px_-14px_rgb(0_0_0/0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:border-white/[0.08] dark:hover:border-primary/35";
+
 /**
- * Blog post card for listing pages
- * Matches the compact, Linear-style design system
+ * Grid card: 2:1 cover, one topic pill, title, two-line description, date.
+ * `wideOnTablet` lays it out cover-beside-text when it spans two tablet columns.
  */
-export function BlogCard({ post, featured = false }: BlogCardProps) {
-  const formattedDate = format(new Date(post.date), "MMM d, yyyy");
+export function BlogCard({
+  post,
+  wideOnTablet = false,
+  className,
+}: {
+  post: BlogPost;
+  wideOnTablet?: boolean;
+  className?: string;
+}) {
+  const topic = primaryTopic(post);
 
   return (
     <Link
       to="/blog/$slug"
       params={{ slug: post.slug }}
       className={cn(
-        "group block rounded-xl border border-border/40 bg-card hover:border-border/60 hover:bg-card/80 transition-all duration-200",
-        featured && "md:col-span-2"
+        CARD_SURFACE,
+        wideOnTablet && "sm:grid sm:grid-cols-2 lg:flex",
+        className
       )}
     >
-      {/* Cover image (if available) */}
-      {post.image && (
-        <div className="relative overflow-hidden rounded-t-xl border-b border-border/40">
-          <div
-            className={cn("bg-muted/30", featured ? "h-48 md:h-64" : "h-36")}
-          >
-            <img
-              src={post.image}
-              alt={post.title}
-              loading="lazy"
-              decoding="async"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Content */}
-      <div className="p-4">
-        {/* Tags */}
-        {post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {post.tags.slice(0, 3).map((tag) => (
-              <span
-                key={tag}
-                className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-primary/10 text-primary"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
+      <CardCover
+        post={post}
+        className={cn(
+          "border-b border-border/60 dark:border-white/[0.06]",
+          wideOnTablet &&
+            "sm:aspect-auto sm:border-b-0 sm:border-r lg:aspect-[2/1] lg:border-b lg:border-r-0"
         )}
-
-        {/* Title */}
-        <h3
-          className={cn(
-            "font-semibold tracking-tight group-hover:text-primary transition-colors",
-            featured ? "text-lg md:text-xl" : "text-[15px]"
-          )}
-        >
+      />
+      <div className="flex flex-1 flex-col p-5 sm:p-6">
+        {topic && <TopicPill label={topic.label} className="self-start" />}
+        <h3 className="mt-3 text-[17px] font-semibold leading-snug tracking-[-0.015em] text-foreground transition-colors group-hover:text-primary">
           {post.title}
         </h3>
-
-        {/* Description */}
-        <p
-          className={cn(
-            "mt-2 text-muted-foreground leading-relaxed line-clamp-2",
-            featured ? "text-sm" : "text-xs"
-          )}
-        >
+        <p className="mt-2 line-clamp-2 text-[14px] leading-relaxed text-muted-foreground">
           {post.description}
         </p>
-
-        {/* Meta */}
-        <div className="mt-4 flex items-center justify-between">
-          <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <User className="h-3 w-3" />
-              {post.author}
-            </span>
-            <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              {formattedDate}
-            </span>
-            {post.readingTime && (
-              <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {post.readingTime} min
-              </span>
-            )}
-          </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary transition-colors" />
-        </div>
+        <CardMeta post={post} className="mt-auto pt-5" />
       </div>
     </Link>
   );
 }
 
-/**
- * Compact blog card for sidebar or related posts
- */
-export function BlogCardCompact({ post }: { post: BlogPost }) {
-  const formattedDate = format(new Date(post.date), "MMM d, yyyy");
+/** The large card at the top of the blog index: cover left, story right. */
+export function BlogFeaturedCard({ post }: { post: BlogPost }) {
+  const topic = primaryTopic(post);
 
   return (
     <Link
       to="/blog/$slug"
       params={{ slug: post.slug }}
-      className="group flex gap-3 p-3 rounded-lg border border-border/40 bg-card hover:border-border/60 hover:bg-card/80 transition-all duration-200"
-    >
-      {/* Thumbnail */}
-      {post.image && (
-        <div className="flex-shrink-0 w-16 h-16 rounded-md overflow-hidden bg-muted/30">
-          <img
-            src={post.image}
-            alt={post.title}
-            loading="lazy"
-            decoding="async"
-            className="w-full h-full object-cover"
-          />
-        </div>
+      className={cn(
+        CARD_SURFACE,
+        "hover:-translate-y-0.5 lg:grid lg:grid-cols-[1.25fr_1fr]"
       )}
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <h4 className="text-[13px] font-semibold tracking-tight line-clamp-2 group-hover:text-primary transition-colors">
+    >
+      <CardCover
+        post={post}
+        className="border-b border-border/60 dark:border-white/[0.06] lg:aspect-auto lg:min-h-[340px] lg:border-b-0 lg:border-r"
+      />
+      <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[11.5px] font-semibold uppercase tracking-[0.14em] text-primary">
+            Latest
+          </span>
+          {topic && <TopicPill label={topic.label} />}
+        </div>
+        <h2 className="mt-4 text-balance text-[26px] font-semibold leading-[1.12] tracking-[-0.03em] text-foreground sm:text-[32px] lg:text-[34px]">
           {post.title}
-        </h4>
-        <div className="mt-1 flex items-center gap-2 text-[10px] text-muted-foreground">
-          <span>{formattedDate}</span>
-          {post.readingTime && (
-            <>
-              <span>·</span>
-              <span>{post.readingTime} min read</span>
-            </>
-          )}
+        </h2>
+        <p className="mt-4 line-clamp-3 text-[15px] leading-relaxed text-muted-foreground sm:text-[16px]">
+          {post.description}
+        </p>
+        <div className="mt-7 flex flex-wrap items-center justify-between gap-3">
+          <CardMeta post={post} />
+          <span className="inline-flex items-center gap-1.5 text-[14px] font-medium text-primary">
+            Read the article
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </span>
         </div>
       </div>
     </Link>

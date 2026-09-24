@@ -1,7 +1,20 @@
 # robots.txt for Open Sunsama
 # https://opensunsama.com
 
+# Search engines and AI assistants are welcome everywhere except the signed-in app.
+# The named agents share this one group, so they get the same rules as everyone.
 User-agent: *
+User-agent: Googlebot
+User-agent: Google-Extended
+User-agent: Bingbot
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+User-agent: PerplexityBot
+User-agent: Perplexity-User
 Allow: /
 Disallow: /app/
 Disallow: /app/*
@@ -12,6 +25,3 @@ Disallow: /reset-password
 
 # Sitemap
 Sitemap: https://opensunsama.com/sitemap.xml
-
-# Crawl-delay (optional, for polite crawlers)
-Crawl-delay: 1

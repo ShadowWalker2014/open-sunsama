@@ -1,309 +1,217 @@
 export const frontmatter = {
-  title: "Motion vs Sunsama in 2026: Which AI Planner is Right for You?",
-  description: "Detailed comparison of Motion and Sunsama for daily planning. Compare features, pricing, and find the best free alternative.",
+  title: "Motion vs Sunsama (2026): Which Planner Is Right for You?",
+  description: "Motion vs Sunsama in 2026: Motion's AI schedules your day, Sunsama guides you to plan it. Compare features, AI, apps and prices, and see which one fits you.",
   date: "2026-02-01",
+  updated: "2026-09-24",
   author: "Open Sunsama Team",
-  tags: ["comparison", "productivity", "ai-scheduling"],
-  readingTime: 12,
-  image: "/blog-motion-vs-sunsama.webp"
+  tags: ["comparison", "motion", "sunsama", "ai-scheduling"],
+  readingTime: 8,
+  image: "/blog-motion-vs-sunsama.webp",
+  faqs: [
+    {
+      question: "Is Motion better than Sunsama?",
+      answer: "Between the two, it depends. Motion is better if you want AI to schedule your tasks or you run team projects, and Sunsama is better if you want to plan your own day in a calm, guided way. For most people, we recommend Open Sunsama: calm planning you control, plus any AI agent.",
+    },
+    {
+      question: "Which is cheaper, Motion or Sunsama?",
+      answer: "Sunsama, on monthly billing. In September 2026, Sunsama cost $22 a month or $17 a month billed yearly. Motion's Pro AI plan cost $29 a month or $19 a month billed yearly, per seat.",
+    },
+    {
+      question: "Is Motion or Sunsama better for ADHD?",
+      answer: "It depends on what trips you up. If deciding what to do next drains you, Motion's auto-scheduling helps. If you overload your day and burn out, Sunsama's workload totals and guided plan help more.",
+    },
+    {
+      question: "Can you use Motion and Sunsama together?",
+      answer: "You can, but most people shouldn't. Both want to own your calendar, so you end up planning twice. Try each on its own for a week and keep the one you open without thinking.",
+    },
+    {
+      question: "Do Motion or Sunsama work with Claude or ChatGPT?",
+      answer: "Sunsama has an official MCP server that works with Claude, ChatGPT and Cursor. Motion has a public REST API, and community-built MCP servers use it. Motion does not ship an official MCP server for its calendar app.",
+    },
+    {
+      question: "Does Motion or Sunsama have a free plan?",
+      answer: "Neither has a free plan. Sunsama has a 14-day trial with no card. Motion has a 7-day trial that needs a card.",
+    },
+    {
+      question: "Which has the better mobile app?",
+      answer: "Both have iOS and Android apps. Sunsama calls its phone app a companion to the desktop app, so you plan at a computer first. If you plan mostly on your phone, test both during the trial.",
+    },
+  ],
 };
 
-Choosing between Motion and Sunsama is like choosing between autopilot and manual transmission. Both will get you to your destination, but the journey—and the control you have along the way—is fundamentally different.
+**Pick Sunsama if you want to plan your own day in a calm, guided way. Pick Motion if you want AI to build and fix your schedule, or if you run projects with a team.** That is the whole Motion vs Sunsama choice in one line: control or autopilot.
 
-Motion promises to end the mental overhead of scheduling by having AI automatically slot your tasks into available time. Sunsama takes the opposite approach, guiding you through intentional daily planning rituals where you consciously decide what deserves your time. Both cost around $20/month. Both have passionate user bases. But they serve very different productivity philosophies.
+Below you'll find a side-by-side table, where each app wins, how their AI differs in 2026, and who should pick which. All prices and features were checked on each vendor's site in September 2026.
 
-In this comprehensive Motion vs Sunsama comparison, we'll break down every difference that matters: features, pricing, integrations, and the underlying approach to daily planning. By the end, you'll know exactly which tool fits your workflow—or whether a [free Sunsama alternative](/alternative/sunsama) like Open Sunsama might be the best choice of all.
+Our pick for most people is a third app: [Open Sunsama](/alternative/sunsama), an open-source daily planner that works with any AI agent. We build Open Sunsama, so we put it first — here is why, and where others fit better.
 
-## Quick Comparison: Motion vs Sunsama vs Open Sunsama
+## Quick verdict
 
-Before we dive deep, here's the high-level comparison of these three popular daily planning tools:
+- **Pick Sunsama if** you overplan, like a short morning routine, and want tasks from Asana, Jira or Todoist in one daily view.
+- **Pick Motion if** your calendar changes all day, you hate deciding what's next, or you manage a team's projects.
+- **Pick Open Sunsama if** you want to plan by hand, let any AI agent help, and own your planner. It is our pick for most people.
 
-| Feature | Motion | Sunsama | Open Sunsama |
-|---------|--------|---------|--------------|
-| **Price (Monthly)** | $34/month | $25/month | Free |
-| **Price (Annual)** | $19/month | $20/month | Free |
-| **AI Scheduling** | ✅ Full automation | ❌ Manual only | ⚠️ AI assist (optional) |
-| **Time Blocking** | ✅ Auto-generated | ✅ Drag-and-drop | ✅ Drag-and-drop |
-| **Focus Mode** | ❌ No | ✅ Built-in | ✅ Built-in |
-| **Daily Planning Ritual** | ❌ No | ✅ Guided | ✅ Kanban workflow |
-| **Calendar Sync** | ✅ Full | ✅ Full | ✅ Google, Outlook, iCloud |
-| **Meeting Scheduler** | ✅ Built-in | ❌ No | ❌ No |
-| **Project Management** | ✅ Teams + Projects | ❌ Individual focus | ❌ Individual focus |
-| **Integrations** | Limited | Extensive | Growing |
-| **Open Source** | ❌ No | ❌ No | ✅ Yes |
-| **Self-Hostable** | ❌ No | ❌ No | ✅ Yes |
-| **Free Trial** | 7 days | 14 days | Forever free |
+## Our pick: Open Sunsama
 
-Now let's examine each tool in detail.
+Open Sunsama is our best overall pick. It suits people who want Sunsama's calm, hands-on planning, with AI help they control. It gives you a kanban board of days, time blocking, focus mode and rollover.
 
-## What is Motion?
+- **Any AI agent can plan with you.** A hosted MCP server lets Claude, ChatGPT, Cursor or any MCP client plan your day. You see every change it makes.
+- **You stay in charge.** Nothing moves unless you, or your agent at your request, move it. There is no black box.
+- **You own it.** The code is public, you can [self-host it with Docker](/docs/self-hosting/docker), and there is a public REST API with API keys.
+- **It fits your setup.** Time blocks sync with Google, Outlook or iCloud calendars. There are web and desktop apps for Mac, Windows and Linux.
 
-Motion is an AI scheduling app that automatically plans your day based on tasks, meetings, and priorities. Founded in 2019 and popular among busy professionals, Motion's core promise is eliminating the mental work of deciding *when* to do things.
+<Clip id="ai-plan" caption="In Open Sunsama, an AI agent plans the afternoon over MCP, and you see each block appear." />
 
-### How Motion Works
+It is a younger product than both. It has fewer native integrations than Sunsama and no auto-scheduler like Motion's. If you want those most, the rest of this guide helps you choose between them.
 
-When you add a task to Motion, you specify a deadline and estimated duration. Motion's AI then finds the optimal time slot in your calendar, considering your existing meetings, task priorities, and working hours. If a meeting runs over or a new priority emerges, Motion automatically reschedules your tasks.
+See the [MCP setup guide](/docs/mcp/overview) or [download the apps](/download).
 
-This automation-first approach appeals to users who:
-- Have unpredictable calendars with frequent meeting changes
-- Experience decision fatigue when planning their days
-- Want to maximize productivity through algorithmic optimization
-- Manage multiple projects with competing deadlines
+## Motion vs Sunsama at a glance
 
-### Motion's Key Features
+| | Motion | Sunsama |
+|---|---|---|
+| **Core idea** | AI plans your day for you | You plan your day, guided by a ritual |
+| **Who decides when you work** | Motion's AI | You |
+| **Daily planning ritual** | No | Yes, plus a shutdown and weekly review |
+| **Auto-scheduling** | Yes, and it reshuffles when plans change | Optional per task; Autoplan in beta |
+| **Projects and teams** | Yes: projects, docs, dashboards; Gantt on Business AI | Light; built for one person |
+| **Planned vs actual time** | Time tracking on Business AI | Yes, with a task timer |
+| **Task imports** | Fewer; tasks mostly live in Motion | Asana, ClickUp, Jira, Linear, Notion, Todoist, Trello and more |
+| **Calendars** | Google, Outlook | Google, Outlook, iCloud |
+| **Built-in AI** | AI chat, AI writer, meeting notes; uses monthly credits | Sunny assistant |
+| **AI agents (MCP)** | Community-built MCP servers only | Official hosted MCP server |
+| **Public API** | Yes, REST API with API keys | No |
+| **Apps** | Web, desktop, iOS, Android | Web, Mac, Windows, Linux, iOS, Android |
+| **Free trial** | 7 days, card required | 14 days, no card |
+| **Price (Sept 2026)** | Pro AI $19/seat/mo yearly or $29 monthly | $17/mo yearly or $22 monthly |
 
-**AI Auto-Scheduling**: The flagship feature. Motion doesn't just suggest when to work on tasks—it schedules them automatically and adjusts dynamically throughout the day.
+Sources: [Motion pricing](https://www.usemotion.com/pricing), [Motion API docs](https://docs.usemotion.com/), [Sunsama pricing](https://www.sunsama.com/pricing) and [Sunsama's MCP docs](https://help.sunsama.com/docs/mcp-model-context-protocol).
 
-**Project Management**: Unlike Sunsama's individual focus, Motion includes robust project management with team features, Gantt charts (on Business tier), and workload balancing.
+## How we compared them
 
-**Meeting Scheduler**: Built-in scheduling links let others book time with you, similar to Calendly but integrated with your task calendar.
+In September 2026 we went through each app's website, pricing page, help docs, changelog and API or MCP docs. We looked at the daily plan, time blocking, calendar sync, replanning after a late meeting, the phone apps and each app's AI.
 
-**Productivity Analytics**: Business tier includes dashboards showing how you spend your time, team capacity, and productivity trends.
+Then we read hundreds of user reviews and threads on Reddit, Hacker News and Product Hunt. Reddit quotes link to the original comment.
 
-### Motion Pricing in 2026
+We also build and use Open Sunsama every day.
 
-Motion offers two main tiers:
+## The real difference: who decides your day
 
-- **Pro AI**: $19/seat/month (annual) or $34/month (monthly)
-- **Business AI**: $29/seat/month (annual)
+Motion and Sunsama solve the same problem from opposite ends. Both put tasks on your calendar. The question is who picks the time slot.
 
-Both include a 7-day free trial. There's no free tier—Motion is a premium-only product.
+**Motion decides for you.** You add a task with a deadline, a priority and a length.
 
-### Motion's Limitations
+Motion's AI finds a slot for it. When a meeting lands on top of it, Motion moves the task and everything after it.
 
-For all its automation power, Motion has notable drawbacks:
+**Sunsama asks you to decide.** Each morning you pick today's tasks, estimate each one and drag it onto the calendar. Sunsama adds up your estimates and warns you when the day won't fit.
 
-**Less Control**: When AI schedules your day, you lose the intentionality of choosing what deserves your time. Some users find rescheduled tasks disorienting.
+Neither way is right for everyone. Some people feel freed when an app makes the calls. Others feel lost when they can't see why their week looks the way it does.
 
-**Busier Interface**: With project management, team features, and AI suggestions, Motion's UI is more complex than minimalist planners.
+## A typical Tuesday in Motion and in Sunsama
 
-**Limited Integrations**: Motion integrates with calendars and basic tools, but lacks the deep integrations with task managers (Todoist, Asana) that Sunsama offers.
+Here is how a typical busy Tuesday looks in each app, based on how each one describes its planning flow. It is an example, not a measurement: six tasks, three meetings, and one meeting that runs 45 minutes late.
 
-**No Focus Mode**: Despite being a productivity app, Motion doesn't include a dedicated focus or deep work mode.
+**In Sunsama,** you start with a morning plan of about ten minutes. You pull tasks from Todoist and Gmail and set estimates. The total says 9 hours, so you push two tasks to Wednesday before the day begins.
 
-## What is Sunsama?
+When the meeting runs late, you drag the next two blocks down by hand. It takes a minute, and you know exactly where everything is.
 
-Sunsama is a daily planner built around mindful, intentional planning. Rather than automating your schedule, Sunsama guides you through conscious decisions about what to work on each day. The app emphasizes calm productivity over relentless optimization.
+**In Motion,** there is no morning plan. You added the tasks with deadlines the night before, so the calendar is already full when you wake up.
 
-### How Sunsama Works
+When the meeting runs late, Motion moves the rest of the day on its own. A low-priority task may slide to Thursday without you noticing.
 
-Each morning, Sunsama walks you through a planning ritual. You review your calendar, pull in tasks from various sources (Trello, Asana, Gmail, etc.), and deliberately schedule what you'll accomplish today. The app warns you if you're overplanning—a feature that acknowledges human limitations rather than optimizing around them.
+Both days can end with the same work done. Users tend to call the Sunsama day more deliberate. They call the Motion day lighter, but say you have to check where things went.
 
-Throughout the day, you manually drag tasks onto your calendar as time blocks. At day's end, an optional shutdown ritual helps you reflect on what you accomplished and roll incomplete tasks to tomorrow.
+## Where Motion wins
 
-This intentional approach appeals to users who:
-- Value mindfulness and conscious decision-making
-- Want to prevent overwork and burnout
-- Prefer pulling tasks from various tools into a unified daily view
-- Find automated scheduling too impersonal
+### It handles chaos for you
 
-### Sunsama's Key Features
+If your calendar changes ten times a day, Motion saves real effort. You never have to rebuild the afternoon by hand. One Hacker News user said Motion felt like putting on mental [glasses](https://news.ycombinator.com/item?id=44391813).
 
-**Daily Planning Ritual**: Guided morning sessions help you set realistic daily goals. This ritual is central to Sunsama's philosophy—planning is not overhead, it's the practice.
+### It runs projects, not just days
 
-**[Focus Mode](/features/focus-mode)**: When working on a task, focus mode expands it to fill the screen, starts a timer, and minimizes distractions. Includes Pomodoro timer support.
+Motion has grown into a work app with projects, tasks, docs and dashboards. Business AI adds Gantt charts, capacity planning and time tracking. Sunsama doesn't try to do this.
 
-**Extensive Integrations**: Two-way sync with Todoist, Trello, Asana, Notion, ClickUp, Jira, Linear, Gmail, Slack, and more. Pull tasks from wherever they originate.
+### It has a public API
 
-**Overplanning Warnings**: Sunsama tracks estimated time and alerts you when you've scheduled more than is realistic—promoting sustainable productivity.
+Motion offers a [REST API](https://docs.usemotion.com/) with API keys. You can script it or connect it to other tools. Sunsama has no public API, though it does have an official MCP server.
 
-**Calm Interface**: Deliberately minimal design reduces cognitive load. The UI is sparse, focused, and surprisingly soothing.
+## Where Sunsama wins
 
-### Sunsama Pricing in 2026
+### It keeps you in control
 
-Sunsama recently increased pricing after keeping it steady for five years:
+Nothing moves unless you move it. That matters to people who distrust auto-schedulers. Critics of Motion-style tools say you can end up having to [reverse engineer](https://iphonecleaner.net/t/can-anyone-share-an-honest-motion-app-review-or-experience/2002) how your own week was built.
 
-- **Monthly**: $25/month
-- **Annual**: $20/month (billed as $240/year)
+### It stops overplanning
 
-A 14-day free trial is available, no credit card required.
+Sunsama's workload total is its quiet superpower. You see the hours add up before you commit. Paired with planned vs actual time, it teaches you what a realistic day looks like.
 
-### Sunsama's Limitations
+### It pulls tasks from your other tools
 
-**No AI Automation**: If you want software to schedule your day, Sunsama won't help. Everything is manual and intentional.
+Sunsama imports tasks from Asana, ClickUp, Jira, Linear, Notion, Todoist, Trello, Monday.com, GitHub, Gmail, Slack and more. You keep your tools and add a daily plan on top. Motion works best when your tasks live inside Motion.
 
-**Individual Focus Only**: Sunsama is designed for personal productivity, not team collaboration. No shared projects or team dashboards.
+### It has official AI agent access
 
-**No Meeting Scheduler**: You'll need a separate tool like Calendly for booking links.
+In August 2026, Sunsama's AI assistant, Sunny, and its [MCP server](https://help.sunsama.com/docs/mcp-model-context-protocol) left beta. You can plan your day in chat or connect Claude, ChatGPT or Cursor. Motion's MCP options for its calendar app are community-built.
 
-**Mobile Experience**: While apps exist for iOS and Android, Sunsama is primarily designed for desktop use.
+### It is easier to try
 
-## Motion vs Sunsama: Feature-by-Feature Comparison
+Sunsama gives you 14 days with no card. Motion gives you 7 days and needs a card up front.
 
-Let's compare these AI scheduling apps across the features that matter most.
+## AI in 2026: both have it, in different ways
 
-### Time Blocking
+Older comparisons say "Motion has AI and Sunsama doesn't". That is out of date.
 
-**Motion**: [Time blocking](/features/time-blocking) happens automatically. Add a task with a deadline, and Motion finds the optimal slot. Blocks adjust dynamically as your calendar changes.
+- **Motion's AI does the scheduling.** It also offers AI chat, an AI writer and meeting notes. These use a monthly credit allowance, and heavy use can cost extra.
+- **Sunsama's AI helps you plan.** Sunny can create and move tasks, run your daily plan, sort a brain dump into your backlog and sum up last week. You still make the calls.
 
-**Sunsama**: Time blocking is manual. You drag tasks from your list onto specific calendar times. This requires more effort but gives complete control.
+If you want an agent like Claude to manage your planner, Sunsama is the easier path today. It has an official, hosted MCP server with OAuth. With Motion, you use its API key or a community MCP server.
 
-**Verdict**: Motion for efficiency, Sunsama for intentionality. Learn more about [what time blocking is](/blog/what-is-time-blocking) and why it matters.
+## Motion vs Sunsama pricing: Sunsama costs less month to month
 
-### Calendar Synchronization
+| Plan | Motion | Sunsama |
+|---|---|---|
+| Free plan | None | None |
+| Trial | 7 days, card required | 14 days, no card |
+| Individual, billed monthly | $29 per seat (Pro AI) | $22 per user |
+| Individual, billed yearly | $19 per seat per month (Pro AI) | $17 per user per month |
+| Team plan | Business AI: $29 per seat yearly, $49 monthly | Same Pro price per user; Enterprise is custom |
+| Extra costs | AI credit overage | None listed |
 
-**Motion**: Full two-way sync with Google Calendar and Outlook. Your task blocks appear on your calendar, and external events inform AI scheduling.
+Prices from [Motion](https://www.usemotion.com/pricing) and [Sunsama](https://www.sunsama.com/pricing), checked September 2026. Motion shows yearly prices by default, so compare yearly to yearly.
 
-**Sunsama**: Excellent calendar sync with Google, Outlook, and iCloud. Two-way sync means changes flow both directions.
+## What Reddit says about Motion vs Sunsama
 
-**Verdict**: Tie—both handle calendar sync well.
+Reddit threads on this split along one line: trust.
 
-### AI Features
+- **Motion fans** love handing off the "when". Busy founders and people with ADHD often say it removes decision fatigue.
+- **Sunsama fans** love the calm. They say the ritual keeps them honest and helps them end the day on time.
+- **Both groups** complain about price. And people with rough weeks warn about auto-schedulers. One said you can open the app to [a wall of stuff](https://www.reddit.com/r/ProductivityApps/comments/1vez2yb/what_are_the_best_motion_alternatives/p1l1t33/) it decided you're doing today.
 
-**Motion**: AI is the core product. Automatic scheduling, dynamic rescheduling, priority optimization, and meeting time suggestions.
+## Which one should you pick?
 
-**Sunsama**: No AI features. Sunsama is deliberately manual, though they've added basic automation like auto-rollover for incomplete tasks.
+**For most people: Open Sunsama.** You get a calm day you plan yourself, plus any AI agent to help, on a planner you own.
 
-**Verdict**: Motion dominates if you want AI; Sunsama if you prefer human control.
+If you are choosing only between Motion and Sunsama, use these lists.
 
-### Integrations
+### Pick Motion if you want AI to run your schedule
 
-**Motion**: Integrates with Google Calendar, Outlook, Zoom, and Zapier. Project integrations are limited compared to dedicated task managers.
+- Founders and managers whose days break by 10am.
+- Teams that want projects, deadlines and schedules in one app.
+- People who find daily planning draining and want to follow a plan instead.
+- Developers who want a REST API to script their tasks.
 
-**Sunsama**: Extensive native integrations with Todoist, Trello, Asana, Notion, ClickUp, Jira, Linear, GitHub, Gmail, Slack, and more. Best-in-class for pulling tasks from multiple sources.
+### Pick Sunsama if you want a guided daily plan
 
-**Verdict**: Sunsama wins decisively on integrations.
+- People who keep adding tasks until they burn out.
+- People who like a short morning plan and an evening shutdown.
+- People whose tasks live in Asana, Jira, Notion or Todoist.
+- People who want to plan with Claude or ChatGPT through an official MCP server.
 
-### Focus and Deep Work
+For a deeper look at Sunsama alone, read our [Sunsama review](/blog/sunsama-review).
 
-**Motion**: No dedicated focus mode. The app optimizes scheduling but doesn't help with execution.
+## More comparisons
 
-**Sunsama**: Excellent focus mode with Pomodoro timer, task expansion, and distraction hiding. Designed to help you actually do the work, not just plan it.
-
-**Verdict**: Sunsama wins—focus mode is a significant advantage.
-
-### Project Management
-
-**Motion**: Includes project management features, team workspaces, Gantt charts (Business tier), and resource planning. Suitable for teams managing multiple projects.
-
-**Sunsama**: Individual-focused only. No team features, no project hierarchies, no resource planning.
-
-**Verdict**: Motion for teams and complex projects; Sunsama for individual contributors.
-
-### User Interface
-
-**Motion**: Feature-rich interface with multiple views, project panels, and AI suggestions. More complex but more powerful.
-
-**Sunsama**: Deliberately minimal, calm interface. Prioritizes focus over features. Some find it limiting; others find it liberating.
-
-**Verdict**: Subjective—depends on your preference for simplicity vs. power.
-
-## Pricing Comparison: Motion vs Sunsama vs Open Sunsama
-
-Cost matters, especially for tools you'll use daily. Here's how the three options compare:
-
-| Plan | Motion | Sunsama | Open Sunsama |
-|------|--------|---------|--------------|
-| **Free Tier** | ❌ None | ❌ None | ✅ Free forever |
-| **Monthly** | $34/month | $25/month | $0 |
-| **Annual** | $228/year ($19/mo) | $240/year ($20/mo) | $0 |
-| **Team Pricing** | Per-seat | Per-seat | Free |
-| **Trial** | 7 days | 14 days | Unlimited |
-
-**Annual Costs**:
-- Motion Pro AI: $228/year
-- Sunsama: $240/year
-- Open Sunsama: $0/year
-
-Neither Motion nor Sunsama offers a free tier. If budget is a concern, Open Sunsama provides similar functionality—time blocking, calendar sync, focus mode—at no cost.
-
-## Who Should Choose Motion?
-
-Motion is the right choice if you:
-
-- **Have unpredictable calendars**: Frequent meeting changes make manual planning frustrating. Motion adapts automatically.
-- **Experience decision fatigue**: If choosing what to work on next drains you, let AI decide.
-- **Manage team projects**: Motion's project management suits teams with shared deadlines.
-- **Want meeting scheduling built-in**: No need for separate Calendly subscription.
-- **Trust algorithmic optimization**: You believe AI can schedule your day better than you can.
-
-**Best for**: Busy executives, project managers, people with ADHD who benefit from external structure, and teams with shifting priorities.
-
-## Who Should Choose Sunsama?
-
-Sunsama is the right choice if you:
-
-- **Value intentional planning**: You want to consciously choose what deserves your time.
-- **Use multiple task management tools**: Sunsama's integrations pull everything into one view.
-- **Need focus mode**: Deep work requires more than just scheduling—you need execution support.
-- **Prefer calm interfaces**: Minimalism helps you focus; feature overload overwhelms you.
-- **Want to prevent burnout**: Overplanning warnings and sustainable scheduling matter to you.
-
-**Best for**: Knowledge workers, writers, designers, individual contributors, and anyone who values mindfulness over optimization.
-
-## The Free Alternative: Open Sunsama
-
-What if you want the best of both worlds—or simply don't want to pay $240/year for task management?
-
-Open Sunsama is a free, open-source daily planner that combines intentional planning with modern features. Here's what sets it apart:
-
-### Completely Free, Forever
-
-Unlike Motion and Sunsama, Open Sunsama has no pricing tiers, no paywalls, no premium features locked away. Everything is free for everyone.
-
-### Open Source Transparency
-
-The entire codebase is publicly available. You can verify how your data is handled, contribute improvements, or even fork it for your specific needs.
-
-### Best-of-Both-Worlds Features
-
-Open Sunsama offers:
-- **Time blocking**: Drag tasks onto your calendar like Sunsama
-- **Focus mode**: Dedicated deep work environment with timers
-- **Calendar sync**: Google Calendar, Outlook, and iCloud
-- **Kanban workflow**: Visual task management for daily planning
-- **Desktop app**: Native application for Windows, macOS, and Linux
-
-### Self-Hosting Option
-
-For maximum privacy, you can run Open Sunsama on your own servers. Your productivity data never leaves your infrastructure—something neither Motion nor Sunsama can offer.
-
-## Frequently Asked Questions
-
-### Is Motion or Sunsama better for ADHD?
-
-Both tools can help with ADHD, but in different ways. **Motion** reduces decision fatigue by automating scheduling—you don't have to decide when to work on things. **Sunsama** provides structure through daily rituals and visual time blocking. Many ADHD users prefer Motion's automation, but others find Sunsama's intentional approach helps them stay mindful. The free trial for each lets you test which works better for your brain.
-
-### Can I use Motion and Sunsama together?
-
-Technically yes, but it's not recommended. Both tools want to be your central planning hub, and using both creates duplicate work and potential conflicts. If you like Motion's AI scheduling but want Sunsama's integrations, consider whether Open Sunsama might bridge that gap at no cost.
-
-### Which has better mobile apps?
-
-**Motion** has more robust mobile apps with full functionality on iOS and Android. **Sunsama's** mobile experience is functional but clearly secondary to desktop. If mobile planning is important to your workflow, Motion currently has the edge.
-
-### Does Motion or Sunsama integrate with Notion?
-
-**Sunsama** has native two-way Notion integration, allowing you to pull tasks from Notion databases. **Motion** does not have direct Notion integration—you'd need to use Zapier as a workaround. For Notion users, Sunsama is the clear choice.
-
-### What happens to my data if I cancel?
-
-Both Motion and Sunsama let you export your data before canceling. However, since your tasks and time blocks are typically synced to your calendar anyway, the calendar events remain even after cancellation. With **Open Sunsama**, you can self-host and maintain complete control of your data indefinitely.
-
-### Is there a free alternative to Motion and Sunsama?
-
-Yes—**Open Sunsama** is a free, open-source daily planner with time blocking, calendar sync, and focus mode. It combines Sunsama's intentional planning philosophy with modern features at no cost. Check out our full guide on [the best free Sunsama alternatives](/blog/best-free-sunsama-alternatives) for more options. You might also want to compare [Reclaim AI vs Motion vs Sunsama](/blog/reclaim-ai-vs-motion-vs-sunsama) if you're specifically looking for AI-powered scheduling.
-
-### Which is better for freelancers?
-
-**Sunsama** typically works better for freelancers who need to integrate tasks from multiple clients and tools (Trello, Asana, email). Its intentional planning helps prevent overcommitment. **Motion** can work but its project management features are overkill for most freelancers, and the AI scheduling may feel impersonal. **Open Sunsama** offers a balanced approach with no subscription cost—ideal for freelancers watching their expenses.
-
-### How do Motion and Sunsama handle recurring tasks?
-
-Both handle recurring tasks well. **Motion** automatically schedules recurring tasks based on your preferences and available time. **Sunsama** shows recurring tasks in your daily planning view, letting you decide when to schedule them. The key difference is automation vs. intention—Motion schedules for you, Sunsama lets you decide.
-
-## Conclusion: Motion vs Sunsama—Which Should You Choose?
-
-The Motion vs Sunsama debate ultimately comes down to philosophy:
-
-**Choose Motion** if you want AI to optimize your schedule and you trust algorithms to make good decisions about your time. Motion excels at reducing cognitive load, adapting to calendar chaos, and managing team projects.
-
-**Choose Sunsama** if you value intentional planning and want full control over your daily decisions. Sunsama excels at integrations, focus mode, and promoting sustainable productivity through mindful rituals.
-
-**Choose Open Sunsama** if you want the benefits of intentional daily planning without the $240/year price tag. As the only free, open-source option in this category, Open Sunsama offers [time blocking](/features/time-blocking), [focus mode](/features/focus-mode), and [calendar sync](/features/calendar-sync) at no cost—with the added benefits of self-hosting and code transparency.
-
-The best productivity tool is one you'll actually use. Both Motion and Sunsama offer free trials—use them. And if neither feels quite right, or if the price gives you pause, Open Sunsama is always free to try.
-
----
-
-Ready to try intentional daily planning without the premium price? [Get started with Open Sunsama for free](/register) and discover a calmer, more focused way to work.
+- [9 best Sunsama alternatives](/blog/best-free-sunsama-alternatives), compared.
+- [Akiflow vs Sunsama vs Motion](/blog/akiflow-vs-sunsama-vs-motion) if Akiflow is on your list too.
+- [Motion alternatives](/blog/motion-alternatives) if you like AI planning but not Motion's price or credits.
+- [Reclaim vs Motion vs Sunsama](/blog/reclaim-ai-vs-motion-vs-sunsama) for another AI scheduler.

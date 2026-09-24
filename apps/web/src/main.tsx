@@ -42,6 +42,8 @@ const router = createRouter({
   defaultPreload: "intent",
   defaultPreloadStaleTime: 30_000,
   defaultPreloadGcTime: 5 * 60_000,
+  // New pages open at the top; back/forward returns to where you were
+  scrollRestoration: true,
 });
 
 // Register the router for type safety

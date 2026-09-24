@@ -119,8 +119,8 @@ export const SEO_CONFIGS = {
   },
   alternative: {
     sunsama: {
-      title: "Open-Source Sunsama Alternative",
-      description: "The open-source alternative to Sunsama. Time blocking, calendar sync, focus mode, and kanban boards, and you can control it all from any AI agent.",
+      title: "Open-Source Sunsama Alternative for Any AI Agent",
+      description: "Open Sunsama is an open-source daily planner that works like Sunsama: a board of days, time blocking and focus mode. Self-host it and connect any AI agent.",
       canonical: "/alternative/sunsama",
     },
   },

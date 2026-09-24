@@ -7,3 +7,5 @@ export { SoftwareApplicationSchema } from "./software-schema";
 export { ProductComparisonSchema } from "./product-comparison-schema";
 export { SEOHead } from "./seo-head";
 export { CollectionSchema } from "./collection-schema";
+export { VideoSchema } from "./video-schema";
+export { JsonLd } from "./json-ld";

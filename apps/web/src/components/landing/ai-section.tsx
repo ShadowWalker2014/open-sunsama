@@ -1,7 +1,8 @@
 /**
- * "Connect your AI" section: three setup steps beside a live-feeling demo in
- * which an assistant calls Open Sunsama's MCP tools and the time blocks land
- * on a timeline drawn with the app's own block styles (see TimeBlock).
+ * "Connect your AI" section: three setup steps beside a real recording of an
+ * agent planning the afternoon over MCP, plus the narrated demo video.
+ * AssistantDemo (an animated illustration of the same tool calls) is used on
+ * /features/ai-integration.
  */
 
 import * as React from "react";
@@ -9,7 +10,9 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, Check, Copy, KeyRound, Link2, MessageSquareText, RotateCcw, ShieldCheck } from "lucide-react";
 import { useInView } from "react-intersection-observer";
 import { cn } from "@/lib/utils";
+import { Clip } from "@/components/blog/media";
 import { Reveal, useReducedMotion } from "./motion";
+import { VideoCard, VideoLightbox } from "./video-lightbox";
 
 const MCP_URL = "https://api.opensunsama.com/mcp";
 const HOUR = 56; // px per hour in the mini timeline
@@ -292,40 +295,46 @@ const STEPS = [
   {
     icon: Link2,
     title: "Paste one URL",
-    body: "Add it as a connector in Claude, a plugin in ChatGPT, or an MCP server in Cursor, VS Code, or Claude Code.",
+    body: "Add it as a connector in Claude or ChatGPT. It works in Cursor, VS Code and Claude Code too.",
     extra: <CopyUrl />,
   },
   {
     icon: KeyRound,
     title: "Sign in and allow access",
-    body: "Standard OAuth: no API keys to paste. See exactly what it can touch, and disconnect anytime in Settings.",
+    body: "No API keys to copy. You see what it can change, and you can turn it off any time in Settings.",
   },
   {
     icon: MessageSquareText,
-    title: "Ask in plain language",
-    body: "“Move everything that isn't a P0 to tomorrow.” “Block two hours for the launch plan.” It asks before deleting anything.",
+    title: "Ask in plain words",
+    body: "“Move everything that isn't a P0 to tomorrow.” “Block two hours for the launch plan.”",
   },
 ];
 
 export function AiSection() {
   return (
-    <section id="ai" className="relative scroll-mt-16 border-t border-border/50 py-24 md:py-32">
-      <div className="container mx-auto grid max-w-6xl items-center gap-14 px-4 xl:grid-cols-[0.85fr_1.15fr]">
-        <div className="mx-auto min-w-0 max-w-2xl xl:mx-0 xl:max-w-none">
+    <section id="ai" className="relative scroll-mt-16 overflow-hidden border-t border-border/50 py-24 md:py-32">
+      {/* Warm light from the right, behind the recording. */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute -right-40 top-10 h-[560px] w-[760px] rounded-full bg-[radial-gradient(closest-side,hsl(var(--primary)/0.16),transparent)] blur-2xl" />
+        <div className="absolute -right-10 bottom-0 h-[380px] w-[520px] rounded-full bg-[radial-gradient(closest-side,rgb(139_92_246/0.12),transparent)] blur-2xl" />
+      </div>
+
+      <div className="container mx-auto grid max-w-6xl items-center gap-14 px-4 lg:grid-cols-[0.82fr_1.18fr] lg:gap-16">
+        <div className="mx-auto min-w-0 max-w-2xl lg:mx-0 lg:max-w-none">
           <Reveal>
             <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-primary">AI native</p>
-            <h2 className="mt-3 text-[32px] font-semibold leading-[1.08] tracking-[-0.03em] md:text-[44px]">
-              Control your planner from any agent.
+            <h2 className="mt-3 text-[34px] font-semibold leading-[1.05] tracking-[-0.035em] md:text-[48px]">
+              Let your AI plan your day.
             </h2>
-            <p className="mt-4 text-[16px] leading-relaxed text-muted-foreground">
-              Claude, ChatGPT, Cursor, Claude Code, VS Code, or an agent you built yourself. Connect it once and
-              it can read your plan, create and prioritize tasks, time-block your day, and check things off.
+            <p className="mt-4 text-[16px] leading-relaxed text-muted-foreground md:text-[17px]">
+              Connect Claude, ChatGPT, Cursor or any MCP app once. Then just ask. It reads your tasks, sets
+              priorities and blocks time on your calendar.
             </p>
           </Reveal>
 
           <ol className="mt-9 space-y-6">
             {STEPS.map((step, i) => (
-              <Reveal key={step.title} as="li" delay={120 + i * 110} className="flex gap-4">
+              <Reveal key={step.title} as="li" delay={100 + i * 90} className="flex gap-4">
                 <div className="relative flex flex-col items-center">
                   <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-border/70 bg-background text-primary shadow-sm">
                     <step.icon className="h-4 w-4" />
@@ -337,14 +346,14 @@ export function AiSection() {
                     <span className="mr-1.5 text-muted-foreground">{i + 1}.</span>
                     {step.title}
                   </p>
-                  <p className="mt-1 text-[14px] leading-relaxed text-muted-foreground">{step.body}</p>
+                  <p className="mt-1 text-[14.5px] leading-relaxed text-muted-foreground">{step.body}</p>
                   {step.extra}
                 </div>
               </Reveal>
             ))}
           </ol>
 
-          <Reveal delay={480} className="mt-8 flex flex-wrap items-center gap-3">
+          <Reveal delay={380} className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
             <Link
               to="/docs/$"
               params={{ _splat: "mcp/overview" }}
@@ -353,15 +362,27 @@ export function AiSection() {
               Setup guides for every assistant
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
-            <span className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5 text-[12.5px] text-muted-foreground">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-              OAuth 2.1 · scoped, revocable access
+              OAuth sign-in · revoke any time
             </span>
           </Reveal>
         </div>
 
-        <Reveal delay={150} y={28} className="mx-auto w-full min-w-0 max-w-3xl xl:max-w-none">
-          <AssistantDemo />
+        <Reveal delay={120} y={28} className="mx-auto w-full min-w-0 max-w-3xl lg:max-w-none">
+          <div className="mb-3 flex items-center gap-2 text-[12.5px] font-medium text-muted-foreground">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-60 motion-safe:animate-ping" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            </span>
+            Real recording: Claude plans the afternoon over MCP
+          </div>
+          <div className="[&_figure]:my-0">
+            <Clip id="ai-plan" caption="Tasks and time blocks appear as the agent works." />
+          </div>
+          <VideoLightbox id="ai">
+            <VideoCard id="ai" label="Watch the full demo: Claude plans a day" className="mt-6" />
+          </VideoLightbox>
         </Reveal>
       </div>
     </section>
