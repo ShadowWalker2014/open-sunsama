@@ -292,7 +292,7 @@ Scopes: `tasks:read` `tasks:write` `time-blocks:read` `time-blocks:write` `ideas
 ```bash
 git clone https://github.com/ShadowWalker2014/open-sunsama.git
 cd open-sunsama
-docker-compose up -d        # PostgreSQL + API on :3001 (MCP connector at /mcp)
+docker compose --profile api up -d  # PostgreSQL + API on :3001 (MCP connector at /mcp)
 docker build -f Dockerfile.web --build-arg VITE_API_URL=https://api.your-domain.com -t open-sunsama-web .
 ```
 
@@ -303,11 +303,13 @@ The [self-hosting guide](https://opensunsama.com/docs/self-hosting/docker) cover
 
 <br />
 
-Prerequisites: [Bun](https://bun.sh) 1.2+ and PostgreSQL 15+. S3-compatible storage is optional, for file uploads.
+Prerequisites: [Bun](https://bun.sh) 1.4.2 (run `mise install` when using mise) and PostgreSQL 15+. S3-compatible storage is optional, for file uploads.
 
 ```bash
 git clone https://github.com/ShadowWalker2014/open-sunsama.git
 cd open-sunsama
+mise install
+docker compose up -d  # PostgreSQL only; use --profile api to run the containerized API
 bun install
 
 # Configure environment (root + API)

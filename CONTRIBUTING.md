@@ -43,8 +43,8 @@ Looking for a place to start? Check out issues labeled:
 
 ### Prerequisites
 
-- [Bun](https://bun.sh/) v1.0+ (recommended) or Node.js 20+
-- PostgreSQL 15+
+- [Bun](https://bun.sh/) 1.4.2 (run `mise install` when using mise)
+- Docker Compose, or PostgreSQL 15+
 - Git
 
 ### Setup
@@ -59,17 +59,22 @@ cd open-sunsama
 # 3. Add upstream remote
 git remote add upstream https://github.com/ShadowWalker2014/open-sunsama.git
 
-# 4. Install dependencies
+# 4. Install the pinned Bun version and start PostgreSQL
+mise install
+docker compose up -d
+
+# 5. Install dependencies
 bun install
 
-# 5. Set up environment
+# 6. Set up environment (root is for Drizzle; API is for the server)
 cp .env.example .env
-# Edit .env with your database URL
+cp apps/api/.env.example apps/api/.env
+# Edit apps/api/.env to set JWT_SECRET and CALENDAR_ENCRYPTION_KEY.
 
-# 6. Set up the database
+# 7. Set up the database
 bun run db:push
 
-# 7. Start development servers
+# 8. Start development servers
 bun run dev
 ```
 
