@@ -71,11 +71,18 @@ export const updateCalendarSettingsSchema = z.object({
 /**
  * Schema for calendar events query params
  */
-export const calendarEventsQuerySchema = z.object({
-  from: z.string().datetime({ offset: true }).or(dateSchema),
-  to: z.string().datetime({ offset: true }).or(dateSchema),
-  calendarIds: z.string().optional(), // Comma-separated UUIDs
-});
+export const calendarEventsQuerySchema = z
+  .object({
+    // ISO instants, or YYYY-MM-DD for whole days in the user's timezone.
+    from: z.string().datetime({ offset: true }).or(dateSchema).optional(),
+    to: z.string().datetime({ offset: true }).or(dateSchema).optional(),
+    // Shorthand for from=to=date.
+    date: dateSchema.optional(),
+    calendarIds: z.string().optional(), // Comma-separated UUIDs
+  })
+  .refine((q) => (q.date ? !q.from && !q.to : !!q.from && !!q.to), {
+    message: 'Pass either date, or both from and to',
+  });
 
 /**
  * Parse comma-separated calendar IDs

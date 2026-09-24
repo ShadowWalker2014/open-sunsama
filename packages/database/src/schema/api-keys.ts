@@ -43,6 +43,7 @@ export const API_KEY_SCOPES = [
   'tasks:write',
   'time-blocks:read',
   'time-blocks:write',
+  'calendar:read',
   'ideas:read',
   'ideas:write',
   'user:read',

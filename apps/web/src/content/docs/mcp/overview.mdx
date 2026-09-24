@@ -6,7 +6,7 @@ export const frontmatter = {
   section: "mcp",
 };
 
-Open Sunsama runs a hosted [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server. Add one URL to your AI assistant, sign in, and it can read and plan your day: tasks, subtasks, and calendar time blocks.
+Open Sunsama runs a hosted [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server. Add one URL to your AI assistant, sign in, and it can read and plan your day: tasks, subtasks, calendar time blocks, and the meetings on your connected Google, Outlook, and iCloud calendars.
 
 ## Connect in one step
 
@@ -36,6 +36,8 @@ Once connected, ask in plain language:
 ```
 "What's on my plate today?"
 
+"Plan my day around my meetings."
+
 "Create a P1 task to review the Q3 roadmap for Thursday, 45 minutes."
 
 "Block 9–11am tomorrow for deep work on the launch plan and link it to that task."
@@ -64,7 +66,7 @@ Technical details for client developers:
 
 ## Available tools
 
-The server provides 23 tools. Each is annotated as read-only or destructive, so your assistant can ask before it deletes anything.
+The server provides 24 tools. Each is annotated as read-only or destructive, so your assistant can ask before it deletes anything.
 
 ### Tasks
 
@@ -89,7 +91,15 @@ The server provides 23 tools. Each is annotated as read-only or destructive, so 
 | `update_time_block` | Move or resize a block |
 | `delete_time_block` | Delete a block |
 | `link_task_to_time_block` | Put a task on the calendar |
-| `get_schedule_for_day` | See a whole day's tasks and blocks at once |
+| `get_schedule_for_day` | See a whole day at once: calendar events and time blocks |
+
+### Calendar events
+
+Events synced from the calendars you connected in **Settings → Calendars** (Google, Outlook, iCloud). They are read-only over MCP, and the assistant sees each event's title, time, calendar name, and location. It never sees attendees or event descriptions.
+
+| Tool | Description |
+| --- | --- |
+| `list_calendar_events` | List meetings and other events for a day or a range of days, optionally for chosen calendars |
 
 ### Subtasks
 
@@ -116,5 +126,6 @@ The local command-line server (`npx @open-sunsama/mcp`) and API-key access still
 
 - **"Couldn't reach the MCP server"**: check that the URL is exactly `https://api.opensunsama.com/mcp`, with no trailing slash and nothing after `/mcp`.
 - **The sign-in page says the link expired**: the consent link is valid for 15 minutes. Click **Connect** in your assistant again.
+- **The assistant can't see your meetings**: connect a calendar in **Settings → Calendars** first. If you connected your assistant before calendar access existed, disconnect it in **Settings → MCP → Connected apps**, connect it again, and allow calendar access.
 - **The assistant stopped working after a while**: open **Settings → MCP → Connected apps**. If the app isn't listed, reconnect it from your assistant.
 - **Self-hosting?** Replace the host with your own API URL, for example `https://api.your-domain.com/mcp`, and set `API_URL` and `WEB_APP_URL` on the API service.
