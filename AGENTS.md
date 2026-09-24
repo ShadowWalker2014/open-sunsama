@@ -15,6 +15,11 @@ AI-agent-friendly task management + time blocking app. TypeScript monorepo with 
 
 **MCP Tool:** Use `open-sunsama` MCP server to create/update tasks, time blocks, subtasks programmatically.
 
+### Shipping a change (agents)
+
+- **Review and merge your own PR.** Read your full diff for bugs, fix what you find, wait for CI, then merge it yourself.
+- **Validate in production before calling it done.** After the deploy, prove the change works end to end: check `railway logs --service api` for errors, query the data read-only, and test anything a user can see in the browser pane on https://opensunsama.com. An open PR or passing tests is not done.
+
 ---
 
 ## Structure
