@@ -39,7 +39,7 @@ export default function AIIntegrationFeaturePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <FeatureItem
               icon={Bot}
-              title="23 MCP Tools"
+              title="24 MCP Tools"
               description="Full suite of tools for tasks, time blocks, subtasks, and user management."
             />
             <FeatureItem

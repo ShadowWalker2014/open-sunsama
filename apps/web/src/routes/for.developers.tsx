@@ -51,7 +51,7 @@ function WhyDevelopersSection() {
     },
     {
       icon: Bot,
-      title: "23 MCP Tools",
+      title: "24 MCP Tools",
       description: "Let AI agents manage your schedule. Connect Claude Code, Cursor, Claude, or ChatGPT with one URL and OAuth sign-in.",
     },
     {
@@ -359,7 +359,7 @@ await mcp.callTool("open-sunsama", "create_task", {
             Let AI Agents Manage Your Schedule
           </h2>
           <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-            23 MCP tools for programmatic task and schedule management. Connect with one URL
+            24 MCP tools for programmatic task and schedule management. Connect with one URL
             and OAuth sign-in from Claude, ChatGPT, Cursor, and any MCP-compatible client.
           </p>
         </div>
@@ -520,7 +520,7 @@ function FAQSection() {
     },
     {
       question: "Can I integrate with my dev workflow?",
-      answer: "Yes. Full REST API for scripting, 23 MCP tools for AI agents, and the desktop app has global hotkeys (Cmd+Shift+T to create a task from anywhere). Many developers use the MCP server with Cursor to create tasks while coding.",
+      answer: "Yes. Full REST API for scripting, 24 MCP tools for AI agents, and the desktop app has global hotkeys (Cmd+Shift+T to create a task from anywhere). Many developers use the MCP server with Cursor to create tasks while coding.",
     },
     {
       question: "What about Jira/GitHub issues?",
@@ -651,7 +651,7 @@ export default function ForDevelopersPage() {
     },
     {
       question: "Can I integrate with my dev workflow?",
-      answer: "Yes. Full REST API for scripting, 23 MCP tools for AI agents, and the desktop app has global hotkeys (Cmd+Shift+T to create a task from anywhere). Many developers use the MCP server with Cursor to create tasks while coding.",
+      answer: "Yes. Full REST API for scripting, 24 MCP tools for AI agents, and the desktop app has global hotkeys (Cmd+Shift+T to create a task from anywhere). Many developers use the MCP server with Cursor to create tasks while coding.",
     },
     {
       question: "What about Jira/GitHub issues?",
@@ -676,14 +676,14 @@ export default function ForDevelopersPage() {
       <FAQSchema items={faqItems} />
       <SoftwareApplicationSchema
         name="Open Sunsama"
-        description="Daily planner built for developers. Keyboard-first workflow, command palette (Cmd+K), full REST API, 23 MCP tools for AI agents, and source on GitHub. Connect Claude Code, Cursor, Claude, or ChatGPT with one URL and OAuth sign-in."
+        description="Daily planner built for developers. Keyboard-first workflow, command palette (Cmd+K), full REST API, 24 MCP tools for AI agents, and source on GitHub. Connect Claude Code, Cursor, Claude, or ChatGPT with one URL and OAuth sign-in."
         applicationCategory="ProductivityApplication"
         operatingSystem="Web, Windows, macOS, Linux"
         featureList={[
           "Command palette (Cmd+K)",
           "Keyboard-first navigation",
           "Full REST API access",
-          "23 MCP tools for AI agents",
+          "24 MCP tools for AI agents",
           "TypeScript + React + Vite stack",
           "Self-hostable with Docker",
           "Focus mode with timer",

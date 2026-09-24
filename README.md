@@ -260,12 +260,13 @@ Switching from another tool? Read the comparisons: [Sunsama](https://opensunsama
 
 ## 🛠️ MCP tools
 
-23 tools, available through the hosted connector and the local server:
+24 tools, available through the hosted connector and the local server:
 
 | Category | Tools |
 | --- | --- |
 | **Tasks** | `list_tasks` `get_task` `create_task` `update_task` `complete_task` `uncomplete_task` `delete_task` `schedule_task` `reorder_tasks` |
 | **Time blocks** | `list_time_blocks` `get_time_block` `create_time_block` `update_time_block` `delete_time_block` `link_task_to_time_block` `get_schedule_for_day` |
+| **Calendar events** (read-only) | `list_calendar_events` |
 | **Subtasks** | `list_subtasks` `create_subtask` `toggle_subtask` `update_subtask` `delete_subtask` |
 | **Profile** | `get_user_profile` `update_user_profile` |
 
@@ -355,7 +356,7 @@ DEMO_API_URL=http://localhost:3001 DEMO_PASSWORD='Choose-a-strong-1' bun run scr
 | --- | --- |
 | **Frontend** | React 19, Vite, TanStack Router + Query, Tailwind CSS, Radix UI, Tiptap |
 | **Backend** | Hono 4, Drizzle ORM, PostgreSQL, PG Boss jobs, Zod, OAuth 2.1 authorization server |
-| **AI** | Model Context Protocol (Streamable HTTP + stdio), 23 annotated tools |
+| **AI** | Model Context Protocol (Streamable HTTP + stdio), 24 annotated tools |
 | **Desktop / mobile** | Tauri 2, Expo |
 | **Infra** | Bun workspaces, Turborepo, Docker, Railway |
 
@@ -414,7 +415,7 @@ Add <code>https://api.opensunsama.com/mcp</code> as a custom connector in Claude
 <details>
 <summary><b>What is MCP?</b></summary>
 <br />
-The <a href="https://modelcontextprotocol.io">Model Context Protocol</a> is an open standard for connecting AI assistants to tools and data. Open Sunsama's MCP server gives assistants 23 tools to read and update your tasks, subtasks, and time blocks.
+The <a href="https://modelcontextprotocol.io">Model Context Protocol</a> is an open standard for connecting AI assistants to tools and data. Open Sunsama's MCP server gives assistants 24 tools to read and update your tasks, subtasks, and time blocks.
 </details>
 
 <details>

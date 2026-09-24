@@ -323,7 +323,7 @@ export default function ReclaimAlternativePage() {
     },
     {
       question: "Can I still auto-schedule if I want to?",
-      answer: "Open Sunsama doesn't auto-schedule by default, which many users prefer. However, you can ask Claude or ChatGPT to plan your day, or build your own automations with our full REST API and 23 MCP tools. This gives you AI scheduling on YOUR terms, not the app's.",
+      answer: "Open Sunsama doesn't auto-schedule by default, which many users prefer. However, you can ask Claude or ChatGPT to plan your day, or build your own automations with our full REST API and 24 MCP tools. This gives you AI scheduling on YOUR terms, not the app's.",
     },
     {
       question: "Does it sync both ways with my calendar?",
@@ -492,7 +492,7 @@ export default function ReclaimAlternativePage() {
               <BenefitCard
                 icon={Code2}
                 title="Full API/MCP Access"
-                description="23 MCP tools and a REST API for YOUR automations. Build your own integrations. No locked ecosystem."
+                description="24 MCP tools and a REST API for YOUR automations. Build your own integrations. No locked ecosystem."
                 delay={150}
               />
               <BenefitCard
@@ -560,7 +560,7 @@ export default function ReclaimAlternativePage() {
               />
               <FAQItem
                 question="Can I still auto-schedule if I want to?"
-                answer="Open Sunsama doesn't auto-schedule by default, which many users prefer. However, you can ask Claude or ChatGPT to plan your day, or build your own automations with our full REST API and 23 MCP tools. This gives you AI scheduling on YOUR terms, not the app's."
+                answer="Open Sunsama doesn't auto-schedule by default, which many users prefer. However, you can ask Claude or ChatGPT to plan your day, or build your own automations with our full REST API and 24 MCP tools. This gives you AI scheduling on YOUR terms, not the app's."
               />
               <FAQItem
                 question="Does it sync both ways with my calendar?"
