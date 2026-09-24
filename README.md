@@ -293,11 +293,10 @@ Scopes: `tasks:read` `tasks:write` `time-blocks:read` `time-blocks:write` `ideas
 ```bash
 git clone https://github.com/ShadowWalker2014/open-sunsama.git
 cd open-sunsama
-docker compose --profile api up -d  # PostgreSQL + API on :3001 (MCP connector at /mcp)
-docker build -f Dockerfile.web --build-arg VITE_API_URL=https://api.your-domain.com -t open-sunsama-web .
+docker compose up -d --build   # PostgreSQL, Redis, API on :3001, web app on :3000
 ```
 
-The [self-hosting guide](https://opensunsama.com/docs/self-hosting/docker) covers environment variables, the web container, and production setup.
+Open http://localhost:3000 and create your account. The API creates the database tables on start, and the MCP connector is at http://localhost:3001/mcp. The [self-hosting guide](https://opensunsama.com/docs/self-hosting/docker) covers running on a server with your own domain, optional integrations, and backups. The desktop and mobile apps connect only to opensunsama.com, so self-hosters use the web app.
 
 <details>
 <summary><b>Run from source</b></summary>
@@ -310,17 +309,17 @@ Prerequisites: [Bun](https://bun.sh) 1.4.2 (run `mise install` when using mise) 
 git clone https://github.com/ShadowWalker2014/open-sunsama.git
 cd open-sunsama
 mise install
-docker compose up -d  # PostgreSQL only; use --profile api to run the containerized API
 bun install
+docker compose up -d postgres   # PostgreSQL only, on localhost:5431
 
 # Configure environment (root + API)
 cp .env.example .env
-cp apps/api/.env.example apps/api/.env
+cp apps/api/.env.example apps/api/.env   # DATABASE_URL already points at the Docker PostgreSQL
 #   JWT_SECRET              → openssl rand -base64 32
 #   CALENDAR_ENCRYPTION_KEY → openssl rand -hex 32
 #   API_URL / WEB_APP_URL   → your public URLs (the MCP connector uses them for OAuth)
 
-bun run db:push
+bun run db:migrate
 bun run dev
 ```
 

@@ -59,9 +59,8 @@ cd open-sunsama
 # 3. Add upstream remote
 git remote add upstream https://github.com/ShadowWalker2014/open-sunsama.git
 
-# 4. Install the pinned Bun version and start PostgreSQL
+# 4. Install the pinned Bun version
 mise install
-docker compose up -d
 
 # 5. Install dependencies
 bun install
@@ -69,10 +68,11 @@ bun install
 # 6. Set up environment (root is for Drizzle; API is for the server)
 cp .env.example .env
 cp apps/api/.env.example apps/api/.env
-# Edit apps/api/.env to set JWT_SECRET and CALENDAR_ENCRYPTION_KEY.
+# Both default to the PostgreSQL from step 6; edit DATABASE_URL to use your own
 
-# 7. Set up the database
-bun run db:push
+# 7. Start PostgreSQL and create the tables
+docker compose up -d postgres
+bun run db:migrate
 
 # 8. Start development servers
 bun run dev
@@ -111,8 +111,8 @@ bun run format           # Prettier formatting
 bun run test             # Run tests
 
 # Database
-bun run db:generate      # Generate migrations
-bun run db:push          # Push schema changes
+bun run db:generate      # Generate a migration after changing packages/database/src/schema
+bun run db:migrate       # Apply migrations
 bun run db:studio        # Open Drizzle Studio
 
 # Build
