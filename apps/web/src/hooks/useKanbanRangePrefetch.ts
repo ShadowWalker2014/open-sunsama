@@ -19,11 +19,18 @@ type TaskWithSubtasks = Task & { subtasks?: Subtask[] };
 const PREFETCH_BUFFER_DAYS = 14;
 
 /**
- * Upper bound on a single range fetch. We refuse to seed when the API hits
- * this limit, because some days inside the range will be silently truncated
- * and seeding would hide tasks from the user.
+ * Page size for the range fetch. Must stay at or under the API's `limit` cap
+ * for `GET /tasks` (500, `taskFilterSchema` in apps/api); anything higher is
+ * rejected with a 400 and the board silently loses the prefetch.
  */
-const RANGE_FETCH_LIMIT = 1000;
+const RANGE_PAGE_SIZE = 500;
+
+/**
+ * Most pages we'll fetch for one range (5,000 tasks). Past this we stop and
+ * refuse to seed, because some days inside the range would be truncated and
+ * seeding would hide tasks from the user.
+ */
+const RANGE_MAX_PAGES = 10;
 
 /**
  * Per-day cache key used by `DayColumn` (`useTasks({ scheduledDate, limit: 200 })`).
@@ -116,14 +123,31 @@ export function useKanbanRangePrefetch(options: RangePrefetchOptions = {}) {
       truncated: boolean;
     }> => {
       const api = getApi();
-      const response = await api.tasks.list({
-        scheduledDateFrom: fromString,
-        scheduledDateTo: toString,
-        limit: RANGE_FETCH_LIMIT,
-        includeSubtasks: true,
-      });
-      const raw = (response.data ?? []) as TaskWithSubtasks[];
-      const total = response.meta?.total ?? raw.length;
+      const fetchPage = (page: number) =>
+        api.tasks.list({
+          scheduledDateFrom: fromString,
+          scheduledDateTo: toString,
+          limit: RANGE_PAGE_SIZE,
+          page,
+          includeSubtasks: true,
+        });
+
+      // Almost every range fits in the first page. Busier ones fetch the
+      // remaining pages in parallel.
+      const first = await fetchPage(1);
+      const total = first.meta?.total ?? first.data?.length ?? 0;
+      const pageCount = Math.min(
+        Math.ceil(total / RANGE_PAGE_SIZE),
+        RANGE_MAX_PAGES
+      );
+      const rest = await Promise.all(
+        Array.from({ length: Math.max(pageCount - 1, 0) }, (_, i) =>
+          fetchPage(i + 2)
+        )
+      );
+      const raw = [first, ...rest].flatMap(
+        (r) => (r.data ?? []) as TaskWithSubtasks[]
+      );
 
       // Strip subtasks off the task object before we put it in the per-day
       // cache. We seed the subtask caches separately below.
@@ -135,7 +159,9 @@ export function useKanbanRangePrefetch(options: RangePrefetchOptions = {}) {
         if (embedded) subtasksByTaskId.set(t.id, embedded);
       }
 
-      return { tasks, subtasksByTaskId, truncated: total > tasks.length };
+      // A task created or deleted between pages shifts the offsets, so the
+      // count can disagree with `total`; treat any mismatch as truncated.
+      return { tasks, subtasksByTaskId, truncated: total !== tasks.length };
     },
     enabled: isAuthenticated,
     staleTime: 30_000,
