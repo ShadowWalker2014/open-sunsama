@@ -44,6 +44,7 @@ import {
 } from "./lib/pgboss.js";
 import { initWebSocket, initRedisSubscriber } from "./lib/websocket/index.js";
 import { closeRedisConnections } from "./lib/redis.js";
+import { migrateDatabase } from "./lib/migrations.js";
 
 // Create Hono app
 const app = new Hono();
@@ -215,6 +216,12 @@ let httpServer: HttpServer | null = null;
  * Initialize and start the server
  */
 async function startServer(): Promise<void> {
+  // Self-hosted Docker setups set this so a fresh database gets its tables
+  // before anything queries it. A failed migration stops the server.
+  if (process.env.MIGRATE_ON_START === "true") {
+    await migrateDatabase();
+  }
+
   // Initialize PG Boss and register workers
   try {
     console.log("[Server] Starting worker registration...");
