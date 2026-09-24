@@ -86,9 +86,9 @@ For that, the AI needs access to your planner. MCP (Model Context Protocol) is t
 
 <DemoVideo id="ai" />
 
-The planner matters. If tasks live in one app and your calendar in another, the AI has to juggle two connectors. It works best when tasks and time blocks sit in one place.
+The planner matters. If tasks live in one app and your calendar in another, the AI has to juggle two connectors. It works best when tasks, time blocks and meetings sit in one place.
 
-[Open Sunsama](/features/ai-integration) is built this way. It is an open-source daily planner whose hosted MCP server gives your AI 24 tools. One reads your whole day at once, and others create, move and resize time blocks and link them to tasks.
+[Open Sunsama](/features/ai-integration) is built this way: an open-source daily planner whose hosted MCP server gives your AI 24 tools. One reads your meetings and time blocks for a day in one call. Others create, move and resize time blocks and link them to tasks.
 
 Your Google, Outlook or iCloud meetings sync onto the same calendar in the app, and the AI reads them over the same connection. It plans your time blocks around your meetings, so you never type a meeting time into the chat.
 
@@ -99,6 +99,8 @@ These steps use Open Sunsama, but the flow works with any planner whose MCP serv
 ### Step 1: Connect your planner
 
 Paste `https://api.opensunsama.com/mcp` into Claude (Settings → Connectors) or ChatGPT (developer mode, on paid plans). Sign in and click **Allow access**. The [Claude guide](/docs/mcp/claude) and [ChatGPT guide](/docs/mcp/chatgpt) show each click.
+
+Then connect your calendar in Open Sunsama under **Settings → Calendars**. Now the AI sees your meetings and your tasks in one call.
 
 ### Step 2: Brain dump into your backlog
 

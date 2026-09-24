@@ -10,7 +10,7 @@ export const frontmatter = {
   faqs: [
     {
       question: "What is the best task manager with MCP?",
-      answer: "Open Sunsama is the best overall. It is an open-source daily planner whose MCP server covers tasks and calendar time blocks, and it works with any AI agent. Pick Todoist for a simple to-do list, or Sunsama if you already use its daily ritual.",
+      answer: "Open Sunsama is the best overall. It is an open-source daily planner whose MCP server covers tasks, calendar time blocks and your meetings, and it works with any AI agent. Pick Todoist for a simple to-do list, or Sunsama if you already use its daily ritual.",
     },
     {
       question: "What is a task manager MCP server?",
@@ -65,7 +65,7 @@ Here is what each app offers today. "Official" means the company runs the server
 
 | App | Official MCP server | Server URL | What your AI can reach | Public REST API | Self-host |
 | --- | --- | --- | --- | --- | --- |
-| Open Sunsama | Yes | `https://api.opensunsama.com/mcp` | Tasks, subtasks, time blocks, day schedule | Yes, with API keys | Yes (Docker) |
+| Open Sunsama | Yes | `https://api.opensunsama.com/mcp` | Tasks, subtasks, time blocks, synced meetings (read-only) | Yes, with API keys | Yes (Docker) |
 | Todoist | Yes | `https://ai.todoist.net/mcp` | Tasks, projects, activity log | Yes | No |
 | Sunsama | Yes | `https://api.sunsama.com/mcp` | Tasks, notes, channels, comments | No | No |
 | TickTick | Yes | `https://mcp.ticktick.com` | Tasks, lists, habits, focus records | Yes (narrow) | No |
@@ -107,13 +107,13 @@ The server has 24 tools. Your AI can list and create tasks, add subtasks, move w
 
 <Clip id="plan-day" caption="Drag tasks from the backlog into Today. Your AI can move them the same way." />
 
-It can also create, resize and delete calendar time blocks and link them to tasks. One tool returns a whole day at once, so the AI sees tasks and blocks together.
+It can also create, resize and delete calendar time blocks and link them to tasks. One tool returns a whole day in one call, so the AI sees your meetings and time blocks together.
 
 <Clip id="ai-plan" caption="Claude plans the afternoon over MCP, and the tasks and time blocks appear live." />
 
 A real plan needs a list and a time for each item. Here tasks and time blocks share one server, and the blocks land on the same calendar you drag and resize by hand.
 
-Your synced Google, Outlook or iCloud meetings show on that calendar in the app, and the AI reads them over MCP too. So it plans around your meetings without a second connector.
+Your synced Google, Outlook or iCloud meetings show on that calendar in the app, and the AI reads them over MCP too. So it plans around your meetings without a second connector. It sees each meeting's title, time and place, never who's invited or the notes, and it can't move meetings.
 
 <Clip id="time-block" caption="Drag a task onto the calendar and resize it. Your AI can make the same change for you." />
 

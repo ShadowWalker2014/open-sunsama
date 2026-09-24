@@ -191,7 +191,7 @@ function LoopSection() {
 // ---------------------------------------------------------------------------
 
 const AGENT_PROMPTS = [
-  "Plan my day. Put my top three tasks in focus blocks before lunch.",
+  "Plan my day around my meetings. Put my top three tasks in focus blocks.",
   "Yesterday went off track. Move what's left into free slots this week.",
   "Turn this brain dump into tasks for Thursday.",
 ];
@@ -205,8 +205,9 @@ function AgentSection() {
             <p className={EYEBROW}>AI native</p>
             <h2 className={cn(H2, "mt-3")}>Any AI agent can plan your day in Open Sunsama</h2>
             <p className={LEAD}>
-              Paste one URL into Claude, ChatGPT, Cursor, Claude Code or any MCP client, then sign in. You don't need an
-              API key. Your agent gets 23 tools for tasks, subtasks and time blocks.
+              Paste one URL into Claude, ChatGPT, Cursor, Claude Code or any MCP client, then sign in. No API key needed.
+              Your agent gets 24 tools for tasks, subtasks, time blocks and your calendar meetings, so it sees your
+              meetings and tasks in one call and plans around them.
             </p>
             <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground">
               Sunsama has an MCP server too, and it works well. The difference is what sits behind it. Our code is public,
@@ -554,7 +555,7 @@ const FAQS = [
   {
     question: "Can I control Open Sunsama from Claude or ChatGPT?",
     answer:
-      "Yes. Paste https://api.opensunsama.com/mcp into Claude, ChatGPT, Cursor, Claude Code or any MCP client, then sign in. You don't need an API key. Your agent can then read your schedule, create tasks and time-block your day.",
+      "Yes. Paste https://api.opensunsama.com/mcp into Claude, ChatGPT, Cursor, Claude Code or any MCP client, then sign in. You don't need an API key. Your agent can then read your meetings and tasks, create tasks and time-block your day around your meetings.",
   },
   {
     question: "Can I import my tasks from Sunsama?",

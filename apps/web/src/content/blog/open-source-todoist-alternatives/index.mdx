@@ -64,7 +64,7 @@ We checked each app's license file, latest release and docs on September 24, 202
 
 | App | License | Self-host | Mobile | Sync | API | MCP (AI agents) | Last release |
 |---|---|---|---|---|---|---|---|
-| **Open Sunsama** | Non-commercial (not OSI) | Yes, Docker | Mobile web | Real-time; Google, Outlook, iCloud calendars | REST + API keys | Hosted, OAuth (23 tools) | v1.0.12, Sep 23, 2026 |
+| **Open Sunsama** | Non-commercial (not OSI) | Yes, Docker | Mobile web | Real-time; Google, Outlook, iCloud calendars | REST + API keys | Hosted, OAuth (24 tools) | v1.0.12, Sep 23, 2026 |
 | **Vikunja** | AGPL-3.0 | Yes, Docker | Web app (PWA) | Server, CalDAV | REST | Community servers | v2.6.0, Aug 31, 2026 |
 | **Super Productivity** | MIT | Optional sync server | Android, iOS | WebDAV, Dropbox, SuperSync | Local REST (desktop) | Community plugins | v19.1.0, Sep 19, 2026 |
 | **Tududi** | MIT | Yes, Docker | Web app (PWA) | Server, CalDAV | REST + tokens | Built in (59 tools) | v1.5.0, Sep 16, 2026 |
@@ -104,9 +104,9 @@ What it does well:
 - Planned vs actual: a focus timer tracks the time you really spent.
 - Subtasks, rich notes, file attachments and priorities P0 to P3.
 - Keyboard first, with a command palette on Cmd+K.
-- A hosted MCP server with OAuth sign-in and 23 tools. It works in Claude, ChatGPT, Cursor and any MCP client. See the [MCP setup guide](/docs/mcp/overview).
+- A hosted MCP server with OAuth sign-in and 24 tools. It works in Claude, ChatGPT, Cursor and any MCP client, and it reads your synced meetings too. See the [MCP setup guide](/docs/mcp/overview).
 - A public REST API with API keys, documented in the [API reference](/docs/api/authentication).
-- Web, desktop for Mac, Windows and Linux, and mobile apps. Get them on the [download page](/download).
+- Web, desktop for Mac, Windows and Linux, and a mobile web app for your phone. Get them on the [download page](/download).
 
 <Shot id="board" alt="Open Sunsama board with a backlog column and day columns full of tasks" caption="Your backlog and each day sit side by side, so you see what fits." />
 
@@ -115,7 +115,7 @@ Where it falls short:
 - The license is non-commercial, not MIT or GPL. You can self-host it for personal use. Companies need a commercial license.
 - It is young. The first commit was in January 2026, so it has fewer years behind it than Vikunja or Joplin.
 - No Todoist importer yet, and no CalDAV task sync.
-- The ready-made desktop and mobile apps connect to the hosted service. A self-hosted server runs in your browser, unless you build the apps with your own API address.
+- The ready-made desktop apps connect to the hosted service. A self-hosted server runs in your browser, unless you build the desktop app with your own API address.
 - It plans one person's day. It is not a team project tool.
 
 **Pick it if** you want your to-do list and your calendar in one place, with an agent that can plan your day for you. The [Docker guide](/docs/self-hosting/docker) covers self-hosting.

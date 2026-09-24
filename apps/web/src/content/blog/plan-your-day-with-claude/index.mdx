@@ -49,7 +49,7 @@ export const frontmatter = {
 
 To plan your day with Claude, connect it to a task app and your calendar, then say "plan my day" in a chat. Claude reads your tasks and meetings, proposes a time-blocked schedule, and books it only after you say yes. This guide sets that up with Open Sunsama's MCP connector in about 2 minutes, then gives you 9 prompts for real routines.
 
-Open Sunsama is an open-source daily planner built for this. It keeps your tasks and your time blocks in one place, so Claude needs one connector for its planning work.
+Open Sunsama is an open-source daily planner built for this. It keeps your tasks, time blocks and meetings in one place, so Claude needs one connector to plan your day.
 
 **Key takeaways**
 
@@ -91,6 +91,8 @@ You need an Open Sunsama account and any Claude plan. [Custom connectors](https:
 <Shot id="consent-claude" alt="Open Sunsama consent screen asking to allow Claude access to tasks and time blocks" caption="You approve access once. Claude never sees your password." />
 
 Claude now shows **Connected to Open Sunsama**. The connector works in Claude Desktop and the phone apps too, with nothing to install.
+
+To let Claude see your meetings, connect your calendar in Open Sunsama under **Settings → Calendars**. If you added the connector before calendar access existed, reconnect it in **Settings → MCP → Connected apps** and allow calendar access.
 
 On Team and Enterprise plans, an owner adds it once in **Organization settings → Connectors**, then each person connects. The full steps are in the [Claude setup guide](/docs/mcp/claude) and the [Claude Desktop guide](/docs/mcp/claude-desktop).
 

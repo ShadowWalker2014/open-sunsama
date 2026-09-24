@@ -34,7 +34,7 @@ export const frontmatter = {
     },
     {
       question: "What is the best alternative to Sunsama's MCP?",
-      answer: "For most people who want an AI-native planner, Open Sunsama. Its hosted MCP server lets your AI plan your day into calendar time blocks, and it adds a public REST API and self-hosting. If you already pay for Sunsama, its own MCP works well.",
+      answer: "For most people who want an AI-native planner, Open Sunsama. Its hosted MCP server lets your AI read your meetings and plan your day into calendar time blocks around them, and it adds a public REST API and self-hosting. If you already pay for Sunsama, its own MCP works well.",
     },
     {
       question: "What is Sunny in Sunsama?",
@@ -138,7 +138,9 @@ Sunsama's MCP works well if you already live in Sunsama. But most people who wan
 
 <DemoVideo id="ai" />
 
-Paste `https://api.opensunsama.com/mcp` into Claude, ChatGPT or Cursor and sign in once. Your AI gets 23 tools for tasks, subtasks and time blocks, including one that reads a whole day at once. So "plan my afternoon" ends with real blocks on your calendar.
+Paste `https://api.opensunsama.com/mcp` into Claude, ChatGPT or Cursor and sign in once. Your AI gets 24 tools for tasks, subtasks, time blocks and the meetings on your synced calendars.
+
+One tool reads your meetings and time blocks for a day in one call. So "plan my afternoon" ends with real blocks that fit around your meetings.
 
 <Clip id="ai-plan" caption="An AI agent plans the afternoon over MCP. Tasks and time blocks show up live." />
 
@@ -158,8 +160,9 @@ You can see every connected app, and cut any of them off, in **Settings → MCP*
 | Sign-in | OAuth | OAuth 2.1 |
 | ChatGPT | In the plugin directory | Developer mode (paid ChatGPT plans) |
 | Claude, Claude Code, Cursor | Yes | Yes |
-| Tool list published | Not in the help page | Yes, all 23 tools in the [docs](/docs/mcp/overview) |
+| Tool list published | Not in the help page | Yes, all 24 tools in the [docs](/docs/mcp/overview) |
 | Time blocks over MCP | Not listed in the help page | Create, move, resize, link to tasks |
+| Calendar meetings over MCP | Not listed in the help page | Read-only: title, time, calendar, place |
 | Tracked (actual) time over MCP | Not in April 2026, "coming soon" | Yes, estimate and actual minutes |
 | Public REST API | No | Yes, with [API keys](/docs/api/authentication) |
 | Source code | Closed | Public on [GitHub](https://github.com/ShadowWalker2014/open-sunsama) |
@@ -178,7 +181,7 @@ A note on the license: the code is public on GitHub. It uses a non-commercial li
 
 - **You pay for Sunsama and just want Claude or ChatGPT to see your tasks:** connect Sunsama's official MCP. It works well and takes two minutes.
 - **You need an API for scripts, n8n or reports:** Sunsama can't do that yet. Open Sunsama has a REST API with API keys.
-- **You want your AI to build the day in time blocks:** use Open Sunsama, whose server creates and links calendar blocks.
+- **You want your AI to build the day in time blocks:** use Open Sunsama, whose server reads your meetings and creates and links calendar blocks around them.
 - **You want your data on your own server:** self-host Open Sunsama with Docker.
 
 For a step-by-step switch, see [how to replace Sunsama with Open Sunsama](/blog/replace-sunsama-open-sunsama). To compare every to-do app with an MCP server, read [the best task managers with MCP](/blog/best-task-managers-with-mcp). Or [download Open Sunsama](/download) and connect it in the [Claude guide](/docs/mcp/claude).
