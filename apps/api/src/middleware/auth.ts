@@ -206,10 +206,12 @@ export async function authenticateRequest(
  * routes the MCP tools call, each gated by the matching read/write scope.
  * Everything else (uploads, calendars, notifications, ...) stays off-limits.
  */
-const OAUTH_ROUTE_SCOPES: Array<{ path: RegExp; read: string; write: string }> = [
+const OAUTH_ROUTE_SCOPES: Array<{ path: RegExp; read: string; write: string | null }> = [
   { path: /^\/tasks(\/|$)/, read: 'tasks:read', write: 'tasks:write' },
   { path: /^\/time-blocks(\/|$)/, read: 'time-blocks:read', write: 'time-blocks:write' },
   { path: /^\/auth\/me$/, read: 'user:read', write: 'user:write' },
+  // Synced calendar events are read-only over MCP: no write scope exists.
+  { path: /^\/calendar-events\/?$/, read: 'calendar:read', write: null },
 ];
 
 function assertOAuthRouteAllowed(method: string, path: string, scopes: string[]): void {
@@ -218,6 +220,9 @@ function assertOAuthRouteAllowed(method: string, path: string, scopes: string[])
     throw new AuthorizationError('This connector token can only be used through the MCP server');
   }
   const needed = method === 'GET' || method === 'HEAD' ? rule.read : rule.write;
+  if (!needed) {
+    throw new AuthorizationError('This connector token can only read this resource');
+  }
   if (!scopes.includes(needed)) {
     throw new AuthorizationError(`Insufficient permissions. Required scopes: ${needed}`);
   }
@@ -242,6 +247,20 @@ export const auth: MiddlewareHandler<{ Variables: AuthVariables }> = async (c, n
   if (principal.scopes) c.set('apiKeyScopes', principal.scopes);
   return next();
 };
+
+/**
+ * Like requireScopes, but passes when the caller holds any one of the scopes.
+ */
+export function requireAnyScope(...scopes: string[]): MiddlewareHandler<{ Variables: AuthVariables }> {
+  return async (c, next) => {
+    if (c.get('authMethod') === 'jwt') return next();
+    const keyScopes = c.get('apiKeyScopes') || [];
+    if (keyScopes.includes('all') || scopes.some((s) => keyScopes.includes(s))) {
+      return next();
+    }
+    throw new AuthenticationError(`Insufficient permissions. Required scopes: ${scopes.join(' or ')}`);
+  };
+}
 
 /**
  * Scope check middleware factory

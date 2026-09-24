@@ -81,7 +81,8 @@ export default function AIIntegrationFeaturePage() {
                   "tasks:read - View tasks and subtasks",
                   "tasks:write - Create, update, complete tasks",
                   "time-blocks:read - View schedule and blocks",
-                  "time-blocks:write - Manage time blocks"
+                  "time-blocks:write - Manage time blocks",
+                  "calendar:read - View meetings from connected calendars"
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
                     <ArrowRight className="h-3 w-3 text-primary" />

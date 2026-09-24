@@ -13,6 +13,7 @@ type ToolScope =
   | "tasks:write"
   | "time-blocks:read"
   | "time-blocks:write"
+  | "calendar:read"
   | "user:read"
   | "user:write";
 
@@ -69,9 +70,12 @@ const TOOL_METADATA: Record<string, ToolMetadata> = {
   },
   get_schedule_for_day: {
     title: "Get schedule for a day",
-    scopes: ["time-blocks:read", "tasks:read"],
+    scopes: ["time-blocks:read", "calendar:read"],
     readOnly: true,
   },
+
+  // Calendar events (synced from Google, Outlook, iCloud)
+  list_calendar_events: { title: "List calendar events", scopes: ["calendar:read"], readOnly: true },
 
   // User
   get_user_profile: { title: "Get profile", scopes: ["user:read"], readOnly: true },

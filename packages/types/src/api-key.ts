@@ -70,6 +70,8 @@ export type ApiKeyScope =
   | 'time-blocks:read'
   /** Full access to time blocks (create, update, delete) */
   | 'time-blocks:write'
+  /** Read-only access to events synced from Google, Outlook and iCloud calendars */
+  | 'calendar:read'
   /** Read-only access to user profile */
   | 'user:read'
   /** Full access to user profile (update) */
