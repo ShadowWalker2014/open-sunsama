@@ -23,6 +23,7 @@ interface FormData {
     "tasks:write": boolean;
     "time-blocks:read": boolean;
     "time-blocks:write": boolean;
+    "calendar:read": boolean;
   };
 }
 
@@ -31,6 +32,7 @@ const AVAILABLE_SCOPES = [
   { id: "tasks:write", label: "Tasks Write", description: "Create, update, delete tasks" },
   { id: "time-blocks:read", label: "Time Blocks Read", description: "View time blocks" },
   { id: "time-blocks:write", label: "Time Blocks Write", description: "Create, update, delete time blocks" },
+  { id: "calendar:read", label: "Calendar Read", description: "View events from connected calendars" },
 ] as const;
 
 interface ApiKeyFormProps {
@@ -62,6 +64,7 @@ export function ApiKeyForm({
         "tasks:write": false,
         "time-blocks:read": true,
         "time-blocks:write": false,
+        "calendar:read": false,
       },
     },
   });

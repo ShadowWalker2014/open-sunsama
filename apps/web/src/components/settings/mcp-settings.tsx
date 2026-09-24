@@ -37,6 +37,7 @@ const MCP_KEY_SCOPES: ApiKeyScope[] = [
   "tasks:write",
   "time-blocks:read",
   "time-blocks:write",
+  "calendar:read",
   "user:read",
   "user:write",
 ];

@@ -13,7 +13,7 @@ export interface ApiClientConfig {
   fetch?: typeof globalThis.fetch;
 }
 
-export interface ApiResponse<T> {
+export interface ApiResponse<T, M = PaginationMeta> {
   success: boolean;
   data?: T;
   error?: {
@@ -22,13 +22,15 @@ export interface ApiResponse<T> {
     statusCode: number;
     errors?: Record<string, string[]>;
   };
-  meta?: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
+  meta?: M;
   message?: string;
+}
+
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
 }
 
 export class ApiClient {
@@ -45,12 +47,12 @@ export class ApiClient {
     this.fetchImpl = config.fetch ?? globalThis.fetch;
   }
 
-  private async request<T>(
+  private async request<T, M = PaginationMeta>(
     method: string,
     path: string,
     body?: unknown,
     query?: Record<string, string | number | boolean | undefined>
-  ): Promise<ApiResponse<T>> {
+  ): Promise<ApiResponse<T, M>> {
     let url = `${this.baseUrl}${path}`;
 
     // Add query parameters
@@ -84,7 +86,7 @@ export class ApiClient {
     try {
       const response = await this.fetchImpl(url, options);
       const data = await response.json();
-      return data as ApiResponse<T>;
+      return data as ApiResponse<T, M>;
     } catch (error) {
       return {
         success: false,
@@ -204,6 +206,15 @@ export class ApiClient {
     return this.request<{ message: string }>("DELETE", `/time-blocks/${id}`);
   }
 
+  // Calendar events (synced from Google, Outlook, iCloud; read-only)
+  async listCalendarEvents(params: { date?: string; from?: string; to?: string }) {
+    return this.request<CalendarEvent[], CalendarEventsMeta>("GET", "/calendar-events", undefined, {
+      date: params.date,
+      from: params.from,
+      to: params.to,
+    });
+  }
+
   // User
   async getMe() {
     return this.request<User>("GET", "/auth/me");
@@ -310,6 +321,30 @@ export interface UpdateTimeBlockInput {
   description?: string | null;
   color?: string | null;
   position?: number;
+}
+
+export interface CalendarEvent {
+  id: string;
+  calendarId: string;
+  title: string;
+  description: string | null;
+  location: string | null;
+  /** ISO instant. All-day events start at UTC midnight of their date. */
+  startTime: string;
+  /** ISO instant. All-day events end at UTC midnight after their last date. */
+  endTime: string;
+  isAllDay: boolean;
+  status: "confirmed" | "tentative" | "cancelled" | null;
+  responseStatus: "accepted" | "declined" | "tentative" | "needsAction" | null;
+  calendar: { id: string; name: string; color: string | null } | null;
+}
+
+export interface CalendarEventsMeta {
+  total: number;
+  /** The user's timezone, which date-only ranges were interpreted in. */
+  timezone: string;
+  fromDate?: string;
+  toDate?: string;
 }
 
 export interface User {
