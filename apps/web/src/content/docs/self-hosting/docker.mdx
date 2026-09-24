@@ -205,6 +205,8 @@ server {
 | `REDIS_URL`        | -       | Redis URL for WebSocket scaling |
 | `API_URL`          | `http://localhost:3001` | Public API URL. It's the OAuth issuer for MCP connectors, so your connector URL is `${API_URL}/mcp` |
 | `WEB_APP_URL`      | `http://localhost:3000` | Public web app URL, where the MCP consent screen lives |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | - | Google OAuth client for Google Calendar sync. Add `${API_URL}/calendar/oauth/google/callback` as an authorized redirect URI |
+| `WEBHOOK_BASE_URL` | `API_URL` | Public https URL Google Calendar sends change notifications to (`${WEBHOOK_BASE_URL}/webhooks/google/calendar`). If neither this nor `API_URL` is a public https URL, the server skips push notifications and polls Google every 5 minutes instead |
 
 ## Database Backup
 
