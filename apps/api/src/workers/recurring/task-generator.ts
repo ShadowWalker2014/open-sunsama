@@ -4,7 +4,9 @@
  */
 import type PgBoss from "pg-boss";
 import { getDb, eq, and, sql, type DbClient } from "@open-sunsama/database";
-import { taskSeries, tasks } from "@open-sunsama/database/schema";
+import { taskSeries, tasks, users } from "@open-sunsama/database/schema";
+import { toZonedTime } from "date-fns-tz";
+import { format } from "date-fns";
 import { publishEvent } from "../../lib/websocket/index.js";
 import type { GenerateRecurringTaskPayload } from "./utils.js";
 
@@ -55,6 +57,23 @@ export async function processGenerateRecurringTask(
     if (!series.isActive) {
       console.log(
         `[Recurring] Series ${seriesId} is no longer active, skipping`
+      );
+      return;
+    }
+
+    // Jobs queued (or retried) for a past date would create stale tasks
+    const [user] = await db
+      .select({ timezone: users.timezone })
+      .from(users)
+      .where(eq(users.id, series.userId))
+      .limit(1);
+    const todayStr = format(
+      toZonedTime(new Date(), user?.timezone || "UTC"),
+      "yyyy-MM-dd"
+    );
+    if (targetDate < todayStr) {
+      console.log(
+        `[Recurring] Skipping past date ${targetDate} for series ${seriesId}`
       );
       return;
     }

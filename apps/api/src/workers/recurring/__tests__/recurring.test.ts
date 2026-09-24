@@ -116,7 +116,7 @@ describe.skipIf(!testDbUrl)("insertSeriesInstance against Postgres", () => {
     const values = {
       userId,
       title: "Standup",
-      scheduledDate: "2026-09-24",
+      scheduledDate: "2026-01-15",
       seriesId,
       seriesInstanceNumber: 2,
     };
@@ -131,5 +131,32 @@ describe.skipIf(!testDbUrl)("insertSeriesInstance against Postgres", () => {
       .from(tasks)
       .where(eq(tasks.seriesId, seriesId));
     expect(rows).toHaveLength(1);
+  });
+
+  it("generates today's instance and skips jobs for past dates", async () => {
+    process.env.DATABASE_URL = testDbUrl;
+    const { processGenerateRecurringTask } = await import("../task-generator.js");
+    const run = (targetDate: string) =>
+      processGenerateRecurringTask({
+        data: { seriesId, targetDate, instanceNumber: 3 },
+      } as Parameters<typeof processGenerateRecurringTask>[0]);
+    const today = new Date().toISOString().slice(0, 10); // test user is on UTC
+
+    await run("2026-02-12");
+    await run(today);
+    await run(today);
+
+    const rows = await db
+      .select({ scheduledDate: tasks.scheduledDate })
+      .from(tasks)
+      .where(eq(tasks.seriesId, seriesId));
+    expect(rows.map((r) => r.scheduledDate).sort()).toEqual(
+      ["2026-01-15", today].sort()
+    );
+    const [series] = await db
+      .select({ lastGeneratedDate: taskSeries.lastGeneratedDate })
+      .from(taskSeries)
+      .where(eq(taskSeries.id, seriesId));
+    expect(series!.lastGeneratedDate).toBe(today);
   });
 });
