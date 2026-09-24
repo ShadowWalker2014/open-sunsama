@@ -251,7 +251,7 @@ const SNIPPETS = [
 
 const STATS = [
   { value: "100%", label: "Open source" },
-  { value: "23", label: "MCP tools" },
+  { value: "24", label: "MCP tools" },
   { value: "1", label: "URL for any agent" },
   { value: "∞", label: "Self-host" },
 ];

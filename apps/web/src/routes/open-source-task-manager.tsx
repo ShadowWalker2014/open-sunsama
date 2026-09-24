@@ -128,7 +128,7 @@ function TechStackSection() {
     },
     {
       icon: Bot,
-      title: "23 MCP Tools",
+      title: "24 MCP Tools",
       description: "Native AI integration. Let Claude, ChatGPT, Cursor, or any MCP client manage your tasks.",
     },
     {
@@ -422,7 +422,7 @@ function ComparisonSection() {
     { name: "Time blocking", vikunja: false, focalboard: false, openSunsama: true },
     { name: "Focus mode", vikunja: false, focalboard: false, openSunsama: true },
     { name: "Calendar sync", vikunja: "Limited", focalboard: false, openSunsama: true },
-    { name: "MCP/AI tools", vikunja: false, focalboard: false, openSunsama: "23 tools" },
+    { name: "MCP/AI tools", vikunja: false, focalboard: false, openSunsama: "24 tools" },
     { name: "Desktop app", vikunja: false, focalboard: true, openSunsama: true },
     { name: "Command palette", vikunja: false, focalboard: false, openSunsama: true },
     { name: "Modern UI", vikunja: "Basic", focalboard: "Basic", openSunsama: true },
@@ -566,7 +566,7 @@ function APISection() {
               </div>
               <div>
                 <h3 className="text-[15px] font-semibold">MCP Integration</h3>
-                <p className="text-[11px] text-muted-foreground">23 tools · one URL · OAuth sign-in</p>
+                <p className="text-[11px] text-muted-foreground">24 tools · one URL · OAuth sign-in</p>
               </div>
             </div>
             <div className="rounded-lg border border-border/40 bg-muted/20 p-3 font-mono text-xs">
@@ -628,7 +628,7 @@ function FAQSection() {
     },
     {
       question: "How does the MCP integration work?",
-      answer: "Open Sunsama includes a hosted MCP (Model Context Protocol) server with 23 tools. Add https://api.opensunsama.com/mcp to Claude, ChatGPT, Cursor, or another MCP client and sign in. No API key needed. The AI can then create tasks, schedule time blocks, check your calendar, and more, all through natural language.",
+      answer: "Open Sunsama includes a hosted MCP (Model Context Protocol) server with 24 tools. Add https://api.opensunsama.com/mcp to Claude, ChatGPT, Cursor, or another MCP client and sign in. No API key needed. The AI can then create tasks, schedule time blocks, check your calendar, and more, all through natural language.",
     },
     {
       question: "What about data portability?",
@@ -759,7 +759,7 @@ export default function OpenSourceTaskManagerPage() {
     },
     {
       question: "How does the MCP integration work?",
-      answer: "Open Sunsama includes a hosted MCP (Model Context Protocol) server with 23 tools. Add https://api.opensunsama.com/mcp to Claude, ChatGPT, Cursor, or another MCP client and sign in. No API key needed. The AI can then create tasks, schedule time blocks, check your calendar, and more, all through natural language.",
+      answer: "Open Sunsama includes a hosted MCP (Model Context Protocol) server with 24 tools. Add https://api.opensunsama.com/mcp to Claude, ChatGPT, Cursor, or another MCP client and sign in. No API key needed. The AI can then create tasks, schedule time blocks, check your calendar, and more, all through natural language.",
     },
     {
       question: "What about data portability?",
