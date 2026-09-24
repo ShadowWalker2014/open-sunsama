@@ -34,16 +34,48 @@ const GOOGLE_CALENDAR_API = 'https://www.googleapis.com/calendar/v3';
 const WATCH_TTL_SECONDS = 7 * 24 * 60 * 60 - 60 * 60; // 7d - 1h
 
 /**
- * Resolve the public webhook URL Google should POST to. Falls back
- * to the API's own host when WEBHOOK_BASE_URL isn't set, so a fresh
- * deploy without the env var still works as long as
- * `https://api.opensunsama.com` is reachable.
+ * Resolve the public webhook URL Google should POST to: WEBHOOK_BASE_URL,
+ * else API_URL, so a self-hosted server receives its own pushes.
+ *
+ * Returns null when that base isn't a public https URL. Google only
+ * delivers to https addresses it can reach, so registering a channel
+ * for localhost or plain http would just fail; callers skip the watch
+ * and keep polling instead.
  */
-function getWebhookUrl(): string {
-  const base =
-    process.env.WEBHOOK_BASE_URL ?? 'https://api.opensunsama.com';
+export function getWebhookUrl(): string | null {
+  const base = process.env.WEBHOOK_BASE_URL || process.env.API_URL;
+  if (!base) return null;
+  let url: URL;
+  try {
+    url = new URL(base);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== 'https:' || isPrivateHost(url.hostname)) return null;
   return `${base.replace(/\/$/, '')}/webhooks/google/calendar`;
 }
+
+function isPrivateHost(hostname: string): boolean {
+  const host = hostname.replace(/^\[|\]$/g, '').toLowerCase();
+  if (host === 'localhost' || host.endsWith('.localhost')) return true;
+  if (host.endsWith('.local') || host.endsWith('.internal')) return true;
+  if (host.includes(':')) {
+    return host === '::1' || /^(f[cd]|fe80)/.test(host);
+  }
+  const ipv4 = host.match(/^(\d+)\.(\d+)\.\d+\.\d+$/);
+  if (!ipv4) return false;
+  const [a, b] = [Number(ipv4[1]), Number(ipv4[2])];
+  return (
+    a === 10 ||
+    a === 127 ||
+    a === 0 ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168)
+  );
+}
+
+let warnedNoWebhookUrl = false;
 
 export interface RegisteredWatch {
   channelId: string;
@@ -54,7 +86,8 @@ export interface RegisteredWatch {
 /**
  * Register a Google `events.watch` channel for the given calendar.
  *
- * Returns null when Google rejects the request (common for read-only
+ * Returns null when there's no public https webhook URL to register
+ * (see getWebhookUrl), or when Google rejects the request (common for read-only
  * holiday calendars that don't accept push channels — `events.watch`
  * is forbidden on subscribed calendars). Caller should treat null as
  * "watch not available, keep using the poll" rather than an error.
@@ -66,6 +99,17 @@ export async function registerWatch(params: {
   accessToken: string;
   externalCalendarId: string;
 }): Promise<RegisteredWatch | null> {
+  const address = getWebhookUrl();
+  if (!address) {
+    if (!warnedNoWebhookUrl) {
+      warnedNoWebhookUrl = true;
+      console.warn(
+        '[Google Watch] WEBHOOK_BASE_URL / API_URL is not a public https URL; skipping push channels and polling instead'
+      );
+    }
+    return null;
+  }
+
   // Channel ID is our token — it must be globally unique and we use
   // it to look up the owning calendar when Google POSTs the webhook.
   // Random UUID is plenty.
@@ -84,7 +128,7 @@ export async function registerWatch(params: {
       body: JSON.stringify({
         id: channelId,
         type: 'web_hook',
-        address: getWebhookUrl(),
+        address,
         params: {
           ttl: String(WATCH_TTL_SECONDS),
         },
