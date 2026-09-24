@@ -1,5 +1,5 @@
 # Build stage - API service
-FROM oven/bun:1.2.21 AS builder
+FROM oven/bun:1.4.2 AS builder
 
 WORKDIR /app
 
