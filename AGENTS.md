@@ -173,7 +173,7 @@ Quick reference:
 
 - **Source of truth:** `package.json` (root)
 - **Sync command:** `bun run version:sync`
-- **Current version:** v1.0.12
+- **Current version:** v1.0.13
 
 ---
 
