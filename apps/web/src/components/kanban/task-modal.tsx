@@ -17,21 +17,6 @@ import {
   parse,
 } from "date-fns";
 import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import {
   Plus,
   Trash2,
   Check,
@@ -51,7 +36,6 @@ import {
 import { useNavigate } from "@tanstack/react-router";
 import type {
   Task,
-  Subtask,
   CreateTaskSeriesInput,
   TaskPriority,
 } from "@open-sunsama/types";
@@ -63,13 +47,6 @@ import {
   useCompleteTask,
   useCreateTask,
 } from "@/hooks/useTasks";
-import {
-  useSubtasks,
-  useCreateSubtask,
-  useUpdateSubtask,
-  useDeleteSubtask,
-  useReorderSubtasks,
-} from "@/hooks/useSubtasks";
 import { useHoveredTask } from "@/hooks";
 import { useTimeBlocks, useUpdateTimeBlock } from "@/hooks/useTimeBlocks";
 
@@ -91,7 +68,7 @@ import {
   TimeDropdown,
   type TimeDropdownRef,
 } from "@/components/ui/time-dropdown";
-import { SortableSubtaskItem } from "./sortable-subtask-item";
+import { SubtaskChecklist } from "./subtask-checklist";
 import { NotesField } from "./task-modal-form";
 import { TaskAttachments } from "./task-attachments";
 import { TaskSeriesBanner } from "./task-series-banner";
@@ -507,8 +484,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [plannedMins, setPlannedMins] = React.useState<number | null>(null);
-  const [newSubtaskTitle, setNewSubtaskTitle] = React.useState("");
-  const [isAddingSubtask, setIsAddingSubtask] = React.useState(false);
+  const subtaskInputRef = React.useRef<HTMLInputElement>(null);
   const [repeatDialogOpen, setRepeatDialogOpen] = React.useState(false);
   const [actualMins, setActualMins] = React.useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
@@ -730,20 +706,6 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     return sorted[0] ?? null;
   }, [timeBlocks]);
 
-  // Subtask hooks
-  const { data: subtasks = [] } = useSubtasks(task?.id ?? "");
-  const createSubtask = useCreateSubtask();
-  const updateSubtask = useUpdateSubtask();
-  const deleteSubtaskMutation = useDeleteSubtask();
-  const reorderSubtasks = useReorderSubtasks();
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
   const isCompleted = !!task?.completedAt;
 
   React.useEffect(() => {
@@ -752,8 +714,6 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
       setDescription(task.notes || "");
       setPlannedMins(task.estimatedMins || null);
       setActualMins(task.actualMins || null);
-      setIsAddingSubtask(false);
-      setNewSubtaskTitle("");
       setShowDeleteConfirm(false);
     }
   }, [task]);
@@ -878,47 +838,6 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     await completeTask.mutateAsync({ id: task.id, completed: !isCompleted });
   };
 
-  const addSubtask = async () => {
-    if (!newSubtaskTitle.trim() || !task) return;
-    await createSubtask.mutateAsync({
-      taskId: task.id,
-      data: { title: newSubtaskTitle.trim() },
-    });
-    setNewSubtaskTitle("");
-  };
-
-  const toggleSubtask = async (subtask: Subtask) => {
-    if (!task) return;
-    await updateSubtask.mutateAsync({
-      taskId: task.id,
-      subtaskId: subtask.id,
-      data: { completed: !subtask.completed },
-    });
-  };
-
-  const handleDeleteSubtask = async (subtaskId: string) => {
-    if (!task) return;
-    await deleteSubtaskMutation.mutateAsync({
-      taskId: task.id,
-      subtaskId,
-    });
-  };
-
-  const handleSubtaskDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || !task || active.id === over.id) return;
-
-    const oldIndex = subtasks.findIndex((item) => item.id === active.id);
-    const newIndex = subtasks.findIndex((item) => item.id === over.id);
-    const newOrder = arrayMove(subtasks, oldIndex, newIndex);
-
-    await reorderSubtasks.mutateAsync({
-      taskId: task.id,
-      subtaskIds: newOrder.map((st) => st.id),
-    });
-  };
-
-  const subtaskIds = subtasks.map((st) => st.id);
 
   // Use the live task for rendering, falling back to lastTaskRef during close animation
   const renderTask = task ?? lastTaskRef.current;
@@ -1125,7 +1044,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
             <div className="ml-auto flex items-center gap-1.5">
             <button
               type="button"
-              onClick={() => setIsAddingSubtask(true)}
+              onClick={() => subtaskInputRef.current?.focus()}
               className="flex items-center gap-1.5 h-7 px-2.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
             >
               <Plus className="h-3.5 w-3.5" />
@@ -1161,78 +1080,11 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
             {renderTask.seriesId && <TaskSeriesBanner task={renderTask} />}
 
             {/* Subtasks Section */}
-            <div className="space-y-3">
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleSubtaskDragEnd}
-              >
-                <SortableContext
-                  items={subtaskIds}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="space-y-1">
-                    {subtasks.map((subtask) => (
-                      <SortableSubtaskItem
-                        key={subtask.id}
-                        subtask={subtask}
-                        onToggle={() => toggleSubtask(subtask)}
-                        onDelete={() => handleDeleteSubtask(subtask.id)}
-                        onUpdate={(newTitle) =>
-                          updateSubtask.mutate({
-                            taskId: renderTask.id,
-                            subtaskId: subtask.id,
-                            data: { title: newTitle },
-                          })
-                        }
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
-
-              {/* Add Subtask input */}
-              {isAddingSubtask && (
-                <div className="flex items-center gap-3 py-2 pl-1">
-                  <div className="h-4 w-4 shrink-0 rounded border border-dashed border-muted-foreground/30" />
-                  <Input
-                    value={newSubtaskTitle}
-                    onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        addSubtask();
-                      }
-                      if (e.key === "Escape") {
-                        setNewSubtaskTitle("");
-                        setIsAddingSubtask(false);
-                      }
-                    }}
-                    onBlur={() => {
-                      if (newSubtaskTitle.trim()) {
-                        addSubtask();
-                      } else {
-                        setIsAddingSubtask(false);
-                      }
-                    }}
-                    placeholder="Add subtask..."
-                    className="flex-1 border-none p-0 h-auto text-sm shadow-none focus-visible:ring-0 bg-transparent"
-                    autoFocus
-                  />
-                </div>
-              )}
-
-              {/* Show add button only when not adding and no subtasks */}
-              {!isAddingSubtask && subtasks.length === 0 && (
-                <button
-                  onClick={() => setIsAddingSubtask(true)}
-                  className="flex items-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Add subtask</span>
-                </button>
-              )}
-            </div>
+            <SubtaskChecklist
+              key={renderTask.id}
+              taskId={renderTask.id}
+              addInputRef={subtaskInputRef}
+            />
 
             {/* Notes Section */}
             <div>
