@@ -15,6 +15,7 @@ import { LightboxProvider } from "@/components/ui/lightbox";
 import { useTimezoneSync } from "@/hooks/useTimezoneSync";
 import { persister, shouldPersistQueryFn } from "@/lib/query-persister";
 import { installChunkErrorRecovery } from "@/lib/chunk-error-recovery";
+import { captureInstallPrompt } from "@/lib/pwa";
 import {
   AppErrorScreen,
   RootErrorBoundary,
@@ -28,6 +29,7 @@ import "./index.css";
 // component tree mounts so a failed `React.lazy(...)` triggers exactly one
 // soft reload instead of crashing the app.
 installChunkErrorRecovery();
+captureInstallPrompt();
 
 // Finish a "reset local data" from the error screen before the persisted
 // query cache is restored.
