@@ -19,7 +19,7 @@
       },
       "stars": 65,
       "latestRelease": {
-        "version": "v1.0.15",
+        "version": "v1.0.16",
         "date": "2026-09-25"
       },
       "lastCommit": "2026-09-25",
@@ -248,7 +248,7 @@
         "spdx": "GPL-3.0-only",
         "name": "GNU General Public License v3.0 only"
       },
-      "stars": 5600,
+      "stars": 5601,
       "latestRelease": {
         "version": "15.12",
         "date": "2026-09-15"
@@ -1231,7 +1231,7 @@
         "spdx": "GPL-3.0-only",
         "name": "GNU General Public License v3.0"
       },
-      "stars": 5610,
+      "stars": 5611,
       "latestRelease": {
         "version": "5.0.134.1",
         "date": "2026-09-23"
@@ -1285,7 +1285,7 @@
         "spdx": "GPL-3.0-only",
         "name": "GNU General Public License v3.0"
       },
-      "stars": 7944,
+      "stars": 7945,
       "latestRelease": {
         "version": "360.260922.0",
         "date": "2026-09-22"
@@ -1339,7 +1339,7 @@
         "spdx": "MIT",
         "name": "MIT License"
       },
-      "stars": 4900,
+      "stars": 4901,
       "latestRelease": {
         "version": "v1.11.0",
         "date": "2026-05-19"
@@ -2033,7 +2033,7 @@
         "spdx": "MIT AND MPL-2.0 AND LicenseRef-AFFiNE-EE",
         "name": "MIT (apps and editor); server code under the AFFiNE Enterprise Edition license, with Community Edition parts under MPL-2.0"
       },
-      "stars": 72949,
+      "stars": 72950,
       "latestRelease": {
         "version": "v0.27.4",
         "date": "2026-08-17"
@@ -2684,7 +2684,7 @@
         "spdx": "AGPL-3.0-only",
         "name": "GNU Affero General Public License v3.0 only"
       },
-      "stars": 11651,
+      "stars": 11653,
       "latestRelease": {
         "version": "v3.10.0",
         "date": "2026-09-24"

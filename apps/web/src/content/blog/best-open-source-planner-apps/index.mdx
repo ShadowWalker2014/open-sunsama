@@ -1,0 +1,237 @@
+export const frontmatter = {
+  title: "8 Best Open Source Planner and Time Blocking Apps in 2026",
+  description: "The best open source planner apps for 2026: daily planners, time blocking and timeboxing tools you can self-host. Real screenshots, licenses and source links.",
+  date: "2026-09-24",
+  updated: "2026-09-24",
+  author: "Open Sunsama Team",
+  tags: ["open-source", "time-blocking", "daily-planner", "self-hosted", "timeboxing"],
+  readingTime: 11,
+  image: "/blog-best-open-source-planner-apps.webp",
+  faqs: [
+    {
+      question: "What is the best open source planner app?",
+      answer: "Open Sunsama is our pick overall: it plans your day on a board of days, puts tasks on a calendar next to your meetings, and works with any AI agent. Super Productivity is the best MIT-licensed option, and dayGLANCE is a local-first day planner.",
+    },
+    {
+      question: "Is there an open source time blocking app?",
+      answer: "Yes. Open Sunsama lets you drag tasks onto a calendar next to your Google, Outlook or iCloud events. dayGLANCE has a timeline you drag tasks onto. Super Productivity lays tasks out on a Schedule view, and Leantime has time blocking on its My Work page.",
+    },
+    {
+      question: "What is the difference between time blocking and timeboxing?",
+      answer: "Time blocking gives a task a set time on your calendar, like 9 to 11 for a report. Timeboxing gives a task a limit, like 45 minutes, and you stop when time is up. Most people mix both.",
+    },
+    {
+      question: "Is there an open source daily planner for iPhone or Android?",
+      answer: "Super Productivity has apps for iOS and Android. dayGLANCE sells store builds and offers a free Android APK on GitHub. Open Sunsama has no native phone app; it runs as a mobile web app in your browser.",
+    },
+    {
+      question: "Can I self-host a daily planner?",
+      answer: "Yes. Open Sunsama, dayGLANCE and Leantime all run in Docker. Super Productivity can run as a Docker web app, or sync its local data through your own WebDAV or Nextcloud server.",
+    },
+    {
+      question: "Is Open Sunsama open source?",
+      answer: "The code is public on GitHub. It uses a non-commercial license: you can read it, run it and self-host it for personal use. Companies need a commercial license. It is not an OSI license like MIT or GPL.",
+    },
+    {
+      question: "Is there an open source Motion alternative that schedules for me?",
+      answer: "No open source app we found fully auto-schedules your day like Motion. Super Productivity comes closest: its Schedule view flows tasks around your meetings using your time estimates. In Open Sunsama, you can ask Claude or ChatGPT to plan the day over MCP.",
+    },
+  ],
+};
+
+The best open source planner app in 2026 is **Open Sunsama**. It plans your day on a board of days, lets you time block tasks next to your meetings, and works with any AI agent.
+
+For timeboxing with no server, pick **Super Productivity**. For a local-first day planner with a timeline, try **dayGLANCE**. For a team project tool with a personal day view, pick **Leantime**.
+
+We build Open Sunsama, so we put it first — here is why, and where others fit better.
+
+Few open source apps really plan your day. Most are to-do lists that stop at "what". A planner also answers "which day" and "which hours", and that is what this list is about.
+
+## Key takeaways
+
+- **Best overall:** Open Sunsama, for daily planning and time blocking with Claude, ChatGPT or any MCP client.
+- **Best open source timeboxing app:** Super Productivity, offline and MIT licensed, with apps on every device.
+- **Best local-first day planner:** dayGLANCE, a timeline you drag tasks onto, with no account needed.
+- **Best for teams:** Leantime, a project tool with a personal My Work page and time blocking.
+- **Best for planning projects by date:** Vikunja, with Gantt and kanban views.
+- **Best on the Linux desktop:** Planify.
+- **Lightest weekly planner:** tududi, with Today, Upcoming and Someday views.
+- **Best in the terminal:** calcurse, though it only gets fixes now.
+
+## Open source planner apps compared
+
+<OssTable ids={["open-sunsama", "super-productivity", "dayglance", "leantime", "vikunja", "planify", "tududi", "calcurse"]} />
+
+Each app below has its own card. It shows a real screenshot, facts from the project's repo and a link to the source code.
+
+## A planner gives each task a day and a time; a to-do list only gives it a place
+
+A to-do list holds what you need to do. A planner adds when. Time blocking goes one step further: each task gets its own slot on your calendar, next to your meetings.
+
+Timeboxing is close, but not the same. You give a task a fixed amount of time, like 45 minutes, and stop when the time is up. Many apps here do both.
+
+Why bother? A long list hides how little time you have. Blocks on a calendar show it, so you plan a calm, realistic day.
+
+Our [time blocking guide](/blog/complete-guide-time-blocking) explains the method, and our [time blocking feature page](/features/time-blocking) shows how Open Sunsama does it.
+
+## How we compared these apps
+
+We build Open Sunsama and use it every day to plan our own work. For every other app, we read the license file, the release history, the docs and the issue tracker. We pulled stars and releases from GitHub on 24 Sep 2026.
+
+We captured the screenshots ourselves from each app's demo, web app or official images. The line under each screenshot says where it came from.
+
+We did not use every app for weeks, so we don't claim to have tested them. An app made the list only if it is open source and helps you plan days or hours, not just keep a list.
+
+## 1. Open Sunsama is the best open source planner and time blocking app
+
+<OssApp id="open-sunsama" rank={1} bestFor="People who want to plan each day with time blocks, and let an AI agent help." />
+
+**Verdict: best overall.** It is a daily planner first. Your tasks, your calendar and your AI agent all work in one place.
+
+<DemoVideo id="tour" />
+
+Each day is a column on a board, next to your backlog. Each morning you drag in what fits today. Tasks you don't finish roll over to tomorrow, so you get back on track without a rebuild.
+
+<Clip id="plan-day" caption="Drag tasks from the backlog into Today to plan your day." />
+
+Then you block time. Drag a task onto the calendar and resize it to fit the work. Your Google, Outlook or iCloud events sit next to your blocks in day and week views.
+
+<Clip id="time-block" caption="Drag a task onto the calendar, then resize the block to fit the work." />
+
+You can also hand the planning to an AI agent. Open Sunsama has a hosted MCP server that works in Claude, ChatGPT, Cursor and any MCP client. Ask it to plan your afternoon, and the blocks appear on your calendar as it works.
+
+<Clip id="ai-plan" caption="Claude plans the afternoon over MCP, and the tasks and time blocks appear live." />
+
+- **Good:** focus mode with a timer tracks planned vs actual time for each task.
+- **Good:** recurring tasks, reminders, subtasks, notes, priorities P0 to P3, and Cmd+K to jump anywhere.
+- **Good:** a public REST API, Docker self-hosting, and desktop apps for Mac, Windows and Linux.
+- **Falls short:** there is no auto-scheduler and no guided planning ritual. You place the blocks, or your AI agent does.
+- **Falls short:** your AI agent can read your meetings, but it can't create or move them.
+- **Falls short:** there is no iOS or Android app, and it is young. The first commit was in January 2026.
+- **Pick it if** you want a calm, realistic day with your tasks and meetings in one place.
+
+Self-host it with the [Docker guide](/docs/self-hosting/docker), or read how it compares as an [open source task manager](/open-source-task-manager).
+
+## 2. Super Productivity is the best open source timeboxing app
+
+<OssApp id="super-productivity" rank={2} bestFor="People who want timeboxing, time tracking and focus in one offline app." />
+
+**Verdict:** the best MIT-licensed planner. It works offline, needs no account, and runs on every desktop and phone.
+
+- **Good:** the Schedule view lays your tasks out on a timeline from your time estimates. Tasks flow around meetings, and a day that is too full gets a warning.
+- **Good:** the Planner view spreads tasks over the next two weeks and shows how full each day is. Events from calendars you connect show up in both views.
+- **Good:** a Pomodoro timer, time tracking and break reminders, plus tasks from Jira, GitHub, GitLab and more.
+- **Falls short:** it is built for one person, and MCP comes from community servers.
+- **Pick it if** you want to timebox your work and see where your time goes, with no server at all.
+
+See our [open source focus apps](/blog/best-open-source-focus-apps) for more Pomodoro and time tracking tools.
+
+## 3. dayGLANCE is a local-first day planner built around a timeline
+
+<OssApp id="dayglance" rank={3} bestFor="People who want a visual day planner that keeps their data in the browser." />
+
+**Verdict:** the closest thing here to a visual daily planner app. You open it, drag tasks onto today's timeline, and go.
+
+- **Good:** drag tasks onto a 24-hour timeline and resize them. "Frames" hold time for a kind of work, like deep work on weekday mornings.
+- **Good:** a focus timer, routines, habits, a weekly review, and stats on time planned vs spent.
+- **Good:** it shows events from any iCal link, such as Google, Nextcloud, Apple or Proton calendars. It syncs through Nextcloud or WebDAV, or runs in Docker.
+- **Good:** the desktop app has a local MCP server for Claude and ChatGPT. It is off until you turn it on.
+- **Falls short:** it is young and mostly built by one person. The store apps are paid, but the Android APK on GitHub costs nothing.
+- **Pick it if** you want a timeline planner with no account and no server.
+
+## 4. Leantime brings time blocking to a team project tool
+
+<OssApp id="leantime" rank={4} bestFor="Teams that want projects and a personal day view in one self-hosted tool." />
+
+**Verdict:** the best pick when your plan starts from team projects. Its My Work page pulls your tasks from every project into one personal view.
+
+- **Good:** My Work shows your to-dos next to a day calendar. Leantime's site says you can add an iCal link and schedule tasks between meetings.
+- **Good:** kanban, Gantt, table and calendar views, timesheets, goals and docs, all in the open source version.
+- **Good:** it is built with ADHD, dyslexia and autism in mind.
+- **Falls short:** it is a team tool first, so it is heavy for one person. The AI features on its site are not in the open source version.
+- **Pick it if** your team needs a project tool and you each want to plan your own day in it.
+
+## 5. Vikunja plans projects by date, not your hours
+
+<OssApp id="vikunja" rank={5} bestFor="People who plan projects over weeks and keep a separate calendar." />
+
+**Verdict:** a strong self-hosted task app that plans across days and weeks. It does not put tasks on the hours of your day.
+
+- **Good:** a Gantt chart for dates, kanban for stages, and due dates with reminders.
+- **Good:** CalDAV, so your tasks also show up in apps like Thunderbird or Tasks.org.
+- **Falls short:** there is no time blocking view. You plan the day in your head or in another app.
+- **Pick it if** you plan projects by week and want a Todoist-style list on your own server.
+
+It also tops our [open source to-do list apps](/blog/best-open-source-todo-list-apps) list for self-hosters.
+
+## 6. Planify plans your day on the Linux desktop
+
+<OssApp id="planify" rank={6} bestFor="GNOME users who plan day by day and sync with Todoist or Nextcloud." />
+
+**Verdict:** a good daily planner for Linux, if you don't need time blocks. It is fast, native and easy on the eyes.
+
+- **Good:** Today and Scheduled views, a calendar view to see your day, and several reminders per task.
+- **Good:** it syncs with Todoist, Nextcloud or CalDAV, or stays on your computer.
+- **Falls short:** it runs on Linux only, and you can't block time on a calendar.
+- **Pick it if** you plan your day on the GNOME desktop and want a native app.
+
+## 7. tududi plans your week with Today, Upcoming and Someday
+
+<OssApp id="tududi" rank={7} bestFor="Self-hosters who want a light weekly plan that an AI agent can use." />
+
+**Verdict:** a simple planner that sorts work into today, the days ahead and someday. It runs in one small container.
+
+- **Good:** Today, Upcoming and Someday views, recurring tasks and a Telegram bot to capture tasks on the go.
+- **Good:** an MCP server comes with every install, so an AI agent can plan with you.
+- **Falls short:** there is no calendar and no time blocking.
+- **Pick it if** you want a light plan for the week, not an hour-by-hour day.
+
+## 8. calcurse is a terminal planner in maintenance mode
+
+<OssApp id="calcurse" rank={8} bestFor="Terminal users who want a calendar and a to-do list side by side." />
+
+**Verdict:** a calendar and a to-do list in one terminal window. It still works well, but it only gets small fixes now.
+
+- **Good:** appointments, events and to-dos in one view, with plain files you own.
+- **Good:** a script in the repo can sync with a CalDAV server.
+- **Falls short:** it is in maintenance mode, so expect fixes, not new features. See the card for its latest release.
+- **Pick it if** you live in the terminal and want a planner that stays out of your way.
+
+## Super Productivity comes closest to an open source Motion
+
+Motion and Reclaim place your tasks on the calendar for you. We found no open source app that does this for your whole day.
+
+Super Productivity comes closest. Its Schedule view flows tasks around your meetings, using the time you estimate for each one. It shows the plan; it does not book time in your calendar.
+
+Open Sunsama takes another route. You ask Claude or ChatGPT to plan the day over MCP, and it places the blocks where you can see and move them. Our [Motion alternatives](/blog/motion-alternatives) guide covers the paid auto-schedulers.
+
+## MIT and AGPL let you self-host freely; Open Sunsama's license limits company use
+
+The license tells you what you may do with the code. For one person running a planner at home, MIT, BSD, GPL and AGPL all give you full freedom.
+
+| License | Apps in this list | Self-host for yourself | Change the code | Use at a company |
+|---|---|---|---|---|
+| **MIT, BSD** | Super Productivity, dayGLANCE, tududi, calcurse | Yes | Yes. Keep the copyright notice. | Yes |
+| **GPL-3.0** | Planify | Yes | Yes. If you give the app to others, share your changes too. | Yes |
+| **AGPL-3.0** | Leantime, Vikunja | Yes | Yes. If others use your changed copy, even over the web, share your changes. | Yes |
+| **Non-commercial** | Open Sunsama | Yes, for personal use | Yes, for personal use | Needs a commercial license |
+
+Here is Open Sunsama's license in plain words. The code is public on GitHub, under a non-commercial license.
+
+You can read it, run it and self-host it for personal use. Companies need a commercial license. That is not an OSI license like MIT or GPL, so pick Super Productivity or Leantime if your company needs one.
+
+Some apps also sell extras. Leantime sells paid plugins, and dayGLANCE charges for its store apps.
+
+## Which one should you pick?
+
+- **For most people: Open Sunsama.** Plan each day on a board, block time next to your meetings, and let an AI agent help.
+- **You want timeboxing with no server:** Super Productivity.
+- **You want a visual timeline and no account:** dayGLANCE.
+- **You plan inside a team's projects:** Leantime.
+- **You plan projects by week, not by hour:** Vikunja.
+- **You use the Linux desktop:** Planify, or Open Sunsama's Linux app if you want time blocks.
+- **You use Android or iPhone:** Super Productivity has native apps for both. Open Sunsama runs as a mobile web app.
+- **You live in the terminal:** calcurse.
+- **You need an OSI license at work:** Super Productivity, Leantime or Vikunja.
+
+Want your planner to be part of a stack you own? Pair it with one of the [open source calendar apps](/blog/best-open-source-calendar-apps) or a [kanban board](/blog/best-open-source-kanban-boards). For the full picture, see our [open source productivity apps](/blog/best-open-source-productivity-apps) and [self-hosted productivity apps](/blog/self-hosted-productivity-apps) guides.
