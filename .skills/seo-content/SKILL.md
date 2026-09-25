@@ -77,6 +77,16 @@ docker start os-demo-pg || docker run -d --name os-demo-pg -e POSTGRES_PASSWORD=
 (cd packages/database && DATABASE_URL=postgresql://postgres:demo@localhost:5433/opensunsama bunx drizzle-kit push --force)
 ```
 
+If Docker won't start the container, run Homebrew's Postgres on the same port instead (a valid locale is required, or it exits at startup):
+
+```bash
+export LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+PG=/opt/homebrew/opt/postgresql@16/bin; D=/tmp/os-demo-pgdata
+[ -d $D ] || $PG/initdb -D $D -U postgres --auth=trust
+$PG/pg_ctl -D $D -o "-p 5433" -l $D.log start
+$PG/psql -h localhost -p 5433 -U postgres -c "create database opensunsama" || true
+```
+
 Start the `api-demo-local` (port 3101) and `web-demo-local` (port 3107) configs from `.claude/launch.json` with `preview_start`. `api-demo-local` blanks Redis, email, S3 and OAuth secrets so nothing touches production. Then seed and record:
 
 ```bash
