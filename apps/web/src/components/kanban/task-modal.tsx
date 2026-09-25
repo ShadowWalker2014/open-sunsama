@@ -736,8 +736,10 @@ export function TaskModal({
   const updateTimeBlock = useUpdateTimeBlock();
 
   // Fetch time blocks for this task
+  // Without a task this would list every time block the user has.
   const { data: timeBlocks = [] } = useTimeBlocks(
-    task ? { taskId: task.id } : undefined
+    task ? { taskId: task.id } : undefined,
+    { enabled: !!task }
   );
 
   // Get the first (most relevant) time block for this task
