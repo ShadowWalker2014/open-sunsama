@@ -70,24 +70,7 @@ For updated posts: keep the slug and the original `date`, set `updated` to today
 
 Every post needs one narrated `<DemoVideo>`, 2-4 `<Clip>`s and 1-3 `<Shot>`s. Reuse ids from `apps/web/src/lib/blog-media.json` when they fit. Record new ones only when a post needs something not there.
 
-Local stack (never record against production):
-
-```bash
-docker start os-demo-pg || docker run -d --name os-demo-pg -e POSTGRES_PASSWORD=demo -e POSTGRES_DB=opensunsama -p 5433:5432 postgres:16
-(cd packages/database && DATABASE_URL=postgresql://postgres:demo@localhost:5433/opensunsama bunx drizzle-kit push --force)
-```
-
-If Docker won't start the container, run Homebrew's Postgres on the same port instead (a valid locale is required, or it exits at startup):
-
-```bash
-export LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
-PG=/opt/homebrew/opt/postgresql@16/bin; D=/tmp/os-demo-pgdata
-[ -d $D ] || $PG/initdb -D $D -U postgres --auth=trust
-$PG/pg_ctl -D $D -o "-p 5433" -l $D.log start
-$PG/psql -h localhost -p 5433 -U postgres -c "create database opensunsama" || true
-```
-
-Start the `api-demo-local` (port 3101) and `web-demo-local` (port 3107) configs from `.claude/launch.json` with `preview_start`. `api-demo-local` blanks Redis, email, S3 and OAuth secrets so nothing touches production. Then seed and record:
+Local stack (never record against production, never use Docker): start the `api-demo` (port 3101) and `web-demo` (port 3107) configs from `.claude/launch.json` with `preview_start`. They run `scripts/dev-local.mjs`, which uses the Railway development database, runs migrations on start, and blanks Redis, email, S3 and OAuth secrets so nothing touches production. Then seed and record:
 
 ```bash
 cd scripts/readme-media
@@ -132,7 +115,7 @@ Railway deploys the `web` service from `main` in a few minutes. Confirm each pag
 
 ## Gotchas
 
-- `apps/api/.env` points at the production database. Only run the API through `api-demo-local`.
+- `apps/api/.env` points at the production database. Only run the API through `api-demo` (or `bun run dev:local`).
 - Sunsama, Todoist, Akiflow, Reclaim and others have their own MCP servers now. Our edges are public code, self-hosting, a public REST API, your data, and any agent. Check facts every run; they change monthly.
 - MDX media components go on their own line with blank lines around them, or they end up inside a `<p>`.
 - The license is non-commercial, not OSI. Use the wording in the playbook.

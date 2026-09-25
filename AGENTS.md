@@ -8,10 +8,20 @@ AI-agent-friendly task management + time blocking app. TypeScript monorepo with 
 
 | Environment | Web                     | API                         | Prerequisites                          |
 | ----------- | ----------------------- | --------------------------- | -------------------------------------- |
-| Local       | http://localhost:3000   | http://localhost:3001       | `bun dev` running for both web and api |
+| Local       | http://localhost:3000   | http://localhost:3001       | `bun run dev:local` (see below)        |
 | Production  | https://opensunsama.com | https://api.opensunsama.com | None                                   |
 
 **Login credentials:** `.env.local` in project root (gitignored, real user account - NEVER commit).
+
+### Local dev and testing: no Docker
+
+**Never use Docker to develop or test.** No `docker run`, no `docker compose`, no local Postgres or Redis containers. The Docker VM slows the laptop and fills the disk. Run plain dev servers against the shared dev database instead:
+
+- **`bun run dev:local`** starts the API on :3001 and the web app on :3000. They use `dev-postgres`, the only service in Railway's `development` environment, and migrations run on start. Set `API_PORT` and `WEB_PORT` to run several worktrees side by side.
+- **In the browser pane,** use `preview_start` with the `.claude/launch.json` configs: `api` + `web` (3001/3000), or `api-demo` + `web-demo` (3101/3107) for demo recordings.
+- **Never start a local API from `apps/api/.env`.** That file points at the production database and Redis. `scripts/dev-local.mjs` passes every variable explicitly, blanks Redis, email, background jobs, S3 and OAuth, and refuses the production database.
+- **The dev database is shared and disposable.** Register throwaway users (`<name>-e2e@example.com`) through the API instead of touching real accounts. It runs Postgres 18; production runs 17.
+- **`docker-compose.yml` and the Dockerfiles exist for self-hosters.** Check changes to them in CI or on Railway, not with a local Docker.
 
 **MCP Tool:** Use `open-sunsama` MCP server to create/update tasks, time blocks, subtasks programmatically.
 
@@ -287,6 +297,10 @@ railway status
 # List environment variables for a service
 railway variables --service api
 railway variables --service Postgres
+
+# The development environment holds only dev-postgres (the local dev database).
+# Keep checkouts linked to production and pass -e for dev:
+railway variables -e development -s dev-postgres
 
 # View logs (streams live)
 railway logs --service api
