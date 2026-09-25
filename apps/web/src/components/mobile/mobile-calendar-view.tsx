@@ -24,10 +24,7 @@ import type {
   CalendarEvent,
 } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
-import {
-  useTasks,
-  useTimeBlocksForDate,
-} from "@/hooks";
+import { useTasks, useTimeBlocksForDate } from "@/hooks";
 import {
   useCalendarEvents,
   useCalendars,
@@ -322,7 +319,7 @@ export function MobileCalendarView({
       "[data-radix-scroll-area-viewport]"
     );
     if (viewport) viewport.scrollTop = scrollPosition;
-    }, [dateString]);
+  }, [dateString]);
 
   const isLoading = isLoadingTasks || isLoadingBlocks;
 
@@ -333,13 +330,10 @@ export function MobileCalendarView({
     React.useState<CalendarEvent | null>(null);
   const [externalEventSheetOpen, setExternalEventSheetOpen] =
     React.useState(false);
-  const handleExternalEventClick = React.useCallback(
-    (event: CalendarEvent) => {
-      setSelectedExternalEvent(event);
-      setExternalEventSheetOpen(true);
-    },
-    []
-  );
+  const handleExternalEventClick = React.useCallback((event: CalendarEvent) => {
+    setSelectedExternalEvent(event);
+    setExternalEventSheetOpen(true);
+  }, []);
   const handleExternalEventSheetOpenChange = React.useCallback(
     (next: boolean) => {
       setExternalEventSheetOpen(next);
@@ -381,7 +375,10 @@ export function MobileCalendarView({
                 <Menu className="h-5 w-5" />
               </button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-full max-w-sm p-0 flex flex-col">
+            <SheetContent
+              side="left"
+              className="w-full max-w-sm p-0 flex flex-col"
+            >
               <UnscheduledTasksDrawer
                 tasks={unscheduledTasks}
                 isLoading={isLoading}
@@ -477,233 +474,242 @@ export function MobileCalendarView({
       )}
 
       {dayCount === 1 && (
-      <>
-      {/* All-day banner — shown only when there's at least one all-day
+        <>
+          {/* All-day banner — shown only when there's at least one all-day
           event for this day. Compact chips matching the desktop. */}
-      {allDayEvents.length > 0 && (
-        <div className="flex-shrink-0 border-b bg-muted/30 px-2 py-1 space-y-0.5">
-          {allDayEvents.map((event) => {
-            const color = event.calendar?.color ?? "#6B7280";
-            return (
-              <button
-                key={event.id}
-                type="button"
-                data-all-day-event
-                onClick={() => handleExternalEventClick(event)}
-                className="flex w-full items-center gap-1.5 rounded px-2 py-1 text-xs hover:brightness-90 cursor-pointer"
-                style={{
-                  backgroundColor: hexToRgba(color, 0.15),
-                  borderLeft: `3px solid ${hexToRgba(color, 0.6)}`,
-                }}
-                title={event.title}
-              >
-                <CalendarIcon className="h-3 w-3 flex-shrink-0" style={{ color }} />
-                <span className="truncate text-left">{event.title}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
+          {allDayEvents.length > 0 && (
+            <div className="flex-shrink-0 border-b bg-muted/30 px-2 py-1 space-y-0.5">
+              {allDayEvents.map((event) => {
+                const color = event.calendar?.color ?? "#6B7280";
+                return (
+                  <button
+                    key={event.id}
+                    type="button"
+                    data-all-day-event
+                    onClick={() => handleExternalEventClick(event)}
+                    className="flex w-full items-center gap-1.5 rounded px-2 py-1 text-xs hover:brightness-90 cursor-pointer"
+                    style={{
+                      backgroundColor: hexToRgba(color, 0.15),
+                      borderLeft: `3px solid ${hexToRgba(color, 0.6)}`,
+                    }}
+                    title={event.title}
+                  >
+                    <CalendarIcon
+                      className="h-3 w-3 flex-shrink-0"
+                      style={{ color }}
+                    />
+                    <span className="truncate text-left">{event.title}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
-      {/* Timeline */}
-      <ScrollArea className="flex-1" ref={scrollAreaRef}>
-        <div
-          className="flex"
-          style={{ minHeight: hours.length * HOUR_HEIGHT }}
-        >
-          {/* Time Labels Column — 12-hour to match desktop. */}
-          <div className="w-14 flex-shrink-0 border-r bg-muted/30">
-            {hours.map((hour) => (
-              <div
-                key={hour}
-                className="relative border-b border-border/50"
-                style={{ height: HOUR_HEIGHT }}
-              >
-                <span className="absolute -top-2 right-2 text-[11px] text-muted-foreground font-medium tabular-nums">
-                  {format(setHours(selectedDate, hour), "ha").toLowerCase()}
-                </span>
+          {/* Timeline */}
+          <ScrollArea className="flex-1" ref={scrollAreaRef}>
+            <div
+              className="flex"
+              style={{ minHeight: hours.length * HOUR_HEIGHT }}
+            >
+              {/* Time Labels Column — 12-hour to match desktop. */}
+              <div className="w-14 flex-shrink-0 border-r bg-muted/30">
+                {hours.map((hour) => (
+                  <div
+                    key={hour}
+                    className="relative border-b border-border/50"
+                    style={{ height: HOUR_HEIGHT }}
+                  >
+                    <span className="absolute -top-2 right-2 text-[11px] text-muted-foreground font-medium tabular-nums">
+                      {format(setHours(selectedDate, hour), "ha").toLowerCase()}
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          {/* Timeline Content */}
-          <div
-            ref={timelineRef}
-            // `data-mobile-timeline` lets the touch-drag hook find
-            // this element via element.closest() so it can compute
-            // pixel-to-time math against the right rect.
-            data-mobile-timeline
-            className={cn(
-              "relative flex-1",
-              "touch-pan-y",
-              isToday && "bg-accent/5"
-            )}
-          >
-            {/* Hour grid lines */}
-            {hours.map((hour) => (
+              {/* Timeline Content */}
               <div
-                key={hour}
+                ref={timelineRef}
+                // `data-mobile-timeline` lets the touch-drag hook find
+                // this element via element.closest() so it can compute
+                // pixel-to-time math against the right rect.
+                data-mobile-timeline
                 className={cn(
-                  "border-b border-border/30",
-                  "active:bg-accent/30 transition-colors"
+                  "relative flex-1",
+                  "touch-pan-y",
+                  isToday && "bg-accent/5"
                 )}
-                style={{ height: HOUR_HEIGHT }}
-              />
-            ))}
-
-            {/* Half-hour grid lines */}
-            {hours.map((hour) => (
-              <div
-                key={`${hour}-half`}
-                className="absolute left-0 right-0 border-b border-border/15"
-                style={{
-                  top:
-                    (hour - TIMELINE_START_HOUR) * HOUR_HEIGHT + HOUR_HEIGHT / 2,
-                }}
-              />
-            ))}
-
-            {/* Current time indicator */}
-            {currentTimePosition !== null && (
-              <div
-                className="absolute left-0 right-0 z-30 flex items-center pointer-events-none"
-                style={{ top: currentTimePosition }}
               >
-                <div className="h-3 w-3 rounded-full bg-red-500 -ml-1.5 shadow-sm" />
-                <div className="h-0.5 flex-1 bg-red-500 shadow-sm" />
-              </div>
-            )}
+                {/* Hour grid lines */}
+                {hours.map((hour) => (
+                  <div
+                    key={hour}
+                    className={cn(
+                      "border-b border-border/30",
+                      "active:bg-accent/30 transition-colors"
+                    )}
+                    style={{ height: HOUR_HEIGHT }}
+                  />
+                ))}
 
-            {/* Loading skeleton */}
-            {isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-background/50">
-                <div className="animate-pulse text-sm text-muted-foreground">
-                  Loading...
-                </div>
-              </div>
-            )}
+                {/* Half-hour grid lines */}
+                {hours.map((hour) => (
+                  <div
+                    key={`${hour}-half`}
+                    className="absolute left-0 right-0 border-b border-border/15"
+                    style={{
+                      top:
+                        (hour - TIMELINE_START_HOUR) * HOUR_HEIGHT +
+                        HOUR_HEIGHT / 2,
+                    }}
+                  />
+                ))}
 
-            {/* External calendar events (drawn behind time blocks).
+                {/* Current time indicator */}
+                {currentTimePosition !== null && (
+                  <div
+                    className="absolute left-0 right-0 z-30 flex items-center pointer-events-none"
+                    style={{ top: currentTimePosition }}
+                  >
+                    <div className="h-3 w-3 rounded-full bg-red-500 -ml-1.5 shadow-sm" />
+                    <div className="h-0.5 flex-1 bg-red-500 shadow-sm" />
+                  </div>
+                )}
+
+                {/* Loading skeleton */}
+                {isLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/50">
+                    <div className="animate-pulse text-sm text-muted-foreground">
+                      Loading...
+                    </div>
+                  </div>
+                )}
+
+                {/* External calendar events (drawn behind time blocks).
                 Touch handlers go directly on the chip's root via
                 ExternalEvent's `onTouchStart`/etc props — earlier
                 we used a `display: contents` wrapper but Safari ≤
                 iOS 15 has known bugs with pointer/touch events on
                 `display: contents` elements. Wiring through the
                 chip's root avoids the wrapper entirely. */}
-            {!isLoading &&
-              timedEvents.map((event) => {
-                const canEdit =
-                  !(calendarReadOnlyById.get(event.calendarId) ?? true) &&
-                  !event.isAllDay;
-                const isThisDragging =
-                  touchDrag.dragState?.eventId === event.id;
-                return (
-                  <ExternalEvent
-                    key={event.id}
-                    event={event}
-                    displayDate={selectedDate}
-                    layout={
-                      itemLayouts.get(`event:${event.id}`) ?? DEFAULT_LAYOUT
-                    }
-                    onClick={() => handleExternalEventClick(event)}
-                    justEndedDrag={touchDrag.justEndedDrag}
-                    isTouchDragging={isThisDragging}
-                    onTouchStart={
-                      canEdit
-                        ? (e) =>
-                            touchDrag.handleTouchStart(
-                              event.id,
-                              selectedDate,
-                              new Date(event.startTime),
-                              new Date(event.endTime),
-                              e
-                            )
-                        : undefined
-                    }
-                    onTouchMove={canEdit ? touchDrag.handleTouchMove : undefined}
-                    onTouchEnd={canEdit ? touchDrag.handleTouchEnd : undefined}
-                  />
-                );
-              })}
+                {!isLoading &&
+                  timedEvents.map((event) => {
+                    const canEdit =
+                      !(calendarReadOnlyById.get(event.calendarId) ?? true) &&
+                      !event.isAllDay;
+                    const isThisDragging =
+                      touchDrag.dragState?.eventId === event.id;
+                    return (
+                      <ExternalEvent
+                        key={event.id}
+                        event={event}
+                        displayDate={selectedDate}
+                        layout={
+                          itemLayouts.get(`event:${event.id}`) ?? DEFAULT_LAYOUT
+                        }
+                        onClick={() => handleExternalEventClick(event)}
+                        justEndedDrag={touchDrag.justEndedDrag}
+                        isTouchDragging={isThisDragging}
+                        onTouchStart={
+                          canEdit
+                            ? (e) =>
+                                touchDrag.handleTouchStart(
+                                  event.id,
+                                  selectedDate,
+                                  new Date(event.startTime),
+                                  new Date(event.endTime),
+                                  e
+                                )
+                            : undefined
+                        }
+                        onTouchMove={
+                          canEdit ? touchDrag.handleTouchMove : undefined
+                        }
+                        onTouchEnd={
+                          canEdit ? touchDrag.handleTouchEnd : undefined
+                        }
+                      />
+                    );
+                  })}
 
-            {/* Live drop preview during touch drag — dashed outline at
+                {/* Live drop preview during touch drag — dashed outline at
                 the new position with the new time range label. */}
-            {touchDrag.dragState && (() => {
-              const previewTop = calculateYFromTime(
-                touchDrag.dragState.previewStart
-              );
-              const previewMins =
-                (touchDrag.dragState.previewEnd.getTime() -
-                  touchDrag.dragState.previewStart.getTime()) /
-                60000;
-              const previewHeight = (previewMins / 60) * HOUR_HEIGHT;
-              return (
-                <div
-                  className="absolute inset-x-1 z-30 rounded border-2 border-dashed border-primary bg-primary/10 pointer-events-none flex items-start justify-start px-1.5 py-0.5"
-                  style={{
-                    top: `${previewTop}px`,
-                    height: `${Math.max(previewHeight, 16)}px`,
-                  }}
-                >
-                  <span className="text-[10px] font-semibold text-primary">
-                    {format(touchDrag.dragState.previewStart, "h:mm a")} –{" "}
-                    {format(touchDrag.dragState.previewEnd, "h:mm a")}
-                  </span>
-                </div>
-              );
-            })()}
+                {touchDrag.dragState &&
+                  (() => {
+                    const previewTop = calculateYFromTime(
+                      touchDrag.dragState.previewStart
+                    );
+                    const previewMins =
+                      (touchDrag.dragState.previewEnd.getTime() -
+                        touchDrag.dragState.previewStart.getTime()) /
+                      60000;
+                    const previewHeight = (previewMins / 60) * HOUR_HEIGHT;
+                    return (
+                      <div
+                        className="absolute inset-x-1 z-30 rounded border-2 border-dashed border-primary bg-primary/10 pointer-events-none flex items-start justify-start px-1.5 py-0.5"
+                        style={{
+                          top: `${previewTop}px`,
+                          height: `${Math.max(previewHeight, 16)}px`,
+                        }}
+                      >
+                        <span className="text-[10px] font-semibold text-primary">
+                          {format(touchDrag.dragState.previewStart, "h:mm a")} –{" "}
+                          {format(touchDrag.dragState.previewEnd, "h:mm a")}
+                        </span>
+                      </div>
+                    );
+                  })()}
 
-            {/* Time blocks */}
-            {!isLoading &&
-              dayBlocks.map((block) => (
-                <TimeBlock
-                  key={block.id}
-                  block={block}
-                  layout={itemLayouts.get(`block:${block.id}`) ?? DEFAULT_LAYOUT}
-                  onClick={() => onBlockClick?.(block)}
-                  onViewTask={onViewTask}
-                />
-              ))}
-          </div>
-        </div>
-      </ScrollArea>
-      </>
+                {/* Time blocks */}
+                {!isLoading &&
+                  dayBlocks.map((block) => (
+                    <TimeBlock
+                      key={block.id}
+                      block={block}
+                      layout={
+                        itemLayouts.get(`block:${block.id}`) ?? DEFAULT_LAYOUT
+                      }
+                      onClick={() => onBlockClick?.(block)}
+                      onViewTask={onViewTask}
+                    />
+                  ))}
+              </div>
+            </div>
+          </ScrollArea>
+        </>
       )}
 
       {/* FAB for creating time blocks — 1-day only; the multi-day overview
           has no slot to anchor a new block to. */}
       {dayCount === 1 && (
-      <button
-        onClick={() => {
-          // Default-time logic: when viewing today, anchor at the
-          // next hour from now (clamped to ≤22:00 so the +1h end
-          // doesn't roll past midnight). When viewing any other
-          // day, anchor at 09:00 — using "current time of day" on
-          // a navigated day produces a confusing slot mismatched
-          // with the displayed date in the dialog header.
-          const baseHour = isToday
-            ? Math.min(now.getHours() + 1, 22)
-            : 9;
-          const defaultStart = setHours(
-            setMinutes(selectedDate, 0),
-            baseHour
-          );
-          const defaultEnd = addMinutes(defaultStart, 60);
-          if (onTimeSlotClick) {
-            onTimeSlotClick(selectedDate, defaultStart, defaultEnd);
-          }
-        }}
-        className={cn(
-          "fixed bottom-24 right-4 z-40",
-          "flex h-14 w-14 items-center justify-center",
-          "rounded-full bg-primary text-primary-foreground shadow-lg",
-          "hover:bg-primary/90 active:scale-95 transition-all",
-          "lg:hidden"
-        )}
-        aria-label="Add time block"
-      >
-        <Plus className="h-6 w-6" />
-      </button>
+        <button
+          onClick={() => {
+            // Default-time logic: when viewing today, anchor at the
+            // next hour from now (clamped to ≤22:00 so the +1h end
+            // doesn't roll past midnight). When viewing any other
+            // day, anchor at 09:00 — using "current time of day" on
+            // a navigated day produces a confusing slot mismatched
+            // with the displayed date in the dialog header.
+            const baseHour = isToday ? Math.min(now.getHours() + 1, 22) : 9;
+            const defaultStart = setHours(
+              setMinutes(selectedDate, 0),
+              baseHour
+            );
+            const defaultEnd = addMinutes(defaultStart, 60);
+            if (onTimeSlotClick) {
+              onTimeSlotClick(selectedDate, defaultStart, defaultEnd);
+            }
+          }}
+          className={cn(
+            "fixed bottom-24 right-4 z-40",
+            "flex h-14 w-14 items-center justify-center",
+            "rounded-full bg-primary text-primary-foreground shadow-lg",
+            "hover:bg-primary/90 active:scale-95 transition-all",
+            "lg:hidden"
+          )}
+          aria-label="Add time block"
+        >
+          <Plus className="h-6 w-6" />
+        </button>
       )}
 
       {/* External event detail sheet — read + edit + delete on tap. */}
@@ -715,9 +721,8 @@ export function MobileCalendarView({
         rangeTo={toDate}
         calendarReadOnly={
           selectedExternalEvent
-            ? (calendarReadOnlyById.get(
-                selectedExternalEvent.calendarId
-              ) ?? true)
+            ? (calendarReadOnlyById.get(selectedExternalEvent.calendarId) ??
+              true)
             : true
         }
         calendarProvider={
