@@ -6,6 +6,13 @@ import { primaryTopic } from "@/lib/blog-topics";
 import type { BlogPost } from "@/types/blog";
 import { BlogCover } from "./blog-cover";
 
+/**
+ * Covers keep their 2:1 shape everywhere (their headlines sit near the edges, so
+ * cropping cuts words). Where the card is taller than the cover, the cover sits
+ * centered on a band painted in the covers' own background color.
+ */
+const COVER_BAND = "flex items-center bg-[hsl(30_60%_98.6%)] dark:bg-[hsl(228_14%_7%)]";
+
 /** "Feb 1, 2026", or "Updated Mar 3, 2026" once a post has been revised */
 export function cardDate({ date, updated }: BlogPost) {
   if (updated && updated !== date) {
@@ -110,14 +117,15 @@ export function BlogCard({
         className
       )}
     >
-      <CardCover
-        post={post}
+      <div
         className={cn(
+          COVER_BAND,
           "border-b border-border/60 dark:border-white/[0.06]",
-          wideOnTablet &&
-            "sm:aspect-auto sm:border-b-0 sm:border-r lg:aspect-[2/1] lg:border-b lg:border-r-0"
+          wideOnTablet && "sm:border-b-0 sm:border-r lg:border-b lg:border-r-0"
         )}
-      />
+      >
+        <CardCover post={post} className="w-full" />
+      </div>
       <div className="flex flex-1 flex-col p-5 sm:p-6">
         {topic && <TopicPill label={topic.label} className="self-start" />}
         <h3 className="mt-3 text-[17px] font-semibold leading-snug tracking-[-0.015em] text-foreground transition-colors group-hover:text-primary">
@@ -145,10 +153,14 @@ export function BlogFeaturedCard({ post }: { post: BlogPost }) {
         "hover:-translate-y-0.5 lg:grid lg:grid-cols-[1.25fr_1fr]"
       )}
     >
-      <CardCover
-        post={post}
-        className="border-b border-border/60 dark:border-white/[0.06] lg:aspect-auto lg:min-h-[340px] lg:border-b-0 lg:border-r"
-      />
+      <div
+        className={cn(
+          COVER_BAND,
+          "border-b border-border/60 dark:border-white/[0.06] lg:border-b-0 lg:border-r"
+        )}
+      >
+        <CardCover post={post} className="w-full" />
+      </div>
       <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[11.5px] font-semibold uppercase tracking-[0.14em] text-primary">
