@@ -93,7 +93,9 @@ const persistOptions = persister
       persister,
       maxAge: 24 * 60 * 60 * 1000, // 24h
       // Bump this when the cache shape changes to invalidate stored data.
-      buster: "v1",
+      // v2: drops the kanban range prefetch that v1 stored under
+      // ["tasks", "list", "range", …], where it broke task mutations.
+      buster: "v2",
       dehydrateOptions: {
         shouldDehydrateQuery: ({
           state,
