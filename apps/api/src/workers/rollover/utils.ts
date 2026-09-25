@@ -1,16 +1,14 @@
 /**
  * Utility functions and constants for the rollover worker
  */
-import { toZonedTime, formatInTimeZone } from 'date-fns-tz';
+import { formatInTimeZone } from 'date-fns-tz';
 import { subDays, addDays } from 'date-fns';
 
 // Constants
 export const BATCH_SIZE = 100; // Users per batch
 
 // Payload types for job handlers
-export interface RolloverCheckPayload {
-  // Empty - runs on schedule
-}
+export type RolloverCheckPayload = Record<string, never>;
 
 export interface UserBatchRolloverPayload {
   timezone: string;

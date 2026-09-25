@@ -43,6 +43,11 @@ class SubtasksBatcher {
   private flushScheduled = false;
 
   fetch(taskId: string): Promise<Subtask[]> {
+    // A card for a task that's still being created carries a client-side
+    // `optimistic-…` id. It has no subtasks on the server, and the batch
+    // endpoint rejects the whole request (every other card's lookup too) when
+    // any id isn't a UUID.
+    if (taskId.startsWith("optimistic-")) return Promise.resolve([]);
     return new Promise<Subtask[]>((resolve, reject) => {
       const entries = this.pending.get(taskId);
       if (entries) {

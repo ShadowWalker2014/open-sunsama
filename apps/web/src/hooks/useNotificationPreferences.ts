@@ -368,7 +368,6 @@ export async function isPushSubscribed(): Promise<boolean> {
  * Integrates with the notification preferences toggle
  */
 export function useUpdatePushSubscription() {
-  const queryClient = useQueryClient();
   const updatePreferences = useUpdateNotificationPreferences();
 
   return useMutation({

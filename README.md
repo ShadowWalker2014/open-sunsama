@@ -303,11 +303,12 @@ Open http://localhost:3000 and create your account. The API creates the database
 
 <br />
 
-Prerequisites: [Bun](https://bun.sh) 1.2+, and Docker or PostgreSQL 15+. S3-compatible storage is optional, for file uploads.
+Prerequisites: [Bun](https://bun.sh) 1.4.2 (run `mise install` when using mise) and PostgreSQL 15+. S3-compatible storage is optional, for file uploads.
 
 ```bash
 git clone https://github.com/ShadowWalker2014/open-sunsama.git
 cd open-sunsama
+mise install
 bun install
 docker compose up -d postgres   # PostgreSQL only, on localhost:5431
 

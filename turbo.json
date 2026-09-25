@@ -42,7 +42,7 @@
       "cache": false
     },
     "@open-sunsama/mobile#typecheck": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^typecheck"],
       "inputs": ["$TURBO_DEFAULT$", "tsconfig.json"]
     },
     "@open-sunsama/expo-mobile#dev": {
@@ -51,7 +51,7 @@
       "persistent": true
     },
     "@open-sunsama/expo-mobile#typecheck": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^typecheck"],
       "inputs": ["$TURBO_DEFAULT$", "tsconfig.json"]
     },
     "lint": {
@@ -72,7 +72,7 @@
       "persistent": true
     },
     "typecheck": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^typecheck"],
       "inputs": ["$TURBO_DEFAULT$", "tsconfig.json"]
     },
     "clean": {

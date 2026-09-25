@@ -28,15 +28,15 @@
   },
   "dependencies": {
     "@open-sunsama/types": "workspace:*",
-    "ky": "^1.7.2"
+    "ky": "^1.14.3"
   },
   "devDependencies": {
-    "@tanstack/react-query": "^5.62.0",
-    "@types/node": "^22.10.2",
-    "@types/react": "^19.0.2",
-    "react": "^19.0.0",
-    "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "@tanstack/react-query": "catalog:",
+    "@types/node": "^22.20.4",
+    "@types/react": "^19.1.17",
+    "react": "^19.1.0",
+    "typescript": "catalog:",
+    "vitest": "^2.1.9"
   },
   "peerDependencies": {
     "@tanstack/react-query": ">=5.0.0",

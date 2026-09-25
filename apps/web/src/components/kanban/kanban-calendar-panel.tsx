@@ -254,7 +254,6 @@ export function KanbanCalendarPanel({
         : 8 * HOUR_HEIGHT; // Default to 8 AM
       scrollContainerRef.current.scrollTop = scrollTo;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateString, isToday]);
 
   // Mouse event handlers for drag
@@ -451,7 +450,8 @@ export function KanbanCalendarPanel({
                 className="absolute left-0 right-0 border-b border-border/10"
                 style={{
                   top:
-                    (hour - TIMELINE_START_HOUR) * HOUR_HEIGHT + HOUR_HEIGHT / 2,
+                    (hour - TIMELINE_START_HOUR) * HOUR_HEIGHT +
+                    HOUR_HEIGHT / 2,
                 }}
               />
             ))}
@@ -474,9 +474,7 @@ export function KanbanCalendarPanel({
                 key={event.id}
                 event={event}
                 displayDate={date}
-                layout={
-                  itemLayouts.get(`event:${event.id}`) ?? DEFAULT_LAYOUT
-                }
+                layout={itemLayouts.get(`event:${event.id}`) ?? DEFAULT_LAYOUT}
                 onClick={() => handleExternalEventClick(event)}
               />
             ))}
@@ -528,9 +526,8 @@ export function KanbanCalendarPanel({
         rangeTo={toDate}
         calendarReadOnly={
           selectedExternalEvent
-            ? (calendarReadOnlyById.get(
-                selectedExternalEvent.calendarId
-              ) ?? true)
+            ? (calendarReadOnlyById.get(selectedExternalEvent.calendarId) ??
+              true)
             : true
         }
         calendarProvider={

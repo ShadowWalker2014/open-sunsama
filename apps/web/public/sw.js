@@ -19,7 +19,7 @@ self.addEventListener('push', (event) => {
   let payload;
   try {
     payload = event.data.json();
-  } catch (e) {
+  } catch {
     // If not JSON, use text as body
     payload = {
       title: 'Open Sunsama',
@@ -119,7 +119,7 @@ self.addEventListener('notificationclose', (event) => {
 /**
  * Service worker install event
  */
-self.addEventListener('install', (event) => {
+self.addEventListener('install', () => {
   console.log('[SW] Service worker installed');
   // Take control immediately without waiting for reload
   self.skipWaiting();

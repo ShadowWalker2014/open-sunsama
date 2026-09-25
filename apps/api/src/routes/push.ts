@@ -7,7 +7,7 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { getDb, eq, and, pushSubscriptions } from '@open-sunsama/database';
-import { ValidationError, InternalError } from '@open-sunsama/utils';
+import { InternalError } from '@open-sunsama/utils';
 import { auth, type AuthVariables } from '../middleware/auth.js';
 import { getVapidPublicKey, isWebPushConfigured } from '../lib/web-push.js';
 

@@ -1,11 +1,11 @@
 {
   "name": "@open-sunsama/desktop",
-  "version": "1.0.13",
+  "version": "1.0.15",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "tauri dev",
-    "build": "tsc --noEmit && CI='' tauri build",
+    "build": "tsc --noEmit && CI=false tauri build",
     "build:tauri": "tauri build",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
@@ -13,14 +13,14 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.2.0",
-    "@tauri-apps/plugin-autostart": "^2.2.0",
-    "@tauri-apps/plugin-global-shortcut": "^2.2.0",
-    "@tauri-apps/plugin-notification": "^2.2.0",
-    "@tauri-apps/plugin-store": "^2.2.0"
+    "@tauri-apps/api": "^2.11.1",
+    "@tauri-apps/plugin-autostart": "^2.5.1",
+    "@tauri-apps/plugin-global-shortcut": "^2.3.2",
+    "@tauri-apps/plugin-notification": "^2.4.0",
+    "@tauri-apps/plugin-store": "^2.4.5"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.2.4",
-    "typescript": "^5.7.2"
+    "@tauri-apps/cli": "^2.11.5",
+    "typescript": "catalog:"
   }
 }

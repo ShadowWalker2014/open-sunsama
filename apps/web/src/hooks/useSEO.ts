@@ -95,28 +95,6 @@ export const SEO_CONFIGS = {
     description: "Daily planning, done right. The open-source daily planner for time-blocking, focused work, and AI integration. Control it from any agent: Claude, ChatGPT, Cursor, or any MCP client.",
     canonical: "/",
   },
-  alternatives: {
-    motion: {
-      title: "Motion Alternative - Manual Control, Open Source",
-      description: "An open-source alternative to Motion. Manual time blocking without rigid auto-scheduling, calendar sync, focus mode, and control from any AI agent.",
-      canonical: "/alternative/motion",
-    },
-    reclaim: {
-      title: "Reclaim Alternative - Time Blocking Without AI Lock-in",
-      description: "An open-source alternative to Reclaim AI. Manual time blocking, calendar sync, focus mode, and control from Claude, ChatGPT, or any MCP client.",
-      canonical: "/alternative/reclaim",
-    },
-    akiflow: {
-      title: "Akiflow Alternative - Keyboard-First and Open Source",
-      description: "An open-source alternative to Akiflow. Manual time blocking, a keyboard-first design, calendar sync, and control from any AI agent.",
-      canonical: "/alternative/akiflow",
-    },
-    todoist: {
-      title: "Todoist Alternative with Built-in Time Blocking",
-      description: "Todoist-style tasks with native time blocking. Visual calendar scheduling, focus mode, priorities, and an open-source codebase you can self-host.",
-      canonical: "/alternative/todoist",
-    },
-  },
   alternative: {
     sunsama: {
       title: "Open-Source Sunsama Alternative for Any AI Agent",
@@ -150,59 +128,5 @@ export const SEO_CONFIGS = {
     title: "Terms of Service",
     description: "Open Sunsama terms of service. The terms and conditions for using our daily planner application.",
     canonical: "/terms",
-  },
-  features: {
-    kanban: {
-      title: "Kanban Board",
-      description: "Visual task management with drag-and-drop prioritization. Organize tasks across Backlog, Today, and Completed columns with P0-P3 priorities.",
-      canonical: "/features/kanban",
-    },
-    timeBlocking: {
-      title: "Time Blocking",
-      description: "Schedule your tasks on a visual calendar timeline. Drag tasks to create time blocks, resize for duration, and keep your day realistic.",
-      canonical: "/features/time-blocking",
-    },
-    focusMode: {
-      title: "Focus Mode",
-      description: "Work on one task at a time with a built-in timer. Track actual time vs estimates, take rich notes, and complete focused deep work.",
-      canonical: "/features/focus-mode",
-    },
-    aiIntegration: {
-      title: "AI & MCP Integration",
-      description: "Control your planner from any AI agent. 24 MCP tools let Claude, ChatGPT, Cursor, and any MCP client create tasks and schedule time blocks.",
-      canonical: "/features/ai-integration",
-    },
-    commandPalette: {
-      title: "Command Palette",
-      description: "Access everything with ⌘K. Search tasks, run commands, navigate views, and control your entire workflow from the keyboard.",
-      canonical: "/features/command-palette",
-    },
-    calendarSync: {
-      title: "Calendar Sync",
-      description: "Bidirectional sync with Google Calendar, Outlook, and iCloud. Your events and time blocks stay in perfect harmony across all your calendars.",
-      canonical: "/features/calendar-sync",
-    },
-  },
-  forAudiences: {
-    adhd: {
-      title: "Daily Planner for ADHD - Visual and Calm",
-      description: "A daily planner for ADHD minds. Visual time blocking, focus mode for one task at a time, gentle rollover, and a calm interface.",
-      canonical: "/for/adhd",
-    },
-    developers: {
-      title: "Daily Planner for Developers - Keyboard-First & Open Source",
-      description: "The daily planner built for developers. Command palette, full REST API, 24 MCP tools, and open source. Drive it from Claude Code or Cursor.",
-      canonical: "/for/developers",
-    },
-    remoteWorkers: {
-      title: "Daily Planner for Remote Workers",
-      description: "The daily planner for remote work. Time blocking, focus mode, and calendar sync to set boundaries and protect your focus time.",
-      canonical: "/for/remote-workers",
-    },
-  },
-  openSourceTaskManager: {
-    title: "Open Source Task Manager - Self-Hosted",
-    description: "An open-source task manager with time blocking. Self-host with Docker, full REST API, 24 MCP tools, and control from any AI agent. Own your data.",
-    canonical: "/open-source-task-manager",
   },
 } as const;

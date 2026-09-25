@@ -36,9 +36,8 @@ import {
   addYears,
   setDate,
   getDay,
-  getDate,
 } from "date-fns";
-import { toZonedTime, fromZonedTime } from "date-fns-tz";
+import { toZonedTime } from "date-fns-tz";
 
 const taskSeriesRouter = new Hono<{ Variables: AuthVariables }>();
 taskSeriesRouter.use("*", auth);
@@ -236,7 +235,7 @@ function formatDuration(mins: number): string {
 /**
  * Calculate the next occurrence date based on recurrence pattern
  */
-function calculateNextOccurrence(
+function _calculateNextOccurrence(
   fromDate: Date,
   series: {
     recurrenceType: string;
@@ -246,7 +245,7 @@ function calculateNextOccurrence(
     weekOfMonth: number | null;
     dayOfWeekMonthly: number | null;
   },
-  timezone: string
+  _timezone: string
 ): Date {
   const {
     recurrenceType,

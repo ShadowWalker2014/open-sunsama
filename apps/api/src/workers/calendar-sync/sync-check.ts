@@ -10,9 +10,7 @@ import { getPgBoss, JOBS } from '../../lib/pgboss.js';
 import { type SyncAccountPayload } from './sync-account.js';
 
 // Payload type for the scheduled check job
-export interface CalendarSyncCheckPayload {
-  // Empty - runs on schedule
-}
+export type CalendarSyncCheckPayload = Record<string, never>;
 
 // Sync interval in minutes - accounts not synced in this time will be queued
 const SYNC_INTERVAL_MINUTES = 15;

@@ -1,5 +1,5 @@
 # Build stage - API service
-FROM oven/bun:1.2.21 AS builder
+FROM oven/bun:1.4.2 AS builder
 
 WORKDIR /app
 
@@ -17,8 +17,10 @@ COPY packages/utils/package.json ./packages/utils/
 COPY packages/api-client/package.json ./packages/api-client/
 COPY mcp/package.json ./mcp/
 
-# Install dependencies (allow lockfile updates for cross-platform compatibility)
-RUN bun install
+# Install dependencies (allow lockfile updates for cross-platform compatibility).
+# Hoisted, because the production stage copies only the root node_modules: Bun's
+# default isolated linker leaves it without the API's runtime dependencies.
+RUN bun install --linker=hoisted
 
 # Copy source code for packages we need to build
 COPY packages/database/ ./packages/database/
