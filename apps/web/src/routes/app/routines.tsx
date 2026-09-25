@@ -5,7 +5,6 @@ import {
   Square,
   Trash2,
   MoreHorizontal,
-  Plus,
   Search,
 } from "lucide-react";
 import {

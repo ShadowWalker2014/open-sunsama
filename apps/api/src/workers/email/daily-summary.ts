@@ -10,9 +10,7 @@ import { format } from "date-fns";
 import { getPgBoss, JOBS } from "../../lib/pgboss.js";
 
 // Payload types
-export interface DailySummaryCheckPayload {
-  // Empty - runs on schedule
-}
+export type DailySummaryCheckPayload = Record<string, never>;
 
 export interface SendDailySummaryPayload {
   userId: string;
@@ -25,7 +23,7 @@ export interface SendDailySummaryPayload {
  * Runs every minute to catch 6 AM in each timezone
  */
 export async function processDailySummaryCheck(
-  job: PgBoss.Job<DailySummaryCheckPayload>
+  _job: PgBoss.Job<DailySummaryCheckPayload>
 ): Promise<void> {
   const db = getDb();
   const boss = await getPgBoss();

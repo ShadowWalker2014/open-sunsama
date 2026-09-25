@@ -39,16 +39,16 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.9.5",
-    "dotenv": "^17.4.1",
-    "drizzle-orm": "^0.45.1",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.3",
     "drizzle-zod": "^0.5.1",
-    "postgres": "^3.4.8",
-    "zod": "^3.23.8"
+    "postgres": "^3.4.9",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
+    "@types/node": "^22.20.4",
     "drizzle-kit": "^0.28.1",
-    "typescript": "^5.7.2"
+    "typescript": "catalog:"
   },
   "peerDependencies": {
     "typescript": ">=5.0.0"

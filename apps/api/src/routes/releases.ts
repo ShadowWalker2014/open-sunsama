@@ -16,7 +16,7 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { nanoid } from 'nanoid';
 import { getDb, eq, desc, releases, sql, RELEASE_PLATFORMS } from '@open-sunsama/database';
-import { AuthenticationError, ValidationError } from '@open-sunsama/utils';
+import { AuthenticationError } from '@open-sunsama/utils';
 import {
   createReleaseSchema,
   releaseFilterSchema,

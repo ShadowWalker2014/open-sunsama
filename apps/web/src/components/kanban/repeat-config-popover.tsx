@@ -828,7 +828,7 @@ export function getScheduleDescription(config: {
         desc = `${freqPrefix} week`;
       }
       break;
-    case "monthly_date":
+    case "monthly_date": {
       const ordinal =
         dayOfMonth === 1
           ? "1st"
@@ -839,6 +839,7 @@ export function getScheduleDescription(config: {
               : `${dayOfMonth}th`;
       desc = `${freqPrefix} month on the ${ordinal}`;
       break;
+    }
     case "monthly_weekday":
       if (weekOfMonth && dayOfWeekMonthly !== undefined) {
         desc = `${freqPrefix} month on the ${weekNames[weekOfMonth]} ${dayNames[dayOfWeekMonthly]}`;

@@ -35,7 +35,6 @@ import {
 } from '../validation/calendar.js';
 import {
   getProvider,
-  refreshTokensIfNeeded,
   getAccessTokenForProvider,
 } from '../services/calendar-sync.js';
 import {

@@ -101,7 +101,10 @@ export function MobileUnscheduledSheet({
               ) : (
                 tasks.map((task) => (
                   <TaskContextMenu key={task.id} task={task} onEdit={() => onTaskClick?.(task)}>
-                    <div className="cursor-grab active:cursor-grabbing">
+                    <div
+                      className="cursor-grab active:cursor-grabbing"
+                      onMouseDown={(event) => onTaskDragStart?.(task, event)}
+                    >
                       <TaskCardContent
                         task={task}
                         isCompleted={!!task.completedAt}

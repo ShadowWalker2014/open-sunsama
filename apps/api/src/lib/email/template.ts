@@ -68,7 +68,7 @@ export function generateEmailHTML(options: GenerateEmailHTMLOptions): string {
     title,
     preheader,
     content,
-    themeColor = EMAIL_COLORS.defaultTheme,
+    themeColor: _themeColor = EMAIL_COLORS.defaultTheme,
     footerText,
   } = options;
 

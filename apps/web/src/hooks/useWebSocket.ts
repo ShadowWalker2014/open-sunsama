@@ -242,6 +242,7 @@ function handleWebSocketEvent(
     // refetch the same calendar sub-tree as a sync — the events
     // query keys are scoped by date range so a global refetch is
     // the simplest correct behavior.
+    // Falls through.
     case "calendar-event:updated":
     case "calendar-event:deleted":
       // calendarKeys.all is the prefix for accounts/list/events, so this

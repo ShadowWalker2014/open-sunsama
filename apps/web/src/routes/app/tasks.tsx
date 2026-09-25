@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Search, Plus, AlertCircle } from "lucide-react";
-import { format, isToday, isTomorrow, isPast, parseISO } from "date-fns";
+import { format, isToday, isTomorrow, parseISO } from "date-fns";
 import type { Task } from "@open-sunsama/types";
 import { useInfiniteSearchTasks } from "@/hooks/useInfiniteSearchTasks";
 import { useCompleteTask, useReorderTasks } from "@/hooks/useTasks";
@@ -18,7 +18,6 @@ import {
   useSensor,
   useSensors,
   type DragStartEvent,
-  type DragOverEvent,
   type DragEndEvent,
   DragOverlay,
 } from "@dnd-kit/core";
@@ -109,7 +108,6 @@ function TasksListPageDesktop() {
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
   const [activeTask, setActiveTask] = React.useState<Task | null>(null);
-  const [activeOverGroup, setActiveOverGroup] = React.useState<string | null>(null);
   const completeTask = useCompleteTask();
   const reorderTasks = useReorderTasks();
   const deferredQuery = React.useDeferredValue(query);
@@ -170,38 +168,14 @@ function TasksListPageDesktop() {
     const task = active.data.current?.task as Task | undefined;
     if (task) {
       setActiveTask(task);
-      const sourceDateKey = active.data.current?.columnId as string | undefined;
-      setActiveOverGroup(sourceDateKey || null);
     }
   }, []);
-
-  const handleDragOver = React.useCallback((event: DragOverEvent) => {
-    const { over } = event;
-    if (!over) {
-      setActiveOverGroup(null);
-      return;
-    }
-
-    // Check if over a group droppable
-    const groupDateKey = getDateKeyFromGroupId(over.id);
-    if (groupDateKey) {
-      setActiveOverGroup(groupDateKey);
-      return;
-    }
-
-    // If over a task, get the column from the task's data
-    if (over.data.current?.columnId) {
-      const columnId = String(over.data.current.columnId);
-      setActiveOverGroup(columnId === "backlog" ? "backlog" : columnId);
-    }
-  }, [getDateKeyFromGroupId]);
 
   const handleDragEnd = React.useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
 
       setActiveTask(null);
-      setActiveOverGroup(null);
 
       if (!over) return;
 
@@ -347,7 +321,6 @@ function TasksListPageDesktop() {
 
   const handleDragCancel = React.useCallback(() => {
     setActiveTask(null);
-    setActiveOverGroup(null);
   }, []);
 
   // Get sorted future date keys
@@ -366,7 +339,6 @@ function TasksListPageDesktop() {
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >

@@ -1,5 +1,5 @@
 # Build stage
-FROM oven/bun:1.2.21 AS builder
+FROM oven/bun:1.4.2 AS builder
 
 WORKDIR /app
 
@@ -36,7 +36,7 @@ ENV VITE_WS_URL=$VITE_WS_URL
 RUN bun run build --filter=@open-sunsama/types --filter=@open-sunsama/utils --filter=@open-sunsama/api-client --filter=@open-sunsama/web
 
 # Production stage - serve static files
-FROM oven/bun:1.2.21-slim
+FROM oven/bun:1.4.2-slim
 
 WORKDIR /app
 
