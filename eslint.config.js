@@ -39,7 +39,26 @@ export default tseslint.config(
     },
   },
   {
+    files: [
+      "apps/web/scripts/generate-blog-covers.mjs",
+      "apps/web/scripts/qa-blog.mjs",
+    ],
+    languageOptions: {
+      globals: {
+        URL: "readonly",
+        console: "readonly",
+        document: "readonly",
+        PerformanceObserver: "readonly",
+        process: "readonly",
+        setTimeout: "readonly",
+        window: "readonly",
+      },
+    },
+  },
+  {
     rules: {
+      // Added to ESLint's recommended preset in v10; retain the existing lint baseline.
+      "no-useless-assignment": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",
         {
