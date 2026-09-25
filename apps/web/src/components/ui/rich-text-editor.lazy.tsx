@@ -1,6 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import type * as RichTextEditorModuleNS from "./rich-text-editor";
+import { preloadableLazy } from "@/lib/preloadable-lazy";
 
 /**
  * Lazy entry-point for the Tiptap-backed `RichTextEditor`.
@@ -25,21 +26,11 @@ type RichTextEditorProps = {
   autoFocus?: boolean;
 };
 
-type RichTextEditorModule = typeof RichTextEditorModuleNS;
-
-let preloadPromise: Promise<RichTextEditorModule> | null = null;
-
-function importEditorModule(): Promise<RichTextEditorModule> {
-  if (!preloadPromise) {
-    preloadPromise = import("./rich-text-editor") as Promise<RichTextEditorModule>;
-  }
-  return preloadPromise;
-}
-
-const LazyEditor = React.lazy(async () => {
-  const mod = await importEditorModule();
-  return { default: mod.RichTextEditor };
-});
+const { Component: LoadedEditor, preload } = preloadableLazy<RichTextEditorProps>(() =>
+  (import("./rich-text-editor") as Promise<typeof RichTextEditorModuleNS>).then(
+    (mod) => mod.RichTextEditor
+  )
+);
 
 /**
  * Hint the browser to start fetching the rich text editor chunk.
@@ -52,7 +43,7 @@ const LazyEditor = React.lazy(async () => {
  *   }, []);
  */
 export function prefetchRichTextEditor(): Promise<unknown> {
-  return importEditorModule();
+  return preload();
 }
 
 /**
@@ -102,7 +93,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
         />
       }
     >
-      <LazyEditor {...props} />
+      <LoadedEditor {...props} />
     </React.Suspense>
   );
 }

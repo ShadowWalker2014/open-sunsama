@@ -2,6 +2,7 @@ import * as React from "react";
 import { Plus, ArrowUp, ArrowDown } from "lucide-react";
 import { Button, ShortcutHint, Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { raiseKeyboardForTap } from "@/lib/ios-keyboard";
 import {
   AddTaskModal,
   prefetchAddTaskModal,
@@ -54,8 +55,10 @@ export function AddTaskInline({ scheduledDate, className, compact }: AddTaskInli
             compact ? "h-7 px-2 text-xs" : "flex-1 h-9 gap-2"
           )}
           onClick={() => {
-            if (isMobile) void prefetchTaskModal();
-            else void prefetchAddTaskModal();
+            if (isMobile) {
+              raiseKeyboardForTap();
+              void prefetchTaskModal();
+            } else void prefetchAddTaskModal();
             void prefetchRichTextEditor();
             setIsModalOpen(true);
           }}
