@@ -30,6 +30,7 @@ import { useTasks, useReorderTasks } from "@/hooks/useTasks";
 import { MobileTaskCardWithActualTime } from "./mobile-task-card";
 import { SortableMobileTaskCard } from "./sortable-mobile-task-card";
 import { TaskModal } from "@/components/kanban/task-modal.lazy";
+import { raiseKeyboardForTap } from "@/lib/ios-keyboard";
 import { MobileDateHeader } from "./mobile-date-header";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -203,6 +204,7 @@ export function MobileTaskListView({
   };
   
   const handleAddTask = () => {
+    raiseKeyboardForTap();
     setIsAddModalOpen(true);
   };
   
