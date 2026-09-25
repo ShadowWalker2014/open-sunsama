@@ -153,7 +153,7 @@ bun run build        # Build all
 bun run typecheck    # Type check
 bun run lint         # Lint
 bun run test         # Tests
-bun run e2e          # Browser smoke tests (needs e2e/start-stack.sh running)
+bun run e2e          # Browser smoke tests (needs e2e/start-stack.sh running; locally, point it at dev-postgres — see the script header)
 
 # Database
 bun run db:generate  # Generate migrations
