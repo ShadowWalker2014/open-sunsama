@@ -1,5 +1,6 @@
 // @ts-check
 import js from "@eslint/js";
+import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
@@ -35,6 +36,15 @@ export default tseslint.config(
         clients: "readonly",
         console: "readonly",
         self: "readonly",
+      },
+    },
+  },
+  {
+    files: ["apps/web/scripts/{generate-blog-covers,qa-blog}.mjs"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
       },
     },
   },
