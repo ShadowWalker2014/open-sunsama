@@ -1271,11 +1271,13 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
         Uses onPointerDown instead of onClick because Radix Dialog's FocusScope
         traps focus at the document level — it intercepts between pointerdown
         and click, yanking focus back into the dialog before click fires.
-        onPointerDown fires before the focus trap kicks in. */}
+        onPointerDown fires before the focus trap kicks in.
+        pointer-events-auto: the open modal Dialog sets `pointer-events: none`
+        on <body>, which this portal would otherwise inherit. */}
       {showDeleteConfirm &&
         createPortal(
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
+            className="pointer-events-auto fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
             onPointerDown={() => setShowDeleteConfirm(false)}
           >
             <div

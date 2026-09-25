@@ -105,13 +105,10 @@ export function useKanbanRangePrefetch(options: RangePrefetchOptions = {}) {
     return format(addDays(center, bufferDays), "yyyy-MM-dd");
   }, [centerString, bufferDays]);
 
+  // Keep this key outside `taskKeys.lists()`: task mutations treat every
+  // cache under that prefix as a Task[], and this one holds an object.
   const queryKey = React.useMemo(
-    () =>
-      [
-        ...taskKeys.lists(),
-        "range",
-        { from: fromString, to: toString },
-      ] as const,
+    () => taskKeys.range(fromString, toString),
     [fromString, toString]
   );
 

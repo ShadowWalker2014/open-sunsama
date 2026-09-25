@@ -17,6 +17,28 @@ export default tseslint.config(
     ],
   },
   {
+    files: ["apps/expo-mobile/{babel,metro}.config.js"],
+    languageOptions: {
+      sourceType: "commonjs",
+      globals: {
+        __dirname: "readonly",
+      },
+    },
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
+  {
+    files: ["apps/web/public/sw.js"],
+    languageOptions: {
+      globals: {
+        clients: "readonly",
+        console: "readonly",
+        self: "readonly",
+      },
+    },
+  },
+  {
     rules: {
       "@typescript-eslint/no-unused-vars": [
         "error",

@@ -1,6 +1,6 @@
 {
   "name": "@open-sunsama/mobile",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,15 +14,15 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.2.0",
-    "@tauri-apps/plugin-haptics": "^2.2.0",
-    "@tauri-apps/plugin-notification": "^2.2.0",
-    "@tauri-apps/plugin-store": "^2.2.0",
-    "@tauri-apps/plugin-deep-link": "^2.2.0",
-    "@tauri-apps/plugin-biometric": "^2.2.0"
+    "@tauri-apps/api": "^2.11.1",
+    "@tauri-apps/plugin-haptics": "^2.3.3",
+    "@tauri-apps/plugin-notification": "^2.4.0",
+    "@tauri-apps/plugin-store": "^2.4.5",
+    "@tauri-apps/plugin-deep-link": "^2.4.10",
+    "@tauri-apps/plugin-biometric": "^2.3.3"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.2.4",
-    "typescript": "^5.9.2"
+    "@tauri-apps/cli": "^2.11.5",
+    "typescript": "catalog:"
   }
 }

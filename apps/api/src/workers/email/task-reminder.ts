@@ -14,9 +14,7 @@ import { format, addMinutes } from "date-fns";
 import { getPgBoss, JOBS } from "../../lib/pgboss.js";
 
 // Payload types
-export interface TaskReminderCheckPayload {
-  // Empty - runs on schedule
-}
+export type TaskReminderCheckPayload = Record<string, never>;
 
 export interface SendTaskReminderPayload {
   timeBlockId: string;
@@ -28,7 +26,7 @@ export interface SendTaskReminderPayload {
  * Runs every minute to catch time blocks within each user's reminder window
  */
 export async function processTaskReminderCheck(
-  job: PgBoss.Job<TaskReminderCheckPayload>
+  _job: PgBoss.Job<TaskReminderCheckPayload>
 ): Promise<void> {
   const db = getDb();
   const boss = await getPgBoss();

@@ -76,7 +76,7 @@ export function TimeBlockContextMenu({
       <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
       <ContextMenuContent className="w-48">
         {/* Open Task - for linked blocks, or Edit for standalone */}
-        <ContextMenuItem onClick={handleEdit}>
+        <ContextMenuItem onClick={hasLinkedTask ? handleViewTask : handleEdit}>
           {hasLinkedTask ? (
             <>
               <Eye className="mr-2 h-4 w-4" />

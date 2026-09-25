@@ -1,7 +1,7 @@
 {
   "name": "open-sunsama",
   "description": "Open-source, AI agent friendly Sunsama alternative with direct API access",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
   "overrides": {
@@ -30,12 +30,19 @@
     "open-source",
     "self-hosted"
   ],
-  "packageManager": "bun@1.2.21",
-  "workspaces": [
-    "apps/*",
-    "packages/*",
-    "mcp"
-  ],
+  "packageManager": "bun@1.4.2",
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*",
+      "mcp"
+    ],
+    "catalog": {
+      "typescript": "^5.9.3",
+      "zod": "^3.25.76",
+      "@tanstack/react-query": "^5.103.2"
+    }
+  },
   "scripts": {
     "dev": "turbo run dev --filter='!@open-sunsama/desktop' --filter='!@open-sunsama/mobile' --filter='!@open-sunsama/expo-mobile'",
     "dev:web": "turbo run dev --filter=@open-sunsama/web --filter=@open-sunsama/api --filter=./packages/*",
@@ -63,13 +70,14 @@
     "version:sync": "node -e \"const v=require('./package.json').version; const fs=require('fs'); ['apps/api/package.json','apps/web/package.json','apps/desktop/package.json','apps/desktop/src-tauri/tauri.conf.json','apps/mobile/package.json','apps/mobile/src-tauri/tauri.conf.json','apps/expo-mobile/package.json'].forEach(f=>{const j=JSON.parse(fs.readFileSync(f));j.version=v;fs.writeFileSync(f,JSON.stringify(j,null,2)+'\\n');console.log('✓',f,'→',v)});\""
   },
   "devDependencies": {
-    "@changesets/cli": "^2.27.10",
-    "@types/node": "^22.10.2",
-    "eslint": "^9.17.0",
-    "prettier": "^3.4.2",
-    "turbo": "^2.3.3",
-    "typescript": "^5.9.2",
-    "typescript-eslint": "^8.0.0"
+    "@changesets/cli": "^2.31.1",
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^22.20.4",
+    "eslint": "^9.39.5",
+    "prettier": "^3.9.8",
+    "turbo": "^2.11.2",
+    "typescript": "catalog:",
+    "typescript-eslint": "^8.70.0"
   },
   "dependencies": {}
 }
