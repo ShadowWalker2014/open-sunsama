@@ -84,8 +84,12 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
   },
   {
     title: "Desktop app",
-    note: "Works from any app on your computer.",
-    items: [{ keys: ["⌘", "⇧", "O"], label: "Show or hide Open Sunsama" }],
+    note: "Works from any app on your computer. On Windows and Linux, use the Windows (Super) key for ⌘.",
+    items: [
+      { keys: ["⌘", "⇧", "T"], label: "Add a task for today" },
+      { keys: ["⌘", "⇧", "F"], label: "Focus on your current task" },
+      { keys: ["⌘", "⇧", "O"], label: "Show or hide Open Sunsama" },
+    ],
   },
 ];
 
@@ -196,7 +200,7 @@ export default defineMarketingPage({
       id: "shortcuts",
       eyebrow: "Every shortcut",
       heading: "Every action in Open Sunsama has a key",
-      lead: "It matches the list you see when you press ? in the app, plus one key for the desktop app. On Windows and Linux, use Ctrl for ⌘ and Alt for ⌥.",
+      lead: "It matches the list you see when you press ? in the app, plus three desktop-app keys that work from any app. On Windows and Linux, use Ctrl for ⌘ and Alt for ⌥ in the app, and the Windows key for ⌘ in the desktop keys.",
       body: SHORTCUT_GROUPS.map(
         (group) =>
           `**${group.title}.** ${group.note} ${group.items
@@ -311,7 +315,7 @@ export default defineMarketingPage({
       {
         question: "What is the best keyboard-first task manager?",
         answer:
-          "We build Open Sunsama, and we think it is the best pick for most people. Every action has a key, Cmd+K finds anything, and any AI agent can do the same actions for you. Pick Akiflow if you need a command bar that opens from any app.",
+          "We build Open Sunsama, and we think it is the best pick for most people. Every action has a key, Cmd+K finds anything, and any AI agent can do the same actions for you. The desktop app adds a task or starts focus mode from any app. Pick Akiflow if you need its full command bar in every app.",
         link: { label: "Akiflow alternatives", href: "/blog/akiflow-alternatives" },
       },
       {
@@ -325,7 +329,7 @@ export default defineMarketingPage({
       },
       {
         question: "How do I see every keyboard shortcut?",
-        answer: "Press ? anywhere in the app. A sheet lists every shortcut by group: general, navigation, task actions, calendar and focus mode.",
+        answer: "Press ? anywhere in the app. A sheet lists every shortcut by group: general, navigation, task actions, calendar and focus mode. In the desktop app it also lists the keys that work from any app.",
       },
       {
         question: "Can I change the keyboard shortcuts?",

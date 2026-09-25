@@ -99,43 +99,39 @@ export function useDesktopSettings() {
 }
 
 /**
- * Hook for listening to desktop events
+ * Hook for listening to events the desktop shell emits (global shortcuts,
+ * tray and app menu). No-op outside Tauri.
  */
 export function useDesktopEvents(options: {
   onQuickAddTask?: () => void;
   onStartFocusMode?: () => void;
 }) {
   const navigate = useNavigate();
+  const { onQuickAddTask: handleQuickAdd, onStartFocusMode: handleFocus } =
+    options;
 
   useEffect(() => {
-    const cleanups: Array<(() => void) | null> = [];
+    if (!isDesktop()) return;
 
-    const setup = async () => {
-      // Listen for quick add task
-      if (options.onQuickAddTask) {
-        const cleanup = await onQuickAddTask(options.onQuickAddTask);
-        cleanups.push(cleanup);
-      }
-
-      // Listen for navigation
-      const navCleanup = await onNavigate((path) => {
-        navigate({ to: path });
-      });
-      cleanups.push(navCleanup);
-
-      // Listen for focus mode
-      if (options.onStartFocusMode) {
-        const focusCleanup = await onStartFocusMode(options.onStartFocusMode);
-        cleanups.push(focusCleanup);
-      }
+    let disposed = false;
+    const cleanups: Array<() => void> = [];
+    // Listeners register asynchronously; if the effect is torn down first
+    // (StrictMode, fast remount), unlisten as soon as each one resolves.
+    const keep = (cleanup: (() => void) | null) => {
+      if (!cleanup) return;
+      if (disposed) cleanup();
+      else cleanups.push(cleanup);
     };
 
-    setup();
+    if (handleQuickAdd) void onQuickAddTask(handleQuickAdd).then(keep);
+    void onNavigate((path) => void navigate({ to: path })).then(keep);
+    if (handleFocus) void onStartFocusMode(handleFocus).then(keep);
 
     return () => {
-      cleanups.forEach((cleanup) => cleanup?.());
+      disposed = true;
+      cleanups.forEach((cleanup) => cleanup());
     };
-  }, [navigate, options.onQuickAddTask, options.onStartFocusMode]);
+  }, [navigate, handleQuickAdd, handleFocus]);
 }
 
 /**
