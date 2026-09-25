@@ -19,6 +19,7 @@ import {
   prefetchShortcutsModal,
 } from "@/components/ui/shortcuts-modal.lazy";
 import { GlobalShortcutsHandler } from "@/components/global-shortcuts-handler";
+import { DesktopShortcutsHandler } from "@/components/desktop-shortcuts-handler";
 import {
   CommandPalette,
   prefetchCommandPalette,
@@ -165,6 +166,9 @@ function AppLayoutInner() {
 
       {/* Global Shortcuts Handler */}
       <GlobalShortcutsHandler onAddTask={handleAddTask} />
+
+      {/* Desktop app global shortcuts, tray and menu actions (Tauri only) */}
+      <DesktopShortcutsHandler onAddTask={handleAddTask} />
 
       {/* Shortcuts Modal */}
       <ShortcutsModal
