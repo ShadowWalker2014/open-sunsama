@@ -45,7 +45,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "typescript": "^5.7.2"
+    "typescript": "catalog:"
   },
   "peerDependencies": {
     "typescript": ">=5.0.0"

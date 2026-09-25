@@ -1,2 +1,4 @@
 [tools]
-bun = "1.2.21"
+bun = "1.4.2"
+node = "22"
+rust = "latest"

@@ -21,7 +21,7 @@ import {
  * Runs every minute to catch timezone midnights
  */
 export async function processTimezoneRolloverCheck(
-  job: PgBoss.Job<RolloverCheckPayload>
+  _job: PgBoss.Job<RolloverCheckPayload>
 ): Promise<void> {
   const db = getDb();
   const boss = await getPgBoss();
