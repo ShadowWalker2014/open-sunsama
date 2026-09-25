@@ -1,11 +1,13 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Calendar, Command, LayoutGrid, Sparkles, Timer } from "lucide-react";
+import { ArrowRight, Calendar, Command, LayoutGrid, Play, Sparkles, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { clockDuration } from "@/lib/blog-media";
 import { cn } from "@/lib/utils";
 import { BorderBeam } from "./border-beam";
 import { useIntro, useReducedMotion, useScrollProgress } from "./motion";
 import { BrowserFrame, ThemedShot, type ShotName } from "./product-shot";
+import { getVideo, VideoLightbox } from "./video-lightbox";
 
 const HEADLINE = [
   { text: "Daily planning,", accent: false },
@@ -93,7 +95,8 @@ function Showcase({ ready, reduced }: { ready: boolean; reduced: boolean }) {
                 }
           }
         >
-          <div className="pointer-events-none absolute -inset-x-10 -top-10 bottom-0 -z-10 rounded-[40px] bg-[radial-gradient(60%_60%_at_50%_30%,hsl(var(--primary)/0.22),transparent_70%)] blur-2xl" />
+          {/* Sunrise behind the window: amber core fading through orange to rose. */}
+          <div className="pointer-events-none absolute -inset-x-16 -top-16 bottom-[20%] -z-10 rounded-[48px] bg-[radial-gradient(55%_65%_at_50%_18%,rgb(251_191_36/0.38),rgb(249_115_22/0.24)_38%,rgb(244_63_94/0.12)_62%,transparent_78%)] blur-2xl dark:bg-[radial-gradient(55%_65%_at_50%_18%,rgb(251_191_36/0.26),rgb(249_115_22/0.2)_38%,rgb(244_63_94/0.12)_62%,transparent_78%)]" />
           <BrowserFrame className="relative">
             <div className="relative aspect-[16/10] w-full overflow-hidden">
               {VIEWS.map((view, i) => (
@@ -242,6 +245,7 @@ function FloatingChip({
 
 export function Hero() {
   const ready = useIntro();
+  const tour = getVideo("tour");
   const reduced = useReducedMotion();
   let wordIndex = 0;
 
@@ -254,6 +258,9 @@ export function Hero() {
           className="absolute left-1/2 top-[-160px] h-[520px] w-[900px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,hsl(var(--primary)/0.16),transparent)] blur-2xl motion-safe:animate-[landing-drift_18s_ease-in-out_infinite]"
           style={{ opacity: ready ? 1 : 0, transition: "opacity 1400ms ease" }}
         />
+        {/* Morning light: a rose glow on the left, amber on the right. */}
+        <div className="absolute left-[-6%] top-[140px] h-[380px] w-[520px] rounded-full bg-[radial-gradient(closest-side,rgb(244_63_94/0.13),transparent)] blur-2xl dark:bg-[radial-gradient(closest-side,rgb(244_63_94/0.16),transparent)]" />
+        <div className="absolute right-[-4%] top-[60px] h-[400px] w-[540px] rounded-full bg-[radial-gradient(closest-side,rgb(245_158_11/0.18),transparent)] blur-2xl" />
       </div>
 
       <div className="container mx-auto max-w-6xl px-4 text-center">
@@ -266,7 +273,7 @@ export function Hero() {
             <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground">
               New
             </span>
-            Control your planner from any AI agent
+            Plan your day from Claude or ChatGPT
             <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>
@@ -306,11 +313,11 @@ export function Hero() {
         </h1>
 
         <p
-          className="mx-auto mt-6 max-w-2xl text-[16px] leading-relaxed text-muted-foreground md:text-[18px]"
+          className="mx-auto mt-6 max-w-2xl text-balance text-[16px] leading-relaxed text-muted-foreground md:text-[18px]"
           style={introStyle(ready, 520, reduced)}
         >
-          The open-source daily planner for time-blocking, focused work, and seamless AI integration.
-          Control it from any agent: Claude, ChatGPT, Cursor, or your own.
+          The open-source daily planner. Plan your day, block time on your calendar, and focus on one thing
+          at a time. Claude, ChatGPT or any AI agent can plan it with you.
         </p>
 
         <div
@@ -323,12 +330,23 @@ export function Hero() {
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
-          <Button variant="outline" size="lg" className="h-11 rounded-lg bg-background/70 px-5 text-[14px] backdrop-blur" asChild>
-            <a href="#ai">
-              <Sparkles className="h-4 w-4 text-primary" />
-              Connect your AI
-            </a>
-          </Button>
+          <VideoLightbox id="tour">
+            <Button
+              variant="outline"
+              size="lg"
+              className="group h-11 gap-2.5 rounded-lg bg-background/70 pl-2 pr-4 text-[14px] backdrop-blur"
+            >
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                <Play className="h-3.5 w-3.5 translate-x-px fill-current" />
+              </span>
+              Watch the 1-minute tour
+              {tour && (
+                <span className="font-jetbrains text-[12px] tabular-nums text-muted-foreground">
+                  {clockDuration(tour.duration)}
+                </span>
+              )}
+            </Button>
+          </VideoLightbox>
         </div>
 
         <div

@@ -1,0 +1,187 @@
+export const frontmatter = {
+  title: "Sunsama MCP: How to Connect Sunsama to Claude and ChatGPT (2026)",
+  description: "Sunsama has an official MCP server. Here is how to connect it to Claude, ChatGPT, Cursor and Claude Code, what it can and can't do, and where the API stands.",
+  date: "2026-09-24",
+  updated: "2026-09-24",
+  author: "Open Sunsama Team",
+  tags: ["sunsama", "mcp", "claude", "chatgpt", "ai", "api"],
+  readingTime: 8,
+  image: "/blog-sunsama-mcp.webp",
+  faqs: [
+    {
+      question: "Does Sunsama have an MCP server?",
+      answer: "Yes. Sunsama runs an official, hosted MCP server at https://api.sunsama.com/mcp. You sign in with OAuth. It left beta in August 2026.",
+    },
+    {
+      question: "Does Sunsama have a public API?",
+      answer: "No. Sunsama has no public REST API. The request has been open on its roadmap since December 2019. The MCP server and Zapier are the official ways in.",
+    },
+    {
+      question: "How do I connect Sunsama to Claude?",
+      answer: "In Claude, go to Customize, Connectors, Add, Add custom connector. Name it Sunsama, paste https://api.sunsama.com/mcp, click Add, then Connect and sign in.",
+    },
+    {
+      question: "How do I add Sunsama to ChatGPT?",
+      answer: "Open chatgpt.com/plugins, find Sunsama, click the + button and then Connect. Sign in to Sunsama, start a new chat and type @Sunsama.",
+    },
+    {
+      question: "Is the Sunsama MCP included in my plan?",
+      answer: "Yes, on the Pro plan. Sunsama lists AI, MCP and Zapier as part of Pro, which is $17 a month billed yearly or $22 monthly (September 2026).",
+    },
+    {
+      question: "Is an unofficial Sunsama MCP server safe to use?",
+      answer: "Be careful. Older community servers signed in with your real Sunsama email and password, and the popular one is now archived. Use the official OAuth server instead.",
+    },
+    {
+      question: "What is the best alternative to Sunsama's MCP?",
+      answer: "For most people who want an AI-native planner, Open Sunsama. Its hosted MCP server lets your AI read your meetings and plan your day into calendar time blocks around them, and it adds a public REST API and self-hosting. If you already pay for Sunsama, its own MCP works well.",
+    },
+    {
+      question: "What is Sunny in Sunsama?",
+      answer: "Sunny is Sunsama's built-in AI assistant. You chat with it inside Sunsama. The MCP server is different: it lets outside AI apps like Claude and ChatGPT work with your Sunsama data.",
+    },
+  ],
+};
+
+**Yes, Sunsama has an official MCP server.** It lives at `https://api.sunsama.com/mcp`, uses OAuth sign-in and is part of the Pro plan. You can add it to ChatGPT from its plugin directory, or to Claude as a custom connector, in about two minutes.
+
+What Sunsama does not have is a public REST API. So the MCP server is the main way for an AI or a script to reach your Sunsama data. Below is how to set it up, what it can do, and why we recommend Open Sunsama for most people who want an AI-native planner.
+
+We build Open Sunsama, so we recommend it at the end — here is why, and where Sunsama fits better.
+
+## Key takeaways
+
+- **Server URL:** `https://api.sunsama.com/mcp`. It is hosted by Sunsama, so there is nothing to install.
+- **Works with:** ChatGPT, Claude, Claude Desktop, Claude Code, Cursor, Notion agents and any MCP client.
+- **Status:** out of beta since August 2026, per Sunsama's [changelog](https://roadmap.sunsama.com/changelog).
+- **Plan:** included in Sunsama Pro ($17 a month billed yearly, or $22 monthly, checked September 2026).
+- **No public API:** the [API request](https://roadmap.sunsama.com/improvements/p/sunsama-api) has been open since 16 December 2019.
+- **Our pick for an AI-native planner:** [Open Sunsama](/alternative/sunsama). It has a hosted MCP server that plans time blocks, a public REST API and code you can self-host.
+
+## How to connect Sunsama MCP in each app
+
+These steps come from Sunsama's own [MCP help page](https://help.sunsama.com/docs/mcp-model-context-protocol).
+
+| App | How to add Sunsama |
+| --- | --- |
+| ChatGPT | Install Sunsama from the directory at chatgpt.com/plugins, then click Connect |
+| Claude (web and app) | Customize → Connectors → Add → Add custom connector, paste the URL |
+| Claude Desktop (config file) | Add `npx mcp-remote@latest https://api.sunsama.com/mcp` to `claude_desktop_config.json` |
+| Claude Code | `claude mcp add --transport http Sunsama https://api.sunsama.com/mcp` |
+| Cursor | Settings → MCP → Add new global MCP server, then add the URL to `mcp.json` |
+| Notion (paid) | Custom agent → Tools & Access → Add connection → Custom MCP server |
+| Any other client | Point it at the URL, or use `mcp-remote` if it only runs local servers |
+
+### Connect Sunsama to ChatGPT
+
+1. Open the plugin directory at [chatgpt.com/plugins](https://chatgpt.com/plugins) and find Sunsama.
+2. Click the **+** button to install it.
+3. Click **Connect** and sign in to Sunsama to approve access.
+4. Start a new chat. Ask about your Sunsama tasks, or type `@Sunsama` to call it.
+
+Workspace owners and admins can install it for everyone at chatgpt.com/admin/plugins. Each person still clicks **Connect** once to sign in.
+
+### Connect Sunsama to Claude
+
+1. In Claude, go to **Customize → Connectors → Add → Add custom connector**.
+2. Enter **Sunsama** as the name.
+3. Paste `https://api.sunsama.com/mcp` as the remote MCP server URL and click **Add**.
+4. Click the Sunsama connector, then **Connect**, and sign in.
+
+Sunsama's guide lists this for Claude Pro and Team. For Claude Code, run the one-line command in the table above, then check it with `claude mcp list`.
+
+## What can Sunsama's MCP server do?
+
+Once you connect, you can ask your AI to work with your Sunsama tasks in plain words. Based on Sunsama's changelog from June to September 2026, the server can:
+
+- Read your tasks, with created, changed, done and due dates.
+- Create tasks, with notes written in Markdown.
+- Edit task notes or add to them.
+- Read, post and edit task comments.
+- Rename and delete channels.
+- Turn a pasted link from 17 tools, like Linear, Notion or GitHub, into a linked task.
+- Link a task to an email, including Gmail and Outlook.
+- Sync done or moved tasks back to Todoist, Asana, ClickUp, Notion, Trello and Gmail.
+
+Since September 2026, connections to Claude and ChatGPT stay signed in as long as you keep using them. Before that they expired after 30 days. That fixes a common complaint about AI connectors that log you out.
+
+### Prompts to try with Sunsama MCP
+
+- "What's on my Sunsama list for today? Which three matter most?"
+- "Add a task to review the Q4 plan on Thursday, with these notes: …"
+- "Turn this meeting summary into Sunsama tasks for next week."
+- "What did I finish last week in the Marketing channel?"
+
+## What Sunsama's MCP can't do (yet)
+
+Sunsama's help page does not list every tool the server has. So after you connect, ask your AI to "list the Sunsama tools you can use". That shows you exactly what it can touch today.
+
+Actual time is the gap people ask about most. In April 2026, a Claude user found the MCP shared planned time only, not tracked time. Sunsama replied that actual time was "coming soon", so check your tool list if planned vs actual matters to you.
+
+You also need an AI app in the loop. Without a public API, you can't write a simple script, hook it up to n8n or Home Assistant, or pull your own reports. Zapier is the other official route.
+
+## Is there a Sunsama API?
+
+No. Sunsama has no public REST API. The [Sunsama API request](https://roadmap.sunsama.com/improvements/p/sunsama-api) has 887 votes and has been open since December 2019.
+
+In that thread, a Sunsama team member pointed users to the MCP server instead. Some users still ask for a real API. One wrote in July 2026: "I'll try the MCP but wish there was a documented API."
+
+Community projects filled the gap for a while. They used an unofficial API that signed in with your real Sunsama email and password.
+
+The most popular one, [mcp-sunsama](https://github.com/robertn702/mcp-sunsama), is now archived. Stick with the official OAuth server, which never shares your password.
+
+## Open Sunsama is the best choice for an AI-native planner
+
+Sunsama's MCP works well if you already live in Sunsama. But most people who want an AI to plan their day need more than a connector. They want an API they can script, code they can read, and data they can keep on their own server.
+
+[Open Sunsama](/features/ai-integration) is an open-source daily planner built for that. It has the kanban board of days, time blocking on a calendar, focus mode and rollover you know from Sunsama. It also has its own hosted MCP server with OAuth.
+
+<DemoVideo id="ai" />
+
+Paste `https://api.opensunsama.com/mcp` into Claude, ChatGPT or Cursor and sign in once. Your AI gets 24 tools for tasks, subtasks, time blocks and the meetings on your synced calendars.
+
+One tool reads your meetings and time blocks for a day in one call. So "plan my afternoon" ends with real blocks that fit around your meetings.
+
+<Clip id="ai-plan" caption="An AI agent plans the afternoon over MCP. Tasks and time blocks show up live." />
+
+In ChatGPT, Open Sunsama isn't in the plugin directory yet. You add it as a custom plugin in developer mode, which is on paid ChatGPT plans. The [ChatGPT guide](/docs/mcp/chatgpt) walks you through it.
+
+<Shot id="consent-chatgpt" alt="Open Sunsama consent screen asking to allow ChatGPT access to tasks and time blocks" caption="ChatGPT sends you to Open Sunsama's own page to approve access. It never sees your password." />
+
+You can see every connected app, and cut any of them off, in **Settings → MCP**.
+
+<Shot id="mcp-settings" alt="Open Sunsama MCP settings with the server URL, setup steps and connected apps" caption="Settings → MCP holds the server URL, setup steps for each app and your connected apps." />
+
+### Sunsama MCP vs Open Sunsama MCP
+
+| | Sunsama | Open Sunsama |
+| --- | --- | --- |
+| Official MCP server | Yes, `api.sunsama.com/mcp` | Yes, `api.opensunsama.com/mcp` |
+| Sign-in | OAuth | OAuth 2.1 |
+| ChatGPT | In the plugin directory | Developer mode (paid ChatGPT plans) |
+| Claude, Claude Code, Cursor | Yes | Yes |
+| Tool list published | Not in the help page | Yes, all 24 tools in the [docs](/docs/mcp/overview) |
+| Time blocks over MCP | Not listed in the help page | Create, move, resize, link to tasks |
+| Calendar meetings over MCP | Not listed in the help page | Read-only: title, time, calendar, place |
+| Tracked (actual) time over MCP | Not in April 2026, "coming soon" | Yes, estimate and actual minutes |
+| Public REST API | No | Yes, with [API keys](/docs/api/authentication) |
+| Source code | Closed | Public on [GitHub](https://github.com/ShadowWalker2014/open-sunsama) |
+| Self-host | No | Yes, with Docker |
+| Built-in AI chat | Yes, Sunny | No, bring your own agent |
+| Integrations | Many (Asana, Jira, Notion, Slack, more) | Calendars (Google, Outlook, iCloud), plus API and MCP |
+| Plan needed | Pro: $17/mo yearly or $22 monthly | Any account, or your own server |
+
+Sunsama is the better pick if you want Sunny, a wide set of built-in integrations and one-click setup in ChatGPT. Open Sunsama is the better pick if you want a documented API or full control of your data. It also suits you if you want an agent that can read the code and change the planner.
+
+A note on the license: the code is public on GitHub. It uses a non-commercial license: you can read it, run it and self-host it for personal use. Companies need a commercial license.
+
+## Which should you use?
+
+**For most people who want an AI-native planner: Open Sunsama.** Your AI can plan your day into real time blocks, and you get a public API and self-hosting too.
+
+- **You pay for Sunsama and just want Claude or ChatGPT to see your tasks:** connect Sunsama's official MCP. It works well and takes two minutes.
+- **You need an API for scripts, n8n or reports:** Sunsama can't do that yet. Open Sunsama has a REST API with API keys.
+- **You want your AI to build the day in time blocks:** use Open Sunsama, whose server reads your meetings and creates and links calendar blocks around them.
+- **You want your data on your own server:** self-host Open Sunsama with Docker.
+
+For a step-by-step switch, see [how to replace Sunsama with Open Sunsama](/blog/replace-sunsama-open-sunsama). To compare every to-do app with an MCP server, read [the best task managers with MCP](/blog/best-task-managers-with-mcp). Or [download Open Sunsama](/download) and connect it in the [Claude guide](/docs/mcp/claude).

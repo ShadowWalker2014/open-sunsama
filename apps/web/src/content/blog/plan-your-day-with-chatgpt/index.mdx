@@ -1,0 +1,254 @@
+export const frontmatter = {
+  title: "ChatGPT Calendar Planner: Plan Your Day With ChatGPT (2026)",
+  description:
+    "Turn ChatGPT into a calendar planner: connect your tasks, time blocks and meetings over MCP, work around the calendar plugin's limits, and plan your day with 9 prompts.",
+  date: "2026-09-24",
+  updated: "2026-09-24",
+  author: "Open Sunsama Team",
+  tags: ["chatgpt", "mcp", "ai", "daily-planning", "calendar"],
+  readingTime: 9,
+  image: "/blog-plan-your-day-with-chatgpt.webp",
+  faqs: [
+    {
+      question: "Can ChatGPT plan my day?",
+      answer:
+        "Yes, if it can see your tasks and calendar. Connect a planner such as Open Sunsama, which also reads the meetings synced from your calendar, and ask it to plan your day. It proposes a schedule and books it after you approve.",
+    },
+    {
+      question: "Can ChatGPT add events to my calendar?",
+      answer:
+        "Sometimes. ChatGPT's calendar plugins read your schedule well, but writing events has depended on the calendar, your plan and your admin. A planner connector like Open Sunsama gives ChatGPT a place it can always write time blocks.",
+    },
+    {
+      question: "Why is ChatGPT's Google Calendar connection not working?",
+      answer:
+        "Common causes are an old sign-in that needs a fresh approval, a workspace admin who hasn't enabled the plugin, or the plugin not being picked for the chat. Disconnect, reconnect, and pick the plugin from the + menu.",
+    },
+    {
+      question: "Which ChatGPT plans can add a custom MCP plugin?",
+      answer:
+        "Developer mode, which adds custom MCP plugins, is available on Plus, Pro, Business, Enterprise and Edu accounts on the web. Free and Go plans can use directory plugins but not custom ones.",
+    },
+    {
+      question: "Is ChatGPT a good planner app?",
+      answer:
+        "ChatGPT is a good planner brain but a poor planner app. It forgets your list between chats. Pair it with a real planner so your tasks, estimates and time blocks last.",
+    },
+    {
+      question: "Will ChatGPT change my calendar without asking?",
+      answer:
+        "OpenAI's developer docs say write actions need your confirmation by default. The prompts in this guide also tell ChatGPT to show the plan and wait for your yes.",
+    },
+    {
+      question: "Does the same planner work with Claude?",
+      answer:
+        "Yes. Open Sunsama's connector is a standard MCP server, so the same URL works in Claude, Claude Code, Cursor and other MCP clients.",
+    },
+  ],
+};
+
+The ChatGPT calendar plugins can read your meetings, but they don't give ChatGPT a place to keep your tasks or book focused work. To plan your day, add a planner it can write to, such as Open Sunsama, which also reads your synced meetings. Then one prompt, "plan my day," gets you a time-blocked schedule that you approve before anything is booked.
+
+This guide shows the 2-minute setup, explains where ChatGPT's calendar support falls short, and gives you 9 prompts for real days.
+
+**Key takeaways**
+
+- **ChatGPT reads calendars well.** Its Google Calendar and Outlook plugins can list events and check free time.
+- **It needs help to plan.** A calendar has no tasks, estimates or rollover, and chat forgets your list.
+- **Open Sunsama fills the gap.** It holds your tasks and time blocks and reads your synced meetings. ChatGPT reaches all three over MCP.
+- **Setup takes 2 minutes** on Plus, Pro, Business, Enterprise or Edu, in ChatGPT on the web.
+- **You stay in charge.** ChatGPT proposes first and books after your yes.
+
+<DemoVideo id="ai" />
+
+## Why ChatGPT's calendar alone can't plan your day
+
+Most people start with ChatGPT's built-in calendar plugins. They are good at questions like "what's on my schedule this afternoon?" Planning is harder, for three reasons.
+
+**Writing events is hit and miss.** Whether ChatGPT can create or move an event has depended on which calendar you use, your plan, and your workspace admin. Those rules changed during 2026.
+
+That is why "ChatGPT Google Calendar connector not working" is such a common search.
+
+**A calendar is not a task list.** Events have no priority, no time estimate, and no way to roll to tomorrow. So ChatGPT can see when you're busy, but not what you need to get done.
+
+**Chat forgets.** If you paste your to-do list into a chat, it lives only in that chat. Tomorrow you start over.
+
+The fix is simple: give ChatGPT a planner that sees your meetings and that it can write to. Open Sunsama is an open-source daily planner with a hosted MCP server. ChatGPT reads your meetings and tasks in one call, then creates tasks, blocks time and moves work between days.
+
+| What you need | Calendar plugin only | + Open Sunsama |
+| --- | --- | --- |
+| See meetings and free time | Yes | Yes |
+| A task list that lasts between chats | No | Yes |
+| Time estimates and priorities | No | Yes (P0 to P3) |
+| Book focus time linked to a task | Depends on calendar and plan | Yes |
+| Roll unfinished work to tomorrow | No | Yes |
+| Planned vs actual time | No | Yes |
+
+## How to connect Open Sunsama to ChatGPT
+
+ChatGPT adds outside tools as **plugins**, and a custom plugin like this one needs developer mode. OpenAI [lists it](https://developers.openai.com/api/docs/guides/developer-mode) for Plus, Pro, Business, Enterprise and Education accounts on the web. On Business and Enterprise, an admin may need to allow it.
+
+1. **Turn on developer mode.** In ChatGPT, open **Settings → Security and login** and switch on **Developer mode**.
+2. **Create the plugin.** Go to [ChatGPT Plugins](https://chatgpt.com/plugins) and click the **+** next to the search box.
+3. **Fill in the form.** Name: **Open Sunsama**. Description: *My tasks, time blocks and calendar meetings*. Server URL: `https://api.opensunsama.com/mcp`. Leave authentication on **OAuth**.
+4. **Confirm.** Check **I understand and want to continue**, then click **Create**.
+5. **Sign in.** The Open Sunsama page opens. Sign in and click **Allow access**.
+
+<Shot id="consent-chatgpt" alt="Open Sunsama consent screen asking to allow ChatGPT access to tasks and time blocks" caption="You sign in to Open Sunsama once. ChatGPT gets a scoped token, never your password." />
+
+To use it, start a new chat, click **+** in the message box, and pick **Open Sunsama**. The [ChatGPT setup guide](/docs/mcp/chatgpt) has screenshots and fixes for common errors.
+
+Connect your Google, Outlook or iCloud calendar in Open Sunsama under **Settings → Calendars**, and ChatGPT sees your meetings through the same plugin. It sees each meeting's title, time and place, never who's invited or the notes.
+
+If you added the plugin before calendar access existed, reconnect it in **Settings → MCP → Connected apps** and allow calendar access.
+
+OpenAI's docs say write actions need your OK by default, and you can expand any tool call to see what ChatGPT will send. You can also let it remember your yes for the rest of a chat.
+
+## What a ChatGPT day plan looks like
+
+Here is an example. Alex Rivera, Head of Product, has three meetings and five open tasks. Alex types this:
+
+```
+Plan my day around my meetings, using my open tasks in Open Sunsama.
+```
+
+ChatGPT calls Open Sunsama's `get_schedule_for_day`, which returns today's meetings and time blocks together, and `list_tasks` for open work. It replies with a plan like this and waits:
+
+| Time | Block | Why |
+| --- | --- | --- |
+| 9:00 - 10:30 | Write Q4 roadmap draft (P0, 90 min) | Hardest task, best focus |
+| 10:30 - 11:00 | Team standup | Meeting |
+| 11:00 - 11:45 | Review design specs (P1, 45 min) | Fits before lunch |
+| 12:00 - 12:30 | Lunch | Break |
+| 1:00 - 2:00 | Customer call | Meeting |
+| 2:15 - 3:00 | Reply to pricing feedback (P2, 45 min) | Buffer after call |
+| 3:00 - 4:00 | 1:1 with design lead | Meeting |
+| **Won't fit** | Update onboarding doc, clean up backlog | Suggest Thursday |
+
+Alex replies: swap the specs review and the pricing reply, then book it. ChatGPT calls `create_time_block` and `link_task_to_time_block` for each block. Then it uses `schedule_task` to move the two leftovers to Thursday.
+
+<Clip id="ai-plan" caption="An AI agent plans the afternoon over MCP. The blocks appear in Open Sunsama as it works." />
+
+## 9 ChatGPT prompts for planning your day and week
+
+Paste these as they are, or add your own details. Most of them ask ChatGPT to show you the plan before it changes anything.
+
+### 1. Plan my day around my meetings
+
+```
+Plan my day. Read today's meetings and my open tasks from Open Sunsama.
+Fit my top tasks into the free gaps, biggest first,
+with 10-minute buffers. Show the plan and wait for my OK before booking.
+```
+
+**What ChatGPT does:** it reads your meetings and tasks in one place, proposes a schedule like the one above, and lists what won't fit.
+
+### 2. Plan tomorrow tonight
+
+```
+It's the end of my day. Move anything unfinished to tomorrow, then look at
+tomorrow's meetings and draft a plan. Don't book it yet. I'll check it
+in the morning.
+```
+
+**What ChatGPT does:** it rolls today's leftovers forward with `schedule_task` and drafts tomorrow. You wake up to a plan instead of a blank page.
+
+### 3. Plan my week
+
+```
+Plan my week. Spread my open tasks across Monday to Friday. Keep each day
+under 5 hours of task work, because the rest is meetings.
+Put deadlines first. Show me the week before you move anything.
+```
+
+**What ChatGPT does:** it assigns each task a day, balances the load, and flags any day that's too full.
+
+<Clip id="week-plan" caption="In week view, tasks move across days. ChatGPT does the same moves over MCP." />
+
+### 4. Find the gaps on a meeting-heavy day
+
+```
+Today is full of meetings. Find every free gap of 20 minutes or more
+and fill each with one small task under 20 minutes. Skip anything big.
+```
+
+**What ChatGPT does:** it reads your calendar for gaps, then picks short tasks by their estimates. Small wins still happen on busy days.
+
+### 5. Turn meeting notes into tasks
+
+```
+Here are my notes from today's product review. Pull out every action item
+that's mine, make each one a task with a time estimate and a priority,
+and put them on the right day. List them first.
+
+[paste notes or an email here]
+```
+
+**What ChatGPT does:** it finds your action items, guesses estimates, and creates the tasks after you confirm.
+
+### 6. Clear a day that fell apart
+
+```
+I'm out sick Friday. Move everything scheduled for Friday to Monday,
+keep the order, and remove Friday's time blocks. Tell me what you'll change first.
+```
+
+**What ChatGPT does:** it lists Friday's tasks and blocks, then moves them after your yes.
+
+### 7. Protect deep work all week
+
+```
+Block 9:00 to 10:30 every weekday this week for deep work.
+Link each block to my highest-priority open task for that day.
+Skip any morning that already has a meeting at that time.
+```
+
+**What ChatGPT does:** it checks each morning for conflicts, then creates five linked time blocks.
+
+### 8. Planned vs actual
+
+```
+How did this week go? For each task I finished, compare the time estimate
+with the actual time. Where was I most off? Suggest better estimates.
+```
+
+**What ChatGPT does:** it reads each task's estimate and the actual time from Open Sunsama's focus timer. Then it shows where your guesses run short.
+
+### 9. Clean up the backlog
+
+```
+Show me backlog tasks I haven't touched in 30 days. For each, suggest keep,
+schedule, or delete. Don't delete anything until I say which ones.
+```
+
+**What ChatGPT does:** it sorts the backlog and waits. Delete tools are marked as destructive, so ChatGPT asks before it removes a task.
+
+## You can still plan by hand
+
+ChatGPT doesn't have to do all the work. Open Sunsama is a full planner on web, [desktop](/download) and phone. You can drag tasks from the backlog into Today, then let ChatGPT fill the calendar.
+
+<Clip id="plan-day" caption="Drag tasks from the backlog into Today. ChatGPT sees the same plan you do." />
+
+Your edits and ChatGPT's edits land in the same place, and they sync across devices in real time.
+
+## Other ways to connect ChatGPT to your tasks
+
+Open Sunsama isn't the only planner ChatGPT can use. Here is a fair look:
+
+- **Todoist** has an [official hosted MCP server](https://www.todoist.com/help/articles/use-chatgpt-with-todoist-mcp-WEeLx9d8h). Pick it if you already live in Todoist and mostly need a task list.
+- **Sunsama** has an official MCP server and is listed in ChatGPT's plugin directory. Pick it if you want its guided planning rituals and don't mind a closed app.
+- **Google Calendar or Outlook plugins alone** work if you only need ChatGPT to answer questions about meetings.
+
+Pick Open Sunsama if you want tasks, time blocks and meetings in one planner that any agent can use. The code is public on GitHub, you can [self-host it](/docs/self-hosting/docker), and it has a [REST API](/docs/api). The same connector also works in [Claude](/blog/plan-your-day-with-claude) and Cursor.
+
+For the full list, see the [best task managers with MCP](/blog/best-task-managers-with-mcp).
+
+## Which setup should you pick?
+
+- **If you only ask about meetings,** the calendar plugin alone is enough.
+- **If you want ChatGPT to plan your day,** add Open Sunsama. It covers tasks, time blocks and your meetings.
+- **If you want ChatGPT to create or move meetings,** add your calendar plugin too. Open Sunsama reads meetings but doesn't change them.
+- **If you're on ChatGPT Free or Go,** custom plugins aren't available. Use Open Sunsama with Claude instead, since Claude's Free plan allows one custom connector.
+- **If you switch between ChatGPT and Claude,** use one planner that both can reach, so your plan follows you.
+
+Learn more about [AI integration](/features/ai-integration) in Open Sunsama, or read how [time blocking with AI](/blog/time-blocking-with-ai) works.

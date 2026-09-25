@@ -21,13 +21,13 @@ export function BlogPagination({
 
   return (
     <nav
-      className="mt-12 flex items-center justify-center gap-1"
+      className="mt-14 flex items-center justify-center gap-1.5"
       aria-label="Pagination"
     >
       <Button
         variant="outline"
         size="sm"
-        className="h-8 px-2"
+        className="h-9 rounded-full px-3"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
       >
@@ -49,7 +49,8 @@ export function BlogPagination({
               key={page}
               variant={page === currentPage ? "default" : "outline"}
               size="sm"
-              className="h-8 w-8 p-0"
+              className="h-9 w-9 rounded-full p-0 tabular-nums"
+              aria-current={page === currentPage ? "page" : undefined}
               onClick={() => onPageChange(page)}
             >
               {page}
@@ -61,7 +62,7 @@ export function BlogPagination({
       <Button
         variant="outline"
         size="sm"
-        className="h-8 px-2"
+        className="h-9 rounded-full px-3"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
       >

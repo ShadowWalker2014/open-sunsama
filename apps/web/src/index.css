@@ -562,150 +562,253 @@ html.font-jetbrains body {
   }
 }
 
-/* Blog Prose Styles - Comprehensive MDX rendering */
+/* ---------------------------------------------------------------------------
+ * Blog prose (components/blog/blog-layout.tsx): long-form MDX articles.
+ * Body text is foreground at reduced opacity rather than muted-foreground, so
+ * long reads keep enough contrast; links use a deeper orange in light mode for
+ * the same reason.
+ * ------------------------------------------------------------------------- */
 .blog-prose {
-  @apply text-foreground;
-  font-size: 15px;
+  --prose-body: hsl(var(--foreground) / 0.84);
+  --prose-link: hsl(20 88% 42%);
+  --prose-hairline: hsl(var(--border));
+  color: var(--prose-body);
+  font-size: 16px;
   line-height: 1.75;
+  font-feature-settings: "ss01", "cv11";
+}
+
+.dark .blog-prose {
+  --prose-body: hsl(var(--foreground) / 0.8);
+  --prose-link: hsl(24 95% 62%);
+  --prose-hairline: hsl(0 0% 100% / 0.08);
+}
+
+@media (min-width: 768px) {
+  .blog-prose {
+    font-size: 17px;
+  }
+}
+
+.blog-prose > :first-child {
+  margin-top: 0;
 }
 
 /* Headings */
+.blog-prose h1,
+.blog-prose h2,
+.blog-prose h3,
+.blog-prose h4 {
+  @apply font-semibold text-foreground;
+  scroll-margin-top: 6rem;
+  text-wrap: balance;
+}
+
 .blog-prose h1 {
-  @apply text-2xl font-semibold tracking-tight mt-8 mb-4;
+  @apply mb-5 mt-14 text-[30px] leading-[1.15] tracking-[-0.03em];
 }
 
 .blog-prose h2 {
-  @apply text-xl font-semibold tracking-tight mt-10 mb-4 pb-2 border-b border-border/40;
+  @apply mb-5 mt-16 text-[25px] leading-[1.2] tracking-[-0.028em] md:text-[29px];
 }
 
 .blog-prose h3 {
-  @apply text-lg font-semibold tracking-tight mt-8 mb-3;
+  @apply mb-3 mt-11 text-[19px] leading-[1.35] tracking-[-0.018em] md:text-[21px];
 }
 
 .blog-prose h4 {
-  @apply text-base font-semibold tracking-tight mt-6 mb-2;
+  @apply mb-2 mt-8 text-[17px] leading-snug tracking-[-0.01em];
+}
+
+.blog-prose h2 + h3 {
+  @apply mt-6;
 }
 
 /* Paragraphs */
 .blog-prose p {
-  @apply my-4 text-muted-foreground leading-relaxed;
+  margin: 1.25em 0;
+}
+
+.blog-prose h2 + p,
+.blog-prose h3 + p,
+.blog-prose h4 + p {
+  margin-top: 0;
 }
 
 /* Links */
 .blog-prose a {
-  @apply text-primary font-medium no-underline hover:underline;
+  color: var(--prose-link);
+  @apply font-medium underline decoration-[hsl(24_95%_53%/0.35)] decoration-[1.5px] underline-offset-[3px] transition-colors;
+}
+
+.blog-prose a:hover {
+  @apply decoration-[hsl(24_95%_53%)];
+}
+
+.blog-prose a:focus-visible {
+  @apply rounded-sm outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
 }
 
 /* Lists */
+.blog-prose ul,
+.blog-prose ol {
+  margin: 1.25em 0;
+  padding-left: 1.5em;
+}
+
 .blog-prose ul {
-  @apply my-4 pl-6 space-y-2;
   list-style-type: disc;
 }
 
 .blog-prose ol {
-  @apply my-4 pl-6 space-y-2;
   list-style-type: decimal;
 }
 
 .blog-prose li {
-  @apply text-muted-foreground;
+  @apply pl-1.5;
+  margin: 0.5em 0;
 }
 
-.blog-prose li::marker {
-  @apply text-muted-foreground/60;
+.blog-prose li > ul,
+.blog-prose li > ol {
+  margin: 0.5em 0;
+}
+
+.blog-prose li > p {
+  margin: 0.5em 0;
+}
+
+.blog-prose ul > li::marker {
+  color: hsl(var(--primary));
+  font-size: 0.9em;
+}
+
+.blog-prose ol > li::marker {
+  @apply font-semibold tabular-nums;
+  color: hsl(var(--primary));
+}
+
+/* "Key takeaways" / "Quick answer": the list right under that heading becomes a card */
+.blog-prose h2:is([id^="key-takeaways"], [id^="quick-answer"], [id^="tl-dr"], [id^="tldr"]) + :is(ul, ol, p) {
+  @apply relative overflow-hidden rounded-2xl border px-6 py-5 md:px-7 md:py-6;
+  border-color: hsl(var(--primary) / 0.22);
+  background:
+    radial-gradient(120% 140% at 100% 0%, hsl(var(--primary) / 0.1), transparent 55%),
+    hsl(var(--primary) / 0.035);
+}
+
+.blog-prose h2:is([id^="key-takeaways"], [id^="quick-answer"], [id^="tl-dr"], [id^="tldr"]) + ul {
+  list-style: none;
+}
+
+.blog-prose h2:is([id^="key-takeaways"], [id^="quick-answer"], [id^="tl-dr"], [id^="tldr"]) + ul > li {
+  @apply relative pl-7;
+}
+
+.blog-prose h2:is([id^="key-takeaways"], [id^="quick-answer"], [id^="tl-dr"], [id^="tldr"]) + ul > li::before {
+  content: "";
+  @apply absolute left-0 top-[0.42em] h-[1.05em] w-[1.05em] rounded-full;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5'/%3E%3C/svg%3E")
+      center / 70% no-repeat,
+    hsl(var(--primary));
 }
 
 /* Blockquotes */
 .blog-prose blockquote {
-  @apply my-6 pl-4 py-2 border-l-4 border-primary/50 bg-muted/30 rounded-r-lg italic;
+  @apply my-8 rounded-r-xl border-l-[3px] px-5 py-4 md:px-6;
+  border-color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.05);
+  color: hsl(var(--foreground) / 0.9);
 }
 
 .blog-prose blockquote p {
-  @apply my-0 text-muted-foreground;
+  margin: 0.5em 0;
 }
 
-/* Horizontal Rule */
+.blog-prose blockquote > :first-child {
+  margin-top: 0;
+}
+
+.blog-prose blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+/* Horizontal rule */
 .blog-prose hr {
-  @apply my-8 border-border/40;
+  @apply my-14 border-0;
+  height: 1px;
+  background: var(--prose-hairline);
 }
 
-/* Inline Code */
+/* Inline code */
 .blog-prose code:not(pre code) {
-  @apply text-[13px] font-mono bg-muted px-1.5 py-0.5 rounded text-foreground;
+  @apply rounded-md border px-[0.35em] py-[0.1em] font-mono text-[0.86em] font-medium text-foreground;
+  border-color: var(--prose-hairline);
+  background: hsl(var(--muted));
 }
 
-/* Code Blocks */
+.blog-prose a code:not(pre code) {
+  color: inherit;
+}
+
+/* Code blocks */
 .blog-prose pre {
-  @apply my-6 p-4 rounded-lg border border-border/40 overflow-x-auto;
-  background-color: hsl(var(--muted));
-}
-
-.blog-prose pre code {
-  @apply text-[13px] font-mono bg-transparent p-0;
-  color: hsl(var(--foreground));
-}
-
-/* Light mode code improvements */
-:root .blog-prose pre {
-  background-color: hsl(220 14% 96%);
-}
-
-:root .blog-prose pre code {
-  color: hsl(220 13% 18%);
+  @apply my-8 overflow-x-auto rounded-xl border p-5 text-[13.5px] leading-[1.7];
+  border-color: var(--prose-hairline);
+  background: hsl(220 14% 97%);
 }
 
 .dark .blog-prose pre {
-  background-color: hsl(228 14% 11%);
+  background: hsl(228 14% 10%);
 }
 
-.dark .blog-prose pre code {
-  color: hsl(220 13% 93%);
+.blog-prose pre code {
+  @apply bg-transparent p-0 font-mono text-[13.5px];
+  color: hsl(var(--foreground));
 }
 
-/* Tables - Critical fix */
-.blog-prose table {
-  @apply my-6 w-full border-collapse text-sm;
-}
-
-.blog-prose thead {
-  @apply border-b-2 border-border;
-}
-
-.blog-prose th {
-  @apply px-4 py-3 text-left font-semibold text-foreground bg-muted/50;
-}
-
-.blog-prose th:first-child {
-  @apply rounded-tl-lg;
-}
-
-.blog-prose th:last-child {
-  @apply rounded-tr-lg;
-}
-
-.blog-prose tbody tr {
-  @apply border-b border-border/40;
-}
-
-.blog-prose tbody tr:last-child {
-  @apply border-b-0;
-}
-
-.blog-prose tbody tr:hover {
-  @apply bg-muted/30;
-}
-
-.blog-prose td {
-  @apply px-4 py-3 text-muted-foreground;
-}
-
-/* Table wrapper for overflow */
+/* Tables: MDX wraps each in .table-wrapper (components/blog/media) so wide ones scroll */
 .blog-prose .table-wrapper {
-  @apply my-6 overflow-x-auto rounded-lg border border-border/40;
+  @apply my-8 overflow-x-auto rounded-xl border;
+  border-color: var(--prose-hairline);
+}
+
+.blog-prose table {
+  @apply my-8 w-full border-collapse text-[14px] leading-snug;
 }
 
 .blog-prose .table-wrapper table {
   @apply my-0;
+}
+
+.blog-prose th {
+  @apply px-3.5 py-3 text-left text-[12px] font-semibold uppercase tracking-[0.06em] text-foreground/75;
+  background: hsl(var(--muted) / 0.7);
+  border-bottom: 1px solid var(--prose-hairline);
+}
+
+.dark .blog-prose th {
+  background: hsl(0 0% 100% / 0.035);
+}
+
+/* A floor on column width: wide tables scroll in their wrapper instead of wrapping every word */
+.blog-prose th,
+.blog-prose td {
+  min-width: 6.5rem;
+}
+
+.blog-prose td {
+  @apply px-3.5 py-3 align-top;
+  border-bottom: 1px solid var(--prose-hairline);
+}
+
+.blog-prose tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.blog-prose td:first-child {
+  @apply font-medium text-foreground;
 }
 
 /* Strong and emphasis */
@@ -719,31 +822,89 @@ html.font-jetbrains body {
 
 /* Images */
 .blog-prose img {
-  @apply my-6 rounded-lg border border-border/40 max-w-full;
+  @apply my-8 max-w-full rounded-xl border;
+  border-color: var(--prose-hairline);
+}
+
+/* <Shot>, <Clip>, <DemoVideo> (components/blog/media) draw their own frame */
+.blog-prose .blog-media {
+  @apply my-10;
+}
+
+.blog-prose .blog-media img,
+.blog-prose .blog-media video {
+  @apply m-0 max-w-none rounded-none border-0;
 }
 
 /* Definition lists */
 .blog-prose dl {
-  @apply my-4;
+  @apply my-5;
 }
 
 .blog-prose dt {
-  @apply font-semibold text-foreground;
+  @apply mt-4 font-semibold text-foreground;
 }
 
 .blog-prose dd {
-  @apply ml-4 text-muted-foreground;
+  @apply ml-4;
 }
 
 /* Task lists */
 .blog-prose input[type="checkbox"] {
-  @apply mr-2;
+  @apply mr-2 accent-[hsl(var(--primary))];
 }
 
-/* Emoji checkmarks and X marks */
-.blog-prose td:has(✅),
-.blog-prose td:has(❌) {
-  @apply text-center;
+/* FAQ (components/blog/blog-faqs.tsx): an accordion whose answers stay in the DOM */
+.blog-prose .blog-faq-list {
+  @apply mt-6 overflow-hidden rounded-2xl border;
+  border-color: var(--prose-hairline);
+}
+
+.blog-prose .blog-faq-list details + details {
+  border-top: 1px solid var(--prose-hairline);
+}
+
+.blog-prose .blog-faq-list summary {
+  @apply flex cursor-pointer list-none items-start justify-between gap-4 px-5 py-4 transition-colors md:px-6;
+}
+
+.blog-prose .blog-faq-list summary::-webkit-details-marker {
+  display: none;
+}
+
+.blog-prose .blog-faq-list summary:hover {
+  background: hsl(var(--muted) / 0.5);
+}
+
+.blog-prose .blog-faq-list summary:focus-visible {
+  @apply outline-none ring-2 ring-inset ring-ring;
+}
+
+.blog-prose .blog-faq-list h3 {
+  @apply m-0 text-[16px] leading-snug tracking-[-0.01em] md:text-[17px];
+  text-wrap: pretty;
+}
+
+.blog-prose .blog-faq-icon {
+  @apply mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-muted-foreground transition-colors;
+  border-color: var(--prose-hairline);
+}
+
+.blog-prose .blog-faq-list details[open] .blog-faq-icon {
+  @apply border-transparent bg-primary/10 text-primary;
+}
+
+.blog-prose .blog-faq-list details > p {
+  @apply m-0 px-5 pb-5 text-[15.5px] md:px-6 md:text-[16px];
+}
+
+@media (max-width: 640px) {
+  /* Tighter table cells on phones so more columns fit before the table scrolls */
+  .blog-prose th,
+  .blog-prose td {
+    @apply px-3 py-2.5;
+    min-width: 8.5rem;
+  }
 }
 
 /* Docs Prose Styles - Same as blog-prose but for documentation */

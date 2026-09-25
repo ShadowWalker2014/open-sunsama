@@ -1,0 +1,205 @@
+export const frontmatter = {
+  title: "AI Time Blocking in 2026: Plan Your Day Without Losing Control",
+  description: "AI time blocking two ways: auto-schedulers like Motion and Reclaim, or an AI planner you talk to in Claude or ChatGPT. Steps, prompts and how to re-plan.",
+  date: "2026-09-24",
+  updated: "2026-09-24",
+  author: "Open Sunsama Team",
+  tags: ["time-blocking", "ai", "ai-scheduling", "claude", "chatgpt", "daily-planning"],
+  readingTime: 8,
+  image: "/blog-time-blocking-with-ai.webp",
+  faqs: [
+    {
+      question: "What is AI time blocking?",
+      answer: "It means letting AI turn your task list into blocks of time on your calendar. Some apps do it on their own. Others, like Claude or ChatGPT connected to your planner, suggest a plan you approve.",
+    },
+    {
+      question: "Can ChatGPT make a time-blocked schedule?",
+      answer: "Yes. On its own it can only write a plan as text. Connect it to a planner with an MCP server, like Open Sunsama, and it can put the blocks on your real calendar.",
+    },
+    {
+      question: "Can Claude time block my calendar?",
+      answer: "Yes, if you connect it to a planner or calendar that has an MCP server. Claude reads your tasks, suggests blocks and creates them once you say yes.",
+    },
+    {
+      question: "What is the best AI scheduling assistant?",
+      answer: "For most people, we recommend Claude or ChatGPT connected to Open Sunsama. It plans with you and waits for your yes. If you want the app to schedule for you in the background, try Motion or Reclaim.",
+    },
+    {
+      question: "Why does my AI plan never fit my day?",
+      answer: "Usually because tasks have no time estimates, or the AI can't see your meetings. Add an estimate to every task, and connect your calendar in Open Sunsama so the AI reads your meetings itself. Then ask it to leave 20 percent of the day free.",
+    },
+    {
+      question: "Is AI time blocking good for ADHD?",
+      answer: "It can help, because the AI does the sorting and you only approve. Keep plans short, ask for breaks, and use a planner that rolls unfinished tasks over instead of piling them onto today.",
+    },
+  ],
+};
+
+**AI time blocking** means letting AI turn your task list into blocks of time on your calendar. There are two ways to do it in 2026.
+
+An auto-scheduler like Motion or Reclaim fills and moves your calendar for you. Or an AI agent you talk to, like Claude or ChatGPT, proposes a plan and waits for your yes.
+
+Pick an auto-scheduler if you want planning off your plate and don't mind the app moving things. Pick the agent route if you want a calm, realistic day that you still decide. This guide shows both, then walks you through the agent route step by step, with prompts you can copy.
+
+For most readers, we recommend the agent route with [Open Sunsama](/features/ai-integration), an open-source daily planner that works with any AI agent. We build Open Sunsama, so we put it first — here is why, and where others fit better.
+
+## Key takeaways
+
+- **Our pick for most people:** Claude or ChatGPT plus Open Sunsama. Tasks, time blocks and AI access sit in one place, and you decide what lands on your calendar.
+- **Two ways:** auto-schedulers move blocks for you. AI agents suggest blocks and you approve them.
+- **The agent needs access.** Connect Claude or ChatGPT to a planner over MCP, so it can read tasks and write real time blocks.
+- **Estimates matter most.** A task with no time estimate can't be planned well by any AI.
+- **Leave slack.** Ask the AI to fill only about 80 percent of your free time.
+- **Re-planning is where AI shines.** "Get me back on track" is one sentence, not a 20-minute chore.
+
+## Auto-scheduler or AI agent: which is better for time blocking?
+
+| | Auto-scheduler (Motion, Reclaim) | AI agent over MCP (Claude or ChatGPT + planner) |
+| --- | --- | --- |
+| Who decides | The app | You, after the AI suggests |
+| When blocks move | Whenever the app sees a change | Only when you ask |
+| How you plan | Add tasks, deadlines and rules | Talk: "plan my afternoon" |
+| What you see | A calendar that fills itself | A plan to approve, then blocks on your calendar |
+| Setup | Rules, priorities, working hours | Connect once, add time estimates |
+| Best for | Packed calendars, people who hate planning | People who want control and a realistic day |
+| Main risk | Feels like a black box | You have to ask for the plan |
+
+Both work. They suit different people, and many readers try one, then switch.
+
+## Approach 1: auto-schedulers that move things for you
+
+[Motion](https://www.usemotion.com) is the best-known example. You add tasks with a deadline and a time estimate. Motion places them in open slots and moves them when your day changes.
+
+[Reclaim](https://reclaim.ai), now part of Dropbox, works on top of Google Calendar and Outlook. It defends focus time, habits and tasks around your meetings. It also has an MCP server, and any change your AI suggests lands in a preview for you to approve.
+
+**Who they suit:** people with packed, shifting calendars who want planning off their plate. If you get decision fatigue each morning, this can feel like a relief.
+
+**Where they fall short:** some people find the moves hard to follow. One Reddit user who tried Reclaim called the automation "too opaque". Others open the app after a bad week to find a wall of tasks scheduled for today.
+
+For a closer look, read our [Reclaim vs Motion vs Sunsama](/blog/reclaim-ai-vs-motion-vs-sunsama) and [Motion vs Sunsama](/blog/motion-vs-sunsama) guides.
+
+## Approach 2: an AI agent that plans with you
+
+Here, the AI does the sorting, and you make the call. You ask Claude or ChatGPT to plan your day. It reads your tasks and time blocks, suggests new blocks, and writes them once you say yes.
+
+For that, the AI needs access to your planner. MCP (Model Context Protocol) is the open standard that gives it that access. You add one URL to Claude or ChatGPT and sign in once.
+
+<DemoVideo id="ai" />
+
+The planner matters. If tasks live in one app and your calendar in another, the AI has to juggle two connectors. It works best when tasks, time blocks and meetings sit in one place.
+
+[Open Sunsama](/features/ai-integration) is built this way: an open-source daily planner whose hosted MCP server gives your AI 24 tools. One reads your meetings and time blocks for a day in one call. Others create, move and resize time blocks and link them to tasks.
+
+Your Google, Outlook or iCloud meetings sync onto the same calendar in the app, and the AI reads them over the same connection. It plans your time blocks around your meetings, so you never type a meeting time into the chat.
+
+## How to time block your day with Claude or ChatGPT
+
+These steps use Open Sunsama, but the flow works with any planner whose MCP server can write time blocks. See [the best task managers with MCP](/blog/best-task-managers-with-mcp) for other options.
+
+### Step 1: Connect your planner
+
+Paste `https://api.opensunsama.com/mcp` into Claude (Settings → Connectors) or ChatGPT (developer mode, on paid plans). Sign in and click **Allow access**. The [Claude guide](/docs/mcp/claude) and [ChatGPT guide](/docs/mcp/chatgpt) show each click.
+
+Then connect your calendar in Open Sunsama under **Settings → Calendars**. Now the AI sees your meetings and your tasks in one call.
+
+### Step 2: Brain dump into your backlog
+
+Get everything out of your head first. Type it into the backlog, or paste a messy list and ask the AI to add the tasks for you.
+
+<Clip id="plan-day" caption="Drag tasks from the backlog into Today, or ask your AI to do it." />
+
+### Step 3: Give every task a time estimate
+
+This is the step people skip, and it is the one that matters most. As one Reddit user put it, without a duration and deadline, AI planning "just turns into wishful thinking". Ask the AI to guess estimates, then fix the ones that look wrong.
+
+### Step 4: Ask for a plan, not a finished calendar
+
+Ask the AI to propose the day first, before it writes anything. Here is a prompt you can copy:
+
+```
+Plan my day. Look at today's tasks, meetings and time blocks.
+Put my top 3 tasks in my best focus hours, before noon if possible.
+Use each task's time estimate. Add 10-minute breaks between blocks.
+Only fill about 80% of my free time.
+Show me the plan first. Don't create anything until I say yes.
+```
+
+### Step 5: Adjust, then approve
+
+Read the plan like a draft. Move a block, drop a task, or say "that's too much, cut it to five hours". When it looks right, say "yes, create the blocks".
+
+<Clip id="ai-plan" caption="Claude plans the afternoon over MCP. Tasks and time blocks show up live." />
+
+### Step 6: Check it on your calendar
+
+The blocks land on the same calendar you use by hand. So you can still drag, resize or delete any of them yourself.
+
+<Clip id="time-block" caption="Drag a task onto the calendar and resize the block. Your changes and the AI's share one calendar." />
+
+<Shot id="calendar-day" alt="Open Sunsama day view with meetings and time blocks for tasks" caption="A planned day: meetings and task blocks side by side, with room to breathe." />
+
+When a block starts, open the task in focus mode. The timer tracks your actual time, so you can later compare planned vs actual.
+
+## More "plan my day" prompts to copy
+
+```
+Plan my afternoon. I have from 1pm to 5pm and low energy after 3.
+```
+
+```
+I have a deadline Friday for the launch doc. Find 3 hours for it
+this week around my meetings and existing blocks.
+```
+
+```
+Here is my brain dump: [paste]. Turn it into tasks with estimates,
+put the urgent ones on today, and the rest in the backlog.
+```
+
+```
+Which of today's tasks can wait until next week? Move them and
+tell me what you moved.
+```
+
+## How to get back on track when the day falls apart
+
+Days break. A meeting runs long, a fire starts, and by 2pm the plan is fiction. This is where talking to an AI beats dragging blocks around by hand.
+
+In Open Sunsama, tasks you don't finish roll over to the next day on their own. So nothing gets lost. The job is to trim, not to rescue.
+
+```
+Today went off track. It's 2pm. Look at what's left and re-plan
+the rest of my day. Keep the one task that must ship today.
+Move the rest to tomorrow or later this week, and show me first.
+```
+
+After a lost week, try this one:
+
+```
+I'm behind. List everything overdue, group it, and suggest what to
+drop, what to delegate and what to schedule. Don't fill tomorrow
+with more than 5 hours of tasks.
+```
+
+The last line matters. Some auto-schedulers push every late task forward onto today. You want the opposite: a smaller, realistic day that you can actually finish.
+
+## End the day with a two-minute review
+
+A short shutdown ritual makes tomorrow's plan better. Ask the AI to compare what you planned with what you did.
+
+```
+Review my day. What did I finish? Which tasks took longer than
+my estimate? Suggest better estimates for tasks like them.
+```
+
+Open Sunsama's MCP shares both the estimate and the tracked time for each task, so the AI can do this math. Over a few weeks, your estimates get closer to the truth, and every plan gets more realistic.
+
+## Which approach should you pick?
+
+**For most people: an AI agent with Open Sunsama.** You stay in charge, the AI skips the busywork, and your tasks, time blocks and AI access live in one open-source app.
+
+- **If you want your calendar to plan itself,** try Motion or Reclaim.
+- **If you already use Claude or ChatGPT every day,** connect Open Sunsama to it. See our guides to plan your day with [Claude](/blog/plan-your-day-with-claude) and [ChatGPT](/blog/plan-your-day-with-chatgpt).
+- **If your tasks already live in another app,** check [the best task managers with MCP](/blog/best-task-managers-with-mcp) first.
+
+New to the method itself? Start with our [complete guide to time blocking](/blog/complete-guide-time-blocking). Then [download Open Sunsama](/download) and follow the [MCP overview](/docs/mcp/overview) to connect your AI.

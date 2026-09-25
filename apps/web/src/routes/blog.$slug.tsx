@@ -1,5 +1,6 @@
 import { useParams, Navigate } from "@tanstack/react-router";
 import { BlogLayout } from "@/components/blog/blog-layout";
+import { blogMdxComponents } from "@/components/blog/media";
 import { getBlogPost, getRelatedPosts } from "@/lib/blog";
 
 /**
@@ -15,12 +16,12 @@ export default function BlogPostPage() {
     return <Navigate to="/blog" search={{}} />;
   }
 
-  const relatedPosts = getRelatedPosts(slug, 2);
+  const relatedPosts = getRelatedPosts(slug, 3);
   const { Component } = post;
 
   return (
     <BlogLayout post={post} relatedPosts={relatedPosts}>
-      <Component />
+      <Component components={blogMdxComponents} />
     </BlogLayout>
   );
 }

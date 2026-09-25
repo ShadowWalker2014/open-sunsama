@@ -1,38 +1,62 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useSearch, useNavigate } from "@tanstack/react-router";
 import {
-  BlogHeader,
-  BlogHero,
-  BlogSearch,
-  BlogTagFilters,
-  BlogActiveFilters,
-  BlogPostsGrid,
+  BlogCard,
   BlogCTA,
-  BlogFooter,
+  BlogFeaturedCard,
+  BlogHero,
+  BlogPostsGrid,
+  BlogResultsBar,
+  BlogTopicTabs,
 } from "@/components/blog";
+import { Reveal } from "@/components/landing/motion";
+import { SiteFooter, SiteHeader } from "@/components/landing/sections";
 import { SEOHead, CollectionSchema } from "@/components/seo";
-import { getAllBlogPosts, getAllTags } from "@/lib/blog";
-import { useInView } from "react-intersection-observer";
+import { getAllBlogPosts } from "@/lib/blog";
+import { filterByTagParam } from "@/lib/blog-topics";
+import type { BlogPost } from "@/types/blog";
 
-const POSTS_PER_PAGE = 12;
+const POSTS_PER_PAGE = 18;
+
+/** Pillar guides shown under the featured post, in this order. */
+const START_HERE = [
+  "best-free-sunsama-alternatives",
+  "best-calendar-apps-time-blocking",
+  "plan-your-day-with-claude",
+];
+
+function pageList(
+  currentPage: number,
+  totalPages: number
+): (number | "ellipsis")[] {
+  if (totalPages <= 5)
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  const pages: (number | "ellipsis")[] = [1];
+  if (currentPage > 3) pages.push("ellipsis");
+  for (
+    let i = Math.max(2, currentPage - 1);
+    i <= Math.min(totalPages - 1, currentPage + 1);
+    i++
+  ) {
+    pages.push(i);
+  }
+  if (currentPage < totalPages - 2) pages.push("ellipsis");
+  pages.push(totalPages);
+  return pages;
+}
 
 /**
- * Blog listing page
- * Displays all blog posts in a grid with filtering, search, and pagination
+ * Blog index: hero with search, topic tabs, the latest post, three pillar
+ * guides, then every other post in a paginated grid.
  */
 export default function BlogPage() {
-  const allPosts = getAllBlogPosts();
-  const tags = getAllTags();
-  const { ref: heroRef, inView: heroInView } = useInView({ triggerOnce: true });
-
-  // Get search params from URL
+  const allPosts = useMemo(() => getAllBlogPosts(), []);
   const searchParams = useSearch({ from: "/blog" });
   const navigate = useNavigate();
 
-  // Local search input state (for debouncing)
   const [searchInput, setSearchInput] = useState(searchParams.q || "");
 
-  // Debounce search query updates
+  // Debounce typing into the ?q= param
   useEffect(() => {
     const timer = setTimeout(() => {
       if (searchInput !== (searchParams.q || "")) {
@@ -41,7 +65,7 @@ export default function BlogPage() {
           search: {
             ...searchParams,
             q: searchInput || undefined,
-            page: 1,
+            page: undefined,
           },
           replace: true,
         });
@@ -50,23 +74,12 @@ export default function BlogPage() {
     return () => clearTimeout(timer);
   }, [searchInput, searchParams, navigate]);
 
-  // Sync local state with URL params
   useEffect(() => {
     setSearchInput(searchParams.q || "");
   }, [searchParams.q]);
 
-  // Filter posts by tag and search query
   const filteredPosts = useMemo(() => {
-    let posts = allPosts;
-
-    if (searchParams.tag) {
-      posts = posts.filter((post) =>
-        post.tags.some(
-          (t) => t.toLowerCase() === searchParams.tag?.toLowerCase()
-        )
-      );
-    }
-
+    let posts = filterByTagParam(allPosts, searchParams.tag);
     if (searchParams.q) {
       const query = searchParams.q.toLowerCase();
       posts = posts.filter(
@@ -75,53 +88,63 @@ export default function BlogPage() {
           post.description.toLowerCase().includes(query)
       );
     }
-
     return posts;
   }, [allPosts, searchParams.tag, searchParams.q]);
 
-  // Calculate pagination
+  const hasActiveFilters = Boolean(searchParams.tag || searchParams.q);
   const currentPage = searchParams.page || 1;
-  const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
-  const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
-  const paginatedPosts = filteredPosts.slice(
-    startIndex,
-    startIndex + POSTS_PER_PAGE
+  const showIntro = !hasActiveFilters && currentPage === 1;
+
+  // The unfiltered index leads with the latest post and the pillars; the grid holds the rest
+  const featured = allPosts[0];
+  const pillars = useMemo(
+    () =>
+      START_HERE.map((slug) => allPosts.find((p) => p.slug === slug)).filter(
+        (p): p is BlogPost => Boolean(p) && p!.slug !== featured?.slug
+      ),
+    [allPosts, featured]
+  );
+  const gridSource = useMemo(() => {
+    if (hasActiveFilters) return filteredPosts;
+    const pinned = new Set([featured?.slug, ...pillars.map((p) => p.slug)]);
+    return allPosts.filter((p) => !pinned.has(p.slug));
+  }, [hasActiveFilters, filteredPosts, allPosts, featured, pillars]);
+
+  const totalPages = Math.max(1, Math.ceil(gridSource.length / POSTS_PER_PAGE));
+  const pagePosts = gridSource.slice(
+    (currentPage - 1) * POSTS_PER_PAGE,
+    currentPage * POSTS_PER_PAGE
+  );
+  const pageNumbers = useMemo(
+    () => pageList(currentPage, totalPages),
+    [currentPage, totalPages]
   );
 
-  // Handle tag selection
-  const handleTagClick = useCallback(
-    (tag: string) => {
-      const newTag = searchParams.tag === tag ? undefined : tag;
+  const setTag = useCallback(
+    (tag: string | undefined) => {
       navigate({
         to: "/blog",
-        search: {
-          ...searchParams,
-          tag: newTag,
-          page: 1,
-        },
+        search: { ...searchParams, tag, page: undefined },
         replace: true,
       });
     },
     [searchParams, navigate]
   );
 
-  // Handle page change
   const handlePageChange = useCallback(
     (page: number) => {
       navigate({
         to: "/blog",
-        search: {
-          ...searchParams,
-          page,
-        },
+        search: { ...searchParams, page: page > 1 ? page : undefined },
         replace: true,
       });
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      document
+        .getElementById("articles")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
     },
     [searchParams, navigate]
   );
 
-  // Clear all filters
   const clearFilters = useCallback(() => {
     setSearchInput("");
     navigate({
@@ -131,50 +154,14 @@ export default function BlogPage() {
     });
   }, [navigate]);
 
-  // Generate page numbers for pagination
-  const pageNumbers = useMemo(() => {
-    const pages: (number | "ellipsis")[] = [];
-    const maxVisiblePages = 5;
-
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      pages.push(1);
-
-      if (currentPage > 3) {
-        pages.push("ellipsis");
-      }
-
-      const start = Math.max(2, currentPage - 1);
-      const end = Math.min(totalPages - 1, currentPage + 1);
-
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
-      }
-
-      if (currentPage < totalPages - 2) {
-        pages.push("ellipsis");
-      }
-
-      pages.push(totalPages);
-    }
-
-    return pages;
-  }, [currentPage, totalPages]);
-
-  const hasActiveFilters = Boolean(searchParams.tag || searchParams.q);
-
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans antialiased">
+    <div className="min-h-screen overflow-x-clip bg-background font-sans text-foreground antialiased">
       <SEOHead
         title="Blog | Open Sunsama - Productivity Tips & Time Management"
         description="Tips on productivity, time management, and building better daily habits. Learn how to plan your day effectively with time blocking and focus techniques."
         canonicalUrl="/blog"
         ogType="website"
       />
-
       <CollectionSchema
         name="Open Sunsama Blog"
         description="Tips on productivity, time management, and building better daily habits."
@@ -183,47 +170,100 @@ export default function BlogPage() {
         maxItems={10}
       />
 
-      {/* Subtle background */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/[0.03] blur-[100px] rounded-full" />
-      </div>
+      <SiteHeader />
 
-      <BlogHeader />
+      <main>
+        <BlogHero searchInput={searchInput} onSearchChange={setSearchInput} />
 
-      <main className="relative">
-        <div ref={heroRef}>
-          <BlogHero heroInView={heroInView} />
+        <div>
+          <div className="sticky top-14 z-40 py-3 backdrop-blur-xl [background:linear-gradient(hsl(var(--background)/0.85),hsl(var(--background)/0.85)_70%,hsl(var(--background)/0))] supports-[backdrop-filter]:[background:linear-gradient(hsl(var(--background)/0.7),hsl(var(--background)/0.7)_70%,hsl(var(--background)/0))]">
+            <BlogTopicTabs selectedTag={searchParams.tag} onSelect={setTag} />
+          </div>
+
+          <div className="container mx-auto max-w-6xl px-4 pb-4 pt-8 md:pt-10">
+            {showIntro && featured && (
+              <>
+                <Reveal>
+                  <BlogFeaturedCard post={featured} />
+                </Reveal>
+
+                {pillars.length > 0 && (
+                  <section
+                    aria-labelledby="start-here"
+                    className="mt-20 md:mt-24"
+                  >
+                    <Reveal className="max-w-2xl">
+                      <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-primary">
+                        Start here
+                      </p>
+                      <h2
+                        id="start-here"
+                        className="mt-3 text-[28px] font-semibold leading-[1.1] tracking-[-0.03em] md:text-[36px]"
+                      >
+                        Three guides to read first.
+                      </h2>
+                      <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground md:text-[16px]">
+                        The best Sunsama alternatives, the calendars built for
+                        time blocking, and planning your day with Claude.
+                      </p>
+                    </Reveal>
+                    <ul className="mt-9 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+                      {pillars.map((post, i) => (
+                        <Reveal
+                          key={post.slug}
+                          as="li"
+                          delay={i * 80}
+                          className={
+                            i === 2
+                              ? "min-w-0 sm:col-span-2 lg:col-span-1"
+                              : "min-w-0"
+                          }
+                        >
+                          <BlogCard post={post} wideOnTablet={i === 2} />
+                        </Reveal>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+              </>
+            )}
+
+            <section
+              id="articles"
+              aria-label="Articles"
+              className={
+                showIntro ? "mt-20 scroll-mt-32 md:mt-24" : "scroll-mt-32"
+              }
+            >
+              <BlogResultsBar
+                title={showIntro ? "More articles" : undefined}
+                totalResults={
+                  showIntro ? gridSource.length : filteredPosts.length
+                }
+                selectedTag={searchParams.tag}
+                searchQuery={searchParams.q}
+                onClearTag={() => setTag(undefined)}
+                onClearSearch={() => setSearchInput("")}
+              />
+              <div className="mt-8">
+                <BlogPostsGrid
+                  posts={pagePosts}
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  pageNumbers={pageNumbers}
+                  hasActiveFilters={hasActiveFilters}
+                  onPageChange={handlePageChange}
+                  onClearFilters={clearFilters}
+                />
+              </div>
+            </section>
+          </div>
         </div>
-
-        <BlogSearch searchInput={searchInput} onSearchChange={setSearchInput} />
-
-        <BlogTagFilters
-          tags={tags}
-          selectedTag={searchParams.tag}
-          onTagClick={handleTagClick}
-        />
-
-        <BlogActiveFilters
-          totalResults={filteredPosts.length}
-          selectedTag={searchParams.tag}
-          searchQuery={searchParams.q}
-          onClearFilters={clearFilters}
-        />
-
-        <BlogPostsGrid
-          posts={paginatedPosts}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          pageNumbers={pageNumbers}
-          hasActiveFilters={hasActiveFilters}
-          onPageChange={handlePageChange}
-          onClearFilters={clearFilters}
-        />
 
         <BlogCTA />
       </main>
 
-      <BlogFooter />
+      <SiteFooter />
     </div>
   );
 }
