@@ -253,8 +253,8 @@ const SNIPPETS = [
     label: "Self-host",
     lines: [
       "$ git clone github.com/ShadowWalker2014/open-sunsama",
-      "$ docker-compose up -d",
-      "✓ API and MCP connector on :3001",
+      "$ docker compose up -d --build",
+      "✓ Web app on :3000, API and MCP connector on :3001",
     ],
   },
 ];

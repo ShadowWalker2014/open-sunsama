@@ -64,10 +64,12 @@ bun install
 
 # 5. Set up environment
 cp .env.example .env
-# Edit .env with your database URL
+cp apps/api/.env.example apps/api/.env
+# Both default to the PostgreSQL from step 6; edit DATABASE_URL to use your own
 
-# 6. Set up the database
-bun run db:push
+# 6. Start PostgreSQL and create the tables
+docker compose up -d postgres
+bun run db:migrate
 
 # 7. Start development servers
 bun run dev
@@ -106,8 +108,8 @@ bun run format           # Prettier formatting
 bun run test             # Run tests
 
 # Database
-bun run db:generate      # Generate migrations
-bun run db:push          # Push schema changes
+bun run db:generate      # Generate a migration after changing packages/database/src/schema
+bun run db:migrate       # Apply migrations
 bun run db:studio        # Open Drizzle Studio
 
 # Build

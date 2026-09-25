@@ -250,25 +250,20 @@ One of Open Sunsama's killer features is the ability to run your own instance. H
 
 - A server (VPS, cloud instance, or local machine)
 - Docker and Docker Compose installed
-- PostgreSQL database
 - Domain name (optional but recommended)
 
 ### Quick Start
 
 ```bash
 # Clone the repository
-git clone https://github.com/opensunsama/opensunsama.git
-cd opensunsama
+git clone https://github.com/ShadowWalker2014/open-sunsama.git
+cd open-sunsama
 
-# Copy environment template
-cp .env.example .env
-
-# Edit .env with your database URL, JWT secret, etc.
-nano .env
-
-# Start with Docker Compose
-docker-compose up -d
+# Build and start PostgreSQL, the API and the web app
+docker compose up -d --build
 ```
+
+Open `http://localhost:3000` and create your account. The API creates the database tables on start. To run it on your own domain, set `API_URL` and `WEB_APP_URL` in `.env` first; the [Docker deployment guide](/docs/self-hosting/docker) has the details.
 
 ### Benefits of Self-Hosting
 

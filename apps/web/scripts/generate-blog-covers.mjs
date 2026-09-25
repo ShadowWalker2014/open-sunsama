@@ -671,9 +671,10 @@ function chipHtml(chip, style) {
 
 // A code snippet, rendered as text: the real commands from the README and docker-compose.yml.
 const TERMINAL = `<div class="term"><div class="term-bar"><i></i><i></i><i></i><span>open-sunsama</span></div><pre><span class="p">$</span> git clone github.com/ShadowWalker2014/open-sunsama
-<span class="p">$</span> docker compose up -d
+<span class="p">$</span> docker compose up -d --build
 <span class="ok">✔</span> Container open-sunsama-postgres-1  <span class="ok">Started</span>
-<span class="ok">✔</span> Container open-sunsama-api-1       <span class="ok">Started</span></pre></div>`;
+<span class="ok">✔</span> Container open-sunsama-api-1       <span class="ok">Started</span>
+<span class="ok">✔</span> Container open-sunsama-web-1       <span class="ok">Started</span></pre></div>`;
 
 /** [accent] words get the brand gradient; accents up to 18 characters never break across lines. */
 const headlineHtml = (text) =>

@@ -15,6 +15,11 @@ AI-agent-friendly task management + time blocking app. TypeScript monorepo with 
 
 **MCP Tool:** Use `open-sunsama` MCP server to create/update tasks, time blocks, subtasks programmatically.
 
+### Shipping a change (agents)
+
+- **Review and merge your own PR.** Read your full diff for bugs, fix what you find, wait for CI, then merge it yourself.
+- **Validate in production before calling it done.** After the deploy, prove the change works end to end: check `railway logs --service api` for errors, query the data read-only, and test anything a user can see in the browser pane on https://opensunsama.com. An open PR or passing tests is not done.
+
 ---
 
 ## Structure
@@ -99,6 +104,10 @@ opensunsama/
 
 **Relations:** Users → Tasks → Subtasks (CASCADE), Tasks ↔ TimeBlocks (SET NULL), Tasks → Attachments (CASCADE)
 
+**Migrations:** `packages/database/drizzle` starts at `0000_baseline`, a squash of the old 0000–0016 with the old 0016's journal timestamp, so databases that already ran those skip it. Every statement is `IF NOT EXISTS`, so it also runs cleanly on a database built with `db:push`. After a schema change, run `bun run db:generate` and commit the SQL. The API applies migrations on start when `MIGRATE_ON_START=true` (the self-host `docker-compose.yml` sets it; production doesn't), or with `node dist/migrate.js`.
+
+**Self-hosting:** `docker compose up -d --build` builds and starts PostgreSQL, Redis, the API and the web app (`docker compose up -d postgres` for the database alone). Guide: `apps/web/src/content/docs/self-hosting/docker.mdx`.
+
 ---
 
 ## MCP (24 tools)
@@ -133,7 +142,7 @@ bun run test         # Tests
 # Database
 bun run db:generate  # Generate migrations
 bun run db:migrate   # Run migrations
-bun run db:push      # Push schema
+bun run db:push      # Push schema (scratch databases only; skips the migration history)
 bun run db:studio    # Drizzle Studio
 
 # Per-app

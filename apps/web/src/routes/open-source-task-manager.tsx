@@ -324,7 +324,7 @@ function SelfHostingSection() {
 
   const dockerCommand = `git clone https://github.com/ShadowWalker2014/open-sunsama
 cd open-sunsama
-docker-compose up -d`;
+docker compose up -d --build`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(dockerCommand);
@@ -379,7 +379,7 @@ docker-compose up -d`;
               <code className="text-muted-foreground">
                 <span className="text-green-400">$</span> git clone https://github.com/ShadowWalker2014/open-sunsama{"\n"}
                 <span className="text-green-400">$</span> cd open-sunsama{"\n"}
-                <span className="text-green-400">$</span> docker-compose up -d
+                <span className="text-green-400">$</span> docker compose up -d --build
               </code>
             </pre>
           </div>
@@ -612,7 +612,7 @@ function FAQSection() {
   const faqs = [
     {
       question: "How do I self-host Open Sunsama?",
-      answer: "Clone the repo, configure your .env file with your PostgreSQL connection, and run docker-compose up. That's it. Full documentation is available on GitHub, including guides for Railway, Vercel, and bare metal deployments.",
+      answer: "Clone the repo and run docker compose up -d --build. It builds the web app and API, starts PostgreSQL, and creates the database tables. The self-hosting guide at opensunsama.com/docs/self-hosting/docker covers running it on your own server and domain.",
     },
     {
       question: "What's the tech stack?",
@@ -743,7 +743,7 @@ export default function OpenSourceTaskManagerPage() {
   const faqItems = [
     {
       question: "How do I self-host Open Sunsama?",
-      answer: "Clone the repo, configure your .env file with your PostgreSQL connection, and run docker-compose up. That's it. Full documentation is available on GitHub, including guides for Railway, Vercel, and bare metal deployments.",
+      answer: "Clone the repo and run docker compose up -d --build. It builds the web app and API, starts PostgreSQL, and creates the database tables. The self-hosting guide at opensunsama.com/docs/self-hosting/docker covers running it on your own server and domain.",
     },
     {
       question: "What's the tech stack?",

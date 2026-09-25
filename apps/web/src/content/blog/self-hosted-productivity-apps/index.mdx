@@ -133,46 +133,26 @@ Read our [open source Todoist alternatives](/blog/open-source-todoist-alternativ
 
 ## How to self-host Open Sunsama with Docker
 
-This quick start runs Open Sunsama on your own machine. You need Docker, [Bun](https://bun.sh) and about 2 GB of RAM. It takes about 15 minutes, most of it build time.
+This quick start runs Open Sunsama on your own machine. You need Docker and about 2 GB of RAM. It takes one command, plus a few minutes for the first build.
 
 **1. Get the code.**
 
 ```bash
 git clone https://github.com/ShadowWalker2014/open-sunsama.git
 cd open-sunsama
-cp .env.example .env
 ```
 
-**2. Set two values in `.env`.** Point the database URL at the bundled PostgreSQL, and add a long random secret.
+**2. Build and start everything.**
 
 ```bash
-DATABASE_URL=postgresql://opensunsama:opensunsama@localhost:5432/opensunsama
-JWT_SECRET=paste-the-output-of-openssl-rand-hex-32
+docker compose up -d --build
 ```
 
-**3. Start PostgreSQL and the API.**
+This starts PostgreSQL, the API and the web app. The API creates its tables and its own secret on first start, so a local trial needs no setup.
 
-```bash
-docker compose --profile api up -d --build
-```
+**3. Open the app.** Go to `http://localhost:3000` and create your account. Check the API with `curl http://localhost:3001/health`.
 
-**4. Create the database tables.** Answer yes when it asks to apply the changes.
-
-```bash
-bun install
-bun run db:push
-```
-
-**5. Build and start the web app.**
-
-```bash
-docker build -f Dockerfile.web --build-arg VITE_API_URL=http://localhost:3001 -t open-sunsama-web .
-docker run -d --name open-sunsama-web -p 3000:3000 open-sunsama-web
-```
-
-Open `http://localhost:3000` and create your account. Check the API with `curl http://localhost:3001/health`.
-
-For a real server, you will set your own domain, HTTPS and a strong database password. The [Docker deployment guide](/docs/self-hosting/docker) covers the production setup, the reverse proxy and every setting.
+For a real server, set `API_URL` and `WEB_APP_URL` in `.env` to your public addresses before you build. You will also want your own domain, HTTPS and a strong database password. The [Docker deployment guide](/docs/self-hosting/docker) covers the production setup, the reverse proxy and every setting.
 
 ### Features that need extra keys
 
