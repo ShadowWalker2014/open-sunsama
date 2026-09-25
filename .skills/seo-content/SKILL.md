@@ -19,6 +19,7 @@ Read [playbook.md](playbook.md) before writing a word. It has the hard rules: po
 | Readability gate | `cd apps/web && bun run scripts/check-blog-readability.ts <slug>` | PASS/FAIL per post |
 | Media | `scripts/readme-media/blog-media.mjs` on a local seeded stack | Shots, clips, narrated videos in `apps/web/public/blog-media/` |
 | Covers | `cd apps/web && node scripts/generate-blog-covers.mjs <slug>` | Light, dark and social covers from real product screenshots |
+| Open-source registry | `cd apps/web && node scripts/refresh-oss-apps.mjs` | Fresh license, stars, releases and status for every app in `oss-apps.json` (playbook section 9) |
 | QA | `node apps/web/scripts/qa-blog.mjs <slug...>` | CLS, overflow, console errors, screenshots at 375/768/1280 in light and dark |
 | Ship | PR → squash merge to `main` → Railway deploys `web` | Live pages |
 
@@ -43,6 +44,9 @@ Look for:
 - Signups by referrer: which pages bring people who sign up.
 
 ## 2. Pick the work
+
+Start every run with `cd apps/web && node scripts/refresh-oss-apps.mjs` so the open-source cards stay current, and commit the refreshed registry with the run.
+
 
 - **3 new posts** for the queries with the best mix of volume, intent (people choosing an app), and weak competition (Reddit, small vendor blogs, directories).
 - **1-3 updates, 5 at most**: the most important outdated posts (impressions or signups at stake, stale facts, old date on page 1).

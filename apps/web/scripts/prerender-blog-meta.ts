@@ -4,7 +4,8 @@
  * index (dist/blog.html), each a copy of dist/index.html with that page baked in:
  *
  * - title, description, canonical, Open Graph and Twitter tags;
- * - JSON-LD: BlogPosting, plus FAQPage and VideoObject when the post has them;
+ * - JSON-LD: BlogPosting, plus FAQPage, VideoObject and ItemList (ranked
+ *   <OssApp> cards) when the post has them;
  * - the article itself as semantic HTML in <noscript>.
  *
  * Link-preview crawlers (Slack, LinkedIn, X, iMessage) and AI crawlers
@@ -22,6 +23,8 @@
  */
 
 import { BLOG_MEDIA } from "../src/lib/blog-media";
+import { itemListApps } from "../src/lib/oss-apps";
+import { ossItemListJsonLd } from "../src/lib/oss-structured-data";
 import {
   blogPostingJsonLd,
   faqPageJsonLd,
@@ -38,7 +41,7 @@ import { escapeAttr, formatDate, type PageMeta, readTemplate, writePage } from "
 
 /** Mirrors BlogArticleMeta + the article body + BlogFaqs in blog-layout.tsx */
 async function renderArticle({ slug, source, frontmatter: post }: BlogSource) {
-  const { html: body, videosUsed } = await renderBody(source);
+  const { html: body, videosUsed, oss } = await renderBody(source);
   const updated = post.updated && post.updated !== post.date ? post.updated : null;
 
   const byline = [
@@ -88,6 +91,9 @@ async function renderArticle({ slug, source, frontmatter: post }: BlogSource) {
     const video = BLOG_MEDIA.videos[id];
     if (video) jsonLd[`video-schema-${id}`] = videoObjectJsonLd(video);
   }
+  // Same id as <OssListProvider> (components/blog/media/oss-list.tsx), so the client replaces it
+  const apps = itemListApps(oss.cards, oss.tables);
+  if (apps.length) jsonLd["oss-itemlist-schema"] = ossItemListJsonLd(apps, { name: post.title, slug });
 
   return { noscript, jsonLd };
 }
