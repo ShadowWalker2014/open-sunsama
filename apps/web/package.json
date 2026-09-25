@@ -77,7 +77,7 @@
     "@types/dompurify": "^3.2.0",
     "@types/react": "~19.1.17",
     "@types/react-dom": "~19.1.11",
-    "@vitejs/plugin-react": "^4.7.0",
+    "@vitejs/plugin-react": "^6.1.1",
     "autoprefixer": "^10.6.1",
     "gray-matter": "^4.0.3",
     "postcss": "^8.5.28",
@@ -88,7 +88,7 @@
     "tailwindcss": "^3.4.19",
     "typescript": "catalog:",
     "unified": "^11.0.5",
-    "vite": "^6.4.3",
+    "vite": "^8.3.0",
     "vitest": "^2.1.9"
   }
 }
