@@ -3,11 +3,11 @@ import { type ReactNode } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/seo";
-import { SiteFooter, SiteHeader } from "@/components/landing/sections";
+import { MarketingLayout } from "@/components/marketing/marketing-layout";
 
 /**
- * Layout wrapper for feature-specific landing pages
- * Compact style matching the app
+ * Layout for feature pages not yet rebuilt with the marketing kit
+ * (components/marketing). New pages should use MarketingPageView instead.
  */
 export function FeatureLayout({
   children,
@@ -24,15 +24,7 @@ export function FeatureLayout({
   visual?: ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans antialiased">
-      {/* Subtle background */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[400px] bg-primary/[0.03] blur-[100px] rounded-full" />
-      </div>
-
-      <SiteHeader />
-
-      <main className="relative">
+    <MarketingLayout>
         {/* Breadcrumb navigation */}
         <div className="container px-4 mx-auto max-w-3xl pt-6">
           <Breadcrumbs
@@ -94,9 +86,6 @@ export function FeatureLayout({
             </Button>
           </div>
         </section>
-      </main>
-
-      <SiteFooter />
-    </div>
+    </MarketingLayout>
   );
 }

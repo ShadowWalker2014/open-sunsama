@@ -24,7 +24,7 @@ From a clean, up-to-date `main`:
 bun run release
 ```
 
-`scripts/release.mjs` bumps the root version, runs `version:sync`, updates `AGENTS.md`, commits `release: vX.Y.Z`, tags, and pushes. The tag push starts the workflow, which:
+`scripts/release.mjs` bumps the root version, runs `version:sync`, updates `AGENTS.md`, and opens a `release: vX.Y.Z` PR (main requires CI, so nothing is pushed to main directly). It waits for CI, merges the PR, then tags the merge commit and pushes the tag. The tag push starts the workflow, which:
 
 1. Builds each platform in parallel (about 15 minutes, 60-minute timeout per job)
 2. Uploads the installer, updater file and signature to S3

@@ -2,66 +2,28 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "api",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/dev-local.mjs", "api"],
+      "port": 3001
+    },
+    {
       "name": "web",
-      "runtimeExecutable": "bun",
-      "runtimeArgs": [
-        "run",
-        "--filter",
-        "@open-sunsama/web",
-        "dev"
-      ],
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/dev-local.mjs", "web"],
       "port": 3000,
       "autoPort": false
     },
     {
-      "name": "api",
-      "runtimeExecutable": "bun",
-      "runtimeArgs": [
-        "run",
-        "--filter",
-        "@open-sunsama/api",
-        "dev"
-      ],
-      "port": 3001
-    },
-    {
-      "name": "api-demo-local",
+      "name": "api-demo",
       "runtimeExecutable": "env",
-      "runtimeArgs": [
-        "DATABASE_URL=postgresql://postgres:demo@localhost:5433/opensunsama",
-        "JWT_SECRET=local-demo-secret-0123456789abcdef0123",
-        "PORT=3101",
-        "API_URL=http://localhost:3101",
-        "WEB_APP_URL=http://localhost:3107",
-        "CORS_ORIGIN=http://localhost:3107",
-        "REDIS_URL=",
-        "RESEND_API_KEY=",
-        "ROLLOVER_ENABLED=false",
-        "EMAIL_WORKERS_ENABLED=false",
-        "CALENDAR_SYNC_ENABLED=false",
-        "RECURRING_ENABLED=false",
-        "AWS_ACCESS_KEY_ID=",
-        "AWS_SECRET_ACCESS_KEY=",
-        "AWS_ENDPOINT_URL=",
-        "GOOGLE_CLIENT_ID=",
-        "MICROSOFT_CLIENT_ID=",
-        "NODE_ENV=development",
-        "sh",
-        "-c",
-        "cd apps/api && npx tsx src/index.ts"
-      ],
+      "runtimeArgs": ["API_PORT=3101", "WEB_PORT=3107", "node", "scripts/dev-local.mjs", "api"],
       "port": 3101
     },
     {
-      "name": "web-demo-local",
+      "name": "web-demo",
       "runtimeExecutable": "env",
-      "runtimeArgs": [
-        "VITE_API_URL=http://localhost:3101",
-        "VITE_WS_URL=ws://localhost:3101",
-        "sh",
-        "-c",
-        "cd apps/web && npx vite --port 3107 --strictPort"
-      ],
+      "runtimeArgs": ["API_PORT=3101", "WEB_PORT=3107", "node", "scripts/dev-local.mjs", "web"],
       "port": 3107
     }
   ]
