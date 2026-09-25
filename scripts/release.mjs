@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Cut a desktop release: bump the version, sync every app, commit, tag, push.
+// Cut a desktop release: bump the version, sync every app, open a PR, wait for
+// the required CI checks, merge it, then tag the merge commit and push the tag.
 // The tag push starts .github/workflows/desktop-release.yml.
 //
 //   bun run release            # patch: 1.0.12 -> 1.0.13
@@ -43,10 +44,29 @@ run("bun run version:sync");
 const agents = readFileSync("AGENTS.md", "utf8").replace(/\*\*Current version:\*\* v[\d.]+/, `**Current version:** v${next}`);
 writeFileSync("AGENTS.md", agents);
 
+// main requires CI, so the version bump goes through a PR like any other change.
+const releaseBranch = `release/v${next}`;
+run(`git switch --quiet -c ${releaseBranch}`);
 run("git add package.json AGENTS.md apps/*/package.json apps/*/src-tauri/tauri.conf.json");
 run(`git commit --quiet -m "release: v${next}"`);
-run(`git tag -a v${next} -m "Release v${next}"`);
-run("git push --quiet origin main");
+run(`git push --quiet -u origin ${releaseBranch}`);
+run(`gh pr create --head ${releaseBranch} --title "release: v${next}" --body "Version bump for v${next}. \`bun run release\` tags the merge commit once CI passes."`);
+
+// Wait for the checks to register, then for them to finish.
+for (let i = 0; i < 60 && sh(`gh pr view ${releaseBranch} --json statusCheckRollup --jq '.statusCheckRollup | length'`) === "0"; i++) {
+  execSync("sleep 5");
+}
+try {
+  run(`gh pr checks ${releaseBranch} --watch --fail-fast`);
+} catch {
+  fail(`CI failed on the release PR. Fix it, merge the PR, then tag the merge commit: git tag -a v${next} <sha> && git push origin v${next}`);
+}
+run(`gh pr merge ${releaseBranch} --squash --delete-branch`);
+
+const mergeSha = sh(`gh pr view ${releaseBranch} --json mergeCommit --jq .mergeCommit.oid`);
+run("git switch --quiet main");
+run("git pull --quiet --ff-only origin main");
+run(`git tag -a v${next} ${mergeSha} -m "Release v${next}"`);
 run(`git push --quiet origin v${next}`);
 
 console.log(`\n✓ Released v${next}. Build: https://github.com/ShadowWalker2014/open-sunsama/actions/workflows/desktop-release.yml`);

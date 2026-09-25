@@ -21,7 +21,7 @@ AI-agent-friendly task management + time blocking app. TypeScript monorepo with 
 - **CI is required on main.** `.github/workflows/ci.yml` runs two checks on every PR, and a ruleset blocks merging until both pass:
   - **Checks:** install with a frozen lockfile, typecheck, lint, unit tests, build, migrations match the schema, and the desktop bundle stays under 60 MB.
   - **End-to-end:** a fresh Postgres, the built API and the web app, then the Playwright smoke tests in `e2e/` and the MCP OAuth suite.
-- **Never merge with `--admin` to skip a red or pending check.** If CI is wrong, fix CI in its own PR.
+- **Nobody can skip CI, admins included.** Direct pushes to main are rejected; open a PR. If CI itself is wrong, fix CI in its own PR.
 - **Run the end-to-end tests locally** against a local database (never production): migrate it, then `DATABASE_URL=<local url> e2e/start-stack.sh && bun run e2e`. The stack uses ports 3201 (API) and 3207 (web).
 - **Validate in production before calling it done.** After the deploy, prove the change works end to end: check `railway logs --service api` for errors, query the data read-only, and test anything a user can see in the browser pane on https://opensunsama.com. An open PR or passing tests is not done.
 
@@ -198,7 +198,7 @@ Quick reference:
 
 Quick reference:
 
-- **Release:** `bun run release` (bumps, syncs, commits, tags and pushes; about 15 minutes to all platforms)
+- **Release:** `bun run release` (bumps and syncs the version, merges it through a PR once CI passes, then tags and pushes the tag; about 15 minutes to all platforms)
 - **Manual trigger:** GitHub → Actions → Desktop Release → Run workflow
 - **Downloads page:** https://opensunsama.com/download
 - **Platforms:** macOS (arm64/x64), Windows, Linux
