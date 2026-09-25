@@ -26,7 +26,7 @@ export default function DocsPage() {
   const sections = getDocsBySection();
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans antialiased flex flex-col">
+    <div className="min-h-screen overflow-x-clip bg-background text-foreground font-sans antialiased flex flex-col">
       <SEOHead
         title="Documentation | Open Sunsama"
         description="Comprehensive documentation for Open Sunsama. Learn about the REST API, MCP tools for AI agents, self-hosting, and more."
@@ -40,7 +40,7 @@ export default function DocsPage() {
 
       <DocsLayoutHeader sections={sections} />
 
-      <main className="flex-1 relative">
+      <main id="main" tabIndex={-1} className="flex-1 relative focus:outline-none">
         {/* Hero section */}
         <section className="py-16 md:py-24">
           <div className="container px-4 mx-auto max-w-4xl text-center">
