@@ -156,7 +156,11 @@ if (!rootElement) {
   throw new Error("Root element not found");
 }
 
-ReactDOM.createRoot(rootElement).render(
+// A dev hot update of this file re-runs it; reuse the root so the app isn't mounted twice
+const root: ReactDOM.Root = import.meta.hot?.data.root ?? ReactDOM.createRoot(rootElement);
+if (import.meta.hot) import.meta.hot.data.root = root;
+
+root.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>
