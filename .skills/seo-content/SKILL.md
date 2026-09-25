@@ -124,6 +124,7 @@ Pass bar for every changed page, at 375, 768 and 1280px in light and dark:
 ```bash
 git checkout -b seo/weekly-<date> && git add -A && git commit
 git push -u origin HEAD && gh pr create
+gh pr checks --watch --fail-fast   # CI is required; fix any failure before merging
 gh pr merge --squash --delete-branch
 ```
 

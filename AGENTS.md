@@ -17,7 +17,12 @@ AI-agent-friendly task management + time blocking app. TypeScript monorepo with 
 
 ### Shipping a change (agents)
 
-- **Review and merge your own PR.** Read your full diff for bugs, fix what you find, wait for CI, then merge it yourself.
+- **Review and merge your own PR.** Read your full diff for bugs, fix what you find, wait for CI (`gh pr checks <N> --watch`), then merge it yourself.
+- **CI is required on main.** `.github/workflows/ci.yml` runs two checks on every PR, and a ruleset blocks merging until both pass:
+  - **Checks:** install with a frozen lockfile, typecheck, lint, unit tests, build, migrations match the schema, and the desktop bundle stays under 60 MB.
+  - **End-to-end:** a fresh Postgres, the built API and the web app, then the Playwright smoke tests in `e2e/` and the MCP OAuth suite.
+- **Never merge with `--admin` to skip a red or pending check.** If CI is wrong, fix CI in its own PR.
+- **Run the end-to-end tests locally** against a local database (never production): migrate it, then `DATABASE_URL=<local url> e2e/start-stack.sh && bun run e2e`. The stack uses ports 3201 (API) and 3207 (web).
 - **Validate in production before calling it done.** After the deploy, prove the change works end to end: check `railway logs --service api` for errors, query the data read-only, and test anything a user can see in the browser pane on https://opensunsama.com. An open PR or passing tests is not done.
 
 ---
@@ -138,6 +143,7 @@ bun run build        # Build all
 bun run typecheck    # Type check
 bun run lint         # Lint
 bun run test         # Tests
+bun run e2e          # Browser smoke tests (needs e2e/start-stack.sh running)
 
 # Database
 bun run db:generate  # Generate migrations

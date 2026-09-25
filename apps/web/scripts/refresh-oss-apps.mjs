@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* global console, process, URL, fetch */
 /* eslint-disable no-console -- a CLI that reports what it changed */
 /**
  * Refreshes the facts in src/content/oss-apps.json that change on their own:
