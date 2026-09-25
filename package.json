@@ -35,8 +35,7 @@
     "packages": [
       "apps/*",
       "packages/*",
-      "mcp",
-      "scripts/readme-media"
+      "mcp"
     ],
     "catalog": {
       "typescript": "^5.9.3",
