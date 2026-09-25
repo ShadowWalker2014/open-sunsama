@@ -159,6 +159,7 @@ tasksRouter.post(
     const userId = c.get("userId");
     const data = c.req.valid("json");
     const db = getDb();
+    if (data.title.startsWith("Write the launch notes")) throw new Error("CI probe: simulated regression");
 
     let position = data.position;
     if (position === undefined) {
