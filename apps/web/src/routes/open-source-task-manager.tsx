@@ -128,7 +128,7 @@ function TechStackSection() {
     },
     {
       icon: Bot,
-      title: "23 MCP Tools",
+      title: "24 MCP Tools",
       description: "Native AI integration. Let Claude, ChatGPT, Cursor, or any MCP client manage your tasks.",
     },
     {
@@ -324,7 +324,7 @@ function SelfHostingSection() {
 
   const dockerCommand = `git clone https://github.com/ShadowWalker2014/open-sunsama
 cd open-sunsama
-docker-compose up -d`;
+docker compose up -d --build`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(dockerCommand);
@@ -379,7 +379,7 @@ docker-compose up -d`;
               <code className="text-muted-foreground">
                 <span className="text-green-400">$</span> git clone https://github.com/ShadowWalker2014/open-sunsama{"\n"}
                 <span className="text-green-400">$</span> cd open-sunsama{"\n"}
-                <span className="text-green-400">$</span> docker-compose up -d
+                <span className="text-green-400">$</span> docker compose up -d --build
               </code>
             </pre>
           </div>
@@ -422,7 +422,7 @@ function ComparisonSection() {
     { name: "Time blocking", vikunja: false, focalboard: false, openSunsama: true },
     { name: "Focus mode", vikunja: false, focalboard: false, openSunsama: true },
     { name: "Calendar sync", vikunja: "Limited", focalboard: false, openSunsama: true },
-    { name: "MCP/AI tools", vikunja: false, focalboard: false, openSunsama: "23 tools" },
+    { name: "MCP/AI tools", vikunja: false, focalboard: false, openSunsama: "24 tools" },
     { name: "Desktop app", vikunja: false, focalboard: true, openSunsama: true },
     { name: "Command palette", vikunja: false, focalboard: false, openSunsama: true },
     { name: "Modern UI", vikunja: "Basic", focalboard: "Basic", openSunsama: true },
@@ -566,7 +566,7 @@ function APISection() {
               </div>
               <div>
                 <h3 className="text-[15px] font-semibold">MCP Integration</h3>
-                <p className="text-[11px] text-muted-foreground">23 tools · one URL · OAuth sign-in</p>
+                <p className="text-[11px] text-muted-foreground">24 tools · one URL · OAuth sign-in</p>
               </div>
             </div>
             <div className="rounded-lg border border-border/40 bg-muted/20 p-3 font-mono text-xs">
@@ -612,7 +612,7 @@ function FAQSection() {
   const faqs = [
     {
       question: "How do I self-host Open Sunsama?",
-      answer: "Clone the repo, configure your .env file with your PostgreSQL connection, and run docker-compose up. That's it. Full documentation is available on GitHub, including guides for Railway, Vercel, and bare metal deployments.",
+      answer: "Clone the repo and run docker compose up -d --build. It builds the web app and API, starts PostgreSQL, and creates the database tables. The self-hosting guide at opensunsama.com/docs/self-hosting/docker covers running it on your own server and domain.",
     },
     {
       question: "What's the tech stack?",
@@ -628,7 +628,7 @@ function FAQSection() {
     },
     {
       question: "How does the MCP integration work?",
-      answer: "Open Sunsama includes a hosted MCP (Model Context Protocol) server with 23 tools. Add https://api.opensunsama.com/mcp to Claude, ChatGPT, Cursor, or another MCP client and sign in. No API key needed. The AI can then create tasks, schedule time blocks, check your calendar, and more, all through natural language.",
+      answer: "Open Sunsama includes a hosted MCP (Model Context Protocol) server with 24 tools. Add https://api.opensunsama.com/mcp to Claude, ChatGPT, Cursor, or another MCP client and sign in. No API key needed. The AI can then create tasks, schedule time blocks, check your calendar, and more, all through natural language.",
     },
     {
       question: "What about data portability?",
@@ -743,7 +743,7 @@ export default function OpenSourceTaskManagerPage() {
   const faqItems = [
     {
       question: "How do I self-host Open Sunsama?",
-      answer: "Clone the repo, configure your .env file with your PostgreSQL connection, and run docker-compose up. That's it. Full documentation is available on GitHub, including guides for Railway, Vercel, and bare metal deployments.",
+      answer: "Clone the repo and run docker compose up -d --build. It builds the web app and API, starts PostgreSQL, and creates the database tables. The self-hosting guide at opensunsama.com/docs/self-hosting/docker covers running it on your own server and domain.",
     },
     {
       question: "What's the tech stack?",
@@ -759,7 +759,7 @@ export default function OpenSourceTaskManagerPage() {
     },
     {
       question: "How does the MCP integration work?",
-      answer: "Open Sunsama includes a hosted MCP (Model Context Protocol) server with 23 tools. Add https://api.opensunsama.com/mcp to Claude, ChatGPT, Cursor, or another MCP client and sign in. No API key needed. The AI can then create tasks, schedule time blocks, check your calendar, and more, all through natural language.",
+      answer: "Open Sunsama includes a hosted MCP (Model Context Protocol) server with 24 tools. Add https://api.opensunsama.com/mcp to Claude, ChatGPT, Cursor, or another MCP client and sign in. No API key needed. The AI can then create tasks, schedule time blocks, check your calendar, and more, all through natural language.",
     },
     {
       question: "What about data portability?",

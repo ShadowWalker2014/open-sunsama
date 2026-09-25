@@ -9,6 +9,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { ApiClient, TimeBlock } from "../lib/api-client.js";
 import { defineTool } from "../lib/define-tool.js";
+import { fetchCalendarEvents, formatEventsForDay } from "./calendar-events.js";
 
 /**
  * Format a time block for display with human-readable information
@@ -43,20 +44,18 @@ function formatTimeBlock(block: TimeBlock): string {
 }
 
 /**
- * Format multiple time blocks as a schedule view
+ * Format a day's time blocks as a schedule section
  */
-function formatSchedule(blocks: TimeBlock[], date: string): string {
+function formatTimeBlockSection(blocks: TimeBlock[]): string[] {
   if (blocks.length === 0) {
-    return `No time blocks scheduled for ${date}`;
+    return ["No time blocks."];
   }
 
-  // Sort by start time
   const sorted = [...blocks].sort((a, b) =>
     a.startTime.localeCompare(b.startTime)
   );
 
-  const lines = [`Schedule for ${date}:`, "─".repeat(40)];
-
+  const lines: string[] = [];
   for (const block of sorted) {
     const taskInfo = block.taskId
       ? ` [Task: ${block.task?.title || block.taskId}]`
@@ -69,14 +68,14 @@ function formatSchedule(blocks: TimeBlock[], date: string): string {
     }
   }
 
-  // Calculate total scheduled time
   const totalMins = sorted.reduce((sum, b) => sum + b.durationMins, 0);
   const hours = Math.floor(totalMins / 60);
   const mins = totalMins % 60;
-  lines.push("─".repeat(40));
-  lines.push(`Total: ${blocks.length} blocks, ${hours}h ${mins}m scheduled`);
+  lines.push(
+    `Total: ${blocks.length} ${blocks.length === 1 ? "block" : "blocks"}, ${hours}h ${mins}m scheduled`
+  );
 
-  return lines.join("\n");
+  return lines;
 }
 
 /**
@@ -571,21 +570,20 @@ To unlink a task, pass null as the taskId.`,
   // Get schedule for a specific day (convenience tool)
   defineTool(server,
     "get_schedule_for_day",
-    `Get all time blocks for a specific day, formatted as a schedule view.
+    `Get the user's whole day in one call: calendar events (meetings from their connected Google, Outlook and iCloud calendars) and time blocks planned in Open Sunsama, each in its own section.
 
 This is a convenience tool that:
-- Fetches all time blocks for the given date
-- Sorts them chronologically
-- Formats them as a readable daily schedule
-- Shows total scheduled time
+- Fetches the day's calendar events and time blocks together
+- Sorts each section chronologically
+- Shows total time-blocked time
 
 Use this tool to:
 - See your schedule for today or any other day
-- Review how your day is organized
+- Plan or time-block a day around existing meetings
 - Check for gaps in your schedule
-- Get an overview before planning
 
-The schedule shows times, titles, and linked tasks in an easy-to-read format.`,
+Calendar events are busy time and read-only here; time blocks can be changed
+with the time block tools. Times are in the user's timezone.`,
     {
       date: z
         .string()
@@ -602,10 +600,13 @@ The schedule shows times, titles, and linked tasks in an easy-to-read format.`,
           );
         }
 
-        const response = await apiClient.listTimeBlocks({
-          date: input.date,
-          limit: 100, // Get all blocks for the day
-        });
+        const [response, events] = await Promise.all([
+          apiClient.listTimeBlocks({
+            date: input.date,
+            limit: 100, // Get all blocks for the day
+          }),
+          fetchCalendarEvents(apiClient, { date: input.date }),
+        ]);
 
         if (!response.success) {
           return errorResponse(
@@ -614,7 +615,22 @@ The schedule shows times, titles, and linked tasks in an easy-to-read format.`,
         }
 
         const blocks = response.data || [];
-        return successResponse(formatSchedule(blocks, input.date));
+        const lines: string[] = [];
+        if (events.ok) {
+          const tz = events.meta.timezone;
+          const eventLines = formatEventsForDay(events.events, input.date, tz);
+          lines.push(`Schedule for ${input.date} (times in ${tz})`, "");
+          lines.push("CALENDAR EVENTS (from connected calendars; busy, read-only)");
+          lines.push(...(eventLines.length ? eventLines : ["No calendar events."]));
+        } else {
+          lines.push(`Schedule for ${input.date}`, "");
+          lines.push("CALENDAR EVENTS");
+          lines.push(`Not included: ${events.message}`);
+        }
+        lines.push("", "TIME BLOCKS (planned in Open Sunsama)");
+        lines.push(...formatTimeBlockSection(blocks));
+
+        return successResponse(lines.join("\n"));
       } catch (error) {
         return errorResponse(
           error instanceof Error ? error.message : "Unknown error"

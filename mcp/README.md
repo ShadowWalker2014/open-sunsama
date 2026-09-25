@@ -71,7 +71,8 @@ Or create one with custom scopes:
 3. Click **"Generate New Key"**
 4. Select scopes:
    - `tasks:read` and `tasks:write` for task management
-   - `time-blocks:read` and `time-blocks:write` for calendar
+   - `time-blocks:read` and `time-blocks:write` for time blocks
+   - `calendar:read` for events from connected Google, Outlook and iCloud calendars
    - `user:read` and `user:write` for profile access
 5. Copy the key (it's only shown once!)
 
@@ -235,7 +236,13 @@ If you prefer Bun over Node.js:
 | `update_time_block` | Update time block details |
 | `delete_time_block` | Remove a time block |
 | `link_task_to_time_block` | Link/unlink a task to a time block |
-| `get_schedule_for_day` | Get formatted daily schedule |
+| `get_schedule_for_day` | Get a day's calendar events and time blocks in one view |
+
+### Calendar Events (read-only)
+
+| Tool | Description |
+|------|-------------|
+| `list_calendar_events` | List events from connected Google, Outlook and iCloud calendars for a day or range |
 
 ### User Profile
 
@@ -267,7 +274,8 @@ Once configured, you can ask your AI assistant things like:
 - "What subtasks are left on my project task?"
 
 ### Planning
-- "Help me plan my day - I need to do code review, write docs, and have a team meeting"
+- "Help me plan my day around my meetings - I need to do code review and write docs"
+- "When am I free tomorrow afternoon?"
 - "Schedule my tasks for this week based on priority"
 
 ## Testing
@@ -354,6 +362,7 @@ mcp/
 │       ├── tasks.ts      # Task management tools
 │       ├── time-blocks.ts# Time block tools
 │       ├── subtasks.ts   # Subtask tools
+│       ├── calendar-events.ts # Calendar event tools (read-only)
 │       └── user.ts       # User profile tools
 ├── tests/
 │   └── test-all.ts       # Comprehensive test suite
@@ -385,6 +394,7 @@ bun run dev      # Watch mode for development
 | `tasks:write` | Create, update, delete tasks |
 | `time-blocks:read` | List and view time blocks |
 | `time-blocks:write` | Create, update, delete time blocks |
+| `calendar:read` | List events from connected calendars |
 | `user:read` | View user profile |
 | `user:write` | Update user profile |
 

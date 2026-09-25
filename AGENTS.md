@@ -15,6 +15,11 @@ AI-agent-friendly task management + time blocking app. TypeScript monorepo with 
 
 **MCP Tool:** Use `open-sunsama` MCP server to create/update tasks, time blocks, subtasks programmatically.
 
+### Shipping a change (agents)
+
+- **Review and merge your own PR.** Read your full diff for bugs, fix what you find, wait for CI, then merge it yourself.
+- **Validate in production before calling it done.** After the deploy, prove the change works end to end: check `railway logs --service api` for errors, query the data read-only, and test anything a user can see in the browser pane on https://opensunsama.com. An open PR or passing tests is not done.
+
 ---
 
 ## Structure
@@ -49,13 +54,14 @@ opensunsama/
 | `/tasks/*`              | Yes   | Task CRUD + reorder              |
 | `/tasks/:id/subtasks/*` | Yes   | Subtask CRUD                     |
 | `/time-blocks/*`        | Yes   | Time block CRUD + cascade resize |
+| `/calendar-events`      | Yes   | Synced events (`date` or `from`/`to`; `calendar:read`) |
 | `/api-keys/*`           | JWT   | API key management               |
 | `/mcp`                  | OAuth/API key | Remote MCP server (Streamable HTTP) |
 | `/oauth/*`, `/.well-known/*` | Mixed | OAuth 2.1 for MCP clients     |
 | `/uploads/*`            | Yes   | S3 file uploads                  |
 
 **Auth:** JWT (`Bearer <token>`), API Key (`X-API-Key: os_<key>`), or MCP OAuth token (`Bearer osat_<token>`)  
-**Scopes:** `tasks:read`, `tasks:write`, `time-blocks:read`, `time-blocks:write`, `user:read`, `user:write`
+**Scopes:** `tasks:read`, `tasks:write`, `time-blocks:read`, `time-blocks:write`, `calendar:read`, `user:read`, `user:write`
 
 ### Web (`apps/web`)
 
@@ -98,9 +104,13 @@ opensunsama/
 
 **Relations:** Users → Tasks → Subtasks (CASCADE), Tasks ↔ TimeBlocks (SET NULL), Tasks → Attachments (CASCADE)
 
+**Migrations:** `packages/database/drizzle` starts at `0000_baseline`, a squash of the old 0000–0016 with the old 0016's journal timestamp, so databases that already ran those skip it. Every statement is `IF NOT EXISTS`, so it also runs cleanly on a database built with `db:push`. After a schema change, run `bun run db:generate` and commit the SQL. The API applies migrations on start when `MIGRATE_ON_START=true` (the self-host `docker-compose.yml` sets it; production doesn't), or with `node dist/migrate.js`.
+
+**Self-hosting:** `docker compose up -d --build` builds and starts PostgreSQL, Redis, the API and the web app (`docker compose up -d postgres` for the database alone). Guide: `apps/web/src/content/docs/self-hosting/docker.mdx`.
+
 ---
 
-## MCP (23 tools)
+## MCP (24 tools)
 
 Two ways in, same tools (`mcp/src/tools`, shared via `@open-sunsama/mcp/server`):
 
@@ -113,6 +123,7 @@ E2E test of the OAuth flow against a local API: `MCP_E2E_API_URL=http://localhos
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Tasks       | `list_tasks`, `get_task`, `create_task`, `update_task`, `complete_task`, `uncomplete_task`, `delete_task`, `schedule_task`, `reorder_tasks`            |
 | Time Blocks | `list_time_blocks`, `get_time_block`, `create_time_block`, `update_time_block`, `delete_time_block`, `link_task_to_time_block`, `get_schedule_for_day` |
+| Calendar    | `list_calendar_events` (read-only events synced from Google/Outlook/iCloud; also shown in `get_schedule_for_day`)                                   |
 | Subtasks    | `list_subtasks`, `create_subtask`, `toggle_subtask`, `update_subtask`, `delete_subtask`                                                                |
 | User        | `get_user_profile`, `update_user_profile`                                                                                                              |
 
@@ -131,7 +142,7 @@ bun run test         # Tests
 # Database
 bun run db:generate  # Generate migrations
 bun run db:migrate   # Run migrations
-bun run db:push      # Push schema
+bun run db:push      # Push schema (scratch databases only; skips the migration history)
 bun run db:studio    # Drizzle Studio
 
 # Per-app
@@ -171,7 +182,7 @@ Quick reference:
 
 - **Source of truth:** `package.json` (root)
 - **Sync command:** `bun run version:sync`
-- **Current version:** v1.0.12
+- **Current version:** v1.0.13
 
 ---
 

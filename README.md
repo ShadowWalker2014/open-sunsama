@@ -260,12 +260,13 @@ Switching from another tool? Read the comparisons: [Sunsama](https://opensunsama
 
 ## 🛠️ MCP tools
 
-23 tools, available through the hosted connector and the local server:
+24 tools, available through the hosted connector and the local server:
 
 | Category | Tools |
 | --- | --- |
 | **Tasks** | `list_tasks` `get_task` `create_task` `update_task` `complete_task` `uncomplete_task` `delete_task` `schedule_task` `reorder_tasks` |
 | **Time blocks** | `list_time_blocks` `get_time_block` `create_time_block` `update_time_block` `delete_time_block` `link_task_to_time_block` `get_schedule_for_day` |
+| **Calendar events** (read-only) | `list_calendar_events` |
 | **Subtasks** | `list_subtasks` `create_subtask` `toggle_subtask` `update_subtask` `delete_subtask` |
 | **Profile** | `get_user_profile` `update_user_profile` |
 
@@ -292,32 +293,32 @@ Scopes: `tasks:read` `tasks:write` `time-blocks:read` `time-blocks:write` `ideas
 ```bash
 git clone https://github.com/ShadowWalker2014/open-sunsama.git
 cd open-sunsama
-docker-compose up -d        # PostgreSQL + API on :3001 (MCP connector at /mcp)
-docker build -f Dockerfile.web --build-arg VITE_API_URL=https://api.your-domain.com -t open-sunsama-web .
+docker compose up -d --build   # PostgreSQL, Redis, API on :3001, web app on :3000
 ```
 
-The [self-hosting guide](https://opensunsama.com/docs/self-hosting/docker) covers environment variables, the web container, and production setup.
+Open http://localhost:3000 and create your account. The API creates the database tables on start, and the MCP connector is at http://localhost:3001/mcp. The [self-hosting guide](https://opensunsama.com/docs/self-hosting/docker) covers running on a server with your own domain, optional integrations, and backups. The desktop and mobile apps connect only to opensunsama.com, so self-hosters use the web app.
 
 <details>
 <summary><b>Run from source</b></summary>
 
 <br />
 
-Prerequisites: [Bun](https://bun.sh) 1.2+ and PostgreSQL 15+. S3-compatible storage is optional, for file uploads.
+Prerequisites: [Bun](https://bun.sh) 1.2+, and Docker or PostgreSQL 15+. S3-compatible storage is optional, for file uploads.
 
 ```bash
 git clone https://github.com/ShadowWalker2014/open-sunsama.git
 cd open-sunsama
 bun install
+docker compose up -d postgres   # PostgreSQL only, on localhost:5431
 
 # Configure environment (root + API)
 cp .env.example .env
-cp apps/api/.env.example apps/api/.env
+cp apps/api/.env.example apps/api/.env   # DATABASE_URL already points at the Docker PostgreSQL
 #   JWT_SECRET              → openssl rand -base64 32
 #   CALENDAR_ENCRYPTION_KEY → openssl rand -hex 32
 #   API_URL / WEB_APP_URL   → your public URLs (the MCP connector uses them for OAuth)
 
-bun run db:push
+bun run db:migrate
 bun run dev
 ```
 
@@ -353,7 +354,7 @@ DEMO_API_URL=http://localhost:3001 DEMO_PASSWORD='Choose-a-strong-1' bun run scr
 | --- | --- |
 | **Frontend** | React 19, Vite, TanStack Router + Query, Tailwind CSS, Radix UI, Tiptap |
 | **Backend** | Hono 4, Drizzle ORM, PostgreSQL, PG Boss jobs, Zod, OAuth 2.1 authorization server |
-| **AI** | Model Context Protocol (Streamable HTTP + stdio), 23 annotated tools |
+| **AI** | Model Context Protocol (Streamable HTTP + stdio), 24 annotated tools |
 | **Desktop / mobile** | Tauri 2, Expo |
 | **Infra** | Bun workspaces, Turborepo, Docker, Railway |
 
@@ -412,7 +413,7 @@ Add <code>https://api.opensunsama.com/mcp</code> as a custom connector in Claude
 <details>
 <summary><b>What is MCP?</b></summary>
 <br />
-The <a href="https://modelcontextprotocol.io">Model Context Protocol</a> is an open standard for connecting AI assistants to tools and data. Open Sunsama's MCP server gives assistants 23 tools to read and update your tasks, subtasks, and time blocks.
+The <a href="https://modelcontextprotocol.io">Model Context Protocol</a> is an open standard for connecting AI assistants to tools and data. Open Sunsama's MCP server gives assistants 24 tools to read and update your tasks, subtasks, and time blocks.
 </details>
 
 <details>

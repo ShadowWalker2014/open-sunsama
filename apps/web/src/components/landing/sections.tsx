@@ -243,15 +243,15 @@ const SNIPPETS = [
     label: "Self-host",
     lines: [
       "$ git clone github.com/ShadowWalker2014/open-sunsama",
-      "$ docker-compose up -d",
-      "✓ API and MCP connector on :3001",
+      "$ docker compose up -d --build",
+      "✓ Web app on :3000, API and MCP connector on :3001",
     ],
   },
 ];
 
 const STATS = [
   { value: "100%", label: "Open source" },
-  { value: "23", label: "MCP tools" },
+  { value: "24", label: "MCP tools" },
   { value: "1", label: "URL for any agent" },
   { value: "∞", label: "Self-host" },
 ];

@@ -84,7 +84,10 @@ export interface ConnectedEvent {
 
 type EventHandler = (event: WebSocketEvent) => void;
 
-const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:3001";
+// Falls back to the API URL (http→ws, https→wss), so self-hosters only set VITE_API_URL
+const WS_URL =
+  import.meta.env.VITE_WS_URL ||
+  (import.meta.env.VITE_API_URL || "http://localhost:3001").replace(/^http/, "ws");
 
 class WebSocketClient {
   private ws: WebSocket | null = null;
