@@ -15,6 +15,11 @@ import { LightboxProvider } from "@/components/ui/lightbox";
 import { useTimezoneSync } from "@/hooks/useTimezoneSync";
 import { persister, shouldPersistQueryFn } from "@/lib/query-persister";
 import { installChunkErrorRecovery } from "@/lib/chunk-error-recovery";
+import {
+  AppErrorScreen,
+  RootErrorBoundary,
+  applyPendingCacheReset,
+} from "@/components/app-error-screen";
 import { routeTree } from "./routeTree.gen.tsx";
 
 import "./index.css";
@@ -23,6 +28,10 @@ import "./index.css";
 // component tree mounts so a failed `React.lazy(...)` triggers exactly one
 // soft reload instead of crashing the app.
 installChunkErrorRecovery();
+
+// Finish a "reset local data" from the error screen before the persisted
+// query cache is restored.
+applyPendingCacheReset();
 
 /**
  * Component that syncs user timezone with the server
@@ -44,6 +53,8 @@ const router = createRouter({
   defaultPreloadGcTime: 5 * 60_000,
   // New pages open at the top; back/forward returns to where you were
   scrollRestoration: true,
+  // Recovers by itself once (clears the cached data), then offers ways out.
+  defaultErrorComponent: ({ error }) => <AppErrorScreen error={error} />,
 });
 
 // Register the router for type safety
@@ -137,18 +148,22 @@ function App() {
   );
 
   return (
-    <HelmetProvider>
-      {persistOptions ? (
-        <PersistQueryClientProvider
-          client={queryClient}
-          persistOptions={persistOptions}
-        >
-          {inner}
-        </PersistQueryClientProvider>
-      ) : (
-        <QueryClientProvider client={queryClient}>{inner}</QueryClientProvider>
-      )}
-    </HelmetProvider>
+    <RootErrorBoundary>
+      <HelmetProvider>
+        {persistOptions ? (
+          <PersistQueryClientProvider
+            client={queryClient}
+            persistOptions={persistOptions}
+          >
+            {inner}
+          </PersistQueryClientProvider>
+        ) : (
+          <QueryClientProvider client={queryClient}>
+            {inner}
+          </QueryClientProvider>
+        )}
+      </HelmetProvider>
+    </RootErrorBoundary>
   );
 }
 
@@ -159,7 +174,8 @@ if (!rootElement) {
 }
 
 // A dev hot update of this file re-runs it; reuse the root so the app isn't mounted twice
-const root: ReactDOM.Root = import.meta.hot?.data.root ?? ReactDOM.createRoot(rootElement);
+const root: ReactDOM.Root =
+  import.meta.hot?.data.root ?? ReactDOM.createRoot(rootElement);
 if (import.meta.hot) import.meta.hot.data.root = root;
 
 root.render(

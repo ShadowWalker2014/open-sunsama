@@ -1,5 +1,6 @@
 mod commands;
 mod menu;
+mod recovery;
 mod tray;
 
 use tauri::{Emitter, Manager};
