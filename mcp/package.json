@@ -30,7 +30,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^20.19.43",
+    "@types/node": "^24.0.0",
     "typescript": "catalog:"
   },
   "files": [
