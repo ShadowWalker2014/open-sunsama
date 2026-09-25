@@ -45,6 +45,7 @@
   },
   "scripts": {
     "dev": "turbo run dev --filter='!@open-sunsama/desktop' --filter='!@open-sunsama/mobile' --filter='!@open-sunsama/expo-mobile'",
+    "dev:local": "node scripts/dev-local.mjs",
     "dev:web": "turbo run dev --filter=@open-sunsama/web --filter=@open-sunsama/api --filter=./packages/*",
     "dev:desktop": "turbo run dev --filter=@open-sunsama/desktop --filter=@open-sunsama/api --filter=./packages/*",
     "dev:mobile:ios": "turbo run dev:ios --filter=@open-sunsama/mobile --filter=@open-sunsama/api --filter=./packages/*",

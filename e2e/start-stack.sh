@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Starts the built API and the web dev server against a LOCAL database for the
-# end-to-end tests, and waits until both answer. Used by CI and runnable locally:
+# Starts the built API and the web dev server against a test database for the
+# end-to-end tests, and waits until both answer. CI uses a localhost Postgres.
+# Locally, use the Railway dev database (no Docker, no local Postgres):
 #
-#   DATABASE_URL=postgresql://postgres@localhost:5434/opensunsama e2e/start-stack.sh
+#   DATABASE_URL=$(railway variables -e development -s dev-postgres --kv | sed -n 's/^DATABASE_PUBLIC_URL=//p') e2e/start-stack.sh
 #
 # Build the API first (bunx turbo run build --filter=@open-sunsama/api...) and
 # migrate the database (cd packages/database && bunx drizzle-kit migrate).
@@ -11,7 +12,9 @@ set -euo pipefail
 : "${DATABASE_URL:?DATABASE_URL must point at a local test database}"
 case "$DATABASE_URL" in
   *@localhost:* | *@localhost/* | *@127.0.0.1:* | *@127.0.0.1/*) ;;
-  *) echo "Refusing to start: DATABASE_URL is not a localhost database." >&2; exit 1 ;;
+  # dev-postgres in Railway's development environment
+  *@tokaido.proxy.rlwy.net:50839/*) ;;
+  *) echo "Refusing to start: DATABASE_URL is neither localhost nor the Railway dev database." >&2; exit 1 ;;
 esac
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
