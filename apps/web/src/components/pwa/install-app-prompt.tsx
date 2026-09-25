@@ -5,6 +5,10 @@ import { InstallAppSheet } from "./install-app-sheet";
 
 const STORAGE_KEY = "open-sunsama-install-tip";
 const SHOW_AFTER_MS = 8000;
+/** How long the user must have been hands-off before it opens. */
+const IDLE_MS = 4000;
+/** Stop waiting for a quiet moment after this; try again next visit. */
+const GIVE_UP_AFTER_MS = 2 * 60 * 1000;
 const SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_DISMISSALS = 3;
 
@@ -30,7 +34,7 @@ function shouldOffer(): boolean {
 
 /**
  * Opens the install guide once for phone visitors using the web app in a
- * browser tab, a few seconds after they arrive. Each showing snoozes it for a
+ * browser tab, at the first quiet moment after they arrive. Each showing snoozes it for a
  * week, and it stops after three. The guide is always available under
  * More → Add to Home Screen.
  */
@@ -40,13 +44,40 @@ export function InstallAppPrompt() {
 
   React.useEffect(() => {
     if (!isMobile || !shouldOffer()) return;
-    const id = window.setTimeout(() => {
-      // Don't cover a sheet or dialog the user is working in.
-      if (document.querySelector("[role=dialog]")) return;
+
+    // Only interrupt someone who has paused: no tap or keypress for a few
+    // seconds, no sheet or dialog open, and no field being typed into.
+    let lastInput = Date.now();
+    const onInput = () => {
+      lastInput = Date.now();
+    };
+    window.addEventListener("pointerdown", onInput, true);
+    window.addEventListener("keydown", onInput, true);
+
+    const startedAt = Date.now();
+    const id = window.setInterval(() => {
+      if (Date.now() - startedAt < SHOW_AFTER_MS) return;
+      if (Date.now() - startedAt > GIVE_UP_AFTER_MS) {
+        window.clearInterval(id);
+        return;
+      }
+      const active = document.activeElement;
+      const typing =
+        active instanceof HTMLElement &&
+        (active.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName));
+      if (Date.now() - lastInput < IDLE_MS || typing || document.querySelector("[role=dialog]")) {
+        return;
+      }
+      window.clearInterval(id);
       recordShown();
       setOpen(true);
-    }, SHOW_AFTER_MS);
-    return () => window.clearTimeout(id);
+    }, 1000);
+
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener("pointerdown", onInput, true);
+      window.removeEventListener("keydown", onInput, true);
+    };
   }, [isMobile]);
 
   return <InstallAppSheet open={open} onOpenChange={setOpen} />;
