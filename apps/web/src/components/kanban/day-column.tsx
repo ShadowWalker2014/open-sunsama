@@ -31,6 +31,8 @@ interface DayColumnProps {
   sortBy?: SortOption;
   /** Case-insensitive substring filter on title + notes; "" shows everything. */
   searchQuery?: string;
+  /** Fill the parent's width (the phone board shows one day per screen). */
+  fill?: boolean;
 }
 
 /**
@@ -43,6 +45,7 @@ export function DayColumn({
   onDateClick,
   sortBy = "position",
   searchQuery = "",
+  fill = false,
 }: DayColumnProps) {
   // Use explicit limit to prevent accidental truncation (API default is 50)
   const {
@@ -179,7 +182,10 @@ export function DayColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex h-full w-[calc(100vw-1rem)] sm:w-[280px] sm:min-w-[280px] sm:max-w-[280px] flex-shrink-0 flex-col border-r border-border/40 transition-colors duration-150",
+        "flex h-full flex-shrink-0 flex-col transition-colors duration-150",
+        fill
+          ? "w-full"
+          : "w-[calc(100vw-1rem)] sm:w-[280px] sm:min-w-[280px] sm:max-w-[280px] border-r border-border/40",
         // Today highlight
         today && "bg-primary/[0.02]",
         // Subtle highlight during any drag operation

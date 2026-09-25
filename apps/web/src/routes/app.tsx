@@ -5,6 +5,7 @@ import type { Task } from "@open-sunsama/types";
 import { useAuth } from "@/hooks/useAuth";
 import { Header } from "@/components/layout/header";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
+import { InstallAppPrompt } from "@/components/pwa/install-app-prompt";
 import { Skeleton } from "@/components/ui";
 import {
   HoveredTaskProvider,
@@ -163,6 +164,9 @@ function AppLayoutInner() {
         {/* Mobile bottom navigation - hidden on lg screens */}
         <MobileBottomNav />
       </div>
+
+      {/* Phone browsers: offer the Add to Home Screen guide */}
+      <InstallAppPrompt />
 
       {/* Global Shortcuts Handler */}
       <GlobalShortcutsHandler onAddTask={handleAddTask} />

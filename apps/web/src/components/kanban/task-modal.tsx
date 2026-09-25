@@ -19,12 +19,15 @@ import {
 import {
   Plus,
   Trash2,
+  ArrowUp,
+  ArrowDown,
   Check,
   Repeat,
   MoreHorizontal,
   Expand,
   X,
   Calendar,
+  Clock,
   Play,
   ChevronLeft,
   ChevronRight,
@@ -47,7 +50,10 @@ import {
   useCompleteTask,
   useCreateTask,
 } from "@/hooks/useTasks";
-import { useHoveredTask } from "@/hooks";
+import { useHoveredTask, useIsMobile } from "@/hooks";
+import { useCreateSubtask, useUpdateSubtask } from "@/hooks/useSubtasks";
+import { useAddTaskPosition, usePlaceNewTask } from "@/hooks/useAddTaskPosition";
+import { BottomSheetContent } from "@/components/ui/bottom-sheet";
 import { useTimeBlocks, useUpdateTimeBlock } from "@/hooks/useTimeBlocks";
 
 import {
@@ -69,6 +75,7 @@ import {
   type TimeDropdownRef,
 } from "@/components/ui/time-dropdown";
 import { SubtaskChecklist } from "./subtask-checklist";
+import { SubtaskList, type Subtask as DraftSubtask } from "./subtask-list";
 import { NotesField } from "./task-modal-form";
 import { TaskAttachments } from "./task-attachments";
 import { TaskSeriesBanner } from "./task-series-banner";
@@ -477,10 +484,22 @@ interface TaskModalProps {
   task: Task | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /**
+   * Opens the modal as a composer for a new task (with `task` null): the same
+   * layout as editing, but fields stay local until "Add task" creates it.
+   */
+  createDefaults?: { scheduledDate?: string | null };
 }
 
-export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
+export function TaskModal({
+  task,
+  open,
+  onOpenChange,
+  createDefaults,
+}: TaskModalProps) {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const isCompose = !!createDefaults && !task;
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [plannedMins, setPlannedMins] = React.useState<number | null>(null);
@@ -488,6 +507,29 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   const [repeatDialogOpen, setRepeatDialogOpen] = React.useState(false);
   const [actualMins, setActualMins] = React.useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
+  const titleRef = React.useRef<HTMLTextAreaElement>(null);
+
+  // Composer-only state: everything a new task carries before it exists.
+  const [draftPriority, setDraftPriority] = React.useState<TaskPriority>("P2");
+  const [draftDate, setDraftDate] = React.useState<string | null>(null);
+  const [draftSubtasks, setDraftSubtasks] = React.useState<DraftSubtask[]>([]);
+  const { addPosition, setAddPosition } = useAddTaskPosition();
+  const placeNewTask = usePlaceNewTask(draftDate);
+  const createSubtask = useCreateSubtask();
+  const updateSubtask = useUpdateSubtask();
+  const [isCreating, setIsCreating] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!open || !isCompose) return;
+    setTitle("");
+    setDescription("");
+    setPlannedMins(null);
+    setDraftPriority("P2");
+    setDraftDate(createDefaults?.scheduledDate ?? null);
+    setDraftSubtasks([]);
+    // Focus inside the opening gesture's task so iOS raises the keyboard.
+    requestAnimationFrame(() => titleRef.current?.focus());
+  }, [open, isCompose]);
 
   // Keep a ref to the last non-null task so the Dialog can still render content
   // during its close animation (after task prop becomes null)
@@ -552,6 +594,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
 
   // Handle scheduled date change
   const handleScheduledDateChange = async (newDate: string | null) => {
+    if (isCompose) setDraftDate(newDate);
     if (!task) return;
     await updateTask.mutateAsync({
       id: task.id,
@@ -561,6 +604,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
 
   // Handle priority change
   const handlePriorityChange = async (newPriority: TaskPriority) => {
+    if (isCompose) setDraftPriority(newPriority);
     if (!task) return;
     await updateTask.mutateAsync({
       id: task.id,
@@ -692,8 +736,10 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   const updateTimeBlock = useUpdateTimeBlock();
 
   // Fetch time blocks for this task
+  // Without a task this would list every time block the user has.
   const { data: timeBlocks = [] } = useTimeBlocks(
-    task ? { taskId: task.id } : undefined
+    task ? { taskId: task.id } : undefined,
+    { enabled: !!task }
   );
 
   // Get the first (most relevant) time block for this task
@@ -839,8 +885,56 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   };
 
 
+  const handleCreate = async () => {
+    const trimmed = title.trim();
+    if (!isCompose || !trimmed || isCreating) return;
+    setIsCreating(true);
+    try {
+      const newTask = await createTask.mutateAsync({
+        title: trimmed,
+        notes: description || undefined,
+        scheduledDate: draftDate ?? undefined,
+        estimatedMins: plannedMins ?? undefined,
+        priority: draftPriority,
+      });
+      // In order, so the checklist keeps the order it was typed in.
+      for (const [position, st] of draftSubtasks.entries()) {
+        const created = await createSubtask.mutateAsync({
+          taskId: newTask.id,
+          data: { title: st.title, position },
+        });
+        if (st.completed) {
+          await updateSubtask.mutateAsync({
+            taskId: newTask.id,
+            subtaskId: created.id,
+            data: { completed: true },
+          });
+        }
+      }
+      await placeNewTask(newTask.id, addPosition);
+      onOpenChange(false);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   // Use the live task for rendering, falling back to lastTaskRef during close animation
-  const renderTask = task ?? lastTaskRef.current;
+  const renderTask: Task | null =
+    task ??
+    lastTaskRef.current ??
+    (isCompose
+      ? ({
+          id: "draft",
+          title,
+          notes: description,
+          priority: draftPriority,
+          scheduledDate: draftDate,
+          estimatedMins: plannedMins,
+          actualMins: null,
+          completedAt: null,
+          seriesId: null,
+        } as unknown as Task)
+      : null);
 
   // If no task data at all (never opened), render nothing
   if (!renderTask) return null;
@@ -862,153 +956,224 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     });
   };
 
-  return (
-    <>
-      <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent
-          className="max-w-2xl p-0 gap-0 overflow-hidden [&>button]:hidden"
-          aria-describedby={undefined}
+  const iconButton =
+    "rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer " +
+    (isMobile ? "flex h-9 w-9 items-center justify-center active:bg-muted" : "p-1.5");
+
+  const titleRow = (
+    <div
+      className={cn(
+        "flex items-start",
+        isMobile ? "gap-3 px-5 pb-3 pt-1" : "gap-2.5 px-4 pt-4 pb-2.5 sm:gap-3 sm:px-6 sm:pt-5 sm:pb-3"
+      )}
+    >
+      {isCompose ? (
+        // Placeholder circle keeps the title aligned with the edit layout.
+        <div className="mt-1 h-5 w-5 shrink-0 rounded-full border-[1.5px] border-dashed border-muted-foreground/30" />
+      ) : (
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={isCompleted}
+          aria-label={isCompleted ? "Mark incomplete" : "Mark complete"}
+          className={cn(
+            "mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-all cursor-pointer active:scale-90",
+            isCompleted
+              ? "border-primary bg-primary text-primary-foreground"
+              : "border-muted-foreground/30 hover:border-primary"
+          )}
+          onClick={handleToggleComplete}
         >
-          {/* The visible title is an editable field; screen readers get it here. */}
-          <DialogTitle className="sr-only">{renderTask.title || "Task"}</DialogTitle>
-          {/* Title row with inline actions */}
-          <div className="flex items-start gap-2.5 px-4 pt-4 pb-2.5 sm:gap-3 sm:px-6 sm:pt-5 sm:pb-3">
-            {/* Checkbox */}
+          {isCompleted && <Check className="h-3 w-3" strokeWidth={3} />}
+        </button>
+      )}
+
+      <textarea
+        ref={titleRef}
+        value={title}
+        // Titles are one line; pasted line breaks become spaces.
+        onChange={(e) => setTitle(e.target.value.replace(/[\r\n]+/g, " "))}
+        onBlur={() => !isCompose && title !== renderTask.title && handleSave()}
+        onKeyDown={(e) => {
+          // Enter creates (composer) or saves and closes (editor).
+          if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+            e.preventDefault();
+            if (isCompose) void handleCreate();
+            else void handleOpenChange(false);
+          }
+        }}
+        enterKeyHint={isCompose ? "send" : "done"}
+        rows={1}
+        className={cn(
+          "flex-1 min-w-0 resize-none border-none p-0 font-semibold shadow-none focus:outline-none focus:ring-0 bg-transparent leading-snug placeholder:text-muted-foreground/45",
+          isMobile ? "text-[19px]" : "text-base sm:text-lg",
+          isCompleted && "line-through text-muted-foreground"
+        )}
+        placeholder={isCompose ? "What needs to be done?" : "Task title"}
+        onInput={(e) => {
+          const target = e.target as HTMLTextAreaElement;
+          target.style.height = "auto";
+          target.style.height = target.scrollHeight + "px";
+        }}
+      />
+
+      <div className={cn("flex shrink-0 items-center", isMobile ? "-mr-2 -mt-1.5" : "gap-0.5")}>
+        {!isCompose && (
+          <>
             <button
               type="button"
-              className={cn(
-                "mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-all cursor-pointer",
-                isCompleted
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-muted-foreground/30 hover:border-primary"
-              )}
-              onClick={handleToggleComplete}
+              onClick={handleExpandToFocus}
+              className={iconButton}
+              title="Focus mode (F)"
+              aria-label="Open in focus mode"
             >
-              {isCompleted && <Check className="h-3 w-3" strokeWidth={3} />}
+              <Expand className="h-4 w-4" />
             </button>
-
-            {/* Title */}
-            <textarea
-              value={title}
-              // Titles are one line; pasted line breaks become spaces.
-              onChange={(e) => setTitle(e.target.value.replace(/[\r\n]+/g, " "))}
-              onBlur={() => title !== renderTask.title && handleSave()}
-              onKeyDown={(e) => {
-                // Enter saves and closes, like the other task dialogs.
-                if (e.key === "Enter" && !e.nativeEvent.isComposing) {
-                  e.preventDefault();
-                  void handleOpenChange(false);
-                }
-              }}
-              enterKeyHint="done"
-              rows={1}
-              className={cn(
-                "flex-1 min-w-0 resize-none border-none p-0 text-base sm:text-lg font-semibold shadow-none focus:outline-none focus:ring-0 bg-transparent leading-snug",
-                isCompleted && "line-through text-muted-foreground"
-              )}
-              placeholder="Task title"
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = "auto";
-                target.style.height = target.scrollHeight + "px";
-              }}
-            />
-
-            {/* Action buttons */}
-            <div className="flex items-center gap-0.5 shrink-0">
-              <button
-                type="button"
-                onClick={handleExpandToFocus}
-                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
-                title="Focus mode (F)"
-              >
-                <Expand className="h-4 w-4" />
-              </button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
-                  >
-                    <MoreHorizontal className="h-4 w-4" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onSelect={handleDuplicate}>
-                    <Copy className="mr-2 h-4 w-4" />
-                    Duplicate
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button type="button" className={iconButton} aria-label="More actions">
+                  <MoreHorizontal className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={handleDuplicate}>
+                  <Copy className="mr-2 h-4 w-4" />
+                  Duplicate
+                </DropdownMenuItem>
+                {!renderTask.seriesId && (
+                  <DropdownMenuItem onSelect={() => setRepeatDialogOpen(true)}>
+                    <Repeat className="mr-2 h-4 w-4" />
+                    Repeat...
                   </DropdownMenuItem>
-                  {!renderTask.seriesId && (
-                    <DropdownMenuItem
-                      onSelect={() => setRepeatDialogOpen(true)}
-                    >
-                      <Repeat className="mr-2 h-4 w-4" />
-                      Repeat...
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem
-                    onSelect={handleDelete}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <button
-                type="button"
-                onClick={() => onOpenChange(false)}
-                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
+                )}
+                <DropdownMenuItem
+                  onSelect={handleDelete}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
+        )}
+        <button
+          type="button"
+          onClick={() => void handleOpenChange(false)}
+          className={iconButton}
+          aria-label="Close"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
 
-          {/* Property bar — priority · date · time. On mobile the actions
-              group wraps to its own line so the metadata keeps full width. */}
-          <div className="flex flex-wrap items-center gap-x-1 gap-y-2 px-4 pb-3 sm:px-6 sm:pb-4">
-            {/* Properties group — stays together as one unit */}
-            <div className="flex items-center gap-1">
-            <InlinePrioritySelector
-              priority={renderTask.priority}
-              onChange={handlePriorityChange}
-            />
-            <div className="w-px h-3.5 bg-border/60 mx-1" />
+  // On phones each property is a pill in one swipeable row; on desktop they
+  // sit inline with dividers.
+  const chip = isMobile
+    ? "flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border/60 bg-muted/30 px-2.5"
+    : "flex items-center gap-1.5";
+  const divider = isMobile ? null : <div className="w-px h-3.5 bg-border/60 mx-1" />;
+
+  const timerButton =
+    !isCompose &&
+    (isMobile ? (
+      // Round play/stop button so the chip row fits a phone without scrolling.
+      <button
+        type="button"
+        onClick={handleTimerToggle}
+        aria-label={isTimerRunning ? "Stop timer" : "Start timer"}
+        className={cn(
+          "ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-all active:scale-90",
+          isTimerRunning
+            ? "border-red-500/30 bg-red-500/10 text-red-500"
+            : "border-[#22c55e]/30 bg-[#22c55e]/10 text-[#22c55e]"
+        )}
+      >
+        {isTimerRunning ? (
+          <span className="h-3 w-3 rounded-[3px] bg-current" />
+        ) : (
+          <Play className="ml-0.5 h-3.5 w-3.5 fill-current" />
+        )}
+      </button>
+    ) : (
+      <button
+        type="button"
+        onClick={handleTimerToggle}
+        className={cn(
+          "flex shrink-0 items-center gap-1.5 font-medium border transition-colors cursor-pointer h-7 px-2.5 rounded-md text-xs",
+          isTimerRunning
+            ? "border-red-500/30 text-red-500 hover:bg-red-500/10"
+            : "border-[#22c55e]/30 text-[#22c55e] hover:bg-[#22c55e]/10"
+        )}
+      >
+        {isTimerRunning ? (
+          <>
+            <span className="h-2.5 w-2.5 rounded-sm bg-current" />
+            Stop
+          </>
+        ) : (
+          <>
+            <Play className="h-3 w-3 fill-current" />
+            Start
+          </>
+        )}
+      </button>
+    ));
+
+  const propertyBar = (
+    <div
+      className={cn(
+        isMobile
+          ? "flex items-center gap-2 overflow-x-auto px-5 pb-3.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          : "flex flex-wrap items-center gap-x-1 gap-y-2 px-4 pb-3 sm:px-6 sm:pb-4"
+      )}
+    >
+      <div className={cn("flex items-center", isMobile ? "gap-2" : "gap-1")}>
+        <div className={chip}>
+          <InlinePrioritySelector
+            priority={renderTask.priority}
+            onChange={handlePriorityChange}
+          />
+        </div>
+        {divider}
+        <div className={chip}>
+          <Calendar className="h-3.5 w-3.5 text-muted-foreground/60" />
+          <DatePickerPopover
+            ref={datePickerRef}
+            value={renderTask.scheduledDate}
+            onChange={handleScheduledDateChange}
+            taskTitle={renderTask.title}
+          />
+        </div>
+        {divider}
+        <div className={cn(chip, !isMobile && "gap-1")}>
+          {isMobile && isCompose && <Clock className="h-3.5 w-3.5 text-muted-foreground/60" />}
+          {isTimerRunning ? (
             <div className="flex items-center gap-1.5">
-              <Calendar className="h-3.5 w-3.5 text-muted-foreground/60" />
-              <DatePickerPopover
-                ref={datePickerRef}
-                value={renderTask.scheduledDate}
-                onChange={handleScheduledDateChange}
-                taskTitle={renderTask.title}
-              />
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+              </span>
+              <span
+                className={cn(
+                  "font-mono text-sm tabular-nums font-medium",
+                  renderTask.estimatedMins &&
+                    liveSeconds > renderTask.estimatedMins * 60 * 1.5
+                    ? "text-red-500"
+                    : renderTask.estimatedMins &&
+                        liveSeconds > renderTask.estimatedMins * 60
+                      ? "text-amber-500"
+                      : "text-emerald-600 dark:text-emerald-400"
+                )}
+              >
+                {liveTimeText}
+              </span>
             </div>
-            <div className="w-px h-3.5 bg-border/60 mx-1" />
-            <div className="flex items-center gap-1">
-              {/* When timer is running: show live ticking time */}
-              {isTimerRunning ? (
-                <div className="flex items-center gap-1.5">
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
-                  </span>
-                  <span
-                    className={cn(
-                      "font-mono text-sm tabular-nums font-medium",
-                      renderTask.estimatedMins &&
-                        liveSeconds > renderTask.estimatedMins * 60 * 1.5
-                        ? "text-red-500"
-                        : renderTask.estimatedMins &&
-                            liveSeconds > renderTask.estimatedMins * 60
-                          ? "text-amber-500"
-                          : "text-emerald-600 dark:text-emerald-400"
-                    )}
-                  >
-                    {liveTimeText}
-                  </span>
-                </div>
-              ) : (
+          ) : (
+            <>
+              {!isCompose && (
                 <>
                   <TimeDropdown
                     ref={actualTimeRef}
@@ -1023,85 +1188,167 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
                     className="font-mono text-sm text-foreground"
                   />
                   <span className="text-muted-foreground/30 text-xs">/</span>
-                  <TimeDropdown
-                    ref={plannedTimeRef}
-                    value={plannedMins}
-                    onChange={handleDurationChange}
-                    placeholder="0:00"
-                    dropdownHeader="Planned time"
-                    shortcutHint="W"
-                    showClear
-                    clearText="Clear"
-                    size="sm"
-                    className="font-mono text-sm text-muted-foreground/60"
-                  />
                 </>
               )}
-            </div>
-            </div>
-            {/* Actions group — pinned right on desktop, wraps to its own
-                full line on mobile (keeps tap targets uncramped) */}
-            <div className="ml-auto flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => subtaskInputRef.current?.focus()}
-              className="flex items-center gap-1.5 h-7 px-2.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Add subtask</span>
-            </button>
-            <button
-              onClick={handleTimerToggle}
-              className={cn(
-                "flex items-center gap-1.5 h-7 px-2.5 rounded-md text-xs font-medium border transition-colors cursor-pointer",
-                isTimerRunning
-                  ? "border-red-500/30 text-red-500 hover:bg-red-500/10"
-                  : "border-[#22c55e]/30 text-[#22c55e] hover:bg-[#22c55e]/10"
-              )}
-            >
-              {isTimerRunning ? (
-                <>
-                  <span className="h-2.5 w-2.5 rounded-sm bg-current" />
-                  Stop
-                </>
-              ) : (
-                <>
-                  <Play className="h-3 w-3 fill-current" />
-                  Start
-                </>
-              )}
-            </button>
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div className="border-t border-border/40 px-4 py-3 sm:px-6 sm:py-4 space-y-4 max-h-[55vh] overflow-y-auto">
-            {/* Series Banner */}
-            {renderTask.seriesId && <TaskSeriesBanner task={renderTask} />}
-
-            {/* Subtasks Section */}
-            <SubtaskChecklist
-              key={renderTask.id}
-              taskId={renderTask.id}
-              addInputRef={subtaskInputRef}
-            />
-
-            {/* Notes Section */}
-            <div>
-              <NotesField
-                notes={description}
-                onChange={setDescription}
-                onBlur={() => {
-                  if (description !== (renderTask.notes || "")) handleSave();
-                }}
-                minHeight="150px"
+              <TimeDropdown
+                ref={plannedTimeRef}
+                value={plannedMins}
+                onChange={handleDurationChange}
+                placeholder={isCompose ? "Plan time" : "0:00"}
+                dropdownHeader="Planned time"
+                shortcutHint="W"
+                showClear
+                clearText="Clear"
+                size="sm"
+                className={cn(
+                  "font-mono text-sm",
+                  isCompose && !plannedMins ? "font-sans text-muted-foreground" : "text-muted-foreground/60"
+                )}
               />
-            </div>
+            </>
+          )}
+        </div>
+      </div>
+      {isMobile ? (
+        timerButton
+      ) : (
+        // Actions group — pinned right on desktop.
+        <div className="ml-auto flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => subtaskInputRef.current?.focus()}
+            className="flex items-center gap-1.5 h-7 px-2.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span>Add subtask</span>
+          </button>
+          {timerButton}
+        </div>
+      )}
+    </div>
+  );
 
-            {/* Attachments */}
-            <TaskAttachments taskId={renderTask.id} />
-          </div>
-        </DialogContent>
+  const body = (
+    <>
+      {!isCompose && renderTask.seriesId && <TaskSeriesBanner task={renderTask} />}
+
+      {isCompose ? (
+        <div>
+          {draftSubtasks.length > 0 && (
+            <div className="mb-1.5 text-xs font-medium text-muted-foreground">
+              Subtasks
+            </div>
+          )}
+          <SubtaskList
+            subtasks={draftSubtasks}
+            onSubtasksChange={setDraftSubtasks}
+            addInputRef={subtaskInputRef}
+          />
+        </div>
+      ) : (
+        <SubtaskChecklist
+          key={renderTask.id}
+          taskId={renderTask.id}
+          addInputRef={subtaskInputRef}
+        />
+      )}
+
+      <div>
+        <NotesField
+          notes={description}
+          onChange={setDescription}
+          onBlur={() => {
+            if (!isCompose && description !== (renderTask.notes || "")) handleSave();
+          }}
+          minHeight={isMobile ? "96px" : "150px"}
+        />
+      </div>
+
+      {!isCompose && <TaskAttachments taskId={renderTask.id} />}
+    </>
+  );
+
+  const canCreate = !!title.trim() && !isCreating;
+  const composeFooter = isCompose && (
+    <div
+      className={cn(
+        "flex shrink-0 items-center gap-2 border-t border-border/40",
+        isMobile ? "px-4 py-3" : "px-4 py-3 sm:px-6"
+      )}
+    >
+      <button
+        type="button"
+        // Keep the keyboard up: don't let the tap steal focus from the title.
+        onPointerDown={(e) => e.preventDefault()}
+        onClick={() => setAddPosition(addPosition === "top" ? "bottom" : "top")}
+        aria-label={addPosition === "top" ? "Adding to top of the day" : "Adding to bottom of the day"}
+        className={cn(
+          "flex h-9 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium transition-colors",
+          addPosition === "top"
+            ? "border-primary/50 bg-primary/5 text-primary"
+            : "border-border text-muted-foreground"
+        )}
+      >
+        {addPosition === "top" ? (
+          <ArrowUp className="h-3.5 w-3.5" />
+        ) : (
+          <ArrowDown className="h-3.5 w-3.5" />
+        )}
+        {addPosition === "top" ? "Top" : "Bottom"}
+      </button>
+      <div className="flex-1" />
+      <button
+        type="button"
+        onPointerDown={(e) => e.preventDefault()}
+        onClick={() => void handleCreate()}
+        disabled={!canCreate}
+        className={cn(
+          "flex h-10 items-center gap-2 rounded-full px-5 text-sm font-semibold transition-all active:scale-[0.97]",
+          canCreate
+            ? "bg-primary text-primary-foreground shadow-sm shadow-primary/30"
+            : "bg-muted text-muted-foreground"
+        )}
+      >
+        {isCreating ? "Adding…" : "Add task"}
+      </button>
+    </div>
+  );
+
+  return (
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        {isMobile ? (
+          <BottomSheetContent
+            onDismiss={() => void handleOpenChange(false)}
+            aria-describedby={undefined}
+          >
+            <DialogTitle className="sr-only">
+              {isCompose ? "New task" : renderTask.title || "Task"}
+            </DialogTitle>
+            {titleRow}
+            {propertyBar}
+            <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain border-t border-border/40 px-5 pb-6 pt-4">
+              {body}
+            </div>
+            {composeFooter}
+          </BottomSheetContent>
+        ) : (
+          <DialogContent
+            className="max-w-2xl p-0 gap-0 overflow-hidden [&>button]:hidden"
+            aria-describedby={undefined}
+          >
+            {/* The visible title is an editable field; screen readers get it here. */}
+            <DialogTitle className="sr-only">
+              {isCompose ? "New task" : renderTask.title || "Task"}
+            </DialogTitle>
+            {titleRow}
+            {propertyBar}
+            <div className="border-t border-border/40 px-4 py-3 sm:px-6 sm:py-4 space-y-4 max-h-[55vh] overflow-y-auto">
+              {body}
+            </div>
+            {composeFooter}
+          </DialogContent>
+        )}
 
         {/* Repeat Config Dialog */}
         {renderTask && !renderTask.seriesId && (

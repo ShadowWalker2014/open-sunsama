@@ -12,6 +12,8 @@ export interface Subtask {
 interface SubtaskListProps {
   subtasks: Subtask[];
   onSubtasksChange: (subtasks: Subtask[]) => void;
+  /** Lets a parent button focus the add field. */
+  addInputRef?: React.Ref<HTMLInputElement>;
   className?: string;
 }
 
@@ -22,6 +24,7 @@ interface SubtaskListProps {
 export function SubtaskList({
   subtasks,
   onSubtasksChange,
+  addInputRef,
   className,
 }: SubtaskListProps) {
   const addSubtasks = (titles: string[]) => {
@@ -62,7 +65,7 @@ export function SubtaskList({
           ))}
         </div>
       )}
-      <SubtaskAddRow onAdd={addSubtasks} />
+      <SubtaskAddRow ref={addInputRef} onAdd={addSubtasks} />
     </div>
   );
 }
