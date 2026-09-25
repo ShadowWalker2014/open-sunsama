@@ -31,6 +31,7 @@ export function insertSeriesInstance(
     })
     .returning();
 }
+
 /**
  * Generate a single recurring task instance
  */
