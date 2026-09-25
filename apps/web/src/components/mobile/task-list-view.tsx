@@ -360,7 +360,7 @@ export function MobileTaskListView({
       <button
         onClick={handleAddTask}
         className={cn(
-          "fab-lift fixed right-4 bottom-24 z-50",
+          "fixed right-4 bottom-24 z-50",
           "flex items-center justify-center w-14 h-14",
           "rounded-full bg-primary text-primary-foreground shadow-lg",
           "active:scale-95 transition-transform",

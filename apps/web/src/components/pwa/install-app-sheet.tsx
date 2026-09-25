@@ -127,13 +127,22 @@ export function InstallAppSheet({ open, onOpenChange }: InstallAppSheetProps) {
               </button>
             </>
           ) : (
-            <button
-              type="button"
-              onClick={() => onOpenChange(false)}
-              className="h-11 flex-1 rounded-full bg-foreground text-[15px] font-semibold text-background active:scale-[0.98]"
-            >
-              Got it
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                className="h-11 flex-1 rounded-full text-[15px] font-medium text-muted-foreground active:bg-muted"
+              >
+                Not now
+              </button>
+              <button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                className="h-11 flex-[2] rounded-full bg-foreground text-[15px] font-semibold text-background active:scale-[0.98]"
+              >
+                Got it
+              </button>
+            </>
           )}
         </div>
       </BottomSheetContent>
