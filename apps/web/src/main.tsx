@@ -42,6 +42,8 @@ const router = createRouter({
   defaultPreload: "intent",
   defaultPreloadStaleTime: 30_000,
   defaultPreloadGcTime: 5 * 60_000,
+  // New pages open at the top; back/forward returns to where you were
+  scrollRestoration: true,
 });
 
 // Register the router for type safety
@@ -154,7 +156,11 @@ if (!rootElement) {
   throw new Error("Root element not found");
 }
 
-ReactDOM.createRoot(rootElement).render(
+// A dev hot update of this file re-runs it; reuse the root so the app isn't mounted twice
+const root: ReactDOM.Root = import.meta.hot?.data.root ?? ReactDOM.createRoot(rootElement);
+if (import.meta.hot) import.meta.hot.data.root = root;
+
+root.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>

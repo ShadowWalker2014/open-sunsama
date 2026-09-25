@@ -21,37 +21,30 @@ interface TableOfContentsProps {
 export function TableOfContents({ headings, className }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState<string>("");
 
-  // Set up intersection observer to track which heading is in view
+  // The active section is the last heading scrolled above the top ~120px
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveId(entry.target.id);
-          }
-        });
-      },
-      {
-        rootMargin: "-80px 0px -80% 0px",
-        threshold: 0,
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      let current = "";
+      for (const heading of headings) {
+        const el = document.getElementById(heading.id);
+        if (!el) continue;
+        if (el.getBoundingClientRect().top <= 120) current = heading.id;
+        else break;
       }
-    );
-
-    // Observe all heading elements
-    headings.forEach((heading) => {
-      const element = document.getElementById(heading.id);
-      if (element) {
-        observer.observe(element);
-      }
-    });
-
+      setActiveId(current);
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
     return () => {
-      headings.forEach((heading) => {
-        const element = document.getElementById(heading.id);
-        if (element) {
-          observer.unobserve(element);
-        }
-      });
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      if (frame) cancelAnimationFrame(frame);
     };
   }, [headings]);
 
@@ -82,22 +75,23 @@ export function TableOfContents({ headings, className }: TableOfContentsProps) {
       )}
       aria-label="Table of Contents"
     >
-      <div className="flex items-center gap-2 mb-3 text-[13px] font-semibold text-foreground">
-        <List className="h-4 w-4" />
-        <span>On this page</span>
-      </div>
-      <ul className="space-y-1">
+      <p className="mb-3 flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <List className="h-3.5 w-3.5" />
+        On this page
+      </p>
+      <ul className="border-l border-border/70 dark:border-white/[0.08]">
         {headings.map((heading) => (
           <li key={heading.id}>
             <a
               href={`#${heading.id}`}
               onClick={(e) => handleClick(e, heading.id)}
+              aria-current={activeId === heading.id ? "location" : undefined}
               className={cn(
-                "block py-1 text-[12px] leading-relaxed transition-colors hover:text-foreground",
-                heading.level === 3 && "pl-3",
+                "-ml-px block border-l-2 py-1.5 pr-2 text-[13px] leading-snug transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                heading.level === 3 ? "pl-6 text-[12.5px]" : "pl-3.5",
                 activeId === heading.id
-                  ? "text-primary font-medium"
-                  : "text-muted-foreground"
+                  ? "border-primary font-medium text-foreground"
+                  : "border-transparent text-muted-foreground"
               )}
             >
               {heading.text}
@@ -122,19 +116,28 @@ export function extractHeadings(): TOCHeading[] {
 
   if (!container) return headings;
 
-  const elements = container.querySelectorAll("h2, h3");
+  // FAQ questions are listed under their one "Frequently asked questions" entry
+  const elements = container.querySelectorAll(
+    'h2, h3:not(section[aria-labelledby="faq"] h3)'
+  );
 
+  // Repeated headings ("Key features" under each app) get -2, -3... so anchors stay unique
+  const used = new Set<string>();
   elements.forEach((element) => {
     const text = element.textContent?.trim() || "";
-    // Generate ID from text if not present
-    let id = element.id;
-    if (!id) {
-      id = text
+    let id =
+      element.id ||
+      text
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)/g, "");
-      element.id = id;
+    if (used.has(id)) {
+      let n = 2;
+      while (used.has(`${id}-${n}`)) n++;
+      id = `${id}-${n}`;
     }
+    used.add(id);
+    element.id = id;
 
     headings.push({
       id,

@@ -1,3 +1,4 @@
+import { Reveal } from "@/components/landing/motion";
 import type { BlogPost } from "@/types/blog";
 import { BlogCard } from "./blog-card";
 import { BlogPagination } from "./blog-pagination";
@@ -13,9 +14,7 @@ interface BlogPostsGridProps {
   onClearFilters: () => void;
 }
 
-/**
- * Blog posts grid section with pagination and empty state
- */
+/** Three columns on desktop, two on tablet, one on phones. */
 export function BlogPostsGrid({
   posts,
   currentPage,
@@ -25,38 +24,35 @@ export function BlogPostsGrid({
   onPageChange,
   onClearFilters,
 }: BlogPostsGridProps) {
-  return (
-    <section className="py-8 md:py-12">
-      <div className="container px-4 mx-auto max-w-4xl">
-        {posts.length > 0 ? (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {posts.map((post, index) => (
-                <BlogCard
-                  key={post.slug}
-                  post={post}
-                  featured={
-                    index === 0 && currentPage === 1 && !hasActiveFilters
-                  }
-                />
-              ))}
-            </div>
+  if (posts.length === 0) {
+    return (
+      <BlogEmptyState
+        hasActiveFilters={hasActiveFilters}
+        onClearFilters={onClearFilters}
+      />
+    );
+  }
 
-            {/* Pagination */}
-            <BlogPagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              pageNumbers={pageNumbers}
-              onPageChange={onPageChange}
-            />
-          </>
-        ) : (
-          <BlogEmptyState
-            hasActiveFilters={hasActiveFilters}
-            onClearFilters={onClearFilters}
-          />
-        )}
-      </div>
-    </section>
+  return (
+    <>
+      <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+        {posts.map((post, i) => (
+          <Reveal
+            key={post.slug}
+            as="li"
+            delay={(i % 3) * 60}
+            className="min-w-0"
+          >
+            <BlogCard post={post} />
+          </Reveal>
+        ))}
+      </ul>
+      <BlogPagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageNumbers={pageNumbers}
+        onPageChange={onPageChange}
+      />
+    </>
   );
 }

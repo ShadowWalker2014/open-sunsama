@@ -75,12 +75,12 @@ export function ShareButtons({
 
   return (
     <div className={cn("flex items-center gap-1.5", className)}>
-      <span className="text-[11px] text-muted-foreground mr-1">Share:</span>
+      <span className="mr-1 text-[12.5px] text-muted-foreground">Share</span>
 
       <Button
         variant="ghost"
         size="sm"
-        className="h-7 w-7 p-0"
+        className="h-8 w-8 rounded-full border border-border/70 p-0 text-muted-foreground hover:border-primary/40 hover:bg-primary/5 hover:text-primary dark:border-white/10"
         onClick={handleTwitterShare}
         title="Share on Twitter/X"
         aria-label="Share on Twitter/X"
@@ -91,7 +91,7 @@ export function ShareButtons({
       <Button
         variant="ghost"
         size="sm"
-        className="h-7 w-7 p-0"
+        className="h-8 w-8 rounded-full border border-border/70 p-0 text-muted-foreground hover:border-primary/40 hover:bg-primary/5 hover:text-primary dark:border-white/10"
         onClick={handleLinkedInShare}
         title="Share on LinkedIn"
         aria-label="Share on LinkedIn"
@@ -102,7 +102,10 @@ export function ShareButtons({
       <Button
         variant="ghost"
         size="sm"
-        className={cn("h-7 w-7 p-0", copied && "text-green-600")}
+        className={cn(
+          "h-8 w-8 rounded-full border border-border/70 p-0 text-muted-foreground hover:border-primary/40 hover:bg-primary/5 hover:text-primary dark:border-white/10",
+          copied && "text-green-600"
+        )}
         onClick={handleCopyLink}
         title="Copy link"
         aria-label="Copy link"

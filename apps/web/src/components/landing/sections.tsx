@@ -2,16 +2,15 @@ import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
-  Bot,
-  Check,
-  Clock,
   Command,
   Download,
   Github,
-  LayoutGrid,
+  Hourglass,
+  ListChecks,
+  Monitor,
   RefreshCw,
-  Timer,
-  X,
+  Repeat,
+  Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -72,10 +71,10 @@ export function SiteHeader() {
       <div className="container mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2">
           <img src="/open-sunsama-logo.png" alt="Open Sunsama" className="h-7 w-7 rounded-lg object-cover" />
-          <span className="text-[14px] font-semibold tracking-tight">Open Sunsama</span>
+          <span className="whitespace-nowrap text-[14px] font-semibold tracking-tight">Open Sunsama</span>
         </Link>
 
-        <nav className="hidden items-center gap-0.5 md:flex">
+        <nav className="hidden items-center gap-0.5 lg:flex">
           {[
             { label: "Features", href: "/#features" },
             { label: "AI native", href: "/#ai" },
@@ -83,27 +82,27 @@ export function SiteHeader() {
             <a
               key={item.label}
               href={item.href}
-              className="rounded-md px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+              className="whitespace-nowrap rounded-md px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
             >
               {item.label}
             </a>
           ))}
           <Link
             to="/docs"
-            className="rounded-md px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+            className="whitespace-nowrap rounded-md px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
           >
             Docs
           </Link>
           <Link
             to="/blog"
             search={{}}
-            className="rounded-md px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+            className="whitespace-nowrap rounded-md px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
           >
             Blog
           </Link>
           <Link
             to="/download"
-            className="rounded-md px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+            className="whitespace-nowrap rounded-md px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
           >
             Download
           </Link>
@@ -140,79 +139,90 @@ export function SiteHeader() {
 
 const FEATURES = [
   {
-    icon: Clock,
-    title: "Time blocking",
-    body: "Drag tasks onto your calendar to create a realistic daily plan.",
-    href: "/features/time-blocking",
-  },
-  {
-    icon: LayoutGrid,
-    title: "Kanban board",
-    body: "Organize tasks visually with drag-and-drop prioritization.",
-    href: "/features/kanban",
-  },
-  {
-    icon: Timer,
-    title: "Focus mode",
-    body: "Work on one task at a time with a built-in timer.",
-    href: "/features/focus-mode",
-  },
-  {
-    icon: Bot,
-    title: "AI native",
-    body: "Control your planner from any agent. Connect Claude, ChatGPT, Cursor, or any MCP client with one URL.",
-    href: "/features/ai-integration",
-    agents: ["Claude", "ChatGPT", "Cursor", "Claude Code"],
-  },
-  {
-    icon: Command,
-    title: "Command palette",
-    body: "Access everything with ⌘K. Search tasks, run commands, and navigate fast.",
-    href: "/features/command-palette",
-  },
-  {
     icon: RefreshCw,
     title: "Calendar sync",
-    body: "Two-way sync with Google, Outlook, and iCloud calendars.",
+    body: "See your Google, Outlook and iCloud events right next to your plan.",
     href: "/features/calendar-sync",
+    color: "#F59E0B",
+  },
+  {
+    icon: Repeat,
+    title: "Rollover and repeats",
+    body: "Unfinished tasks roll over to tomorrow. Recurring tasks come back on their own.",
+    color: "#F97316",
+  },
+  {
+    icon: Hourglass,
+    title: "Planned vs actual",
+    body: "Set an estimate. The focus timer tracks the real time. Your next plan gets better.",
+    href: "/features/focus-mode",
+    color: "#F43F5E",
+  },
+  {
+    icon: ListChecks,
+    title: "Subtasks, notes and files",
+    body: "Break big tasks into steps. Add rich notes and attach files where you need them.",
+    color: "#EC4899",
+  },
+  {
+    icon: Monitor,
+    title: "Desktop apps",
+    body: "Apps for Mac, Windows and Linux, with a global shortcut to add a task from anywhere.",
+    href: "/download",
+    color: "#A855F7",
+  },
+  {
+    icon: Smartphone,
+    title: "On your phone",
+    body: "Open it in your phone's browser. Changes sync across all your devices in real time.",
+    color: "#6366F1",
   },
 ];
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="scroll-mt-16 border-t border-border/50 py-24">
+    <section id="features" className="scroll-mt-16 border-t border-border/50 py-24 md:py-28">
       <div className="container mx-auto max-w-6xl px-4">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <h2 className="text-[32px] font-semibold leading-[1.08] tracking-[-0.03em] md:text-[44px]">Built for focus.</h2>
-          <p className="mt-4 text-[16px] leading-relaxed text-muted-foreground">Everything you need to plan your day.</p>
+        <Reveal className="mx-auto max-w-3xl text-balance text-center">
+          <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-primary">Features</p>
+          <h2 className="mt-3 text-[32px] font-semibold leading-[1.08] tracking-[-0.03em] md:text-[44px]">
+            Everything else a good day needs.
+          </h2>
+          <p className="mt-4 text-[16px] leading-relaxed text-muted-foreground">The small things that keep your plan honest.</p>
         </Reveal>
         <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-border/70 bg-border/70 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((item, i) => (
-            <Reveal key={item.title} delay={i * 60} className="h-full min-w-0 bg-background">
-              <Link to={item.href} className="group relative block h-full p-6 transition-colors hover:bg-muted/40">
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform duration-300 group-hover:-translate-y-0.5">
-                  <item.icon className="h-4 w-4" />
+          {FEATURES.map((item, i) => {
+            const body = (
+              <>
+                <span
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover:-translate-y-0.5"
+                  style={{ backgroundColor: `${item.color}1f`, color: item.color, boxShadow: `inset 0 0 0 1px ${item.color}33` }}
+                >
+                  <item.icon className="h-[18px] w-[18px]" />
                 </span>
-                <h3 className="mt-4 flex items-center gap-1.5 text-[15px] font-semibold">
-                  {item.title}
-                  <ArrowRight className="h-3.5 w-3.5 -translate-x-1 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
-                </h3>
-                <p className="mt-1.5 text-[14px] leading-relaxed text-muted-foreground">{item.body}</p>
-                {item.agents && (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {item.agents.map((agent) => (
-                      <span
-                        key={agent}
-                        className="rounded-md border border-primary/25 bg-primary/5 px-1.5 py-0.5 text-[11px] font-medium text-foreground/80"
-                      >
-                        {agent}
-                      </span>
-                    ))}
-                  </div>
+                <span className="block min-w-0 sm:mt-4">
+                  <h3 className="flex items-center gap-1.5 text-[15.5px] font-semibold">
+                    {item.title}
+                    {item.href && (
+                      <ArrowRight className="h-3.5 w-3.5 -translate-x-1 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
+                    )}
+                  </h3>
+                  <p className="mt-1.5 text-[14px] leading-relaxed text-muted-foreground">{item.body}</p>
+                </span>
+              </>
+            );
+            return (
+              <Reveal key={item.title} delay={i * 50} className="h-full min-w-0 bg-background">
+                {item.href ? (
+                  <Link to={item.href} className="group relative flex h-full items-start gap-4 p-5 transition-colors hover:bg-muted/40 sm:block sm:p-6">
+                    {body}
+                  </Link>
+                ) : (
+                  <div className="group relative flex h-full items-start gap-4 p-5 sm:block sm:p-6">{body}</div>
                 )}
-              </Link>
-            </Reveal>
-          ))}
+              </Reveal>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -250,10 +260,10 @@ const SNIPPETS = [
 ];
 
 const STATS = [
-  { value: "100%", label: "Open source" },
   { value: "24", label: "MCP tools" },
   { value: "1", label: "URL for any agent" },
-  { value: "∞", label: "Self-host" },
+  { value: "3", label: "Desktop apps" },
+  { value: "REST", label: "Public API" },
 ];
 
 export function OpenSourceSection() {
@@ -272,11 +282,11 @@ export function OpenSourceSection() {
                 Open source
               </p>
               <h2 className="mt-3 text-[30px] font-semibold leading-[1.1] tracking-[-0.03em] md:text-[40px]">
-                Yours to run, read, and extend.
+                Yours to run, read and change.
               </h2>
               <p className="mt-4 max-w-md text-[15px] leading-relaxed text-white/60">
-                Self-host it on your own server, wire it into scripts with the REST API, or connect any MCP
-                client. No lock-in, and every line is on GitHub.
+                The code is public on GitHub. Run it on your own server with Docker. Script it with the REST
+                API. Your data stays yours.
               </p>
               <div className="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-4">
                 {STATS.map((stat) => (
@@ -350,80 +360,6 @@ export function OpenSourceSection() {
 }
 
 // ---------------------------------------------------------------------------
-// Comparison
-// ---------------------------------------------------------------------------
-
-const ROWS: Array<{ name: string; others: boolean | string }> = [
-  { name: "Daily planning board and time blocking", others: true },
-  { name: "Google, Outlook, and iCloud sync", others: true },
-  { name: "Focus mode with a built-in timer", others: "Varies" },
-  { name: "AI native: control it from any agent", others: false },
-  { name: "One-click Claude & ChatGPT connector", others: "Rare" },
-  { name: "Open source and self-hostable", others: false },
-  { name: "Full REST API with scoped keys", others: "Limited" },
-];
-
-export function ComparisonSection() {
-  return (
-    <section className="border-t border-border/50 py-24">
-      <div className="container mx-auto max-w-3xl px-4">
-        <Reveal className="text-center">
-          <h2 className="text-[28px] font-semibold tracking-[-0.03em] md:text-[36px]">Why Open Sunsama?</h2>
-          <p className="mt-3 text-[16px] text-muted-foreground">The features you need, none of the lock-in.</p>
-        </Reveal>
-        <Reveal delay={100} className="mt-10 overflow-hidden rounded-2xl border border-border/70">
-          <table className="w-full text-[14px]">
-            <thead>
-              <tr className="border-b border-border/70 bg-muted/40 text-[12px] uppercase tracking-wider">
-                <th className="px-3 py-3 text-left font-medium text-muted-foreground sm:px-5" />
-                <th className="px-3 py-3 font-semibold text-primary sm:px-5">Open Sunsama</th>
-                <th className="px-3 py-3 font-medium text-muted-foreground sm:px-5">Closed planners</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ROWS.map((row) => (
-                <tr key={row.name} className="border-b border-border/50 last:border-0">
-                  <td className="px-3 py-3 text-[13px] text-foreground/85 sm:px-5 sm:text-[14px]">{row.name}</td>
-                  <td className="px-3 py-3 text-center sm:px-5">
-                    <Check className="mx-auto h-4 w-4 text-primary" />
-                  </td>
-                  <td className="px-3 py-3 text-center text-[13px] text-muted-foreground sm:px-5">
-                    {row.others === true ? (
-                      <Check className="mx-auto h-4 w-4 text-muted-foreground/60" />
-                    ) : row.others === false ? (
-                      <X className="mx-auto h-4 w-4 text-muted-foreground/40" />
-                    ) : (
-                      row.others
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Reveal>
-        <Reveal delay={160} className="mt-5 text-center text-[13px] text-muted-foreground">
-          Switching? Compare with{" "}
-          {[
-            ["Sunsama", "/alternative/sunsama"],
-            ["Motion", "/alternative/motion"],
-            ["Akiflow", "/alternative/akiflow"],
-            ["Reclaim", "/alternative/reclaim"],
-            ["Todoist", "/alternative/todoist"],
-          ].map(([label, href], i, all) => (
-            <React.Fragment key={href}>
-              <Link to={href} className="font-medium text-foreground/80 underline-offset-4 hover:text-primary hover:underline">
-                {label}
-              </Link>
-              {i < all.length - 1 ? " · " : ""}
-            </React.Fragment>
-          ))}
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Final CTA
 // ---------------------------------------------------------------------------
 
@@ -436,10 +372,10 @@ export function FinalCta() {
       <Reveal className="container mx-auto max-w-2xl px-4 text-center">
         <img src="/open-sunsama-logo.png" alt="" className="mx-auto h-12 w-12 rounded-2xl shadow-lg" />
         <h2 className="mt-6 text-[34px] font-semibold leading-[1.08] tracking-[-0.035em] md:text-[48px]">
-          Ready to take control?
+          Ready for a calmer day?
         </h2>
         <p className="mx-auto mt-4 max-w-lg text-[16px] leading-relaxed text-muted-foreground">
-          Plan your day on a board, time-block your calendar, and run it all from the AI agent you already use.
+          Plan on a board, block time on your calendar, and let your AI agent help.
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-2.5 sm:flex-row">
           <Button size="lg" className="h-11 rounded-lg px-5 text-[14px] shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.6)]" asChild>
@@ -451,11 +387,11 @@ export function FinalCta() {
           <Button variant="outline" size="lg" className="h-11 rounded-lg px-5 text-[14px]" asChild>
             <Link to="/download">
               <Download className="h-4 w-4" />
-              Download the app
+              Download for desktop
             </Link>
           </Button>
         </div>
-        <p className="mt-4 text-[12px] text-muted-foreground">Open source · Works with Claude, ChatGPT, and any MCP client · Self-host anytime</p>
+        <p className="mt-4 text-[12px] text-muted-foreground">Open source · Works with Claude, ChatGPT and any MCP app · Self-host any time</p>
       </Reveal>
     </section>
   );

@@ -1,27 +1,46 @@
 #!/usr/bin/env bun
 /**
  * Writes one HTML file per blog post (dist/blog/<slug>.html) plus the blog
- * index (dist/blog.html), each a copy of dist/index.html with that page's
- * title, description, canonical, Open Graph and Twitter tags baked in.
+ * index (dist/blog.html), each a copy of dist/index.html with that page baked in:
  *
- * Link-preview crawlers (Slack, LinkedIn, X, iMessage) don't run JavaScript,
- * so the tags SEOHead sets at runtime never reach them. server.ts serves
- * these files for their paths and falls back to index.html for everything else.
+ * - title, description, canonical, Open Graph and Twitter tags;
+ * - JSON-LD: BlogPosting, plus FAQPage and VideoObject when the post has them;
+ * - the article itself as semantic HTML in <noscript>.
+ *
+ * Link-preview crawlers (Slack, LinkedIn, X, iMessage) and AI crawlers
+ * (GPTBot, ClaudeBot, PerplexityBot) don't run JavaScript, so without this
+ * they see an empty page. The <noscript> text is the same text readers see.
+ * server.ts serves these files for their paths and falls back to index.html
+ * for everything else.
  *
  * The tags mirror src/components/seo/seo-head.tsx. They carry data-rh="true"
  * so react-helmet-async adopts and replaces them on client-side navigation.
+ * The JSON-LD scripts use the ids the <*Schema> components use, so the client
+ * replaces them instead of adding duplicates.
  *
  * Run after build: bun run scripts/prerender-blog-meta.ts
  */
 
 import fs from "node:fs";
 import path from "node:path";
+import { BLOG_MEDIA } from "../src/lib/blog-media";
+import {
+  blogPostingJsonLd,
+  faqPageJsonLd,
+  videoObjectJsonLd,
+} from "../src/lib/structured-data";
+import {
+  type BlogSource,
+  headingId,
+  lastUpdated,
+  readBlogPosts,
+  renderBody,
+} from "./blog-content";
 
 const BASE_URL = "https://opensunsama.com";
 const SITE_NAME = "Open Sunsama";
 const ROOT_DIR = path.resolve(import.meta.dir, "..");
 const DIST_DIR = path.join(ROOT_DIR, "dist");
-const BLOG_DIR = path.join(ROOT_DIR, "src/content/blog");
 
 interface PageMeta {
   path: string;
@@ -30,15 +49,12 @@ interface PageMeta {
   ogType: "website" | "article";
   ogImage: string;
   publishedTime?: string;
+  modifiedTime?: string;
   author?: string;
-}
-
-interface Frontmatter {
-  title: string;
-  description: string;
-  date: string;
-  author: string;
-  image?: string;
+  /** JSON-LD blocks for <head>, keyed by script id */
+  jsonLd?: Record<string, object>;
+  /** HTML for crawlers without JavaScript, put in <noscript> */
+  noscript?: string;
 }
 
 const escapeAttr = (value: string) =>
@@ -48,17 +64,13 @@ const escapeAttr = (value: string) =>
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 
-/** Frontmatter is a JS object literal: `export const frontmatter = {...};` */
-function readFrontmatter(file: string): Frontmatter {
-  const source = fs.readFileSync(file, "utf-8");
-  const match = source.match(/export const frontmatter = (\{[\s\S]*?\n\});/);
-  if (!match?.[1]) throw new Error(`No frontmatter export in ${file}`);
-  const data = new Function(`return (${match[1]});`)() as Frontmatter;
-  if (!data.title || !data.description) {
-    throw new Error(`Frontmatter in ${file} is missing title or description`);
-  }
-  return data;
-}
+const formatDate = (iso: string) =>
+  new Date(`${iso.slice(0, 10)}T00:00:00Z`).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 
 // Tags in index.html that each page replaces with its own
 const REPLACED_TAGS: RegExp[] = [
@@ -112,6 +124,9 @@ function renderTags(page: PageMeta): string {
   if (page.ogType === "article" && page.publishedTime) {
     meta.push(["property", "article:published_time", page.publishedTime]);
   }
+  if (page.ogType === "article" && page.modifiedTime) {
+    meta.push(["property", "article:modified_time", page.modifiedTime]);
+  }
   if (page.ogType === "article" && page.author) {
     meta.push(["property", "article:author", page.author]);
   }
@@ -145,14 +160,97 @@ function renderPage(template: string, page: PageMeta): string {
   // Drop the blank lines left behind by the removed tags
   html = html.replace(/\n[ \t]*(?=\n)/g, "");
   const charset = '<meta charset="UTF-8" />';
-  if (!html.includes(charset)) {
-    throw new Error("index.html no longer contains the charset meta tag");
+  const root = '<div id="root"></div>';
+  if (!html.includes(charset) || !html.includes(root) || !html.includes("</head>")) {
+    throw new Error("index.html no longer has the charset tag, </head> or #root");
   }
-  return html.replace(charset, `${charset}\n    ${renderTags(page)}`);
+  // Replacer functions, so a "$" in post text is never read as a pattern
+  html = html.replace(charset, () => `${charset}\n    ${renderTags(page)}`);
+
+  const scripts = Object.entries(page.jsonLd ?? {}).map(
+    ([id, data]) =>
+      // "<" escaped so no string in the data can close the script tag
+      `<script type="application/ld+json" id="${id}">${JSON.stringify(data).replace(/</g, "\\u003c")}</script>`
+  );
+  if (scripts.length) {
+    html = html.replace("</head>", () => `  ${scripts.join("\n    ")}\n  </head>`);
+  }
+  if (page.noscript) {
+    html = html.replace(root, () => `${root}\n    <noscript>${page.noscript}</noscript>`);
+  }
+  return html;
 }
 
-function main() {
+/** Mirrors BlogArticleMeta + the article body + BlogFaqs in blog-layout.tsx */
+async function renderArticle({ slug, source, frontmatter: post }: BlogSource) {
+  const { html: body, videosUsed } = await renderBody(source);
+  const updated = post.updated && post.updated !== post.date ? post.updated : null;
+
+  const byline = [
+    escapeAttr(post.author),
+    `<time datetime="${escapeAttr(post.date)}">${formatDate(post.date)}</time>`,
+    updated && `Updated <time datetime="${escapeAttr(updated)}">${formatDate(updated)}</time>`,
+    post.readingTime && `${post.readingTime} min read`,
+  ].filter(Boolean);
+
+  const faqs = post.faqs?.length
+    ? [
+        '<section aria-labelledby="faq">',
+        '<h2 id="faq">Frequently asked questions</h2>',
+        ...post.faqs.map(
+          (faq) =>
+            `<h3 id="${headingId(faq.question)}">${escapeAttr(faq.question)}</h3><p>${escapeAttr(faq.answer)}</p>`
+        ),
+        "</section>",
+      ].join("")
+    : "";
+
+  const noscript = [
+    "<article>",
+    `<nav aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/blog">Blog</a></nav>`,
+    `<h1>${escapeAttr(post.title)}</h1>`,
+    `<p>${escapeAttr(post.description)}</p>`,
+    `<p>${byline.join(" · ")}</p>`,
+    post.image ? `<img src="${escapeAttr(post.image)}" alt="${escapeAttr(post.title)}">` : "",
+    body,
+    faqs,
+    "</article>",
+  ].join("\n");
+
+  const jsonLd: Record<string, object> = {
+    "article-schema": blogPostingJsonLd({
+      title: post.title,
+      description: post.description,
+      datePublished: post.date,
+      dateModified: lastUpdated(post),
+      author: post.author,
+      image: post.image,
+      slug,
+    }),
+  };
+  if (post.faqs?.length) jsonLd["faq-schema"] = faqPageJsonLd(post.faqs);
+  for (const id of videosUsed) {
+    const video = BLOG_MEDIA.videos[id];
+    if (video) jsonLd[`video-schema-${id}`] = videoObjectJsonLd(video);
+  }
+
+  return { noscript, jsonLd };
+}
+
+/** A plain list of every post, so crawlers landing on /blog can find them all */
+function renderIndex(posts: BlogSource[]) {
+  const items = posts.map(
+    ({ slug, frontmatter: post }) =>
+      `<li><a href="/blog/${slug}">${escapeAttr(post.title)}</a>: ${escapeAttr(post.description)}</li>`
+  );
+  return `<main><h1>Open Sunsama Blog</h1><ul>\n${items.join("\n")}\n</ul></main>`;
+}
+
+async function main() {
   const template = fs.readFileSync(path.join(DIST_DIR, "index.html"), "utf-8");
+  const posts = readBlogPosts().sort((a, b) =>
+    lastUpdated(b.frontmatter).localeCompare(lastUpdated(a.frontmatter))
+  );
 
   // Mirrors the SEOHead props in src/routes/blog.tsx
   const pages: PageMeta[] = [
@@ -163,22 +261,23 @@ function main() {
         "Tips on productivity, time management, and building better daily habits. Learn how to plan your day effectively with time blocking and focus techniques.",
       ogType: "website",
       ogImage: "/og-image.png",
+      noscript: renderIndex(posts),
     },
   ];
 
   // Mirrors the SEOHead props in src/components/blog/blog-layout.tsx
-  for (const slug of fs.readdirSync(BLOG_DIR)) {
-    const file = path.join(BLOG_DIR, slug, "index.mdx");
-    if (!fs.existsSync(file)) continue;
-    const post = readFrontmatter(file);
+  for (const source of posts) {
+    const post = source.frontmatter;
     pages.push({
-      path: `/blog/${slug}`,
+      path: `/blog/${source.slug}`,
       title: `${post.title} | Open Sunsama Blog`,
       description: post.description,
       ogType: "article",
       ogImage: post.image?.replace(/\.webp$/, "-og.jpg") || "/og-image.png",
       publishedTime: post.date,
+      modifiedTime: lastUpdated(post),
       author: post.author,
+      ...(await renderArticle(source)),
     });
   }
 
@@ -188,7 +287,7 @@ function main() {
     fs.writeFileSync(out, renderPage(template, page), "utf-8");
   }
 
-  console.log(`Pre-rendered meta tags for ${pages.length} blog pages`);
+  console.log(`Pre-rendered ${pages.length} blog pages (meta tags, JSON-LD, article HTML)`);
 }
 
-main();
+await main();

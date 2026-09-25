@@ -1,476 +1,358 @@
 export const frontmatter = {
-  title: "Best Calendar Apps with Time Blocking in 2026 (Free & Paid)",
-  description: "Top calendar apps that support time blocking. Compare features, pricing, and find the best free option for scheduling.",
+  title: "9 Best Time Blocking Apps in 2026: AI Schedulers vs Planners",
+  description: "The best time blocking app depends on how you plan. We compared 9 apps, from AI auto-schedulers to calm daily planners, and show who each one is for.",
   date: "2026-02-01",
+  updated: "2026-09-24",
   author: "Open Sunsama Team",
-  tags: ["calendar", "time-blocking", "productivity"],
-  readingTime: 13,
-  image: "/blog-calendar-time-blocking.webp"
+  tags: ["time-blocking", "calendar", "productivity", "comparison"],
+  readingTime: 12,
+  image: "/blog-best-calendar-apps-time-blocking.webp",
+  faqs: [
+    {
+      question: "What is the best time blocking app?",
+      answer: "Open Sunsama is the best overall pick. It is an open-source daily planner with time blocking that works with any AI agent. Akiflow is best if your tasks live in many tools, and Motion or Reclaim if you want AI to fill your calendar.",
+    },
+    {
+      question: "Is Google Calendar good for time blocking?",
+      answer: "Yes, for light use. You can add tasks as events and color-code them. It has no backlog, no rollover and no focus timer, so daily time blocking gets slow.",
+    },
+    {
+      question: "What is the difference between time blocking and timeboxing?",
+      answer: "Time blocking gives each task a slot on your calendar. Timeboxing adds a hard stop: when the block ends, you stop. Most time blocking apps support both.",
+    },
+    {
+      question: "Should I use an AI auto-scheduler or plan by hand?",
+      answer: "Use an auto-scheduler like Motion or Reclaim if your week changes all the time and you trust the app to move tasks. Plan by hand if you want to see and choose every block. Many people find auto-schedulers hard to predict.",
+    },
+    {
+      question: "Can an AI agent time block my day for me?",
+      answer: "Yes. Open Sunsama, Sunsama, Akiflow and Reclaim all offer MCP servers, so Claude or ChatGPT can read your tasks and add blocks. With Open Sunsama you connect one URL and sign in, and the agent sees your meetings, tasks and time blocks together.",
+    },
+    {
+      question: "Is there an open-source time blocking app?",
+      answer: "Yes. Open Sunsama is an open-source daily planner with time blocking, calendar sync and an MCP server. The code is public on GitHub under a non-commercial license, and you can self-host it with Docker for personal use.",
+    },
+    {
+      question: "What is the best time blocking app for iPhone and Android?",
+      answer: "TimeBloc and Structured are built for the phone first. Google Calendar also works well on mobile. Most desktop planners, including Sunsama, Akiflow and Morgen, have mobile apps that are better for checking your plan than for making it.",
+    },
+  ],
 };
 
-If you've ever ended the day wondering where your time went, you're not alone. Studies show that the average knowledge worker spends only 2 hours and 48 minutes on productive work each day—the rest disappears into meetings, email, and constant context switching. The solution? A calendar app with time blocking built in.
+The best time blocking app for most people is **Open Sunsama**. It is an open-source daily planner with time blocking that works with any AI agent. Your data stays yours, you can self-host it, and it has a public API.
 
-Time blocking transforms your calendar from a passive record of meetings into an active planning tool. Instead of reacting to your day, you proactively design it. But not all calendar apps handle time blocking equally well. Some require manual workarounds, while others make it effortless.
+We build Open Sunsama, so we put it first — here is why, and where others fit better.
 
-In this guide, we've tested and compared the best calendar apps with time blocking features in 2026. Whether you want a free solution like Open Sunsama or a premium AI-powered scheduler, you'll find the right tool for your workflow.
+**Akiflow** is best if your tasks come from many tools. **Motion** and **Reclaim** are best if you want AI to fill your calendar, and **Sunsama** is best for a calm, guided plan each morning.
 
-## Why Time Blocking Works for Calendar Time Management
+For simple needs, a phone app like **TimeBloc** or **Google Calendar** with **Todoist** is enough. Below you get a comparison table, a short review of each app, and a guide to help you choose.
 
-Before diving into tools, let's understand why the time blocking method is so effective for managing your schedule.
+## Key takeaways
 
-### The Science Behind Time Blocking
+- **Best overall:** Open Sunsama. It is keyboard-first, you can self-host it, and Claude, ChatGPT or Cursor can plan your day over MCP.
+- **Best for tasks from many tools:** Akiflow. It pulls tasks from email, Slack and your project tools into one list, then you drag them onto your calendar.
+- **Best AI auto-scheduling:** Motion for projects, Reclaim for protecting focus time and habits.
+- **Best for mindful daily planning:** Sunsama. Its morning and evening rituals keep your day realistic.
+- **Best for calendar power users:** Morgen. It joins many calendars and adds an AI planner.
+- **Best visual phone planners:** TimeBloc and Structured.
+- **Best simple setup:** Google Calendar plus Todoist.
 
-Research from the University of California, Irvine found that it takes an average of 23 minutes to regain focus after an interruption. When you work from a to-do list without scheduled times, you're constantly making micro-decisions about what to do next—each decision depleting your mental energy.
+## The 9 best time blocking apps compared
 
-Time blocking eliminates this cognitive overhead by pre-deciding when you'll work on each task. Your calendar becomes a visual representation of your priorities, and decision fatigue disappears.
+| App | Approach | Best for | AI and agents | Platforms | Price (Sept 2026) |
+|---|---|---|---|---|---|
+| **Open Sunsama** | Manual, keyboard-first | Best overall: open source and any AI agent | MCP for any agent, REST API | Web, Mac, Windows, Linux, mobile | Open source; hosted app or self-host |
+| **Akiflow** | Manual, with AI help | Tasks from many tools | Aki assistant, MCP | Web, Mac, Windows, iOS, Android | $34/mo, or $19/mo billed yearly |
+| **Motion** | AI auto-scheduling | Projects with deadlines | AI scheduler and chat | Web, desktop, iOS, Android | $19/mo, less billed yearly |
+| **Reclaim** | AI auto-scheduling | Focus time and habits | AI planner, MCP | Web | Free plan; from $10/seat/mo |
+| **Sunsama** | Guided manual planning | A calm, realistic day | Sunny assistant, MCP | Web, Mac, Windows, Linux, iOS, Android | $22/mo, or $17/mo billed yearly |
+| **Morgen** | Manual, with AI planner | Many calendars in one view | AI planner | Web, Mac, Windows, Linux, iOS, Android | $30/mo, or $15/mo billed yearly |
+| **TimeBloc** | Visual timeline | Planning on your iPhone | None | iPhone, Android | Free; Premium in-app |
+| **Structured** | Visual timeline | A simple daily timeline | AI task input | iOS, Android, Mac, web | Free; Pro from $29.99/yr |
+| **Google Calendar + Todoist** | Manual events | Light time blocking | Todoist MCP, Calendar MCP (preview) | Web, iOS, Android | Free plans; Todoist Pro is paid |
 
-### Key Benefits of a Time Blocking Calendar
+Prices come from each app's pricing page or app store listing in September 2026. They can change, so check before you buy.
 
-- **Reduced context switching**: By dedicating blocks to single tasks, you minimize the costly mental transitions between different types of work
-- **Realistic capacity planning**: When you see your day visually, you can't fool yourself into thinking you'll accomplish 12 hours of work in 8 hours
-- **Protected focus time**: Blocked time signals to others (and yourself) that you're unavailable for interruptions
-- **Better work-life balance**: When work has defined boundaries, personal time is protected
+## How we compared these time blocking apps
 
-## Native Calendar Apps vs. Dedicated Time Blocking Apps
+In September 2026 we checked each app's website, pricing page, help docs, changelog and MCP or API docs. We also read hundreds of user reviews, plus threads on Reddit, Hacker News and Product Hunt.
 
-When choosing a calendar app for time blocking, you have two main options: using a general-purpose calendar app or choosing a dedicated schedule blocking app.
+We checked five things for every app:
 
-### General-Purpose Calendar Apps
+- How fast you can turn a task into a time block.
+- What happens when a day goes wrong and tasks roll over.
+- How the app shows meetings and tasks side by side.
+- How well the phone app works away from the desk.
+- Whether an AI agent can read and change the plan.
 
-Apps like Google Calendar, Apple Calendar, and Outlook can technically support time blocking—you simply create events for each task. However, they weren't designed for this workflow:
+We also build and use Open Sunsama every day. We held it to the same five checks and point out where other apps do better.
 
-- **Manual task entry**: You must type out task details as calendar events
-- **No task management**: There's no task list to drag from—every block must be created from scratch
-- **Limited visual distinction**: Tasks and meetings look the same, making it hard to see your actual workload
-- **No duration tracking**: You won't know if your time estimates are accurate
+## Open Sunsama is our top pick for time blocking
 
-### Dedicated Time Blocking Apps
+### 1. Open Sunsama: best overall time blocking app
 
-Purpose-built tools like Open Sunsama integrate task management with calendar scheduling. The workflow is seamless:
+**Verdict:** Open Sunsama is a keyboard-first daily planner whose code you can read, run and extend.
 
-1. Create tasks in your task list
-2. Drag tasks onto your calendar to schedule them
-3. Track actual time spent vs. estimated
-4. Reschedule incomplete tasks to tomorrow
+**Best for:** Most people who want to plan their own day. It fits best if you already ask Claude or ChatGPT to plan, or want to self-host.
 
-This integrated approach makes time blocking sustainable rather than exhausting.
+<DemoVideo id="tour" />
 
-## Best Calendar Apps with Time Blocking: Comparison Table
+Each morning you pull tasks from the backlog into Today. Then you give each one a slot on the calendar.
 
-| App | Time Blocking | Task Integration | AI Features | Price | Best For |
-|-----|--------------|------------------|-------------|-------|----------|
-| **Open Sunsama** | Native drag-and-drop | Full task + subtask management | Smart duration estimates | Free | Daily planners who want simplicity |
-| **Sunsama** | Timeboxing workflow | Task integration | No | $20/month | Teams and professionals |
-| **Motion** | AI auto-scheduling | Task management | Full AI scheduling | $19/month | People who want AI to schedule |
-| **Akiflow** | Block-based | Universal inbox | Some automation | $15/month | Power users with many tools |
-| **Morgen** | Calendar-first | Basic tasks | Scheduling assistant | Free / $9/month | Calendar unification |
-| **Google Calendar** | Manual events | None | AI suggestions | Free | Basic needs, Google ecosystem |
-| **Fantastical** | Events + reminders | Reminders integration | Natural language | $57/year | Apple ecosystem users |
-| **Calendly** | Meeting slots | None | Smart scheduling | Free / $12/month | Meeting-heavy roles |
+<Clip id="plan-day" caption="Drag tasks from the backlog into Today to plan your day." />
 
-## Detailed Reviews: Best Time Blocking Calendar Apps
+**What works:**
 
-### 1. Open Sunsama — Best Free Time Blocking App
+- Your tasks sit on a board of days next to your calendar. You drag a task onto a time slot to block it, then drag the edge to resize it.
+- Unfinished tasks roll over to the next day, so a bad day never becomes a wall of stuff.
+- A focus mode with a timer tracks actual time, so you can compare planned vs actual.
+- Cmd+K opens a command palette, and most actions have a shortcut.
+- It syncs with Google Calendar, Outlook and iCloud.
 
-**Price**: Free (Pro features coming soon)
-**Platforms**: Web, Desktop (macOS, Windows, Linux), Mobile
+<Clip id="time-block" caption="Drag a task onto the calendar, then drag the edge to set how long it takes." />
 
-Open Sunsama is a free, open-source daily planner built specifically for time blocking. Unlike paid alternatives, it offers a complete time blocking workflow at no cost—no trial periods, no feature limitations, no subscription required.
+<Shot id="calendar-day" alt="Open Sunsama day view with tasks on the left and time blocks on the calendar" caption="Tasks on the left, time blocks on the right, all in one place." />
 
-#### Why Open Sunsama Excels at Time Blocking
+It works with any AI agent. Paste one URL into Claude, ChatGPT, Cursor or any MCP client, then sign in. Your agent can then read your meetings and tasks and add time blocks around your meetings.
 
-**Native drag-and-drop scheduling**: The core workflow is beautifully simple. Your task list sits beside your calendar. Drag any task onto a time slot to create a time block instantly. No copying, no manual entry, no friction.
+<Clip id="ai-plan" caption="An AI agent plans the afternoon over MCP. Tasks and time blocks appear live." />
 
-**Task-to-calendar linking**: Each time block maintains a live connection to its source task. Complete the task, and the block updates. Need to reschedule? Just drag the block to a new time.
+The code is [public on GitHub](https://github.com/ShadowWalker2014/open-sunsama). It uses a non-commercial license: you can read it, run it and self-host it for personal use. Companies need a commercial license.
 
-**Focus mode with timer**: When it's time to execute, Open Sunsama's focus mode removes distractions and shows only your current task. An optional timer helps you stay within your blocked time.
+**Limits:**
 
-**Visual daily planning**: The side-by-side layout makes capacity planning intuitive. You can immediately see if you've scheduled too many tasks or if you have open blocks available.
+- It has no AI auto-scheduler. You place blocks yourself, or you ask your agent.
+- It links to fewer tools than Sunsama or Akiflow. There is no Slack, Asana or Jira sync yet, so you bring those tasks in through the [REST API](/docs/api/authentication) or your agent.
+- It is a younger product with a smaller community.
 
-**Subtasks and notes**: Unlike basic calendar apps, tasks can have subtasks, notes, and attachments—everything you need to actually complete the work.
+**Pick it if:** you want full control of your planner, your data and the agent that runs it.
 
-**Cross-platform availability**: Whether you're on your desktop, laptop, or phone, your time-blocked schedule stays synchronized.
+[Try Open Sunsama](/register) or [see how the MCP server works](/docs/mcp/overview).
 
-#### Open Sunsama Limitations
+## AI auto-scheduling apps plan the day for you
 
-- Newer product with smaller community
-- Calendar integrations still expanding
-- No AI auto-scheduling (by design—you stay in control)
+These apps take your tasks, deadlines and meetings, then place the blocks for you. When a meeting moves, they move your tasks too. The trade-off is control: some people say the plan feels like a black box.
 
-#### Who Should Use Open Sunsama
+### 2. Motion: best for projects with deadlines
 
-Open Sunsama is ideal for anyone who wants serious time blocking without a serious price tag. It's particularly well-suited for:
+**Verdict:** Motion is the most hands-off time blocking app on this list.
 
-- Freelancers and solopreneurs managing their own schedules
-- Knowledge workers practicing daily planning
-- Students organizing study blocks and assignments
-- Anyone frustrated with paid subscription fatigue
+**Best for:** Busy people and small teams who juggle many tasks with due dates.
 
-[Get started with Open Sunsama for free →](/register)
+**What works:**
 
----
+- You add a task with a deadline and a length, and Motion finds the slot.
+- When a meeting lands on your block, Motion moves the task for you.
+- It also does projects, docs and team views, so some teams use it for everything.
 
-### 2. Sunsama — Best for Guided Daily Planning
+**Limits:**
 
-**Price**: $20/month ($240/year)
-**Platforms**: Web, Mobile
+- The plan can shift a lot during the day, which some people find hard to trust.
+- It does far more than time blocking, so setup takes a while.
+- There is no free plan, only a short trial.
 
-Sunsama (the paid, closed-source counterpart to Open Sunsama) offers a structured daily planning workflow with timeboxing as a core feature.
+**Pick it if:** you would rather not decide when to do each task.
 
-#### Key Features
+[Visit Motion](https://www.usemotion.com/)
 
-- **Daily planning ritual**: Guided process to review yesterday and plan today
-- **Calendar integration**: Syncs with Google Calendar and Outlook
-- **Timeboxing**: Assign time estimates to tasks and see your daily commitment
-- **Weekly review**: Built-in reflection process
-- **Team features**: See teammates' planned work
+### 3. Reclaim: best for protecting focus time and habits
 
-#### Limitations
+**Verdict:** Reclaim guards your calendar more than it plans your to-do list.
 
-- $240/year subscription cost
-- Can feel overly prescriptive for some workflows
-- No free tier beyond trial
+**Best for:** People in meeting-heavy jobs who need to keep time for deep work.
 
-#### Who Should Use Sunsama
+**What works:**
 
-Teams and professionals who value structure and don't mind the premium price. Sunsama's guided rituals work well for people who need external accountability in their planning process.
+- You set a weekly goal for focus time, and Reclaim books it around your meetings.
+- Habits like lunch or a weekly review find the best open slot on their own.
+- It pulls tasks from Todoist, Asana, ClickUp, Jira and Linear on paid plans.
+- It connects to Claude over MCP and to ChatGPT.
 
----
+**Limits:**
 
-### 3. Motion — Best AI-Powered Scheduling
+- It lives on the web, with no native phone app.
+- It works on top of Google Calendar or Outlook, so you need one of those.
+- Reclaim is now part of [Dropbox](https://reclaim.ai/blog/dropbox-acquires-reclaim), which some users watch with care.
 
-**Price**: $19/month ($228/year)
-**Platforms**: Web, Mobile
+**Pick it if:** your main problem is meetings eating the time you need for real work.
 
-Motion uses artificial intelligence to automatically schedule your tasks around your meetings. You tell it what needs to be done and by when—Motion figures out the "when" for you.
+[Visit Reclaim](https://reclaim.ai/)
 
-#### Key Features
+## Manual daily planners keep you in control
 
-- **AI auto-scheduling**: Tasks automatically appear on your calendar
-- **Dynamic rescheduling**: When plans change, Motion adjusts everything
-- **Meeting scheduler**: Built-in meeting booking with AI optimization
-- **Priority handling**: Tasks are scheduled based on urgency and importance
+These apps show your task list next to your calendar. You drag each task into a slot yourself. It takes a few minutes each morning, but you always know why a block is there.
 
-#### Limitations
+### 4. Akiflow: best for tasks from many tools
 
-- You give up control over when tasks are scheduled
-- Can feel unpredictable when the AI reschedules
-- Premium pricing with no free tier
-- Learning curve for AI scheduling preferences
+**Verdict:** Akiflow is the fastest way to get tasks from many tools into one plan.
 
-#### Who Should Use Motion
+**Best for:** Founders, managers and anyone whose tasks start in email, Slack and project tools.
 
-People who struggle with deciding when to do tasks and want the AI to handle scheduling decisions. Works well for those with highly variable calendars where manual planning is time-consuming.
+**What works:**
 
----
+- Its inbox pulls tasks from Gmail, Slack, Notion, Asana, Jira, Todoist and more.
+- Keyboard shortcuts and a command bar make planning quick.
+- You can block a single task, or make a "slot" and drop a group of tasks into it.
+- Aki, its AI assistant, and an MCP connector come with the Pro plan.
 
-### 4. Akiflow — Best for Power Users
+**Limits:**
 
-**Price**: $15/month ($180/year)
-**Platforms**: Web, Desktop
+- There is no free plan, and it costs more than most apps here.
+- The phone app is better for checking your day than for planning it.
+- With so many sources, the inbox can turn into a wall of stuff.
 
-Akiflow positions itself as a "universal inbox" that consolidates tasks from multiple tools and lets you time block everything in one place.
+**Pick it if:** your tasks are spread across five tools and you want them all in one place.
 
-#### Key Features
+[Visit Akiflow](https://akiflow.com/)
 
-- **Universal inbox**: Pull tasks from Notion, Asana, Todoist, email, and more
-- **Keyboard-first design**: Fast task creation and scheduling
-- **Calendar blocking**: Native time blocking with drag-and-drop
-- **Command bar**: Quick actions without leaving the keyboard
+### 5. Sunsama: best for mindful daily planning
 
-#### Limitations
+**Verdict:** Sunsama is the calmest way to plan a realistic day.
 
-- Steep learning curve
-- Can be overwhelming for simple workflows
-- Requires setup for each integration
-- Premium pricing
+**Best for:** Knowledge workers who want a guided plan and a clear end to the day.
 
-#### Who Should Use Akiflow
+**What works:**
 
-Power users who work across many tools and need a central hub for scheduling. Best for those comfortable with complex productivity systems.
+- A daily planning ritual walks you through what to do today and how long it takes.
+- It adds up your planned hours, so you see when a day is too full.
+- It tracks planned vs actual time, and unfinished tasks roll over.
+- It links to about twenty tools, from Asana and Jira to Gmail and Slack.
+- Sunny, its AI assistant, and an [official MCP server](https://help.sunsama.com/docs/mcp-model-context-protocol) let Claude and ChatGPT work with your tasks.
 
----
+**Limits:**
 
-### 5. Morgen — Best for Calendar Unification
+- Some users say the daily ritual turns into a 20-minute chore.
+- Many reviews call the phone app weak next to the desktop app.
+- There is no public REST API, and the code is closed.
 
-**Price**: Free / $9/month for premium
-**Platforms**: Web, Desktop, Mobile
+**Pick it if:** you want the app to guide you to a calm day, one day at a time.
 
-Morgen focuses on bringing multiple calendars together and adding light task management on top. It's a solid middle ground between a basic calendar and a full planning app.
+[Visit Sunsama](https://www.sunsama.com/)
 
-#### Key Features
+### 6. Morgen: best for people with many calendars
 
-- **Multi-calendar sync**: Connect Google, Outlook, iCloud, and CalDAV calendars
-- **Scheduling links**: Built-in meeting scheduler
-- **Basic time blocking**: Create task blocks on your calendar
-- **Clean interface**: Minimalist design focused on the calendar
+**Verdict:** Morgen is a clean calendar that brings all your accounts and task lists together.
 
-#### Limitations
+**Best for:** People with work and personal calendars across Google, Outlook and iCloud.
 
-- Task management is basic
-- Time blocking is secondary to calendar features
-- Limited team features
+**What works:**
 
-#### Who Should Use Morgen
+- It joins Google, Outlook, iCloud and Fastmail calendars in one view.
+- It pulls tasks from Notion, Todoist, Linear, ClickUp and more.
+- Its AI planner suggests a plan, and you adjust it before it goes on the calendar.
+- It runs on Linux as well as Mac, Windows and mobile.
 
-People who primarily need to unify multiple calendars and want simple time blocking without the complexity of a full task management system.
+**Limits:**
 
----
+- The monthly plan costs more than most apps here.
+- Its own task list is basic, so it works best with a task app beside it.
 
-### 6. Google Calendar — Best Free Basic Option
+**Pick it if:** your calendars are the mess, not your task list.
 
-**Price**: Free
-**Platforms**: Web, Mobile
+[Visit Morgen](https://www.morgen.so/)
 
-Google Calendar remains the most widely used calendar app, and it can support basic time blocking—though it requires more manual effort.
+## Simple apps are enough for light time blocking
 
-#### Key Features
+You don't need a full planner to time block. If you plan a few blocks a day, a visual phone app or your usual calendar will do.
 
-- **Free and ubiquitous**: Works with almost everything
-- **Event creation**: Create time blocks as events
-- **Color coding**: Differentiate task blocks from meetings
-- **Goals feature**: Auto-schedules recurring habits
-- **Shared calendars**: Easy collaboration
+### 7. TimeBloc: best visual planner for your phone
 
-#### How to Time Block with Google Calendar
+**Verdict:** TimeBloc turns your day into colored blocks you can see at a glance.
 
-1. Create a separate calendar called "Time Blocks"
-2. Add events for each task you want to time block
-3. Use colors to categorize work types
-4. Set reminders for block start times
+**Best for:** Students and anyone who plans on their phone and loses track of time.
 
-#### Limitations
+**What works:**
 
-- No task list integration
-- Manual block creation is tedious
-- No duration tracking or estimates
-- Blocks and meetings look similar
-- No focus mode
+- Blocks have colors, icons and tags, so your day is easy to read.
+- You build a routine once, and it fills each day's timeline.
+- Lock Screen widgets show what is next without opening the app.
+- It brings in events from your existing calendar.
 
-#### Who Should Use Google Calendar
+**Limits:**
 
-People with basic time blocking needs who are already in the Google ecosystem. Works for occasional time blocking but becomes tedious for daily practice.
+- There is no real task list or backlog.
+- Many features, like more than one routine, need Premium.
+- There is no desktop app.
 
----
+**Pick it if:** you want a quick, visual plan for the day on your phone.
 
-### 7. Fantastical — Best for Apple Users
+[See TimeBloc on the App Store](https://apps.apple.com/us/app/timebloc-daily-planner/id1476033780)
 
-**Price**: $57/year
-**Platforms**: macOS, iOS, iPadOS, watchOS
+### 8. Structured: best simple daily timeline
 
-Fantastical is a beautifully designed calendar app for the Apple ecosystem with powerful natural language parsing and excellent integration with Apple Reminders.
+**Verdict:** Structured is a friendly timeline that mixes tasks and events.
 
-#### Key Features
+**Best for:** People who want a light, pretty plan across phone and computer.
 
-- **Natural language input**: Type "Meeting with John tomorrow at 3pm" and it's created
-- **Apple ecosystem integration**: Works with iCloud, Reminders, and Focus modes
-- **Beautiful design**: One of the most visually polished calendar apps
-- **Scheduling links**: Built-in availability sharing
-- **Widgets**: Excellent home screen and watch complications
+**What works:**
 
-#### Limitations
+- Tasks and calendar events share one timeline.
+- It picks an icon for each task, which makes the day easy to scan.
+- You can add tasks by voice or photo with its AI input.
 
-- Apple platforms only
-- No true task management
-- Premium pricing for what's essentially a calendar
-- Time blocking is still manual
+**Limits:**
 
-#### Who Should Use Fantastical
+- The timeline is great for one day but hard to use for a full work week.
+- There are no projects or folders for bigger task lists.
 
-Mac and iPhone users who want a premium calendar experience and are willing to use Apple Reminders for task tracking. Great interface, but not purpose-built for time blocking.
+**Pick it if:** you want the simplest possible daily plan.
 
----
+[Visit Structured](https://structured.app/)
 
-### 8. Calendly — Best for Meeting Scheduling
+### 9. Google Calendar with Todoist: best simple setup
 
-**Price**: Free / $12/month for premium
-**Platforms**: Web
+**Verdict:** A calendar you already know plus a strong task list covers the basics.
 
-Calendly excels at one thing: helping others book meetings with you. It's not a time blocking app per se, but it can protect your focus time by controlling when meetings happen.
+**Best for:** Light time blocking, or a first try before you pay for a planner.
 
-#### Key Features
+**What works:**
 
-- **Booking pages**: Share links for others to schedule with you
-- **Availability rules**: Define when meetings can be booked
-- **Buffer time**: Automatic breaks between meetings
-- **Calendar sync**: Prevents double-booking
-- **Team scheduling**: Coordinate group availability
+- You add a task as an event and color-code it by type of work.
+- Todoist handles the task list, with due dates, priorities and durations.
+- Todoist has an official hosted MCP server, and Google has a Calendar MCP in developer preview. So an AI agent can reach both.
 
-#### Limitations
+**Limits:**
 
-- Meeting-focused, not task-focused
-- No time blocking for your own work
-- No task management
-- Doesn't help plan your day, just your meetings
+- Tasks and blocks live in two apps, so you copy work back and forth.
+- There is no focus timer and no rollover of blocks.
+- An agent needs two connectors to plan one day.
 
-#### Who Should Use Calendly
+**Pick it if:** you time block a few times a week and want to keep it simple.
 
-People whose main scheduling challenge is managing incoming meeting requests. Use Calendly for meetings and Open Sunsama for time blocking your actual work.
+[Visit Todoist](https://www.todoist.com/)
 
-## How to Implement Time Blocking: Step-by-Step Guide
+## Which time blocking app should you pick?
 
-Ready to start time blocking? Here's a practical implementation guide:
+**For most people: Open Sunsama.** You plan a calm day by hand, and any AI agent can help when you ask.
 
-### Step 1: Choose Your Tool
+If you have a specific need, start with how you want to plan.
 
-For serious time blocking, we recommend Open Sunsama. It's free, purpose-built for the workflow, and available on all platforms. [Create your account](/register) to follow along.
+- **If your tasks come from many tools,** pick Akiflow.
+- **If you want AI to schedule for you,** pick Motion. Pick Reclaim if you mostly want to guard focus time.
+- **If you want a calm, guided day,** pick Sunsama.
+- **If you juggle many calendars,** pick Morgen.
+- **If you plan on your phone,** pick TimeBloc or Structured.
+- **If you only block a few hours a week,** use Google Calendar and Todoist.
 
-### Step 2: Audit Your Current Week
+Most apps offer a trial. Try your top two for a week each and keep the one you still open on day five.
 
-Before you can plan effectively, understand where your time goes:
+## How to start time blocking in 15 minutes
 
-- What meetings are already scheduled?
-- What recurring commitments do you have?
-- When are your peak energy hours?
-- How much time is actually available for focused work?
+The app matters less than the habit. Here is a simple way to begin in any time blocking calendar app.
 
-### Step 3: Create Your Task List
+1. **Brain dump.** List every task on your mind in one place.
+2. **Pick three.** Choose the three tasks that matter most today.
+3. **Guess the time.** Give each task a length, then add half again. Most of us guess low.
+4. **Block around meetings.** Put your hardest task in your best energy hours.
+5. **Leave gaps.** Keep about a third of the day open for surprises.
+6. **Roll over, don't pile up.** At the end of the day, move what is left to tomorrow or the backlog.
 
-In Open Sunsama, add all tasks you need to accomplish. Include:
+<Clip id="week-plan" caption="Move tasks across days in week view when plans change." />
 
-- Work projects and deliverables
-- Administrative tasks (email, planning, reviews)
-- Personal commitments you want to protect
-- Recurring routines (exercise, learning, breaks)
+A weekly view helps you spread big tasks across days instead of cramming one day.
 
-### Step 4: Estimate Durations
+<Shot id="calendar-week" alt="Open Sunsama week view with time blocks spread across five days" caption="The week view shows every block, so you can spot an overloaded day." />
 
-For each task, estimate how long it will take. Be realistic—most people underestimate by 50%. If you're unsure, start with longer estimates and adjust based on actual performance.
+For the full method, read our [complete guide to time blocking](/blog/complete-guide-time-blocking). If you are leaving Sunsama, see our [Sunsama alternative page](/alternative/sunsama) or the [Motion vs Sunsama comparison](/blog/motion-vs-sunsama).
 
-### Step 5: Schedule Your Blocks
-
-Now drag tasks onto your calendar:
-
-1. **Start with fixed commitments**: Meetings, appointments, deadlines
-2. **Block high-energy time for deep work**: Your peak hours (usually morning) for your most important tasks
-3. **Schedule shallow work during energy dips**: Email, admin, and routine tasks when you're naturally less focused
-4. **Add buffer blocks**: 15-30 minutes between major blocks for transitions
-5. **Protect personal time**: Exercise, meals, and breaks deserve blocks too
-
-### Step 6: Execute and Adapt
-
-When a time block arrives:
-
-- Focus exclusively on the blocked task
-- If you finish early, take a break or start the next block
-- If you can't finish, note your progress and reschedule the remainder
-- Don't stress about perfection—reschedule and continue
-
-### Step 7: Review Weekly
-
-At the end of each week, review:
-
-- Which blocks did you honor? Which did you skip?
-- Were your time estimates accurate?
-- What patterns do you notice?
-- What adjustments will you make next week?
-
-## Time Blocking Templates for Different Roles
-
-### Knowledge Worker Template
-
-```
-7:00 AM - 8:00 AM    Morning routine
-8:00 AM - 10:00 AM   Deep Work Block #1 (priority project)
-10:00 AM - 10:30 AM  Email and messages
-10:30 AM - 12:00 PM  Deep Work Block #2
-12:00 PM - 1:00 PM   Lunch break
-1:00 PM - 2:30 PM    Meetings block
-2:30 PM - 3:00 PM    Email and follow-ups
-3:00 PM - 4:30 PM    Collaborative work
-4:30 PM - 5:00 PM    Planning and wrap-up
-```
-
-### Creative Professional Template
-
-```
-8:00 AM - 12:00 PM   Creative work (no interruptions)
-12:00 PM - 1:00 PM   Lunch and mental reset
-1:00 PM - 3:00 PM    Client calls and meetings
-3:00 PM - 3:30 PM    Break
-3:30 PM - 5:00 PM    Admin and communication
-5:00 PM - 5:30 PM    Next-day planning
-```
-
-### Developer Template
-
-```
-9:00 AM - 9:30 AM    Code review and standup
-9:30 AM - 12:00 PM   Deep coding block #1
-12:00 PM - 1:00 PM   Lunch
-1:00 PM - 2:00 PM    Meetings and collaboration
-2:00 PM - 4:30 PM    Deep coding block #2
-4:30 PM - 5:00 PM    Documentation and PR review
-```
-
-### Manager Template
-
-```
-7:30 AM - 8:30 AM    Strategic thinking (no meetings)
-8:30 AM - 9:00 AM    Email triage
-9:00 AM - 12:00 PM   1:1s and team meetings
-12:00 PM - 12:30 PM  Lunch
-12:30 PM - 2:00 PM   Project reviews
-2:00 PM - 3:00 PM    Focus time (reports, planning)
-3:00 PM - 4:30 PM    Cross-functional meetings
-4:30 PM - 5:00 PM    Daily review and delegation
-```
-
-## Frequently Asked Questions
-
-### What is the best calendar app with time blocking?
-
-Open Sunsama is the best free calendar app with native time blocking features. It offers drag-and-drop task scheduling, focus mode, and cross-platform availability at no cost. For those willing to pay, Motion provides AI-powered automatic scheduling, and Sunsama offers a structured daily planning ritual.
-
-### Is Google Calendar good for time blocking?
-
-Google Calendar can be used for basic time blocking by creating events for each task, but it lacks key features that make time blocking sustainable: task list integration, drag-and-drop scheduling, duration tracking, and focus mode. For regular time blocking practice, a dedicated app like Open Sunsama will save significant time and effort.
-
-### What is a time blocking calendar?
-
-A time blocking calendar is a scheduling approach where you assign specific time slots to individual tasks and activities. Instead of maintaining a separate to-do list, every task gets a designated block on your calendar. This method ensures tasks have protected time and helps you realistically assess your daily capacity.
-
-### How do I start time blocking my schedule?
-
-Start by listing all tasks you need to accomplish, then estimate how long each will take. Open a calendar app with time blocking support (we recommend Open Sunsama), and drag or schedule each task into a specific time slot. Begin with your most important work during your peak energy hours, and leave buffer time between blocks.
-
-### Are there free time blocking apps?
-
-Yes. Open Sunsama offers full time blocking features for free, including drag-and-drop scheduling, task management, and focus mode. Google Calendar can also be used for basic time blocking at no cost, though it requires manual event creation for each task.
-
-### What's the difference between time blocking and time boxing?
-
-Time blocking assigns tasks to calendar slots—you work on a task during its designated time. Time boxing adds a strict time limit—you stop working when the block ends, regardless of completion. Time boxing can help prevent tasks from expanding indefinitely and forces you to work within constraints.
-
-### How long should time blocks be?
-
-Optimal block length depends on the task type. Deep, focused work typically benefits from 90-120 minute blocks, aligning with natural ultradian rhythms. Shallow work like email and admin can use shorter 30-60 minute blocks. Always include 10-15 minute transition buffers between major blocks.
-
-### Can I use time blocking with meetings?
-
-Yes. Schedule your meetings first as fixed commitments, then time block your tasks around them. A schedule blocking app like Open Sunsama shows both meetings and task blocks on the same calendar view, making it easy to see your real availability and plan accordingly.
-
-### Why do my time blocks keep failing?
-
-Common reasons include: underestimating task duration (add 50% buffer), over-scheduling your day (leave 30% unscheduled), ignoring energy patterns (deep work during peak hours), and not reviewing weekly. Time blocking is a skill that improves with practice—expect your first few weeks to be imperfect.
-
-## Conclusion: The Best Time Blocking Calendar Is Free
-
-After reviewing dozens of calendar apps with time blocking features, one clear winner emerges for most people: **Open Sunsama**.
-
-Why? Because effective time blocking requires daily practice, and the best system is one you'll actually use. Open Sunsama removes every barrier to adoption:
-
-- **Free**: No subscription, no trial limits, no credit card required
-- **Purpose-built**: Native drag-and-drop time blocking, not an afterthought
-- **Complete**: Task management, calendar integration, focus mode—everything in one app
-- **Cross-platform**: Web, desktop, and mobile so your schedule is always accessible
-
-If you've tried time blocking before and it didn't stick, the problem might have been your tools. Manual calendar event creation is tedious. Paid subscriptions add pressure. Complex apps overwhelm.
-
-Open Sunsama is different. It makes time blocking as simple as dragging a task onto your calendar. No friction, no cost, no excuses.
-
-[Start time blocking with Open Sunsama today →](/register)
-
----
-
-*Looking to learn more about productivity methods? Check out our [Complete Guide to Time Blocking](/blog/complete-guide-time-blocking) or explore how [Open Sunsama compares to other tools](/blog/best-free-sunsama-alternatives).*
+Ready to try it? [Create an Open Sunsama account](/register), [download the desktop app](/download), or connect your agent with the [MCP guide for Claude](/docs/mcp/claude).

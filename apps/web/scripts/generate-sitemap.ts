@@ -9,6 +9,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import matter from "gray-matter";
+import { lastUpdated, readBlogPosts } from "./blog-content";
 
 const SITE_URL = "https://opensunsama.com";
 const __filename = fileURLToPath(import.meta.url);
@@ -141,8 +142,8 @@ function getMdxFiles(dir: string): string[] {
 /**
  * Extract slug from file path
  */
-function extractSlug(filePath: string, contentType: "docs" | "blog"): string {
-  const contentDir = contentType === "docs" ? "content/docs" : "content/blog";
+function extractSlug(filePath: string): string {
+  const contentDir = "content/docs";
   const relativePath = filePath.split(contentDir)[1] || "";
 
   let slug = relativePath.replace(/^\//, "").replace(/\.mdx$/, "");
@@ -222,7 +223,7 @@ function main() {
   const docFiles = getMdxFiles(docsDir);
 
   for (const filePath of docFiles) {
-    const slug = extractSlug(filePath, "docs");
+    const slug = extractSlug(filePath);
     const lastmod = getFileModDate(filePath);
 
     entries.push({
@@ -233,20 +234,26 @@ function main() {
     });
   }
 
-  // Add blog posts (priority 0.7)
-  const blogDir = path.join(srcDir, "content/blog");
-  const blogFiles = getMdxFiles(blogDir);
+  // Add blog posts (priority 0.7). lastmod is the frontmatter `updated ?? date`.
+  const blogPosts = readBlogPosts();
+  const toDay = (iso: string) => new Date(iso).toISOString().split("T")[0] ?? "";
 
-  for (const filePath of blogFiles) {
-    const slug = extractSlug(filePath, "blog");
-    const lastmod = getFileModDate(filePath);
-
+  for (const { slug, frontmatter } of blogPosts) {
     entries.push({
       loc: `/blog/${slug}`,
-      lastmod,
+      lastmod: toDay(lastUpdated(frontmatter)),
       changefreq: "monthly",
       priority: 0.7,
     });
+  }
+
+  // The blog index changes whenever a post does
+  const blogIndex = entries.find((entry) => entry.loc === "/blog");
+  if (blogIndex && blogPosts.length) {
+    blogIndex.lastmod = blogPosts
+      .map((post) => toDay(lastUpdated(post.frontmatter)))
+      .sort()
+      .at(-1) ?? "";
   }
 
   // Sort entries by priority (descending) then by loc (alphabetically)
@@ -266,7 +273,7 @@ function main() {
   console.log(`Generated sitemap.xml with ${entries.length} URLs`);
   console.log(`  - Static pages: ${STATIC_PAGES.length}`);
   console.log(`  - Docs: ${docFiles.length}`);
-  console.log(`  - Blog posts: ${blogFiles.length}`);
+  console.log(`  - Blog posts: ${blogPosts.length}`);
   console.log(`\nSitemap written to: ${sitemapPath}`);
 }
 

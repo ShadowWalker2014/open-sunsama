@@ -1,0 +1,294 @@
+export const frontmatter = {
+  title: "8 Best Open Source Todoist Alternatives in 2026 (Self-Hosted)",
+  description: "The best open source Todoist alternatives for 2026, compared on license, self-hosting, mobile apps, sync, API and MCP. Real release dates, honest picks.",
+  date: "2026-09-24",
+  updated: "2026-09-24",
+  author: "Open Sunsama Team",
+  tags: ["open-source", "self-hosted", "todoist", "task-management", "alternatives"],
+  readingTime: 11,
+  image: "/blog-open-source-todoist-alternatives.webp",
+  faqs: [
+    {
+      question: "What is the best open source Todoist alternative?",
+      answer: "Open Sunsama is our pick overall: it plans your day on a board and a calendar, and works with any AI agent over MCP. Vikunja is the closest Todoist clone you can self-host. Super Productivity is best if you want no server at all.",
+    },
+    {
+      question: "Is there a self-hosted Todoist with a good phone app?",
+      answer: "Super Productivity has Android and iOS apps and syncs through your own WebDAV or Nextcloud. Tasks.org is a strong Android app that syncs with your own CalDAV server. Vikunja and Tududi run as web apps you add to your home screen.",
+    },
+    {
+      question: "Is Open Sunsama really open source?",
+      answer: "The code is public on GitHub. It uses a non-commercial license: you can read it, run it and self-host it for personal use. Companies need a commercial license. It is not an OSI license like MIT or GPL, so pick Vikunja, Tududi or Super Productivity if you need one.",
+    },
+    {
+      question: "Can I import my tasks from Todoist?",
+      answer: "Vikunja has a built-in Todoist importer, and Planify syncs with a Todoist account directly. Open Sunsama has no Todoist importer. You can move open tasks by hand, or connect both apps to Claude over MCP and ask it to copy them.",
+    },
+    {
+      question: "Which open source to-do apps work with Claude or ChatGPT?",
+      answer: "Open Sunsama has a hosted MCP server with OAuth sign-in. Tududi ships an MCP server in every instance, and Joplin's desktop app has a local one. OpenProject's MCP server is a paid Enterprise add-on. Vikunja and Super Productivity rely on community MCP servers.",
+    },
+    {
+      question: "Does Todoist have an MCP server?",
+      answer: "Yes. Todoist runs an official hosted MCP server at ai.todoist.net/mcp. If AI access is all you want, you do not need to leave Todoist. Switch for ownership, self-hosting or open code.",
+    },
+    {
+      question: "What is the difference between open source and self-hosted?",
+      answer: "Open source means you can read the code. Self-hosted means the app runs on a server you control. Most apps here are both, but Tasks.org and Planify are apps that sync with a server you run, not servers themselves.",
+    },
+  ],
+};
+
+The best open source Todoist alternative overall is **Open Sunsama**. It keeps your tasks and your calendar in one place, lets you time block your day, and works with any AI agent over MCP.
+
+If you want the closest Todoist clone, pick **Vikunja**. If you want no server at all, pick **Super Productivity**.
+
+We build Open Sunsama, so we put it first — here is why, and where others fit better.
+
+Todoist tells you what to do, but not when. Open Sunsama plans the when, runs on your own server, and lets Claude or ChatGPT plan your day with you. If you need an MIT or GPL license, or a tool for a whole team, other apps below fit better, and we say which.
+
+We checked each app's license file, latest release and docs on September 24, 2026. The table below shows what we found, including the parts that are not great.
+
+## Quick answer
+
+- **Best overall:** [Open Sunsama](https://github.com/ShadowWalker2014/open-sunsama) for daily planning, time blocking and any AI agent (non-commercial license).
+- **Closest to Todoist, self-hosted:** [Vikunja](https://vikunja.io) (AGPL-3.0).
+- **No server, best apps:** [Super Productivity](https://super-productivity.com) (MIT).
+- **Small, simple, AI-ready:** [Tududi](https://tududi.com) (MIT).
+- **Android, synced to your own CalDAV:** [Tasks.org](https://tasks.org) (GPL-3.0).
+- **Linux desktop:** [Planify](https://github.com/alainm23/planify) (GPL-3.0).
+- **Notes first, to-dos second:** [Joplin](https://joplinapp.org) (AGPL-3.0).
+- **Teams and projects:** [OpenProject](https://www.openproject.org) (GPL-3.0).
+
+## Open source Todoist alternatives compared
+
+| App | License | Self-host | Mobile | Sync | API | MCP (AI agents) | Last release |
+|---|---|---|---|---|---|---|---|
+| **Open Sunsama** | Non-commercial (not OSI) | Yes, Docker | Mobile web | Real-time; Google, Outlook, iCloud calendars | REST + API keys | Hosted, OAuth (24 tools) | v1.0.12, Sep 23, 2026 |
+| **Vikunja** | AGPL-3.0 | Yes, Docker | Web app (PWA) | Server, CalDAV | REST | Community servers | v2.6.0, Aug 31, 2026 |
+| **Super Productivity** | MIT | Optional sync server | Android, iOS | WebDAV, Dropbox, SuperSync | Local REST (desktop) | Community plugins | v19.1.0, Sep 19, 2026 |
+| **Tududi** | MIT | Yes, Docker | Web app (PWA) | Server, CalDAV | REST + tokens | Built in (59 tools) | v1.5.0, Sep 16, 2026 |
+| **Tasks.org** | GPL-3.0 | Uses your CalDAV server | Android | CalDAV, Google Tasks, EteSync | No | No | 15.12, Sep 15, 2026 |
+| **Planify** | GPL-3.0 | Uses your Nextcloud or CalDAV | No (Linux only) | Todoist, Nextcloud, CalDAV | No | No | v4.20.0, Sep 10, 2026 |
+| **Joplin** | AGPL-3.0 (server: personal-use license) | Joplin Server | Android, iOS | Joplin Server, Nextcloud, WebDAV, Dropbox | Local data API | Built into desktop (local) | v3.7.18, Sep 11, 2026 |
+| **OpenProject** | GPL-3.0 | Yes, Docker | App in beta | Server | REST (API v3) | Enterprise add-on | v17.8.0, Sep 2, 2026 |
+
+Release dates come from each project's GitHub releases page. Check them again before you commit, since these projects ship often.
+
+## How we compared these apps
+
+We build Open Sunsama and use it to plan our own days. For the other seven, we read each license file, the latest release notes, and the docs for sync, API and MCP. We also read what users say about them on Reddit, Hacker News and GitHub.
+
+We did not run each app for weeks, so we don't claim to have tested them. We left out apps with no release in the past year, because people on r/selfhosted ask "seems no longer maintained?" about every project.
+
+## 1. Open Sunsama: best overall for daily planning, time blocking and AI agents
+
+**Verdict:** best overall. It does what Todoist does, then plans when you will do it.
+
+**Best for:** people who want to plan a calm, realistic day on a calendar, and let Claude, ChatGPT or Cursor help.
+
+<DemoVideo id="tour" />
+
+Open Sunsama plans your day on a board and a calendar. Each day is a column on a kanban board, next to your backlog. You drag the tasks you will really do into Today.
+
+<Clip id="plan-day" caption="Drag tasks from the backlog into Today to plan your day." />
+
+Then you give each task a slot. Drag it onto the calendar and resize the block to fit. Your Google, Outlook or iCloud events sit right next to it.
+
+<Clip id="time-block" caption="Drag a task onto the calendar, then resize the block to fit the work." />
+
+What it does well:
+
+- Time blocking on a real calendar, in day and week views.
+- Unfinished tasks roll over to the next day, so nothing gets lost.
+- Planned vs actual: a focus timer tracks the time you really spent.
+- Subtasks, rich notes, file attachments and priorities P0 to P3.
+- Keyboard first, with a command palette on Cmd+K.
+- A hosted MCP server with OAuth sign-in and 24 tools. It works in Claude, ChatGPT, Cursor and any MCP client, and it reads your synced meetings too. See the [MCP setup guide](/docs/mcp/overview).
+- A public REST API with API keys, documented in the [API reference](/docs/api/authentication).
+- Web, desktop for Mac, Windows and Linux, and a mobile web app for your phone. Get them on the [download page](/download).
+
+<Shot id="board" alt="Open Sunsama board with a backlog column and day columns full of tasks" caption="Your backlog and each day sit side by side, so you see what fits." />
+
+Where it falls short:
+
+- The license is non-commercial, not MIT or GPL. You can self-host it for personal use. Companies need a commercial license.
+- It is young. The first commit was in January 2026, so it has fewer years behind it than Vikunja or Joplin.
+- No Todoist importer yet, and no CalDAV task sync.
+- The ready-made desktop apps connect to the hosted service. A self-hosted server runs in your browser, unless you build the desktop app with your own API address.
+- It plans one person's day. It is not a team project tool.
+
+**Pick it if** you want your to-do list and your calendar in one place, with an agent that can plan your day for you. The [Docker guide](/docs/self-hosting/docker) covers self-hosting.
+
+## 2. Vikunja: the closest self-hosted Todoist
+
+**Verdict:** the best pick if you want Todoist's exact workflow on your own server.
+
+**Best for:** Todoist users who want lists, labels and reminders without a subscription tier.
+
+What it does well:
+
+- Four views of the same tasks: list, kanban, Gantt and table.
+- Quick add with natural language, like Todoist.
+- A built-in Todoist importer that brings over tasks, labels and due dates.
+- CalDAV, so your tasks show up in other calendar and to-do apps.
+- A REST API with Swagger docs.
+
+Where it falls short:
+
+- No stable native phone app. Vikunja's own site says you use the web app for now, and native apps are on the roadmap.
+- No official MCP server. You need a community one to use it from Claude or ChatGPT.
+
+**Pick it if** you want the most Todoist-like app you can self-host.
+
+## 3. Super Productivity: no server needed
+
+**Verdict:** the most complete open source to-do app you can run with zero servers.
+
+**Best for:** developers and solo workers who want tasks, time tracking and timeboxing offline.
+
+What it does well:
+
+- Real apps for Linux, macOS, Windows, Android and iOS.
+- Works offline with no account.
+- Sync through WebDAV, Nextcloud, Dropbox or SuperSync, which you can also host yourself.
+- Pulls tasks in from GitHub, GitLab, Jira and more.
+- Timeboxing and a focus timer built in.
+
+Where it falls short:
+
+- It is built around one person on many devices. It is not a shared team server.
+- MCP support comes from community plugins, not the core app.
+
+**Pick it if** you want an MIT-licensed app that works on a plane and syncs through storage you already own.
+
+## 4. Tududi: small, calm and AI-ready
+
+**Verdict:** the lightest self-hosted option, and the most complete built-in MCP among the MIT and GPL apps here.
+
+**Best for:** home-labbers who want areas, projects and tasks in one small Docker container.
+
+What it does well:
+
+- One `docker run` command and a single SQLite file to back up.
+- A built-in MCP server with 59 tools. Your agent talks straight to your own instance.
+- CalDAV sync with Apple Reminders, Tasks.org and Thunderbird.
+- OIDC login, a Telegram bot and a REST API with personal tokens.
+
+Where it falls short:
+
+- No native phone app. It installs as a web app on your home screen instead.
+- No calendar view for time blocking.
+
+**Pick it if** you want a simple self-hosted to-do list your AI agent can use on day one.
+
+## 5. Tasks.org: the Android app for your own server
+
+**Verdict:** the best open source phone app for people who already run CalDAV.
+
+**Best for:** Android users with Nextcloud, Radicale or another CalDAV server.
+
+What it does well:
+
+- A polished Android app with widgets, filters, tags and endless subtasks.
+- Syncs with CalDAV, DAVx⁵, EteSync, DecSync CC or Google Tasks.
+- No ads, and it works fully offline.
+
+Where it falls short:
+
+- Android only. The desktop app is still in alpha.
+- It is a client, not a server. You still need something to sync with.
+
+**Pick it if** your phone is your main planner and you already host a CalDAV server.
+
+## 6. Planify: a clean Linux desktop app
+
+**Verdict:** the best-looking open source to-do app for the Linux desktop.
+
+**Best for:** GNOME users who want a native app.
+
+What it does well:
+
+- A native GTK app, installed from Flathub.
+- Syncs with Todoist, Nextcloud or any CalDAV server.
+- A calendar panel to plan your day.
+
+Where it falls short:
+
+- Linux only, with no phone or web app.
+- No API and no MCP.
+
+**Pick it if** you live on Linux and want to keep syncing with Todoist while you try open source.
+
+## 7. Joplin: notes first, tasks second
+
+**Verdict:** a great notes app that can hold your to-dos too.
+
+**Best for:** people who want notes and checklists in one private app.
+
+What it does well:
+
+- Apps for desktop, Android, iOS and the terminal.
+- Sync through Joplin Server, Nextcloud, WebDAV, Dropbox and more.
+- Markdown notes with to-do checkboxes and a plugin system.
+- A built-in MCP server in the desktop app. It listens only on your own machine.
+
+Where it falls short:
+
+- Tasks are notes with checkboxes. There are no real projects, calendar view or time blocking.
+- Joplin Server uses a separate personal-use license, not AGPL.
+
+**Pick it if** your "tasks" are mostly notes and you want one app for both.
+
+## 8. OpenProject: for teams, not for one person
+
+**Verdict:** a full project tool. It is heavier than Todoist, and that is the point.
+
+**Best for:** teams that need Gantt charts, boards, time tracking and meetings.
+
+What it does well:
+
+- Gantt charts, agile boards and time tracking in one server.
+- A mature REST API and Docker install.
+- Long track record, backed by a company.
+
+Where it falls short:
+
+- Far more than one person needs to track their own tasks.
+- The MCP server is an Enterprise add-on, not part of the free edition.
+- The mobile app is still in beta.
+
+**Pick it if** you are replacing Todoist for a whole team, not just yourself.
+
+## Other open source to-do apps worth a look
+
+- **[Taskwarrior](https://taskwarrior.org)** (MIT): a fast command-line task list. Last release v3.5.0 in August 2026.
+- **[Nextcloud Tasks](https://apps.nextcloud.com/apps/tasks)** (AGPL-3.0): tasks inside Nextcloud, synced over CalDAV.
+- **[Donetick](https://github.com/donetick/donetick)** (AGPL-3.0): chores and shared tasks for a household.
+
+## Which one should you pick?
+
+- **You want one place to plan your day, with time blocks and an AI agent:** Open Sunsama. This is our pick for most people.
+- **You want Todoist's exact workflow, on your server:** Vikunja.
+- **You never want to run a server:** Super Productivity.
+- **You want the simplest Docker install with AI access, under MIT:** Tududi.
+- **Your phone is your planner:** Tasks.org with your own CalDAV server.
+- **You live on Linux:** Planify.
+- **Your tasks are really notes:** Joplin.
+- **You manage a team:** OpenProject.
+
+## What about AI and MCP?
+
+MCP is the plug that lets an AI agent read and change your tasks. Todoist has its own official MCP server now, so AI alone is not a reason to leave.
+
+The reasons to switch are ownership and control. With an open source app, you can read the code, run it on your own box and export your data.
+
+Open Sunsama goes one step further. Your agent can plan your whole day, and because the code is public, it can even change the planner itself. See our list of [task managers with MCP](/blog/best-task-managers-with-mcp) for more.
+
+## How to switch from Todoist
+
+1. Export your Todoist data as CSV from Todoist's settings.
+2. Move only open tasks. Leave the old ones behind.
+3. Use the new app for one real week before you cancel.
+
+For Open Sunsama, our [Todoist migration guide](/blog/todoist-to-open-sunsama-migration) walks you through it. You can also read how Open Sunsama compares on our [Todoist alternative page](/alternative/todoist) and the [open source task manager page](/open-source-task-manager).

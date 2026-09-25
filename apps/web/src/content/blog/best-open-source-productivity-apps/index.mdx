@@ -1,365 +1,346 @@
 export const frontmatter = {
-  title: "Best Open Source Productivity Apps in 2026 (Self-Hostable & Free)",
-  description: "Top open source productivity tools for task management, note-taking, and time tracking. Self-host your productivity stack.",
+  title: "Best Open Source Productivity Apps in 2026 (Self-Hostable)",
+  description: "The best open source productivity apps for 2026: planners, task managers, notes, time tracking and calendars. License, self-hosting, API and MCP compared.",
   date: "2026-02-01",
+  updated: "2026-09-24",
   author: "Open Sunsama Team",
-  tags: ["open-source", "productivity", "self-hosted"],
-  readingTime: 14,
-  image: "/blog-open-source-productivity.webp"
+  tags: ["open-source", "productivity", "self-hosted", "time-blocking", "mcp"],
+  readingTime: 13,
+  image: "/blog-best-open-source-productivity-apps.webp",
+  faqs: [
+    {
+      question: "What are the best open source productivity apps in 2026?",
+      answer: "Open Sunsama is our pick overall, for daily planning and time blocking with any AI agent. Super Productivity is the best MIT planner. For tasks: Vikunja or Tududi. For notes: Joplin, Logseq or Trilium. For time tracking: Kimai. For calendars: Nextcloud Calendar or Radicale.",
+    },
+    {
+      question: "Is there an open source time blocking app?",
+      answer: "Yes. Open Sunsama lets you drag tasks onto a calendar next to your Google, Outlook or iCloud events. Super Productivity has timeboxing and a schedule view, works offline and is MIT licensed.",
+    },
+    {
+      question: "Is Open Sunsama open source?",
+      answer: "The code is public on GitHub. It uses a non-commercial license: you can read it, run it and self-host it for personal use. Companies need a commercial license. It is not an OSI license like MIT or GPL.",
+    },
+    {
+      question: "Which open source productivity apps work with AI agents like Claude or ChatGPT?",
+      answer: "Open Sunsama has a hosted MCP server with OAuth sign-in that works in Claude, ChatGPT and Cursor. Tududi ships an MCP server in every instance, and Joplin's desktop app has a local one. Others, like Vikunja, rely on community MCP servers.",
+    },
+    {
+      question: "How hard is it to self-host productivity apps?",
+      answer: "Most offer Docker images, so the first run takes a few commands. The real work comes later: HTTPS, updates and backups. Plan for a few minutes a month, and test a restore at least once.",
+    },
+    {
+      question: "What is the difference between MIT and GPL licenses?",
+      answer: "MIT lets anyone do almost anything with the code. GPL and AGPL let you use and change it, but you must share your changes if you ship them. For personal use and self-hosting, both give you full freedom.",
+    },
+    {
+      question: "Do open source productivity apps sync across devices?",
+      answer: "Yes, but each does it differently. Server apps like Open Sunsama, Vikunja and Tududi sync through your server. Offline-first apps like Super Productivity and Joplin sync through WebDAV, Nextcloud or Dropbox.",
+    },
+  ],
 };
 
-The productivity software landscape in 2026 is dominated by subscription-based SaaS tools that hold your data hostage while charging monthly fees. But there's a growing movement of developers, privacy advocates, and cost-conscious teams choosing a different path: open source productivity apps that offer complete transparency, data ownership, and zero recurring costs.
+The best open source productivity app overall in 2026 is **Open Sunsama**, for daily planning and time blocking with any AI agent. For tasks, add **Vikunja** or **Tududi**. For notes, pick **Joplin** or **Logseq**, then add **Kimai** for time tracking and **Nextcloud Calendar** for your calendar.
 
-This guide covers the best open source productivity tools across every category—from daily planners and task managers to note-taking apps and time trackers. Whether you want to self-host your entire productivity stack or simply avoid subscription fatigue, these tools deliver enterprise-grade features without the enterprise price tag.
+Every app here has a public repo, a release in 2026, and a way to keep your data to yourself.
 
-## Why Open Source Matters for Productivity Tools
+We build Open Sunsama, so we put it first — here is why, and where others fit better.
 
-Your productivity tools contain some of your most sensitive data: project plans, client names, deadlines, personal goals, and the daily rhythm of your professional life. Here's why open source productivity apps deserve serious consideration.
+It is the one app here that plans your day on a calendar next to your meetings. Claude or ChatGPT can do the planning with you. If you need an MIT or GPL license, Super Productivity is the better planner, and we say so below.
 
-### Complete Privacy and Data Ownership
+We sorted them by job, so you can build a stack you own. Each pick says who it is for, where it falls short and which license it uses.
 
-When you use a proprietary task manager, you're trusting a company with intimate details of your work and life. With open source tools, you can audit the code yourself. There's no telemetry silently reporting your habits, no AI training on your data, and no third-party analytics tracking your every click.
+## Key takeaways
 
-For professionals handling sensitive information—lawyers, healthcare workers, financial advisors—this isn't paranoia. It's due diligence.
+- **Best overall:** Open Sunsama, for daily planning and time blocking with any AI agent.
+- **Best MIT planner with no server:** Super Productivity.
+- **Task management:** Vikunja is the closest to Todoist. Tududi is the lightest, with MCP built in.
+- **Notes:** Joplin for private notes on every device. Logseq and Trilium for linked notes.
+- **Time tracking:** Kimai for billable hours. Traggo for simple tags.
+- **Calendar:** Nextcloud Calendar if you run Nextcloud. Radicale if you only need a CalDAV server.
+- **Licenses differ.** Most apps here are MIT, GPL or AGPL. Open Sunsama is non-commercial, and we say so below.
 
-### No Subscription Fatigue
+## Open source productivity apps compared
 
-The average knowledge worker uses 8-10 productivity tools. At $10-15/month each, that's over $1,000/year just to stay organized. Open source alternatives eliminate this recurring cost entirely. The software is free forever, and self-hosting costs a fraction of SaaS subscriptions.
+| App | Job | License | Self-host | Mobile | API | MCP (AI agents) | Last release |
+|---|---|---|---|---|---|---|---|
+| **Open Sunsama** | Daily planning, time blocking | Non-commercial (not OSI) | Docker | Mobile web | REST + API keys | Hosted, OAuth | v1.0.12, Sep 23, 2026 |
+| **Super Productivity** | Tasks, timeboxing, time tracking | MIT | Optional sync server | Android, iOS | Local REST (desktop) | Community plugins | v19.1.0, Sep 19, 2026 |
+| **Vikunja** | Tasks, kanban, Gantt | AGPL-3.0 | Docker | Web app (PWA) | REST | Community servers | v2.6.0, Aug 31, 2026 |
+| **Tududi** | Tasks, projects, notes | MIT | Docker | Web app (PWA) | REST | Built in | v1.5.0, Sep 16, 2026 |
+| **Kanboard** | Kanban | MIT | Docker, PHP | Web | JSON-RPC | No | v1.2.54, Aug 29, 2026 |
+| **WeKan** | Kanban (Trello-style) | MIT | Docker, Snap | Web | REST | No | v11.99, Sep 24, 2026 |
+| **Joplin** | Notes, to-dos | AGPL-3.0 | Joplin Server | Android, iOS | Local data API | Built into desktop | v3.7.18, Sep 11, 2026 |
+| **Logseq** | Linked notes | AGPL-3.0 | Local files | Android, iOS | Plugin API | No | 2.0.1 beta, Jul 13, 2026 |
+| **Trilium Notes** | Note tree, wiki | AGPL-3.0 | Docker | Web | REST (ETAPI) | No | v0.105.0, Aug 19, 2026 |
+| **Kimai** | Time tracking, invoices | AGPL-3.0 | Docker, PHP | Web | JSON API | No | 2.67.0, Sep 13, 2026 |
+| **Traggo** | Time tracking by tag | GPL-3.0 | Docker | Web | GraphQL | No | v0.8.3, Mar 1, 2026 |
+| **Nextcloud Calendar** | Calendar | AGPL-3.0 | With Nextcloud | CalDAV apps | CalDAV | No | v6.6.1, Sep 20, 2026 |
+| **Radicale** | CalDAV server | GPL-3.0 | pip install | CalDAV apps | CalDAV | No | v3.8.0, Sep 3, 2026 |
 
-### Freedom from Vendor Lock-in
+Release dates come from each project's GitHub page on September 24, 2026.
 
-Remember Google Reader? Wunderlist? Sunrise Calendar? Popular productivity tools get acquired, pivoted, or sunset constantly. With open source tools, the code lives on even if the original developers move on. Community forks can continue development indefinitely.
+## How we compared these apps
 
-### Customization Without Limits
+We build Open Sunsama and use it to plan our own days. For every other app, we read the license file, the release notes and the docs for sync, API and MCP. We also read what users say on Reddit, Hacker News and GitHub.
 
-Open source means you can modify the software to fit your workflow. Add custom fields, integrate with internal tools, change the UI, or build entirely new features. The only limit is your imagination and coding ability.
+We did not run every app for weeks, so we don't claim to have tested them. An app made the list only if it had a release in 2026, because self-hosters ask "seems no longer maintained?" about every project.
 
-## What Makes an App Truly Open Source?
+## What counts as open source?
 
-Not all "free" software is created equal. Understanding license types helps you choose tools that genuinely respect your freedom.
+Open source means the code is public and the license lets you use, change and share it. Not every public repo meets that bar. The license tells you what you can really do.
 
-### License Types Explained
+| License | Self-host | Change and share | Commercial use |
+|---|---|---|---|
+| **MIT, Apache 2.0** | Yes | Yes | Yes |
+| **GPL-3.0, AGPL-3.0** | Yes | Yes, but share your changes | Yes |
+| **Non-commercial (Open Sunsama)** | Yes, for personal use | Personal use | Needs a commercial license |
+| **Proprietary (Obsidian)** | Local files only | No | Yes, free since 2025 |
 
-| License | Freedom Level | Self-Hosting | Modify & Distribute | Commercial Use |
-|---------|---------------|--------------|---------------------|----------------|
-| **MIT** | Maximum | ✅ Yes | ✅ Yes | ✅ Yes |
-| **Apache 2.0** | High | ✅ Yes | ✅ Yes | ✅ Yes |
-| **GPL v3** | High (copyleft) | ✅ Yes | ✅ Yes (must share) | ✅ Yes |
-| **AGPL** | High (network copyleft) | ✅ Yes | ✅ Yes (must share) | ✅ Yes |
-| **BSL** | Limited | ✅ Yes | ⚠️ Restricted | ⚠️ Delayed |
-| **Proprietary** | None | ❌ No | ❌ No | ❌ No |
+Here is Open Sunsama's license in plain words. The code is public on GitHub, and you can read it, run it and self-host it for personal use. Companies need a commercial license.
 
-**MIT and Apache 2.0** are the most permissive licenses, allowing you to do almost anything with the code. **GPL** licenses require you to share modifications, which keeps the ecosystem open. **BSL (Business Source License)** is a newer model where code becomes fully open after a delay period—useful to know when evaluating tools.
+That is not an OSI license. If your company needs MIT or GPL, pick Super Productivity for planning and Vikunja or Tududi for tasks.
 
-### The Self-Hosting Test
+## Daily planning and time blocking apps
 
-A truly open source productivity app should be self-hostable without requiring any connection to the developer's servers. If an app is "open source" but still phones home or requires a proprietary service to function, your freedom is limited.
+### Open Sunsama: best overall, with any AI agent
 
-## Best Open Source Productivity Apps by Category
+**Verdict:** best overall. It puts your tasks and your calendar in one place, and any AI agent can plan your day in it.
 
-### Daily Planning & Time Blocking
+**Best for:** people who want a calm, realistic day, and developers who want Claude or ChatGPT to plan it with them.
 
-#### Open Sunsama — The Open Source Daily Planner
+<DemoVideo id="tour" />
 
-**License:** MIT | **Self-Hosting:** Docker, easy | **Best For:** Developers and individuals
+Each day is a column on a kanban board, next to your backlog. You pick what fits and drag it into Today. Tasks you do not finish roll over to tomorrow.
 
-Open Sunsama is the only fully open source daily planner with integrated time blocking. It combines the mindful planning methodology of premium tools like Sunsama with the freedom of self-hosting and an MIT license.
+<Clip id="plan-day" caption="Drag tasks from the backlog into Today to plan your day." />
 
-**Key Features:**
-- **Time blocking** with drag-and-drop calendar scheduling
-- **Kanban board** with Today, Tomorrow, and Backlog columns
-- **Focus mode** with built-in Pomodoro timer
-- **REST API** for automation and integrations
-- **MCP server** for AI assistant integration
-- **Desktop app** (Tauri) with global hotkeys
-- **Mobile-responsive** web interface
+Then you block time. Drag a task onto the calendar and resize it. Your Google, Outlook or iCloud events sit next to your blocks, so you see the real shape of your week.
 
-**Why It Stands Out:**
+<Shot id="calendar-week" alt="Open Sunsama week view with time blocks next to calendar events" caption="The week view shows your time blocks next to your meetings." />
 
-Most open source task managers focus on lists and boards. Open Sunsama brings the daily planning ritual that premium tools charge $20+/month for—shutdown routines, time estimates, actual vs. planned tracking—all without the subscription.
+What it does well:
 
-```bash
-# Self-host in minutes
-git clone https://github.com/ShadowWalker2014/open-sunsama.git
-cd open-sunsama
-docker compose up -d --build
-```
+- [Time blocking](/features/time-blocking) in day and week views.
+- Rollover, recurring tasks and reminders.
+- Planned vs actual: the focus timer tracks the time you really spent.
+- Subtasks, notes, file attachments and priorities P0 to P3.
+- Keyboard first, with a command palette on Cmd+K.
+- Web, desktop for Mac, Windows and Linux, and a mobile web app for your phone.
+- A public REST API with API keys, plus a hosted MCP server.
 
-**Best For:** Developers who want structured daily planning, privacy-conscious professionals, and anyone migrating from Sunsama or similar premium planners.
+Where it falls short:
 
----
+- The license is non-commercial, not MIT or GPL.
+- It is young. The first commit was in January 2026.
+- It plans one person's day. It is not a team project tool.
 
-### Task Management
+**Pick it if** you want to plan your day with time blocks and let an AI agent do the busywork. Self-host it with the [Docker guide](/docs/self-hosting/docker), or [download the apps](/download).
 
-#### Vikunja — Self-Hosted Todoist Alternative
+### Super Productivity: offline-first tasks and timeboxing
 
-**License:** AGPL v3 | **Self-Hosting:** Docker, easy | **Best For:** Power users
+**Verdict:** the best MIT-licensed planner for one person who wants no server at all.
 
-Vikunja positions itself as "the to-do app to organize your life" and delivers impressive flexibility. It supports multiple views (list, kanban, table, Gantt), CalDAV sync for calendar integration, and namespaces for organizing projects.
+**Best for:** developers who track time against GitHub, GitLab or Jira issues.
 
-**Key Features:**
-- Multiple views: list, kanban, table, Gantt
-- CalDAV sync for calendar apps
-- Labels, filters, and saved searches
-- Teams and permission management
-- API and webhooks
+What it does well:
 
-**Why Choose Vikunja:** If you loved Todoist but want to own your data, Vikunja is the closest self-hosted equivalent with comparable features.
+- Apps for Linux, macOS, Windows, Android and iOS.
+- Timeboxing, a focus timer and time tracking in one app.
+- Works offline with no account. Syncs through WebDAV, Dropbox or SuperSync.
+- Pulls in issues from GitHub, GitLab, Jira and more.
 
----
+Where it falls short:
 
-#### Kanboard — Minimalist Kanban
+- Built for one person, not a shared team server.
+- MCP comes from community plugins, not the core app.
 
-**License:** MIT | **Self-Hosting:** Docker/PHP, easy | **Best For:** Kanban purists
+**Pick it if** you want an MIT app that works offline and tracks your time.
 
-Kanboard is a no-frills kanban board that does one thing exceptionally well. It's lightweight, fast, and has been battle-tested for over a decade.
+## What is the best open source time blocking app?
 
-**Key Features:**
-- Drag-and-drop kanban boards
-- Swimlanes and task relationships
-- Time tracking
-- Automatic actions and triggers
-- Plugin system
+Open Sunsama is our pick, and Super Productivity is the best MIT option. They solve the problem in different ways.
 
-**Why Choose Kanboard:** When you want kanban without bloat, Kanboard delivers. The PHP-based architecture runs on virtually any shared hosting.
+**Open Sunsama** is calendar-first. You drag tasks onto a calendar that also shows your Google, Outlook or iCloud meetings. It fits people who plan the day around fixed events.
 
----
+<Clip id="time-block" caption="Drag a task onto the calendar, then resize the block to fit the work." />
 
-#### WeKan — Open Source Trello
+**Super Productivity** is task-first. You timebox tasks in a schedule view and run a focus timer, all offline. It fits people who want an OSI license and no server.
 
-**License:** MIT | **Self-Hosting:** Docker/Snap, easy | **Best For:** Teams migrating from Trello
+If you need an MIT or GPL license, pick Super Productivity. If you want your time blocks next to your real meetings, and an AI agent that can move them, pick Open Sunsama. Our [time blocking guide](/blog/complete-guide-time-blocking) explains the method.
 
-WeKan replicates the Trello experience with open source freedom. It's one of the most feature-complete Trello alternatives available.
+## Task management apps
 
-**Key Features:**
-- Boards, lists, and cards
-- Due dates, checklists, and labels
-- Custom fields
-- Rules automation
-- LDAP/OAuth authentication
+### Vikunja: the closest thing to a self-hosted Todoist
 
-**Why Choose WeKan:** Teams comfortable with Trello who want self-hosted simplicity will feel right at home.
+**Verdict:** the safest self-hosted task manager for people coming from Todoist.
 
----
+**Best for:** individuals and small teams who want lists, kanban, Gantt and table views.
 
-### Note-Taking & Knowledge Management
+- **Good:** Todoist importer, CalDAV, reminders, a REST API and a Docker image.
+- **Falls short:** no stable native phone app yet, and no official MCP server.
+- **Pick it if** you want Todoist's workflow on your own server.
 
-#### Logseq — Graph-Based Knowledge Management
+### Tududi: small, calm and AI-ready
 
-**License:** AGPL v3 | **Self-Hosting:** Local files | **Best For:** Researchers and PKM enthusiasts
+**Verdict:** the lightest self-hosted task app, with an MCP server built in.
 
-Logseq pioneered the outliner-meets-graph-database approach to knowledge management. All data is stored as local markdown files, ensuring complete data ownership.
+**Best for:** home-labbers who want areas, projects, tasks and notes in one small container.
 
-**Key Features:**
-- Bidirectional linking and knowledge graph
-- Block-level references
-- Spaced repetition flashcards
-- PDF annotation
-- Plugin ecosystem
+- **Good:** one Docker command, a single SQLite file, CalDAV, OIDC login, a Telegram bot and 59 MCP tools.
+- **Falls short:** web app only on phones, and no calendar view for time blocking.
+- **Pick it if** you want a simple task list your AI agent can use today.
 
-**Why Choose Logseq:** For networked thinking and research, Logseq's graph view reveals connections you'd never notice in a traditional notes app.
+### Kanboard: minimal kanban that keeps working
 
----
+**Verdict:** a fast, tiny kanban board that has run for over a decade.
 
-#### Joplin — Encrypted Open Source Notes
+**Best for:** people who want kanban and nothing else.
 
-**License:** MIT (AGPL for server) | **Self-Hosting:** Self-sync options | **Best For:** Privacy-focused note-takers
+- **Good:** swimlanes, automatic actions, plugins, and it runs on almost any PHP host.
+- **Falls short:** the project says it is in maintenance mode, so expect fixes, not new features.
+- **Pick it if** you want a stable board you set up once and forget.
 
-Joplin offers end-to-end encrypted notes with sync capabilities. It supports markdown, has web clipper extensions, and works across all platforms.
+### WeKan: an open source Trello
 
-**Key Features:**
-- End-to-end encryption
-- Markdown editor with preview
-- Web clipper for saving pages
-- Self-hosted sync (Joplin Server or WebDAV)
-- Notebooks and tags
+**Verdict:** the most complete Trello-style board you can self-host.
 
-**Why Choose Joplin:** If encryption is non-negotiable and you want an Evernote alternative, Joplin is the gold standard.
+**Best for:** teams moving off Trello.
 
----
+- **Good:** boards, lists, cards, checklists, custom fields, rules and LDAP login.
+- **Falls short:** it can feel heavy for one person's to-do list.
+- **Pick it if** your team already thinks in Trello boards.
 
-#### Obsidian — Free Personal Knowledge Base
+## Note-taking apps
 
-**License:** Proprietary (free for personal use) | **Self-Hosting:** Local files | **Best For:** Knowledge workers
+### Joplin: private notes on every device
 
-While not fully open source, Obsidian deserves mention because it stores data as local markdown files and offers a thriving open source plugin ecosystem. The core app is free for personal use.
+**Verdict:** the best open source notes app if you want real phone apps and your own sync.
 
-**Key Features:**
-- Local markdown files (you own your data)
-- 1000+ community plugins
-- Graph view
-- Canvas for visual thinking
-- Publish and sync (paid add-ons)
+**Best for:** people who want Markdown notes and to-dos, synced through storage they own.
 
-**Why Consider Obsidian:** The plugin ecosystem is unmatched, and local file storage means your notes are yours forever, regardless of what happens to Obsidian as a company.
+- **Good:** apps on every platform, end-to-end encryption, sync through Joplin Server, Nextcloud, WebDAV or Dropbox, and a local MCP server in the desktop app.
+- **Falls short:** Joplin Server uses a separate personal-use license, and tasks are just notes with checkboxes.
+- **Pick it if** you want one private app for notes and simple to-dos.
 
----
+### Logseq: an outliner with linked notes
 
-### Time Tracking
+**Verdict:** great for research and linked thinking, but in the middle of a big change.
 
-#### Traggo — Simple Self-Hosted Time Tracking
+**Best for:** people who think in outlines and backlinks.
 
-**License:** MIT | **Self-Hosting:** Docker, easy | **Best For:** Individuals and freelancers
+- **Good:** block links, a graph view, PDF notes and flashcards.
+- **Falls short:** Logseq 2.0 is a beta that moves notes into a database. The older 0.10 version keeps plain Markdown files.
+- **Pick it if** you want an outliner and are fine with a beta or the older file version.
 
-Traggo takes a minimalist approach to time tracking. Tag-based entries let you track time without rigid project structures.
+### Trilium Notes: a deep note tree you host
 
-**Key Features:**
-- Tag-based time entries
-- Calendar view
-- Dashboard with statistics
-- Docker deployment
+**Verdict:** a personal wiki for people with thousands of notes.
 
-**Why Choose Traggo:** When you need time tracking without project management overhead, Traggo's simplicity shines.
+**Best for:** people who want a self-hosted note tree with scripting.
 
----
+- **Good:** a web server you host, per-note encryption and a REST API. The TriliumNext community keeps it moving.
+- **Falls short:** no native phone app; you use the web version.
+- **Pick it if** you want a big private knowledge base on your own server.
 
-#### Kimai — Full-Featured Time Tracking
+A note on Obsidian: it stores notes as local Markdown files and has been free for work since 2025. But its code is not open source, so we did not list it.
 
-**License:** MIT | **Self-Hosting:** Docker/PHP | **Best For:** Agencies and consultants
+## Time tracking apps
 
-Kimai is a comprehensive time tracking solution with invoicing, reporting, and team management. It's been actively developed since 2006.
+### Kimai: time tracking with invoices
 
-**Key Features:**
-- Project and activity tracking
-- Expense tracking
-- Invoice generation
-- Team management with rates
-- API for integrations
+**Verdict:** the most complete open source time tracker for billable work.
 
-**Why Choose Kimai:** Freelancers and agencies who need to track billable hours and generate invoices will find Kimai covers the full workflow.
+**Best for:** freelancers, agencies and consultants.
 
----
+- **Good:** projects, rates, expenses, invoices, a JSON API and many users.
+- **Falls short:** more than you need to time one person's day.
+- **Pick it if** you bill clients by the hour.
 
-### Calendar
+### Traggo: simple time tracking by tag
 
-#### Nextcloud Calendar — Self-Hosted Calendar Suite
+**Verdict:** a small time tracker with no project setup.
 
-**License:** AGPL v3 | **Self-Hosting:** Part of Nextcloud | **Best For:** Existing Nextcloud users
+**Best for:** people who just want to see where their time goes.
 
-Nextcloud Calendar is part of the Nextcloud ecosystem, providing CalDAV-compatible calendar functionality. It integrates with email, contacts, and files in a complete self-hosted suite.
+- **Good:** tag-based entries, a calendar view, dashboards and Docker.
+- **Falls short:** slower releases than the other apps here. The last one was in March 2026.
+- **Pick it if** you want the lightest possible time log.
 
-**Key Features:**
-- CalDAV sync with any client
-- Shared calendars
-- Room and resource booking
-- Integration with Nextcloud Talk
+## Calendar apps
 
-**Why Choose Nextcloud Calendar:** If you're already running Nextcloud (or considering it), the calendar provides seamless integration with your self-hosted file storage and collaboration tools.
+### Nextcloud Calendar: a calendar inside your Nextcloud
 
----
+**Verdict:** the easiest self-hosted calendar if you already run Nextcloud.
 
-## Open Source Productivity Apps Comparison
+**Best for:** Nextcloud users.
 
-| App | Category | License | Self-Host Difficulty | Key Strength |
-|-----|----------|---------|---------------------|--------------|
-| **Open Sunsama** | Daily Planning | MIT | Easy (Docker) | Time blocking + daily planning ritual |
-| **Vikunja** | Task Management | AGPL | Easy (Docker) | Multi-view flexibility |
-| **Kanboard** | Kanban | MIT | Easy (Docker/PHP) | Lightweight, fast |
-| **WeKan** | Kanban | MIT | Easy (Docker) | Trello-like experience |
-| **Logseq** | Notes | AGPL | N/A (local files) | Graph-based PKM |
-| **Joplin** | Notes | MIT/AGPL | Moderate | End-to-end encryption |
-| **Traggo** | Time Tracking | MIT | Easy (Docker) | Simple, tag-based |
-| **Kimai** | Time Tracking | MIT | Easy (Docker) | Invoicing built-in |
-| **Nextcloud Calendar** | Calendar | AGPL | Moderate | CalDAV ecosystem |
+- **Good:** CalDAV sync with any calendar app, shared calendars and room booking.
+- **Falls short:** you need the whole Nextcloud server.
+- **Pick it if** Nextcloud is already your home for files and contacts.
 
-## How to Build an Open Source Productivity Stack
+### Radicale: a tiny CalDAV server
 
-Assembling a complete productivity system from open source components is straightforward. Here's a recommended stack for different user types:
+**Verdict:** the lightest way to host your own calendar and contacts.
 
-### For Individual Developers
+**Best for:** people who only need a sync server for their phone and desktop apps.
 
-1. **Daily Planning:** Open Sunsama (time blocking, focus mode)
-2. **Notes:** Logseq or Obsidian (knowledge graph)
-3. **Time Tracking:** Traggo (simple, tag-based)
-4. **Sync:** Syncthing (local file sync) or Nextcloud
+- **Good:** small, simple to run, and it works with Tasks.org, Thunderbird and Apple apps.
+- **Falls short:** no full web calendar. You use other apps to see your events.
+- **Pick it if** you want your calendar off Google with the least work.
 
-**Total Cost:** $5-20/month for a VPS, or free if running locally.
+## Which open source productivity apps work with AI agents?
 
-### For Freelancers
+MCP is the plug that lets an AI agent read and change your tasks. In 2026 it matters as much as an API.
 
-1. **Task Management:** Open Sunsama (client projects in backlog)
-2. **Notes:** Joplin with encryption (client-sensitive info)
-3. **Time Tracking:** Kimai (billable hours + invoicing)
-4. **Calendar:** Nextcloud Calendar (CalDAV sync)
+- **Open Sunsama:** a hosted MCP server with OAuth sign-in and 24 tools. It works in Claude, ChatGPT, Cursor and any MCP client, and it reads your synced meetings too. See the [MCP setup guide](/docs/mcp/overview).
+- **Tududi:** an MCP server in every instance, using a personal token.
+- **Joplin:** a local MCP server in the desktop app, off by default.
+- **Vikunja and Super Productivity:** community MCP servers and plugins.
 
-**Total Cost:** $10-30/month for VPS with adequate storage.
+Here is what that looks like in Open Sunsama. You ask your agent to plan the afternoon. The tasks and time blocks appear on your calendar as it works.
 
-### For Small Teams
+<Clip id="ai-plan" caption="An AI agent plans the afternoon over MCP, and the blocks appear live." />
 
-1. **Task Management:** Vikunja or WeKan (team boards)
-2. **Daily Planning:** Open Sunsama (individual planning)
-3. **Notes:** Outline or BookStack (team wiki)
-4. **Time Tracking:** Kimai (team rates and projects)
-5. **Calendar:** Nextcloud Calendar (shared schedules)
+The code is public, too. So your agent can read how the planner works and even help you change it. For more options, see our list of [task managers with MCP](/blog/best-task-managers-with-mcp).
 
-**Total Cost:** $20-50/month for a robust VPS, supporting 10+ users.
+## How to build an open source productivity stack
 
-## Self-Hosting vs. Cloud: Making the Right Choice
+### For a solo developer
 
-The decision between self-hosting and cloud services isn't binary. Consider these factors:
+1. **Planning:** Open Sunsama or Super Productivity.
+2. **Notes:** Joplin or Logseq.
+3. **Time tracking:** Traggo.
 
-### Choose Self-Hosting When:
+### For a freelancer
 
-- **Privacy is paramount** — Your data contains sensitive client or business information
-- **Budget is fixed** — You want predictable costs without per-seat pricing
-- **Compliance requires it** — GDPR, HIPAA, or internal policies mandate data residency
-- **You have technical capacity** — Someone can maintain the infrastructure
-- **Offline access matters** — You work in areas with unreliable connectivity
+1. **Planning:** Open Sunsama for your day, with client work in the backlog.
+2. **Notes:** Joplin with encryption for client details.
+3. **Time tracking and invoices:** Kimai.
+4. **Calendar:** Nextcloud Calendar or Radicale.
 
-### Choose Cloud When:
+### For a small team
 
-- **Speed to start matters** — You need a solution today, not next week
-- **Team lacks technical skills** — No one to maintain servers
-- **Reliability is critical** — Uptime guarantees and professional support matter
-- **Mobile-first usage** — Some self-hosted apps have limited mobile experiences
-- **Collaboration is intense** — Real-time sync across time zones needs robust infrastructure
+1. **Shared tasks:** Vikunja or WeKan.
+2. **Personal planning:** Open Sunsama for each person's day. Check the license if you are a company.
+3. **Team wiki:** Trilium.
+4. **Time tracking:** Kimai.
 
-### The Hybrid Approach
+<Shot id="board" alt="Open Sunsama board with a backlog and day columns" caption="Your backlog and each day side by side, so you only plan what fits." />
 
-Many teams use both: cloud services for collaboration-heavy tools and self-hosted solutions for personal productivity and sensitive data. Open source apps with good export features make this transition painless.
+## Should you self-host or use the cloud?
 
-## Frequently Asked Questions
+Self-host when you want full control, when rules like GDPR keep your data in one place, or when you already run a home server. You own the updates and the backups.
 
-### What are the best open source productivity apps for developers?
+Use a hosted version when you want to start today and never think about servers. Many apps here, including Open Sunsama, Vikunja and Tududi, run the same code in both places, so you can move later.
 
-For developers, Open Sunsama provides the best combination of structured daily planning, time blocking, and API-first design. Pair it with Logseq for technical note-taking and Traggo for time tracking. All three are MIT or AGPL licensed, fully self-hostable, and designed with developer workflows in mind.
+Our [self-hosted productivity apps guide](/blog/self-hosted-productivity-apps) covers Docker setup, security and backups step by step.
 
-### Is there a free open source planner that includes time blocking?
+## Which one should you pick?
 
-Open Sunsama is currently the only fully open source daily planner with integrated time blocking. It offers drag-and-drop calendar scheduling, Pomodoro-style focus mode, and planned vs. actual time tracking—all features typically found only in paid tools like Sunsama or Motion.
-
-### How hard is it to self-host productivity apps?
-
-Most modern open source productivity apps offer Docker deployment, reducing self-hosting to a few terminal commands. Open Sunsama, Vikunja, and Traggo can all be running within 15 minutes using docker-compose. The main ongoing tasks are backups and occasional updates.
-
-### Are open source task managers as good as paid alternatives?
-
-In many cases, yes. Vikunja matches most Todoist features, WeKan replicates Trello almost exactly, and Open Sunsama provides Sunsama-quality daily planning. The main trade-off is polish—commercial apps often have more refined mobile experiences and integrations with other SaaS tools.
-
-### Can I migrate from Todoist/Asana/Notion to open source alternatives?
-
-Yes. Most open source task managers accept CSV or JSON imports. Vikunja specifically supports Todoist imports. For Notion, you'll need to export pages as markdown and reorganize into your new tool's structure. Plan for a few hours of migration work for a complete switch.
-
-### What's the difference between MIT and GPL licenses?
-
-MIT license allows you to do almost anything with the code, including using it in proprietary software. GPL licenses require that any modified versions also be open source. For end users, both provide full freedom to use and self-host. The difference matters mainly if you're building commercial products on top of the code.
-
-### Do open source productivity apps sync across devices?
-
-Yes, though the mechanism varies. Open Sunsama runs as a web app accessible from any device. Logseq and Obsidian use local files that can be synced via Syncthing, Nextcloud, or their own sync services. Vikunja offers a progressive web app that works on mobile browsers.
-
-### How do I keep my self-hosted apps secure?
-
-Essential practices include: keeping software updated, using HTTPS with valid certificates, implementing strong authentication (consider SSO or 2FA), regular backups to separate locations, and running behind a reverse proxy like Caddy or nginx. Most Docker-based deployments handle much of this automatically.
-
-## Conclusion
-
-The open source productivity ecosystem in 2026 has matured to the point where you can build a complete, professional-grade workflow without spending a dollar on software subscriptions. From task management to note-taking to time tracking, every category has capable open source options.
-
-For daily planning specifically, **Open Sunsama** stands alone as the only open source tool combining time blocking, focus mode, and the mindful planning ritual that premium tools charge $20+/month for. It's MIT licensed, Docker-deployable, and designed specifically for developers and privacy-conscious professionals.
-
-The choice is clear: your productivity data is too valuable to rent. Take ownership with open source.
-
----
-
-Ready to reclaim your productivity stack? [Get started with Open Sunsama](/register)—the open source daily planner built for developers who value privacy, freedom, and their time.
+- **You want one place to plan your day, with time blocks and an AI agent:** Open Sunsama. This is our pick for most people.
+- **You want an MIT planner with no server:** Super Productivity.
+- **You want a self-hosted Todoist:** Vikunja. See our [open source Todoist alternatives](/blog/open-source-todoist-alternatives).
+- **You want the lightest task app with MCP:** Tududi.
+- **You want private notes on every device:** Joplin.
+- **You bill by the hour:** Kimai.
+- **You want your calendar off Google:** Nextcloud Calendar or Radicale.

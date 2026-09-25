@@ -1,0 +1,233 @@
+export const frontmatter = {
+  title: "Best Task Managers With MCP for Claude and ChatGPT (2026)",
+  description: "Which to-do apps have a real MCP server in 2026? We checked Todoist, Sunsama, TickTick, Akiflow, Open Sunsama and more: URLs, setup, what the AI can do.",
+  date: "2026-09-24",
+  updated: "2026-09-24",
+  author: "Open Sunsama Team",
+  tags: ["mcp", "ai", "claude", "chatgpt", "task-management", "comparison"],
+  readingTime: 11,
+  image: "/blog-best-task-managers-with-mcp.webp",
+  faqs: [
+    {
+      question: "What is the best task manager with MCP?",
+      answer: "Open Sunsama is the best overall. It is an open-source daily planner whose MCP server covers tasks, calendar time blocks and your meetings, and it works with any AI agent. Pick Todoist for a simple to-do list, or Sunsama if you already use its daily ritual.",
+    },
+    {
+      question: "What is a task manager MCP server?",
+      answer: "It is a web address your AI app connects to so it can read and change your tasks. MCP (Model Context Protocol) is the open standard behind it. Claude, ChatGPT, Cursor and many other apps speak it.",
+    },
+    {
+      question: "Does Todoist have an MCP server?",
+      answer: "Yes. Todoist hosts an official MCP server at https://ai.todoist.net/mcp. You sign in with OAuth, and it works with Claude, ChatGPT, Claude Code and any other MCP client.",
+    },
+    {
+      question: "Can Claude manage my to-do list?",
+      answer: "Yes, if your to-do app has an MCP server. Add its URL in Claude under Settings, Connectors, then sign in. Claude can then list, add, move and complete your tasks when you ask.",
+    },
+    {
+      question: "Does ChatGPT work with MCP task managers?",
+      answer: "Yes. Some apps, like Sunsama and Asana, are in ChatGPT's plugin directory. For any other MCP server, turn on developer mode (paid ChatGPT plans) and add the server URL.",
+    },
+    {
+      question: "Does Things 3 have an MCP server?",
+      answer: "Not an official one. Cultured Code says Things has no direct link to Claude or ChatGPT, and it warns that some third-party tools can damage your database.",
+    },
+    {
+      question: "Which MCP task manager can also time block my day?",
+      answer: "Open Sunsama's MCP server reads your synced meetings, and creates and moves calendar time blocks linked to tasks. Akiflow's server covers tasks, calendar and time slots. Reclaim's server works on your calendar events.",
+    },
+    {
+      question: "Is it safe to let an AI edit my tasks?",
+      answer: "Use a server with OAuth, so the AI never sees your password, and keep approval on for changes. Good servers mark delete tools so your AI asks first, and let you cut off access in one click.",
+    },
+  ],
+};
+
+The best task manager with MCP in 2026 is **Open Sunsama**. It is an open-source daily planner with time blocking that works with any AI agent. Your data stays yours: you can self-host it, and it has a public API.
+
+Todoist, Sunsama, TickTick and Akiflow also run official, hosted MCP servers with OAuth sign-in. Pick Todoist for a plain, fast to-do list. Pick Sunsama or Akiflow if you want a daily planner that pulls in work from many other tools.
+
+We build Open Sunsama, so we put it first — here is why, and where others fit better.
+
+## Quick answer: the best MCP task manager for each job
+
+- **Best overall:** [Open Sunsama](/features/ai-integration). 24 tools for tasks, subtasks, time blocks and your synced meetings, plus a REST API and self-hosting. Your AI can plan your whole day.
+- **Best for a simple to-do list:** [Todoist](https://www.todoist.com). Official server at `ai.todoist.net/mcp`, works on its Beginner plan.
+- **Best for a guided daily planner with many integrations:** [Sunsama](https://www.sunsama.com). Official MCP server, included in the Pro plan.
+- **Best for tasks plus habits and focus stats:** [TickTick](https://ticktick.com). Its server can read habits and focus records too.
+- **Best for many calendars and meeting notes:** [Akiflow](https://akiflow.com/mcp). 19 actions across tasks, calendar, time slots and meeting transcripts.
+- **Best for team work:** Linear, Asana and Notion all run official servers.
+- **No official server yet:** Things 3, Motion and Microsoft To Do. Only community-built servers exist.
+
+## Which to-do apps have an official MCP server in 2026?
+
+Here is what each app offers today. "Official" means the company runs the server itself.
+
+| App | Official MCP server | Server URL | What your AI can reach | Public REST API | Self-host |
+| --- | --- | --- | --- | --- | --- |
+| Open Sunsama | Yes | `https://api.opensunsama.com/mcp` | Tasks, subtasks, time blocks, synced meetings (read-only) | Yes, with API keys | Yes (Docker) |
+| Todoist | Yes | `https://ai.todoist.net/mcp` | Tasks, projects, activity log | Yes | No |
+| Sunsama | Yes | `https://api.sunsama.com/mcp` | Tasks, notes, channels, comments | No | No |
+| TickTick | Yes | `https://mcp.ticktick.com` | Tasks, lists, habits, focus records | Yes (narrow) | No |
+| Akiflow | Yes | `https://mcp.akiflow.com/mcp` | Tasks, calendar, time slots, meeting notes | Not checked | No |
+| Notion | Yes | `https://mcp.notion.com/mcp` | Pages, databases, comments | Yes | No |
+| Linear | Yes | `https://mcp.linear.app/mcp` | Issues, projects, comments | Yes | No |
+| Asana | Yes | `https://mcp.asana.com/v2/mcp` | Tasks, projects, portfolios | Yes | No |
+| Google Calendar | Developer preview | `https://calendarmcp.googleapis.com/mcp/v1` | Events, free time | Yes | No |
+| Reclaim | Yes | `https://mcp.reclaim.ai` | Events, meeting times, focus stats | Not checked | No |
+| Things 3 | No | Community only | Depends on the tool | No | No |
+| Motion | No | Community only | Depends on the tool | Yes | No |
+| Microsoft To Do | No | Community only | Depends on the tool | Yes (Microsoft Graph) | No |
+
+## How we checked each server
+
+We read each company's own MCP docs, help pages and changelogs on 24 September 2026. For each app we noted the server URL, how you sign in, what the tools can touch and any plan limits. Where we could not confirm a fact, we left it out or marked it "not checked".
+
+We also looked for what people complain about on Reddit and in public roadmaps. Lost logins, missing tools and read-only access came up the most.
+
+## What can an AI do with a task manager MCP?
+
+MCP (Model Context Protocol) is an open standard. It gives an AI app a set of tools, like "list tasks" or "create task". You connect once, and then you just talk.
+
+With a good server, you can say "plan my day" or "move everything I didn't finish to tomorrow". The AI reads your tasks, makes the changes and tells you what it did. The better servers also let it see your calendar, so the plan fits around your meetings.
+
+Most servers here use OAuth. You sign in on the app's own page, and the AI gets a token, never your password. You can cut off access from either side at any time.
+
+## 1. Open Sunsama: best overall, because your AI can plan your whole day
+
+**Verdict:** the best overall pick. Tasks and time blocks live in one place, with code you can read and run yourself.
+
+**Best for:** people who already say "plan my day" to Claude or ChatGPT, and want one planner the agent can fully read and write.
+
+<DemoVideo id="ai" />
+
+**What it does well:** Open Sunsama is an open-source daily planner with a hosted MCP server at `https://api.opensunsama.com/mcp`. You paste the URL, sign in with OAuth and click **Allow access**. It works in Claude (web, desktop, mobile and Claude Code), ChatGPT, Cursor, VS Code and any other MCP client.
+
+The server has 24 tools. Your AI can list and create tasks, add subtasks, move work between days and reorder a day.
+
+<Clip id="plan-day" caption="Drag tasks from the backlog into Today. Your AI can move them the same way." />
+
+It can also create, resize and delete calendar time blocks and link them to tasks. One tool returns a whole day in one call, so the AI sees your meetings and time blocks together.
+
+<Clip id="ai-plan" caption="Claude plans the afternoon over MCP, and the tasks and time blocks appear live." />
+
+A real plan needs a list and a time for each item. Here tasks and time blocks share one server, and the blocks land on the same calendar you drag and resize by hand.
+
+Your synced Google, Outlook or iCloud meetings show on that calendar in the app, and the AI reads them over MCP too. So it plans around your meetings without a second connector. It sees each meeting's title, time and place, never who's invited or the notes, and it can't move meetings.
+
+<Clip id="time-block" caption="Drag a task onto the calendar and resize it. Your AI can make the same change for you." />
+
+Each tool is marked read-only or destructive, so your AI asks before it deletes anything. Access tokens last one hour and refresh on their own. You can see and cut off every connected app in **Settings → MCP**.
+
+<Shot id="mcp-settings" alt="Open Sunsama Settings page with the MCP server URL and setup steps for each AI app" caption="Settings → MCP has the URL and the steps for each AI app, ready to copy." />
+
+There is also a documented [REST API with API keys](/docs/api/authentication), and a local server if you want to use a local model. The code is [public on GitHub](https://github.com/ShadowWalker2014/open-sunsama), and you can self-host it with Docker. So your agent can even read the code and help you add the feature you want.
+
+**Where it falls short:** It is newer and has fewer built-in integrations than Sunsama or Akiflow. It is not in ChatGPT's plugin directory yet, so ChatGPT needs developer mode, which is on paid ChatGPT plans. The license is non-commercial: you can self-host for personal use, and companies need a commercial license.
+
+**Pick it if** you want your AI to plan real time blocks, not just lists, and you want full control of your data. Setup takes about a minute: see the [Claude guide](/docs/mcp/claude) or the [ChatGPT guide](/docs/mcp/chatgpt).
+
+<Shot id="consent-claude" alt="Open Sunsama consent screen asking to allow Claude to access tasks and time blocks" caption="You approve access once on Open Sunsama's own sign-in page. Claude never sees your password." />
+
+## 2. Todoist: best for a simple to-do list
+
+**Verdict:** the easiest way to give Claude or ChatGPT a to-do list, if you don't need time blocks.
+
+**Best for:** people who live in lists and want an AI to add, sort and clear tasks.
+
+**What it does well:** Todoist runs its own hosted server at `https://ai.todoist.net/mcp`. Its [help page](https://www.todoist.com/help/todoist/todoist-and-ai/connect-todoist-to-an-ai-assistant-xMSzFfHng) has setup guides for Claude, Claude Code, ChatGPT, Codex and Gemini Spark. The server works on the Beginner, Pro and Business plans.
+
+The AI can create tasks and projects, edit them and complete them. It can also read your activity log, so "what did I finish yesterday?" works. The server code is open source on [GitHub](https://github.com/Doist/todoist-mcp).
+
+**Where it falls short:** Todoist is a list app first, so your meetings live somewhere else. Many people add a calendar connector next to it so the AI can see their day. Some Reddit users say they had to sign in again and again, and Todoist's own help page lists this as a known issue.
+
+**Pick it if** you want the most tested to-do MCP and you plan in lists, not by the hour.
+
+## 3. Sunsama: best for a guided daily planner with integrations
+
+**Verdict:** a strong official MCP for people who already love Sunsama's daily planning ritual.
+
+**Best for:** Sunsama users who want Claude or ChatGPT to work with their existing board.
+
+**What it does well:** Sunsama runs a hosted server at `https://api.sunsama.com/mcp` with OAuth. It is in ChatGPT's plugin directory, so you can add it without developer mode. Its [help page](https://help.sunsama.com/docs/mcp-model-context-protocol) also covers Claude, Claude Desktop, Cursor, Claude Code and Notion agents.
+
+The server left beta in August 2026. Since then Sunsama has added tools to edit task notes, manage channels and read and post comments.
+
+Changes made over MCP now sync back to Todoist, Asana, ClickUp, Notion, Trello and Gmail. Sunsama also has its own built-in AI assistant, Sunny.
+
+**Where it falls short:** Sunsama has no public REST API. The API request on its roadmap has been open since December 2019.
+
+In April 2026 a Claude user found the MCP did not share actual tracked time, and Sunsama said that was coming. MCP is part of the Pro plan: $17 a month billed yearly, or $22 monthly (checked September 2026).
+
+**Pick it if** you already pay for Sunsama and want your AI to join in. For the full setup, read our [Sunsama MCP guide](/blog/sunsama-mcp).
+
+## 4. TickTick: best for tasks plus habits and focus stats
+
+**Verdict:** a wide official server that reaches parts of TickTick its API never did.
+
+**Best for:** TickTick users who track habits and Pomodoro sessions next to their tasks.
+
+**What it does well:** TickTick hosts its server at `https://mcp.ticktick.com`. You sign in with OAuth, or paste an API token from your TickTick settings. Beyond tasks and lists, the AI can check in habits and read your focus records and countdowns.
+
+**Where it falls short:** It only speaks Streamable HTTP, so older clients that need SSE can't connect. It covers the basics, not every view: filters, smart lists and sharing are out of reach.
+
+**Pick it if** TickTick is already your home for tasks and habits.
+
+## 5. Akiflow: best for many calendars and meeting notes
+
+**Verdict:** a strong pick for people who live in meetings.
+
+**Best for:** busy people with several calendars who want the AI to turn meeting notes into scheduled work.
+
+**What it does well:** Akiflow's [MCP page](https://akiflow.com/mcp) lists 19 actions at `mcp.akiflow.com/mcp`. They cover tasks, calendar events, time slots, your schedule and meeting transcripts. So "pull the action items from my product sync and schedule them this week" is one request.
+
+**Where it falls short:** Akiflow is a paid app built around one inbox for all your tools. That is a lot of setup if you only want a light to-do list.
+
+**Pick it if** your day is mostly meetings and follow-ups across many calendars.
+
+## Team tools with official servers: Linear, Asana and Notion
+
+These are not personal planners, but many people keep tasks in them. All three have solid official servers.
+
+- **[Linear](https://linear.app/docs/mcp):** `https://mcp.linear.app/mcp` for issues, projects and comments. It also has a `/mcp/readonly` address if you only want the AI to look.
+- **[Asana](https://developers.asana.com/docs/using-asanas-mcp-server):** `https://mcp.asana.com/v2/mcp`. Asana also has its own apps inside Claude and ChatGPT.
+- **Notion:** `https://mcp.notion.com/mcp` for pages and databases. The hosted server uses OAuth only, so a person has to sign in.
+
+## Calendar servers: Google Calendar and Reclaim
+
+A to-do list tells the AI what to do. A calendar tells it when you are free. For a real plan, it needs both.
+
+Google offers an official [Calendar MCP server](https://developers.google.com/workspace/calendar/api/guides/configure-mcp-server), but it is a developer preview. You need to join the preview, make a Google Cloud project and create your own OAuth client. That is a lot of setup for most people.
+
+[Reclaim](https://reclaim.ai/integrations/claude), now part of Dropbox, has a hosted server at `https://mcp.reclaim.ai`. Any change your AI wants to make to your calendar shows up in a preview for you to approve first. It works on calendar events, not a task list.
+
+## Apps with no official MCP server yet
+
+**Things 3:** Cultured Code says Things has no direct link to Claude or ChatGPT. Its [support page](https://culturedcode.com/things/support/articles/5510170/) warns that some third-party tools can corrupt your database. It lists the safe methods to look for: the URL scheme, Shortcuts, AppleScript and Mail to Things.
+
+**Motion:** We found only community-built servers for Motion's planner. The ones we found use a personal API key and run on your own computer, so claude.ai on the web can't reach them.
+
+**Microsoft To Do:** We found only community projects that use the Microsoft Graph API. Check the code before you give one write access.
+
+## How to connect a task manager to Claude or ChatGPT
+
+The steps are almost the same for every server on this list.
+
+1. **Copy the server URL** from the table above.
+2. **In Claude:** open Settings → Customize → Connectors, click **Add custom connector**, paste the URL and click **Connect**. Custom connectors work on every Claude plan, and the Free plan allows one.
+3. **In ChatGPT:** look for the app in ChatGPT's plugin directory first. If it is not there, turn on developer mode (paid plans) and add the URL as a new plugin.
+4. **In Claude Code:** run `claude mcp add --transport http <name> <url>`, then type `/mcp` to sign in.
+5. **Sign in** on the app's own page and approve access.
+6. **Test with a read-only prompt** such as "What's on my list today?" before you let it write.
+
+## Which task manager with MCP should you pick?
+
+**For most people: [Open Sunsama](/features/ai-integration).** Your AI can plan your day into real time blocks. It is also the only one here you can run on your own server.
+
+- **If you just want your AI to manage a to-do list,** pick Todoist.
+- **If you already pay for Sunsama and love its ritual,** keep Sunsama and connect its MCP.
+- **If you track habits and focus sessions,** pick TickTick.
+- **If your day is back-to-back meetings,** pick Akiflow.
+- **If you use Things 3,** wait for an official option, or use a tool that sticks to Cultured Code's safe methods.
+
+Want to try it? Read the [MCP overview](/docs/mcp/overview), [download the apps](/download), then follow our guide to [time blocking with AI](/blog/time-blocking-with-ai).
