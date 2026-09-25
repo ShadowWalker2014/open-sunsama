@@ -148,6 +148,9 @@ jobs:
         if: matrix.platform == 'macos-latest'
         working-directory: apps/desktop
         env:
+          # Tauri skips the DMG window layout (background, icon positions)
+          # when CI=true, which left a bare Finder window with tiny icons.
+          TAURI_BUNDLER_DMG_IGNORE_CI: "true"
           APPLE_SIGNING_IDENTITY: ${{ steps.signing.outputs.identity }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
