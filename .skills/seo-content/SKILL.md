@@ -19,6 +19,7 @@ Read [playbook.md](playbook.md) before writing a word. It has the hard rules: po
 | Readability gate | `cd apps/web && bun run scripts/check-blog-readability.ts <slug>` | PASS/FAIL per post |
 | Media | `scripts/readme-media/blog-media.mjs` on a local seeded stack | Shots, clips, narrated videos in `apps/web/public/blog-media/` |
 | Covers | `cd apps/web && node scripts/generate-blog-covers.mjs <slug>` | Light, dark and social covers from real product screenshots |
+| Open-source registry | `cd apps/web && node scripts/refresh-oss-apps.mjs` | Fresh license, stars, releases and status for every app in `oss-apps.json` (playbook section 9) |
 | QA | `node apps/web/scripts/qa-blog.mjs <slug...>` | CLS, overflow, console errors, screenshots at 375/768/1280 in light and dark |
 | Ship | PR → squash merge to `main` → Railway deploys `web` | Live pages |
 
@@ -43,6 +44,9 @@ Look for:
 - Signups by referrer: which pages bring people who sign up.
 
 ## 2. Pick the work
+
+Start every run with `cd apps/web && node scripts/refresh-oss-apps.mjs` so the open-source cards stay current, and commit the refreshed registry with the run.
+
 
 - **3 new posts** for the queries with the best mix of volume, intent (people choosing an app), and weak competition (Reddit, small vendor blogs, directories).
 - **1-3 updates, 5 at most**: the most important outdated posts (impressions or signups at stake, stale facts, old date on page 1).
@@ -71,6 +75,16 @@ Local stack (never record against production):
 ```bash
 docker start os-demo-pg || docker run -d --name os-demo-pg -e POSTGRES_PASSWORD=demo -e POSTGRES_DB=opensunsama -p 5433:5432 postgres:16
 (cd packages/database && DATABASE_URL=postgresql://postgres:demo@localhost:5433/opensunsama bunx drizzle-kit push --force)
+```
+
+If Docker won't start the container, run Homebrew's Postgres on the same port instead (a valid locale is required, or it exits at startup):
+
+```bash
+export LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+PG=/opt/homebrew/opt/postgresql@16/bin; D=/tmp/os-demo-pgdata
+[ -d $D ] || $PG/initdb -D $D -U postgres --auth=trust
+$PG/pg_ctl -D $D -o "-p 5433" -l $D.log start
+$PG/psql -h localhost -p 5433 -U postgres -c "create database opensunsama" || true
 ```
 
 Start the `api-demo-local` (port 3101) and `web-demo-local` (port 3107) configs from `.claude/launch.json` with `preview_start`. `api-demo-local` blanks Redis, email, S3 and OAuth secrets so nothing touches production. Then seed and record:
@@ -110,6 +124,7 @@ Pass bar for every changed page, at 375, 768 and 1280px in light and dark:
 ```bash
 git checkout -b seo/weekly-<date> && git add -A && git commit
 git push -u origin HEAD && gh pr create
+gh pr checks --watch --fail-fast   # CI is required; fix any failure before merging
 gh pr merge --squash --delete-branch
 ```
 

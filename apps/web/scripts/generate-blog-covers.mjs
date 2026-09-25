@@ -210,6 +210,9 @@ const HEADLINES = {
   "best-free-daily-planner-apps": "The Best [Daily Planner] Apps",
   "best-free-sunsama-alternatives": "9 Best [Sunsama Alternatives]",
   "best-habit-tracker-task-management": "Habit Trackers With [Task Management]",
+  "best-open-source-focus-apps": "Best [Open Source] Focus Apps",
+  "best-open-source-todo-list-apps": "11 Best Open Source [To-Do List Apps]",
+  "best-open-source-planner-apps": "Best Open Source [Planner Apps]",
   "best-open-source-productivity-apps": "Best [Open Source] Productivity Apps",
   "best-pomodoro-apps-task-management": "Best [Pomodoro] Apps With Tasks",
   "best-productivity-apps-adhd": "Productivity Apps [for ADHD]",
@@ -557,6 +560,9 @@ const TOPICS = [
  */
 const OVERRIDES = {
   "best-open-source-productivity-apps": ["openSource", C.github],
+  "best-open-source-focus-apps": ["focus", C.github],
+  "best-open-source-calendar-apps": ["week", C.calendars],
+  "best-open-source-kanban-boards": ["boardDay", C.github],
   "best-calendar-apps-time-blocking": ["week", C.calendars],
   "best-free-sunsama-alternatives": ["boardDay", C.anyAgent],
   "best-time-management-apps-students": ["mobile", C.devices],

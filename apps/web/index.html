@@ -47,6 +47,11 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
+    <!-- Home Screen web app (iOS reads these instead of the manifest) -->
+    <meta name="apple-mobile-web-app-title" content="Open Sunsama" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     
     <!-- Preconnect to external resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -119,11 +124,6 @@
       "screenshot": "https://opensunsama.com/og-image.png",
       "softwareVersion": "1.0.0",
       "datePublished": "2026-01-01",
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "5",
-        "ratingCount": "1"
-      },
       "author": {
         "@type": "Organization",
         "name": "Open Sunsama",
@@ -163,13 +163,8 @@
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "Open Sunsama",
-      "url": "https://opensunsama.com",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://opensunsama.com/?q={search_term_string}",
-        "query-input": "required name=search_term_string"
+      "url": "https://opensunsama.com"
       }
-    }
     </script>
     
     <!-- Theme initialization script - prevents flash of wrong theme -->
