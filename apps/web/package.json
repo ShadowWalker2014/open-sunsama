@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && bun run scripts/generate-sitemap.ts && bun run scripts/prerender-blog-meta.ts",
+    "build": "tsc && vite build && bun run scripts/generate-sitemap.ts && bun run scripts/prerender-blog-meta.ts && bun run scripts/prerender-marketing.ts",
     "start": "bun run server.ts",
     "preview": "vite preview",
     "lint": "eslint .",

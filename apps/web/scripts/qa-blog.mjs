@@ -44,7 +44,11 @@ for (const route of paths) {
       const page = await context.newPage();
       const errors = [];
       page.on("console", (m) => m.type() === "error" && errors.push(m.text().slice(0, 160)));
-      page.on("requestfailed", (r) => errors.push(`failed ${r.url().replace(WEB, "")}`));
+      // A video request aborted while scrolling past a clip is not a failure
+page.on("requestfailed", (r) => {
+  if (/ERR_ABORTED/.test(r.failure()?.errorText ?? "") && /\.(mp4|webm)$/.test(r.url())) return;
+  errors.push(`failed ${r.url().replace(WEB, "")}`);
+});
 
       await page.goto(`${WEB}${route}`, { waitUntil: "networkidle" });
       await page.waitForTimeout(1200);
