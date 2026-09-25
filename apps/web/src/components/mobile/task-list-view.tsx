@@ -277,7 +277,7 @@ export function MobileTaskListView({
       <main
         key={dateString}
         className={cn(
-          "flex-1 overflow-y-auto pb-24 transition-opacity duration-200",
+          "pb-under-fab flex-1 overflow-y-auto transition-opacity duration-200",
           slideFrom === "right" && "animate-[day-in-right_240ms_cubic-bezier(0.32,0.72,0,1)]",
           slideFrom === "left" && "animate-[day-in-left_240ms_cubic-bezier(0.32,0.72,0,1)]"
         )}
@@ -360,7 +360,7 @@ export function MobileTaskListView({
       <button
         onClick={handleAddTask}
         className={cn(
-          "fixed right-4 bottom-24 z-50",
+          "fab-above-nav fixed right-4 z-50",
           "flex items-center justify-center w-14 h-14",
           "rounded-full bg-primary text-primary-foreground shadow-lg",
           "active:scale-95 transition-transform",

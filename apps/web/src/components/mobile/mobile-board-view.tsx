@@ -82,7 +82,9 @@ export function MobileBoardView({
           onScroll={settle.onScroll}
           onTouchStart={settle.onTouchStart}
           onTouchEnd={settle.onTouchEnd}
-          className="flex min-h-0 flex-1 snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain pb-20 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex min-h-0 flex-1 snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          // Clear the bottom tab bar, including the iPhone home-indicator area.
+          style={{ paddingBottom: "calc(72px + env(safe-area-inset-bottom, 0px))" }}
         >
           {[-1, 0, 1].map((offset) => {
             const date = addDays(selectedDate, offset);
@@ -109,7 +111,7 @@ export function MobileBoardView({
         <button
           type="button"
           onClick={() => setIsComposerOpen(true)}
-          className="fixed bottom-24 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform active:scale-95 lg:hidden"
+          className="fab-above-nav fixed right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform active:scale-95 lg:hidden"
           aria-label={`Add task on ${format(selectedDate, "EEEE, MMMM d")}`}
         >
           <Plus className="h-6 w-6" />
