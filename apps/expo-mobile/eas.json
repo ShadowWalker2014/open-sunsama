@@ -3,17 +3,23 @@
     "version": ">= 12.0.0"
   },
   "build": {
+    "base": {
+      "node": "22.13.0"
+    },
     "development": {
+      "extends": "base",
       "developmentClient": true,
       "distribution": "internal"
     },
     "preview": {
+      "extends": "base",
       "distribution": "internal",
       "ios": {
         "simulator": false
       }
     },
     "production": {
+      "extends": "base",
       "autoIncrement": true
     }
   },
