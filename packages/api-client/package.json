@@ -36,7 +36,7 @@
     "@types/react": "^19.1.17",
     "react": "^19.1.0",
     "typescript": "catalog:",
-    "vitest": "^2.1.9"
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "@tanstack/react-query": ">=5.0.0",

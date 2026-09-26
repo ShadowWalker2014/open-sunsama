@@ -50,6 +50,6 @@
     "tsup": "^8.5.1",
     "tsx": "^4.23.15",
     "typescript": "catalog:",
-    "vitest": "^3.2.7"
+    "vitest": "catalog:"
   }
 }
