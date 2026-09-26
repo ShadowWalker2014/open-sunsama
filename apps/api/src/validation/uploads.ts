@@ -57,9 +57,7 @@ export type AllowedAttachmentType = (typeof ALLOWED_ATTACHMENT_TYPES)[number];
  */
 export const avatarFileSchema = z.object({
   type: z.enum(ALLOWED_AVATAR_TYPES, {
-    errorMap: () => ({
-      message: `Invalid file type. Allowed types: ${ALLOWED_AVATAR_TYPES.join(', ')}`,
-    }),
+    error: `Invalid file type. Allowed types: ${ALLOWED_AVATAR_TYPES.join(', ')}`,
   }),
   size: z.number().max(MAX_AVATAR_SIZE, {
     message: `File size must be less than ${MAX_AVATAR_SIZE / (1024 * 1024)}MB`,
@@ -71,9 +69,7 @@ export const avatarFileSchema = z.object({
  */
 export const attachmentFileSchema = z.object({
   type: z.enum(ALLOWED_ATTACHMENT_TYPES, {
-    errorMap: () => ({
-      message: `Invalid file type. Allowed types: images (jpeg, png, gif, webp), videos (mp4, webm, mov), documents (pdf, doc, docx, xls, xlsx, txt)`,
-    }),
+    error: 'Invalid file type. Allowed types: images (jpeg, png, gif, webp), videos (mp4, webm, mov), documents (pdf, doc, docx, xls, xlsx, txt)',
   }),
   size: z.number().max(MAX_ATTACHMENT_SIZE, {
     message: `File size must be less than ${MAX_ATTACHMENT_SIZE / (1024 * 1024)}MB`,

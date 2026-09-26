@@ -41,7 +41,7 @@
     "@neondatabase/serverless": "^0.9.5",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.3",
-    "drizzle-zod": "^0.5.1",
+    "drizzle-zod": "^0.8.3",
     "postgres": "^3.4.9",
     "zod": "catalog:"
   },
