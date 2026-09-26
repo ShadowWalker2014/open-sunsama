@@ -1,7 +1,7 @@
 {
   "name": "open-sunsama",
   "description": "Open-source, AI agent friendly Sunsama alternative with direct API access",
-  "version": "1.0.13",
+  "version": "1.0.17",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
   "overrides": {
@@ -45,6 +45,7 @@
   },
   "scripts": {
     "dev": "turbo run dev --filter='!@open-sunsama/desktop' --filter='!@open-sunsama/mobile' --filter='!@open-sunsama/expo-mobile'",
+    "dev:local": "node scripts/dev-local.mjs",
     "dev:web": "turbo run dev --filter=@open-sunsama/web --filter=@open-sunsama/api --filter=./packages/*",
     "dev:desktop": "turbo run dev --filter=@open-sunsama/desktop --filter=@open-sunsama/api --filter=./packages/*",
     "dev:mobile:ios": "turbo run dev:ios --filter=@open-sunsama/mobile --filter=@open-sunsama/api --filter=./packages/*",
@@ -58,6 +59,7 @@
     "lint:fix": "turbo run lint:fix",
     "test": "turbo run test",
     "test:watch": "turbo run test:watch",
+    "e2e": "playwright test -c e2e",
     "typecheck": "turbo run typecheck",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
@@ -72,8 +74,10 @@
   "devDependencies": {
     "@changesets/cli": "^2.31.1",
     "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^22.20.4",
     "eslint": "^9.39.5",
+    "globals": "^14.0.0",
     "prettier": "^3.9.8",
     "turbo": "^2.11.2",
     "typescript": "catalog:",

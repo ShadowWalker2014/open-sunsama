@@ -139,10 +139,11 @@ export function AddTaskModal({
     // Create subtasks after task is created
     if (subtasks.length > 0) {
       await Promise.all(
-        subtasks.map((st) =>
+        // Explicit positions keep the typed order; the requests run in parallel.
+        subtasks.map((st, position) =>
           createSubtask.mutateAsync({
             taskId: newTask.id,
-            data: { title: st.title },
+            data: { title: st.title, position },
           })
         )
       );

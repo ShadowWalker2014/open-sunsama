@@ -1,5 +1,6 @@
 // @ts-check
 import js from "@eslint/js";
+import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
@@ -26,6 +27,13 @@ export default tseslint.config(
     },
     rules: {
       "@typescript-eslint/no-require-imports": "off",
+    },
+  },
+  {
+    // Plain-JS Node scripts; the browser globals cover code they run inside Playwright pages.
+    files: ["**/scripts/**/*.{js,mjs,cjs}"],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.browser },
     },
   },
   {

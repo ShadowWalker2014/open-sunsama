@@ -2,7 +2,6 @@ import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
-  Command,
   Download,
   Github,
   Hourglass,
@@ -14,130 +13,20 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { BenefitGrid, type BenefitItem } from "@/components/marketing/benefit-grid";
 import { CountUp, Reveal } from "./motion";
 
 const GITHUB_URL = "https://github.com/ShadowWalker2014/open-sunsama";
 
-// ---------------------------------------------------------------------------
-// Header
-// ---------------------------------------------------------------------------
-
-function useGitHubStars(): number | null {
-  const [stars, setStars] = React.useState<number | null>(() => {
-    try {
-      const cached = sessionStorage.getItem("os-gh-stars");
-      return cached ? Number(cached) : null;
-    } catch {
-      return null;
-    }
-  });
-  React.useEffect(() => {
-    if (stars !== null) return;
-    fetch("https://api.github.com/repos/ShadowWalker2014/open-sunsama")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((repo: { stargazers_count?: number } | null) => {
-        if (typeof repo?.stargazers_count !== "number") return;
-        setStars(repo.stargazers_count);
-        try {
-          sessionStorage.setItem("os-gh-stars", String(repo.stargazers_count));
-        } catch {
-          // Storage unavailable; the count just refetches next visit.
-        }
-      })
-      .catch(() => {});
-  }, [stars]);
-  return stars;
-}
-
-export function SiteHeader() {
-  const stars = useGitHubStars();
-  const [scrolled, setScrolled] = React.useState(false);
-  React.useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  return (
-    <header
-      className={cn(
-        "sticky top-0 z-50 w-full border-b transition-[background-color,border-color,box-shadow] duration-300",
-        scrolled
-          ? "border-border/60 bg-background/80 shadow-[0_1px_12px_-6px_rgb(0_0_0/0.12)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/65"
-          : "border-transparent bg-transparent"
-      )}
-    >
-      <div className="container mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2">
-          <img src="/open-sunsama-logo.png" alt="Open Sunsama" className="h-7 w-7 rounded-lg object-cover" />
-          <span className="whitespace-nowrap text-[14px] font-semibold tracking-tight">Open Sunsama</span>
-        </Link>
-
-        <nav className="hidden items-center gap-0.5 lg:flex">
-          {[
-            { label: "Features", href: "/#features" },
-            { label: "AI native", href: "/#ai" },
-          ].map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              className="whitespace-nowrap rounded-md px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
-            >
-              {item.label}
-            </a>
-          ))}
-          <Link
-            to="/docs"
-            className="whitespace-nowrap rounded-md px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
-          >
-            Docs
-          </Link>
-          <Link
-            to="/blog"
-            search={{}}
-            className="whitespace-nowrap rounded-md px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
-          >
-            Blog
-          </Link>
-          <Link
-            to="/download"
-            className="whitespace-nowrap rounded-md px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
-          >
-            Download
-          </Link>
-        </nav>
-
-        <div className="flex items-center gap-1.5">
-          <a
-            href={GITHUB_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden h-8 items-center gap-1.5 rounded-md border border-border/70 bg-background/60 px-2.5 text-[12px] font-medium text-muted-foreground transition-colors hover:text-foreground sm:flex"
-          >
-            <Github className="h-3.5 w-3.5" />
-            Star
-            {stars !== null && (
-              <span className="rounded bg-muted px-1.5 py-px text-[11px] tabular-nums text-foreground">{stars}</span>
-            )}
-          </a>
-          <Button variant="ghost" size="sm" className="h-8 px-3 text-[13px]" asChild>
-            <Link to="/login">Sign in</Link>
-          </Button>
-          <Button size="sm" className="h-8 px-3 text-[13px]" asChild>
-            <Link to="/register">Get started</Link>
-          </Button>
-        </div>
-      </div>
-    </header>
-  );
-}
+// Header and footer live in components/marketing so every public page shares them.
+export { SiteHeader } from "@/components/marketing/site-header";
+export { SiteFooter } from "@/components/marketing/site-footer";
 
 // ---------------------------------------------------------------------------
 // Features
 // ---------------------------------------------------------------------------
 
-const FEATURES = [
+const FEATURES: BenefitItem[] = [
   {
     icon: RefreshCw,
     title: "Calendar sync",
@@ -190,39 +79,8 @@ export function FeaturesSection() {
           </h2>
           <p className="mt-4 text-[16px] leading-relaxed text-muted-foreground">The small things that keep your plan honest.</p>
         </Reveal>
-        <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-border/70 bg-border/70 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((item, i) => {
-            const body = (
-              <>
-                <span
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover:-translate-y-0.5"
-                  style={{ backgroundColor: `${item.color}1f`, color: item.color, boxShadow: `inset 0 0 0 1px ${item.color}33` }}
-                >
-                  <item.icon className="h-[18px] w-[18px]" />
-                </span>
-                <span className="block min-w-0 sm:mt-4">
-                  <h3 className="flex items-center gap-1.5 text-[15.5px] font-semibold">
-                    {item.title}
-                    {item.href && (
-                      <ArrowRight className="h-3.5 w-3.5 -translate-x-1 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
-                    )}
-                  </h3>
-                  <p className="mt-1.5 text-[14px] leading-relaxed text-muted-foreground">{item.body}</p>
-                </span>
-              </>
-            );
-            return (
-              <Reveal key={item.title} delay={i * 50} className="h-full min-w-0 bg-background">
-                {item.href ? (
-                  <Link to={item.href} className="group relative flex h-full items-start gap-4 p-5 transition-colors hover:bg-muted/40 sm:block sm:p-6">
-                    {body}
-                  </Link>
-                ) : (
-                  <div className="group relative flex h-full items-start gap-4 p-5 sm:block sm:p-6">{body}</div>
-                )}
-              </Reveal>
-            );
-          })}
+        <div className="mt-12">
+          <BenefitGrid items={FEATURES} />
         </div>
       </div>
     </section>
@@ -394,100 +252,5 @@ export function FinalCta() {
         <p className="mt-4 text-[12px] text-muted-foreground">Open source · Works with Claude, ChatGPT and any MCP app · Self-host any time</p>
       </Reveal>
     </section>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Footer
-// ---------------------------------------------------------------------------
-
-const FOOTER_COLUMNS: Array<{ title: string; links: Array<[string, string]> }> = [
-  {
-    title: "Product",
-    links: [
-      ["Kanban board", "/features/kanban"],
-      ["Time blocking", "/features/time-blocking"],
-      ["Focus mode", "/features/focus-mode"],
-      ["AI integration", "/features/ai-integration"],
-      ["Calendar sync", "/features/calendar-sync"],
-      ["Download", "/download"],
-    ],
-  },
-  {
-    title: "Compare",
-    links: [
-      ["Sunsama alternative", "/alternative/sunsama"],
-      ["Motion alternative", "/alternative/motion"],
-      ["Akiflow alternative", "/alternative/akiflow"],
-      ["Reclaim alternative", "/alternative/reclaim"],
-      ["Todoist alternative", "/alternative/todoist"],
-    ],
-  },
-  {
-    title: "For",
-    links: [
-      ["Developers", "/for/developers"],
-      ["Remote workers", "/for/remote-workers"],
-      ["ADHD", "/for/adhd"],
-      ["Open-source task manager", "/open-source-task-manager"],
-    ],
-  },
-  {
-    title: "Resources",
-    links: [
-      ["Docs", "/docs"],
-      ["Connect your AI", "/docs/mcp/overview"],
-      ["Blog", "/blog"],
-      ["Privacy", "/privacy"],
-      ["Terms", "/terms"],
-    ],
-  },
-];
-
-export function SiteFooter() {
-  return (
-    <footer className="border-t border-border/60 py-14">
-      <div className="container mx-auto grid max-w-6xl gap-10 px-4 md:grid-cols-[1.3fr_repeat(4,1fr)]">
-        <div>
-          <Link to="/" className="flex items-center gap-2">
-            <img src="/open-sunsama-logo.png" alt="Open Sunsama" className="h-7 w-7 rounded-lg object-cover" />
-            <span className="text-[14px] font-semibold">Open Sunsama</span>
-          </Link>
-          <p className="mt-3 max-w-[240px] text-[13px] leading-relaxed text-muted-foreground">
-            The open-source daily planner you can control from any AI agent.
-          </p>
-          <a
-            href={GITHUB_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-4 inline-flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground"
-          >
-            <Github className="h-4 w-4" />
-            GitHub
-          </a>
-        </div>
-        {FOOTER_COLUMNS.map((column) => (
-          <div key={column.title}>
-            <p className="text-[12px] font-semibold uppercase tracking-wider text-foreground/70">{column.title}</p>
-            <ul className="mt-3 space-y-2">
-              {column.links.map(([label, href]) => (
-                <li key={href}>
-                  <a href={href} className="text-[13px] text-muted-foreground transition-colors hover:text-foreground">
-                    {label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-      <div className="container mx-auto mt-12 flex max-w-6xl flex-col items-center justify-between gap-2 border-t border-border/50 px-4 pt-6 text-[12px] text-muted-foreground sm:flex-row">
-        <span>© {new Date().getFullYear()} Open Sunsama</span>
-        <span className="flex items-center gap-1.5">
-          <Command className="h-3 w-3" />
-          Built in the open
-        </span>
-      </div>
-    </footer>
   );
 }
