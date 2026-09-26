@@ -16,7 +16,7 @@ import {
   getTokenExpiryMs,
 } from "@/lib/api";
 import { clearPersistedCache } from "@/lib/query-persister";
-import { trackGoal } from "@/lib/analytics";
+import { identifyUser, trackGoal } from "@/lib/analytics";
 
 // Refresh the access token this long before it expires. With the default 7d
 // token lifetime, an active user is renewed roughly a day before expiry, so
@@ -265,6 +265,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const effectiveUser = user ?? cachedUser;
+
+  const identityKey = effectiveUser
+    ? [effectiveUser.id, effectiveUser.email, effectiveUser.name, effectiveUser.avatarUrl].join("|")
+    : null;
+  React.useEffect(() => {
+    if (effectiveUser) identifyUser(effectiveUser);
+    // Re-identify only when the fields DataFast stores change.
+  }, [identityKey]);
   // We treat the user as authenticated as soon as a token exists. This lets
   // task/time-block queries fire in parallel with the /auth/me background
   // verification instead of waterfalling behind it. If /auth/me later fails,
