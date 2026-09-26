@@ -73,6 +73,7 @@ Or create one with custom scopes:
    - `tasks:read` and `tasks:write` for task management
    - `time-blocks:read` and `time-blocks:write` for time blocks
    - `calendar:read` for events from connected Google, Outlook and iCloud calendars
+   - `ideas:read` and `ideas:write` for idea boards, columns, cards, and checklists
    - `user:read` and `user:write` for profile access
 5. Copy the key (it's only shown once!)
 
@@ -395,6 +396,8 @@ bun run dev      # Watch mode for development
 | `time-blocks:read` | List and view time blocks |
 | `time-blocks:write` | Create, update, delete time blocks |
 | `calendar:read` | List events from connected calendars |
+| `ideas:read` | List idea boards, columns, cards, and checklists |
+| `ideas:write` | Create, update, delete, and reorder ideas |
 | `user:read` | View user profile |
 | `user:write` | Update user profile |
 
