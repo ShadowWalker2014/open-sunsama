@@ -1,6 +1,6 @@
 import * as React from "react";
-import { addDays, format, startOfDay } from "date-fns";
-import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
+import { addDays, format } from "date-fns";
+import { Plus } from "lucide-react";
 import type { Task } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { ViewSearch } from "@/components/ui";
@@ -12,11 +12,11 @@ import {
   MobileViewControls,
   type MobileTasksViewMode,
 } from "./mobile-view-controls";
-
-/** How many days the mobile board holds at once. */
-const VISIBLE_DAYS = 7;
+import { MobileDateHeader, usePagerSettle } from "./mobile-date-header";
 
 interface MobileBoardViewProps {
+  selectedDate: Date;
+  onSelectDate: (date: Date) => void;
   viewMode: MobileTasksViewMode;
   onViewModeChange: (mode: MobileTasksViewMode) => void;
   sortBy: SortOption;
@@ -25,80 +25,39 @@ interface MobileBoardViewProps {
 }
 
 /**
- * Board (day-column) view for the mobile Tasks tab.
- *
- * Same shape as the Ideas board: a horizontal snap-scroller with one column
- * per screen, so a swipe moves exactly one day. The columns are the desktop
- * `DayColumn` — it already sizes itself to the viewport below `sm`, so cards,
- * inline add, drag-to-reorder and cross-day drops behave identically to the
- * desktop board rather than being reimplemented.
+ * Board (day-column) view for the phone Tasks tab: one full-width day per
+ * screen, the week strip above it, and swipes that move a day at a time
+ * without end. The columns are the desktop `DayColumn`, so cards, inline add,
+ * drag-to-reorder and drops behave exactly like the desktop board.
  */
 export function MobileBoardView({
+  selectedDate,
+  onSelectDate,
   viewMode,
   onViewModeChange,
   sortBy,
   onSortChange,
   className,
 }: MobileBoardViewProps) {
-  const [anchorDate, setAnchorDate] = React.useState(() => startOfDay(new Date()));
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
+  const [isComposerOpen, setIsComposerOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
-  const scrollerRef = React.useRef<HTMLDivElement>(null);
+  const pagerRef = React.useRef<HTMLDivElement>(null);
 
-  const days = React.useMemo(
-    () =>
-      Array.from({ length: VISIBLE_DAYS }, (_, i) => {
-        const date = addDays(anchorDate, i);
-        return { date, dateString: format(date, "yyyy-MM-dd") };
-      }),
-    [anchorDate]
+  const selectedString = format(selectedDate, "yyyy-MM-dd");
+  const settle = usePagerSettle(pagerRef, selectedString, (offset) =>
+    onSelectDate(addDays(selectedDate, offset))
   );
-
-  const scrollToStart = React.useCallback(() => {
-    scrollerRef.current?.scrollTo({ left: 0, behavior: "smooth" });
-  }, []);
-
-  const goToToday = () => {
-    setAnchorDate(startOfDay(new Date()));
-    scrollToStart();
-  };
-
-  const shiftDays = (delta: number) => {
-    setAnchorDate((prev) => startOfDay(addDays(prev, delta)));
-    scrollToStart();
-  };
 
   return (
     <TasksDndProvider>
       <div className={cn("flex h-full flex-col bg-background", className)}>
-        {/* Header: week nav on the left, view controls on the right */}
-        <header className="sticky top-0 z-40 border-b border-border/40 bg-background">
-          <div className="flex items-center justify-between gap-2 px-3 py-2.5">
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => shiftDays(-VISIBLE_DAYS)}
-                aria-label="Previous week"
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground active:bg-muted"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              <button
-                onClick={goToToday}
-                className="flex h-8 items-center gap-1.5 rounded-lg px-2 text-sm font-medium active:bg-muted"
-              >
-                <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                Today
-              </button>
-              <button
-                onClick={() => shiftDays(VISIBLE_DAYS)}
-                aria-label="Next week"
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground active:bg-muted"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="flex items-center gap-1.5">
+        <MobileDateHeader
+          selectedDate={selectedDate}
+          onSelectDate={onSelectDate}
+          hideStrip={!!searchQuery}
+          trailing={
+            <>
               <ViewSearch
                 value={searchQuery}
                 onChange={setSearchQuery}
@@ -112,27 +71,51 @@ export function MobileBoardView({
                   onSortChange={onSortChange}
                 />
               )}
-            </div>
-          </div>
-        </header>
+            </>
+          }
+        />
 
-        {/* One day per screen; swiping snaps between them. */}
+        {/* Yesterday · selected · tomorrow. Swiping lands on a neighbour,
+            which becomes the selected day, and the pager re-centres. */}
         <div
-          ref={scrollerRef}
-          className="flex flex-1 snap-x snap-mandatory overflow-x-auto overflow-y-hidden pb-20"
+          ref={pagerRef}
+          onScroll={settle.onScroll}
+          onTouchStart={settle.onTouchStart}
+          onTouchEnd={settle.onTouchEnd}
+          className="flex min-h-0 flex-1 snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          // Clear the bottom tab bar, including the iPhone home-indicator area.
+          style={{ paddingBottom: "calc(72px + env(safe-area-inset-bottom, 0px))" }}
         >
-          {days.map(({ date, dateString }) => (
-            <div key={dateString} className="h-full shrink-0 snap-start">
-              <DayColumn
-                date={date}
-                dateString={dateString}
-                onSelectTask={setSelectedTask}
-                sortBy={sortBy}
-                searchQuery={searchQuery}
-              />
-            </div>
-          ))}
+          {[-1, 0, 1].map((offset) => {
+            const date = addDays(selectedDate, offset);
+            const dateString = format(date, "yyyy-MM-dd");
+            return (
+              <div
+                key={dateString}
+                className="h-full w-full shrink-0 snap-center snap-always"
+                aria-hidden={offset !== 0}
+              >
+                <DayColumn
+                  date={date}
+                  dateString={dateString}
+                  onSelectTask={setSelectedTask}
+                  sortBy={sortBy}
+                  searchQuery={searchQuery}
+                  fill
+                />
+              </div>
+            );
+          })}
         </div>
+
+        <button
+          type="button"
+          onClick={() => setIsComposerOpen(true)}
+          className="fab-above-nav fixed right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform active:scale-95 lg:hidden"
+          aria-label={`Add task on ${format(selectedDate, "EEEE, MMMM d")}`}
+        >
+          <Plus className="h-6 w-6" />
+        </button>
 
         <TaskModal
           task={selectedTask}
@@ -140,6 +123,12 @@ export function MobileBoardView({
           onOpenChange={(open) => {
             if (!open) setSelectedTask(null);
           }}
+        />
+        <TaskModal
+          task={null}
+          open={isComposerOpen}
+          onOpenChange={setIsComposerOpen}
+          createDefaults={{ scheduledDate: selectedString }}
         />
       </div>
     </TasksDndProvider>

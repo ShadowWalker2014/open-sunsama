@@ -1,0 +1,142 @@
+name: CI
+
+# Required checks for every pull request into main. Runs with a read-only token
+# and no secrets, so code from forks can't reach anything sensitive.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  BUN_VERSION: 1.4.2
+  NODE_VERSION: 22
+  TURBO_TELEMETRY_DISABLED: 1
+
+jobs:
+  checks:
+    name: Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      - name: Install (lockfile must match package.json)
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Unit tests
+        run: bun run test
+
+      - name: Build
+        run: bunx turbo run build --filter='!@open-sunsama/desktop' --filter='!@open-sunsama/mobile' --filter='!@open-sunsama/expo-mobile'
+
+      - name: Migrations match the schema
+        working-directory: packages/database
+        env:
+          DATABASE_URL: postgresql://unused@localhost/unused
+        run: |
+          bunx drizzle-kit generate < /dev/null
+          if [ -n "$(git status --porcelain -- drizzle)" ]; then
+            echo "::error::The schema changed but the migration was not committed. Run 'bun run db:generate' and commit packages/database/drizzle."
+            git status --porcelain -- drizzle
+            exit 1
+          fi
+
+      - name: Desktop bundle stays under 60 MB
+        run: node apps/desktop/scripts/prepare-frontend.mjs
+
+  e2e:
+    name: End-to-end
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: opensunsama
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/opensunsama
+      TZ: UTC
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: Install Chromium
+        run: bunx playwright install --with-deps chromium
+
+      - name: Build the API
+        run: bunx turbo run build --filter=@open-sunsama/api...
+
+      - name: Apply migrations to a fresh database
+        working-directory: packages/database
+        run: bunx drizzle-kit migrate
+
+      - name: Start the API and web app
+        run: e2e/start-stack.sh
+
+      - name: Browser smoke tests
+        run: bun run e2e
+
+      - name: MCP server end-to-end
+        env:
+          MCP_E2E_API_URL: http://localhost:3201
+          MCP_E2E_DATABASE_URL: ${{ env.DATABASE_URL }}
+        run: bun run mcp/tests/oauth-e2e.ts
+
+      - name: Upload logs and traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-${{ github.run_id }}
+          path: |
+            e2e/.logs
+            e2e/playwright-report
+            e2e/test-results
+          retention-days: 7

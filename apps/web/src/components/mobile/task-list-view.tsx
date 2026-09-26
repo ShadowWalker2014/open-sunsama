@@ -1,20 +1,6 @@
 import * as React from "react";
-import {
-  format,
-  addDays,
-  subDays,
-  startOfDay,
-  startOfMonth,
-  endOfMonth,
-  eachDayOfInterval,
-  getDay,
-  isSameMonth,
-  isSameDay,
-  isToday,
-  subMonths,
-  addMonths,
-} from "date-fns";
-import { ChevronDown, ChevronLeft, ChevronRight, Inbox, Menu, Plus } from "lucide-react";
+import { format, addDays, subDays, isToday } from "date-fns";
+import { Inbox, Menu, Plus } from "lucide-react";
 import { useSearch } from "@tanstack/react-router";
 import type { Task } from "@open-sunsama/types";
 import {
@@ -44,17 +30,17 @@ import { useTasks, useReorderTasks } from "@/hooks/useTasks";
 import { MobileTaskCardWithActualTime } from "./mobile-task-card";
 import { SortableMobileTaskCard } from "./sortable-mobile-task-card";
 import { TaskModal } from "@/components/kanban/task-modal.lazy";
-import { MobileAddTaskSheet } from "./mobile-add-task-sheet";
+import { MobileDateHeader } from "./mobile-date-header";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 /** P0 first — matches the desktop day column's ordering. */
 const PRIORITY_RANK: Record<string, number> = { P0: 0, P1: 1, P2: 2, P3: 3 };
 
 interface MobileTaskListViewProps {
-  /** The date to show tasks for (defaults to today) */
-  date?: Date;
+  /** The day on screen; owned by the parent so list and board stay in sync. */
+  selectedDate: Date;
+  onSelectDate: (date: Date) => void;
   className?: string;
   /** List/board switch + sort order, rendered in the header when provided. */
   viewMode?: MobileTasksViewMode;
@@ -68,7 +54,8 @@ interface MobileTaskListViewProps {
  * Features sticky header, progress bar, and scrollable task list.
  */
 export function MobileTaskListView({
-  date,
+  selectedDate: currentDate,
+  onSelectDate,
   className,
   viewMode,
   onViewModeChange,
@@ -84,24 +71,18 @@ export function MobileTaskListView({
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(!!backlog);
-  const [swipeDirection, setSwipeDirection] = React.useState<'left' | 'right' | null>(null);
-  
-  // Stateful date for swipe navigation
-  const [currentDate, setCurrentDate] = React.useState<Date>(() => date ?? startOfDay(new Date()));
   const dateString = format(currentDate, "yyyy-MM-dd");
-  
-  // Date navigation
-  const goToNextDay = () => {
-    setSwipeDirection('left');
-    setCurrentDate(d => addDays(d, 1));
-    setTimeout(() => setSwipeDirection(null), 200);
-  };
-  const goToPreviousDay = () => {
-    setSwipeDirection('right');
-    setCurrentDate(d => subDays(d, 1));
-    setTimeout(() => setSwipeDirection(null), 200);
-  };
-  const goToDate = (newDate: Date) => setCurrentDate(startOfDay(newDate));
+
+  // Which way the day list slides in: forward days enter from the right.
+  const previousDate = React.useRef(currentDate);
+  const slideFrom =
+    currentDate > previousDate.current ? "right" : currentDate < previousDate.current ? "left" : null;
+  React.useEffect(() => {
+    previousDate.current = currentDate;
+  }, [currentDate]);
+
+  const goToNextDay = () => onSelectDate(addDays(currentDate, 1));
+  const goToPreviousDay = () => onSelectDate(subDays(currentDate, 1));
   
   // Swipe gesture handling
   const touchStartX = React.useRef<number | null>(null);
@@ -136,7 +117,8 @@ export function MobileTaskListView({
   };
   
   // Fetch tasks for the current date
-  const { data: tasks, isLoading } = useTasks({ scheduledDate: dateString });
+  // Same cache key as the board's DayColumn and the week strip's dots.
+  const { data: tasks, isLoading } = useTasks({ scheduledDate: dateString, limit: 200 });
 
   // Same in-view card search as the desktop board toolbar.
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -242,46 +224,30 @@ export function MobileTaskListView({
     }
   };
   
-  // Format date for header
-  const dayName = format(currentDate, "EEEE");
-  const monthDay = format(currentDate, "MMMM d");
   
   return (
     <div className={cn("flex flex-col h-full bg-background", className)}>
-      {/* Sticky Header */}
-      <header className="sticky top-0 z-40 bg-background border-b border-border/40">
-        <div className="flex items-center justify-between px-4 py-3">
-          {/* Left side: Menu + Date */}
-          <div className="flex items-center gap-3">
-            {/* Hamburger menu - opens sidebar sheet */}
-            <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-              <SheetTrigger asChild>
-                <button
-                  className="flex items-center justify-center w-10 h-10 -ml-2 rounded-lg active:bg-muted/50 transition-colors"
-                  aria-label="Open backlog"
-                >
-                  <Menu className="h-5 w-5 text-muted-foreground" />
-                </button>
-              </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-72">
-                <MobileBacklogSidebar />
-              </SheetContent>
-            </Sheet>
-            
-            {/* Date display - tap to pick date */}
-            <MobileDatePicker value={currentDate} onChange={goToDate}>
-              <button className="text-left active:opacity-70 transition-opacity">
-                <h1 className="text-lg font-semibold leading-tight">{dayName}</h1>
-                <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-                  {monthDay}
-                  <ChevronDown className="h-3 w-3" />
-                </p>
+      <MobileDateHeader
+        selectedDate={currentDate}
+        onSelectDate={onSelectDate}
+        hideStrip={!!searchQuery}
+        leading={
+          <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+            <SheetTrigger asChild>
+              <button
+                className="-ml-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors active:bg-muted/50"
+                aria-label="Open backlog"
+              >
+                <Menu className="h-5 w-5 text-muted-foreground" />
               </button>
-            </MobileDatePicker>
-          </div>
-          
-          {/* Right side: search + total time badge */}
-          <div className="flex items-center gap-2">
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 w-72">
+              <MobileBacklogSidebar />
+            </SheetContent>
+          </Sheet>
+        }
+        trailing={
+          <>
             <ViewSearch
               value={searchQuery}
               onChange={setSearchQuery}
@@ -295,30 +261,25 @@ export function MobileTaskListView({
                 onSortChange={onSortChange}
               />
             )}
-            {!searchQuery && !viewMode && (
-              <span className="text-sm tabular-nums text-muted-foreground">
-                {stats.totalEstimatedMins > 0
-                  ? formatDuration(stats.totalEstimatedMins)
-                  : "0:00"}
-              </span>
-            )}
-          </div>
-        </div>
-        
-        {/* Progress bar - very thin */}
-        <div className="h-1 bg-muted/30">
+          </>
+        }
+      >
+        {/* Day progress: planned time completed so far */}
+        <div className="h-[3px] bg-muted/40">
           <div
             className="h-full bg-primary transition-all duration-300 ease-out"
             style={{ width: `${stats.progressPercent}%` }}
           />
         </div>
-      </header>
-      
+      </MobileDateHeader>
+
       {/* Scrollable task list */}
       <main
+        key={dateString}
         className={cn(
-          "flex-1 overflow-y-auto pb-24 transition-opacity duration-200",
-          swipeDirection && "opacity-90"
+          "pb-under-fab flex-1 overflow-y-auto transition-opacity duration-200",
+          slideFrom === "right" && "animate-[day-in-right_240ms_cubic-bezier(0.32,0.72,0,1)]",
+          slideFrom === "left" && "animate-[day-in-left_240ms_cubic-bezier(0.32,0.72,0,1)]"
         )}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -343,7 +304,9 @@ export function MobileTaskListView({
               <Plus className="h-8 w-8 text-muted-foreground/50" />
             </div>
             <h2 className="text-lg font-medium text-muted-foreground mb-1">
-              No tasks for today
+              {isToday(currentDate)
+                ? "No tasks for today"
+                : `No tasks for ${format(currentDate, "EEEE, MMM d")}`}
             </h2>
             <p className="text-sm text-muted-foreground/70">
               Tap the + button to add your first task
@@ -397,7 +360,7 @@ export function MobileTaskListView({
       <button
         onClick={handleAddTask}
         className={cn(
-          "fixed right-4 bottom-24 z-50",
+          "fab-above-nav fixed right-4 z-50",
           "flex items-center justify-center w-14 h-14",
           "rounded-full bg-primary text-primary-foreground shadow-lg",
           "active:scale-95 transition-transform",
@@ -417,173 +380,18 @@ export function MobileTaskListView({
         }}
       />
       
-      {/* Add task bottom sheet */}
-      <MobileAddTaskSheet
+      {/* New task: the same sheet used to edit tasks */}
+      <TaskModal
+        task={null}
         open={isAddModalOpen}
         onOpenChange={setIsAddModalOpen}
-        scheduledDate={dateString}
+        createDefaults={{ scheduledDate: dateString }}
       />
     </div>
   );
 }
 
-// --- MobileDatePicker ---
-
-const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-
-function MobileDatePicker({
-  value,
-  onChange,
-  children,
-}: {
-  value: Date;
-  onChange: (date: Date) => void;
-  children: React.ReactNode;
-}) {
-  const [open, setOpen] = React.useState(false);
-  const [viewMonth, setViewMonth] = React.useState(() => startOfMonth(value));
-
-  // Reset view month when value changes
-  React.useEffect(() => {
-    setViewMonth(startOfMonth(value));
-  }, [value]);
-
-  const calendarDays = React.useMemo(() => {
-    const monthStart = startOfMonth(viewMonth);
-    const monthEnd = endOfMonth(viewMonth);
-    const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
-    const startDayOfWeek = getDay(monthStart);
-    const paddingBefore: (Date | null)[] = Array(startDayOfWeek).fill(null);
-    const totalDays = paddingBefore.length + daysInMonth.length;
-    const paddingAfter: (Date | null)[] = Array(
-      totalDays % 7 === 0 ? 0 : 7 - (totalDays % 7)
-    ).fill(null);
-    return [...paddingBefore, ...daysInMonth, ...paddingAfter];
-  }, [viewMonth]);
-
-  const handleSelect = (date: Date) => {
-    onChange(date);
-    setOpen(false);
-  };
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>{children}</PopoverTrigger>
-      <PopoverContent className="w-72 p-0" align="start" sideOffset={8}>
-        {/* Quick Navigation */}
-        <div className="p-3 border-b border-border/50 flex items-center gap-2">
-          <button
-            onClick={() => {
-              onChange(startOfDay(new Date()));
-              setOpen(false);
-            }}
-            className={cn(
-              "px-3 py-1.5 text-xs font-medium rounded-full transition-colors",
-              isSameDay(value, new Date())
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted hover:bg-muted/80 text-foreground"
-            )}
-          >
-            Today
-          </button>
-          <button
-            onClick={() => {
-              onChange(addDays(startOfDay(new Date()), 1));
-              setOpen(false);
-            }}
-            className="px-3 py-1.5 text-xs font-medium rounded-full bg-muted hover:bg-muted/80 text-foreground transition-colors"
-          >
-            Tomorrow
-          </button>
-          <button
-            onClick={() => {
-              const today = new Date();
-              const dayOfWeek = today.getDay();
-              const daysUntilMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
-              onChange(addDays(startOfDay(today), daysUntilMonday));
-              setOpen(false);
-            }}
-            className="px-3 py-1.5 text-xs font-medium rounded-full bg-muted hover:bg-muted/80 text-foreground transition-colors"
-          >
-            Next Mon
-          </button>
-        </div>
-
-        {/* Calendar */}
-        <div className="p-3">
-          {/* Month navigation */}
-          <div className="flex items-center justify-between mb-3">
-            <button
-              onClick={() => setViewMonth(subMonths(viewMonth, 1))}
-              className="p-1.5 rounded-md hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <span className="text-sm font-medium">
-              {format(viewMonth, "MMMM yyyy")}
-            </span>
-            <button
-              onClick={() => setViewMonth(addMonths(viewMonth, 1))}
-              className="p-1.5 rounded-md hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-
-          {/* Weekday headers */}
-          <div className="grid grid-cols-7 gap-0.5 mb-1">
-            {WEEKDAYS.map((day) => (
-              <div
-                key={day}
-                className="h-8 flex items-center justify-center text-xs text-muted-foreground/60 font-medium"
-              >
-                {day}
-              </div>
-            ))}
-          </div>
-
-          {/* Calendar grid */}
-          <div className="grid grid-cols-7 gap-0.5">
-            {calendarDays.map((day, index) => {
-              if (!day) {
-                return <div key={`empty-${index}`} className="h-9" />;
-              }
-
-              const isCurrentMonth = isSameMonth(day, viewMonth);
-              const isSelected = isSameDay(day, value);
-              const isTodayDate = isToday(day);
-
-              return (
-                <button
-                  key={day.toISOString()}
-                  onClick={() => handleSelect(day)}
-                  className={cn(
-                    "h-9 w-full flex items-center justify-center text-sm rounded-md transition-colors",
-                    !isCurrentMonth && "text-muted-foreground/30",
-                    isCurrentMonth &&
-                      !isSelected &&
-                      !isTodayDate &&
-                      "text-foreground hover:bg-muted/50",
-                    isTodayDate &&
-                      !isSelected &&
-                      "bg-primary/15 text-primary font-medium",
-                    isSelected &&
-                      "bg-primary text-primary-foreground font-medium"
-                  )}
-                >
-                  {format(day, "d")}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
-
 // --- MobileBacklogSidebar ---
-
 function MobileBacklogSidebar() {
   const { data: tasks, isLoading } = useTasks({ backlog: true, limit: 500 });
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
