@@ -69,7 +69,7 @@ async function github(endpoint) {
         console.warn("gh CLI unavailable; using the public GitHub API");
         ghCli = false;
       } else {
-        throw new Error(`gh api ${endpoint}: ${stderr.trim() || err.message}`);
+        throw new Error(`gh api ${endpoint}: ${stderr.trim() || err.message}`, { cause: err });
       }
     }
   }
