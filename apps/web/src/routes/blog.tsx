@@ -10,7 +10,8 @@ import {
   BlogTopicTabs,
 } from "@/components/blog";
 import { Reveal } from "@/components/landing/motion";
-import { SiteFooter, SiteHeader } from "@/components/landing/sections";
+import { SiteFooter } from "@/components/marketing/site-footer";
+import { SiteHeader, SkipLink } from "@/components/marketing/site-header";
 import { SEOHead, CollectionSchema } from "@/components/seo";
 import { getAllBlogPosts } from "@/lib/blog";
 import { filterByTagParam } from "@/lib/blog-topics";
@@ -170,9 +171,10 @@ export default function BlogPage() {
         maxItems={10}
       />
 
+      <SkipLink />
       <SiteHeader />
 
-      <main>
+      <main id="main" tabIndex={-1} className="focus:outline-none">
         <BlogHero searchInput={searchInput} onSearchChange={setSearchInput} />
 
         <div>

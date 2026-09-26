@@ -1,0 +1,266 @@
+export const frontmatter = {
+  title: "12 Best Open Source Calendar Apps in 2026 (Google Alternatives)",
+  description: "The best open source calendar apps and self-hosted calendar servers in 2026, and how to replace Google Calendar with open source, step by step.",
+  date: "2026-09-24",
+  updated: "2026-09-24",
+  author: "Open Sunsama Team",
+  tags: ["open-source", "self-hosted", "calendar", "google-calendar", "alternatives"],
+  readingTime: 12,
+  image: "/blog-best-open-source-calendar-apps.webp",
+  faqs: [
+    {
+      question: "What is the best open source calendar app?",
+      answer: "Open Sunsama is our pick to plan your day on top of your calendar, with time blocks and any AI agent. To host the calendar itself, Nextcloud Calendar is the fullest option and Radicale is the lightest. For apps, use Thunderbird on desktop and Fossify Calendar on Android.",
+    },
+    {
+      question: "What is the best open source Google Calendar alternative?",
+      answer: "Nextcloud Calendar is the closest: a web calendar with sharing, invites and booking on your own server. If you only need sync, run Radicale or Baïkal and use the calendar apps you already have. Proton Calendar is open source on the app side, but you can't self-host it.",
+    },
+    {
+      question: "How do I self-host a calendar?",
+      answer: "Run a CalDAV server such as Radicale, Baïkal or Nextcloud, put it behind HTTPS, and add it as a CalDAV account on each device. Android needs DAVx⁵ to sync. iPhones, Macs and Thunderbird can add CalDAV accounts on their own.",
+    },
+    {
+      question: "What is CalDAV?",
+      answer: "CalDAV is the open standard that calendar apps use to sync events with a server. Any CalDAV app can talk to any CalDAV server, so you can mix and match. CardDAV does the same job for contacts.",
+    },
+    {
+      question: "Can I use a self-hosted calendar on my iPhone?",
+      answer: "Yes. The iPhone's own Calendar app can add a CalDAV account in Settings, under Calendar accounts. Enter your server address, user name and password, and your events sync both ways.",
+    },
+    {
+      question: "Is Proton Calendar open source?",
+      answer: "The apps are. Proton publishes the web, Android and iOS code under GPL-3.0. The servers are closed, so you can't self-host Proton Calendar. Tuta Calendar works the same way.",
+    },
+    {
+      question: "Is Open Sunsama open source?",
+      answer: "The code is public on GitHub. It uses a non-commercial license: you can read it, run it and self-host it for personal use. Companies need a commercial license. It is not an OSI license like MIT or GPL.",
+    },
+    {
+      question: "Is there an open source Calendly alternative?",
+      answer: "Yes. Cal.diy is the MIT-licensed community edition of Cal.com, built for personal self-hosting. Nextcloud Calendar also has appointment booking built in.",
+    },
+  ],
+};
+
+The best open source calendar app for planning your day is **Open Sunsama**. It puts your tasks and your Google, Outlook or iCloud calendar in one day view, with time blocking and any AI agent. It plans on top of the calendar you already have, so it does not replace a calendar server.
+
+To host the calendar itself, pick **Nextcloud Calendar** for a full self-hosted Google Calendar, or **Radicale** for the lightest server. Then add **Thunderbird** on desktop and **Fossify Calendar** with **DAVx⁵** on Android.
+
+We build Open Sunsama, so we put it first — here is why, and where others fit better.
+
+A calendar has two halves: the server where your events live, and the app you look at. Google gives you both, so leaving Google means picking one of each.
+
+## Key takeaways
+
+- **Best overall:** Open Sunsama, the open-source calendar planner. Your tasks and your calendar in one day view, with time blocks and any AI agent.
+- **Best self-hosted Google Calendar:** Nextcloud Calendar, a web calendar with sharing, invites and booking.
+- **Lightest calendar server:** Radicale. Baïkal if your host runs PHP.
+- **Best desktop app:** Thunderbird on Windows, Mac and Linux. GNOME Calendar on Linux.
+- **Best Android setup:** DAVx⁵ to sync, plus Fossify Calendar or Etar to view.
+- **Encrypted, but hosted by someone else:** Proton Calendar and Tuta Calendar. Open apps, closed servers.
+- **Booking links:** Cal.diy, the community edition of Cal.com.
+
+<OssTable ids={["open-sunsama", "nextcloud-calendar", "radicale", "baikal", "thunderbird", "fossify-calendar", "davx5", "gnome-calendar", "etar", "proton-calendar", "tuta-calendar", "cal-diy"]} />
+
+## A calendar server stores events, and calendar apps show them
+
+Most "open source calendar" lists mix up two kinds of software. That is why the same list can hold Radicale and Thunderbird, which do very different jobs.
+
+A **calendar server** is where your events live. Nextcloud Calendar, Radicale and Baïkal are servers you run yourself. Your phone and laptop sync with it over CalDAV, the open standard for calendar sync.
+
+A **calendar app** is what you look at. Thunderbird, GNOME Calendar, Fossify Calendar and Etar are apps. They can show events from Google, from your own server, or from both at once.
+
+Some tools sit on top of both. Open Sunsama is a planner that shows your calendar next to your tasks. Cal.diy is a booking page that reads your calendar to find free times.
+
+## How we compared
+
+We read each project's license file, releases, docs and open issues. We pulled stars and releases from GitHub, GitLab and Codeberg on September 24, 2026. Each card below shows those facts, with a link to the source code.
+
+We captured the screenshots ourselves from each app's demo or web app, or took them from the project's official images. The card says which.
+
+We build Open Sunsama and use it every day. We did not run every other app for weeks, so we don't claim to have tested them.
+
+## 1. Open Sunsama: the best open-source calendar planner
+
+<OssApp id="open-sunsama" rank={1} bestFor="Planning your day with tasks and your Google, Outlook or iCloud calendar in one view, with time blocks and any AI agent." />
+
+**Verdict:** best overall. It turns your calendar into a plan for the day, and Claude or ChatGPT can help you make it.
+
+Open Sunsama is a daily planner, not a calendar server. You connect the calendars you already use: Google, Outlook and iCloud, and as many accounts as you like. Your meetings then sit next to your tasks.
+
+<Shot id="calendar-week" alt="Open Sunsama week view with time blocks next to synced calendar events" caption="The week view shows your time blocks next to your real meetings." />
+
+You plan by dragging a task into a gap between meetings. Resize the block to fit the work. Now your to-do list has a time, not just a date.
+
+<Clip id="time-block" caption="Drag a task onto the calendar, then resize the block to fit the work." />
+
+Sync goes both ways for events. Create, move or resize a meeting in Open Sunsama, and it saves back to Google, Outlook or iCloud. Your time blocks stay in Open Sunsama, so coworkers don't see your plan.
+
+<Shot id="calendar-day" alt="Open Sunsama day view with tasks beside a calendar of meetings and time blocks" caption="The day view puts today's tasks beside today's calendar." />
+
+- **Good:** time blocking in day and week views, rollover of unfinished tasks, a focus timer that tracks planned vs actual time, and a hosted MCP server. Your agent can read your meetings and plan around them. See [calendar sync](/features/calendar-sync).
+- **Falls short:** it does not store your calendar or replace a CalDAV server. It reads Google, Outlook and iCloud today. There is no month view, and no iOS or Android app; phones use the mobile web app.
+- **Pick it if** you want one place to see your meetings and plan your tasks around them. Self-host it with [Docker](/docs/self-hosting/docker), or read why we call it an [open source task manager](/open-source-task-manager).
+
+## 2. Nextcloud Calendar: the fullest self-hosted Google Calendar
+
+<OssApp id="nextcloud-calendar" rank={2} bestFor="People who want a full web calendar with sharing, invites and booking on their own server." />
+
+**Verdict:** the closest thing to Google Calendar you can host yourself.
+
+- **Good:** a real web calendar, shared calendars, invites, a "Find a time" free/busy view and public booking pages. It imports your Google .ics files in a few clicks.
+- **Falls short:** you run a whole Nextcloud server to get it. That is more to update and back up than a small CalDAV server.
+- **Pick it if** you already run Nextcloud for files, or you want one server for your whole family.
+
+## 3. Radicale: the lightest calendar server
+
+<OssApp id="radicale" rank={3} bestFor="People who only need a small sync server for the calendar apps they already use." />
+
+**Verdict:** the top answer on r/selfhosted for a reason. It is small, simple and stores events as plain files.
+
+- **Good:** one Python install or a Docker image, with almost nothing to set up. It syncs contacts too, over CardDAV.
+- **Falls short:** its web page only creates and manages calendars. You can't see or edit events there, so you need an app on every device.
+- **Pick it if** you want your calendar off Google with the least work and the fewest moving parts.
+
+## 4. Baïkal: a CalDAV server for PHP hosts
+
+<OssApp id="baikal" rank={4} bestFor="People with a PHP web host who want a simple calendar and contacts server." />
+
+**Verdict:** Radicale's job, with a web admin for users and calendars.
+
+- **Good:** it runs on almost any cheap PHP host. The admin page makes it easy to add family members.
+- **Falls short:** like Radicale, it has no calendar view of its own. There is no official Docker image, only community ones.
+- **Pick it if** you have a PHP host and want a web page to manage users.
+
+## 5. Thunderbird: the best desktop calendar app
+
+<OssApp id="thunderbird" rank={5} bestFor="Desktop users on Windows, Mac or Linux who want mail and calendar in one app." />
+
+**Verdict:** the most complete open source calendar app for your computer.
+
+- **Good:** it syncs with Google, any CalDAV server and local files, side by side. It can import Google's .ics export straight into your new server.
+- **Falls short:** the calendar is desktop only. Thunderbird for Android does email, not calendars.
+- **Pick it if** you want one open source app for mail and calendar on your computer.
+
+## 6. Fossify Calendar: the best Android calendar app
+
+<OssApp id="fossify-calendar" rank={6} bestFor="Android users who want a clean, ad-free calendar with widgets." />
+
+**Verdict:** the calendar app most Android users should start with. It is the community fork of Simple Calendar.
+
+- **Good:** day, week, month and year views, widgets and reminders, with no ads.
+- **Falls short:** it does not sync by itself. Pair it with DAVx⁵ to reach your own server. There is no iOS app.
+- **Pick it if** you use Android and want a calendar that is simple to read.
+
+## 7. DAVx⁵: the sync bridge for Android
+
+<OssApp id="davx5" rank={7} bestFor="Android users who want their phone to sync with a self-hosted calendar." />
+
+**Verdict:** the piece that makes a self-hosted calendar work on Android.
+
+- **Good:** it syncs calendars, contacts and tasks from any CalDAV or CardDAV server into Android. Then any calendar app can show them. It is free on F-Droid and paid on Google Play.
+- **Falls short:** it has no calendar screen. You still need Fossify, Etar or another calendar app.
+- **Pick it if** you run your own server and use Android. You almost always need it.
+
+## 8. GNOME Calendar: the simple Linux calendar
+
+<OssApp id="gnome-calendar" rank={8} bestFor="Linux desktop users who want a calendar that fits the GNOME desktop." />
+
+**Verdict:** a clean, quiet calendar for the GNOME desktop.
+
+- **Good:** it reads Google, Nextcloud and Microsoft accounts through GNOME Online Accounts, or any CalDAV server.
+- **Falls short:** Linux only, and fewer features than Thunderbird. No mail, no tasks.
+- **Pick it if** you live on GNOME and want a calendar with no clutter.
+
+## 9. Etar: a simple Android calendar
+
+<OssApp id="etar" rank={9} bestFor="Android users who want the plain, classic Android calendar look." />
+
+**Verdict:** a steady, no-frills option built on the old Android calendar.
+
+- **Good:** month, week, day and agenda views, and it has shipped updates for years.
+- **Falls short:** like Fossify, it needs DAVx⁵ to reach a CalDAV server. The design feels older.
+- **Pick it if** you want the classic Android calendar look.
+
+## 10. Proton Calendar: encrypted, with open apps and a closed server
+
+<OssApp id="proton-calendar" rank={10} bestFor="People who want an encrypted calendar and don't want to run a server." />
+
+**Verdict:** the easiest private calendar, if you trust Proton to host it.
+
+- **Good:** end-to-end encryption, with polished apps on the web, Android and iOS. The app code is public under GPL-3.0.
+- **Falls short:** Proton's servers are closed, so you can't self-host it. It has no public API and no CalDAV, so other calendar apps can't sync with it.
+- **Pick it if** you want privacy from Google without running a server.
+
+## 11. Tuta Calendar: encrypted, with apps everywhere
+
+<OssApp id="tuta-calendar" rank={11} bestFor="People who want an encrypted calendar with apps on phone and desktop." />
+
+**Verdict:** Proton's closest rival, with apps on every platform.
+
+- **Good:** end-to-end encryption and apps for web, Windows, Mac, Linux, Android and iOS, including F-Droid.
+- **Falls short:** the same deal as Proton. The apps are open source, but the servers are closed, so you can't self-host it.
+- **Pick it if** you want an encrypted calendar with desktop apps too.
+
+## 12. Cal.diy: open source booking links
+
+<OssApp id="cal-diy" rank={12} bestFor="People who want a self-hosted booking page, like Calendly, on their own server." />
+
+**Verdict:** the open source way to let people book time with you.
+
+Cal.com's open source repo is now called Cal.diy. It is the MIT-licensed community edition, with team and enterprise features taken out.
+
+- **Good:** booking pages that read your Google, Microsoft or CalDAV calendar and only offer free times.
+- **Falls short:** the project says it is for personal use, not production. For teams, look at hosted Cal.com instead.
+- **Pick it if** you want a personal booking link on your own server.
+
+## How to replace Google Calendar with open source
+
+You need three things: a server to hold your events, a way to sync, and an app on each device. Here is the path most self-hosters take.
+
+1. **Pick a server.** Nextcloud Calendar if you want a web calendar and sharing. Radicale or Baïkal if you only need sync. If you don't want to run a server, Proton or Tuta host it for you.
+2. **Put it behind HTTPS.** Use your own domain and a reverse proxy, then back up the data folder every night. Our [self-hosted productivity guide](/blog/self-hosted-productivity-apps) covers both.
+3. **Export from Google.** In Google Calendar, open **Settings**, then **Import & export**, then **Export**. You get a .zip with one .ics file per calendar.
+4. **Import your events.** In Nextcloud Calendar, use **Import calendar** in its settings. For Radicale or Baïkal, add the server to Thunderbird, then use **Events and Tasks**, then **Import**.
+5. **Connect your phone.** On Android, install DAVx⁵, then view events in Fossify Calendar or Etar. On an iPhone, add a CalDAV account in Settings, under Calendar accounts.
+6. **Connect your computer.** Thunderbird works on Windows, Mac and Linux. GNOME Calendar and the Mac's own Calendar app can add CalDAV accounts too.
+7. **Plan your days.** Keep a calendar for meetings, and a planner for the work between them.
+
+One honest note on step 7. Open Sunsama connects to Google, Outlook and iCloud today. Its iCloud form takes a custom CalDAV URL, but those three are the calendars we support.
+
+## Open source licenses in plain words
+
+Every app here shows its license on its card. Here is what those licenses mean for you.
+
+| License | What it means for you |
+|---|---|
+| **MIT** (Cal.diy) | Use, change and share the code for anything. |
+| **GPL-3.0** (Radicale, Baïkal, Fossify, Etar, DAVx⁵, GNOME Calendar, Proton, Tuta) | Use and change it freely. If you share a changed version, share your code too. |
+| **AGPL-3.0** (Nextcloud Calendar) | Like GPL, and it also covers apps you run for others over the web. |
+| **MPL-2.0** (Thunderbird) | Share changes to its own files; the rest of your project can use any license. |
+| **Non-commercial** (Open Sunsama) | Read it, run it and self-host it for personal use. Companies need a commercial license. |
+
+For personal use and self-hosting, all of these give you full control. Open Sunsama's license is not an OSI license like MIT or GPL, so check it if you are a company.
+
+## Which calendars work with AI agents?
+
+An AI agent talks to apps over MCP. Here is where each calendar stands.
+
+- **Open Sunsama:** a hosted MCP server with OAuth sign-in. Claude, ChatGPT or Cursor can read your meetings and plan time blocks around them. Calendar events are read-only over MCP. See the [MCP setup guide](/docs/mcp/overview).
+- **Nextcloud Calendar:** Nextcloud's Context Agent app has an MCP server with calendar tools. It needs the AppAPI setup.
+- **Radicale and Baïkal:** community CalDAV MCP servers work with any CalDAV server.
+- **DAVx⁵:** its makers publish davmcp, an early MCP server for CalDAV events. Its own README says it is not ready for real use.
+- **Proton and Tuta:** no public calendar API, so only small community projects exist, or none.
+
+## Which one should you pick?
+
+- **For most people: Open Sunsama.** Keep your calendar where it is, and plan your tasks right next to your meetings.
+- **If you want Google Calendar on your own server,** pick Nextcloud Calendar.
+- **If you want the smallest possible server,** pick Radicale, or Baïkal on a PHP host.
+- **If you want a desktop app,** pick Thunderbird. On GNOME, pick GNOME Calendar.
+- **If you use Android,** pick DAVx⁵ plus Fossify Calendar.
+- **If you want privacy but no server,** pick Proton Calendar or Tuta Calendar.
+- **If you want booking links,** pick Cal.diy.
+
+Planning your whole stack? See our picks for [open source planner apps](/blog/best-open-source-planner-apps), [to-do list apps](/blog/best-open-source-todo-list-apps), [kanban boards](/blog/best-open-source-kanban-boards) and [focus apps](/blog/best-open-source-focus-apps), or the full list of [open source productivity apps](/blog/best-open-source-productivity-apps).

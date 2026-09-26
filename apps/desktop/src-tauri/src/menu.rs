@@ -6,6 +6,7 @@ use tauri::{
 pub fn create_menu(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     // App menu (macOS only)
     let about = PredefinedMenuItem::about(app, Some("About Open Sunsama"), None)?;
+    let check_updates = MenuItemBuilder::with_id("check_updates", "Check for Updates...").build(app)?;
     let separator = PredefinedMenuItem::separator(app)?;
     let settings = MenuItemBuilder::with_id("settings", "Settings...")
         .accelerator("CmdOrCtrl+,")
@@ -23,6 +24,7 @@ pub fn create_menu(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         true,
         &[
             &about,
+            &check_updates,
             &separator,
             &settings,
             &separator2,
@@ -106,9 +108,16 @@ pub fn create_menu(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let documentation = MenuItemBuilder::with_id("documentation", "Documentation").build(app)?;
     let help_sep = PredefinedMenuItem::separator(app)?;
     let report_issue = MenuItemBuilder::with_id("report_issue", "Report Issue").build(app)?;
+    let help_sep2 = PredefinedMenuItem::separator(app)?;
+    let reset_local_data =
+        MenuItemBuilder::with_id("reset_local_data", "Reset Local Data and Reload").build(app)?;
 
-    let help_menu =
-        Submenu::with_items(app, "Help", true, &[&documentation, &help_sep, &report_issue])?;
+    let help_menu = Submenu::with_items(
+        app,
+        "Help",
+        true,
+        &[&documentation, &help_sep, &report_issue, &help_sep2, &reset_local_data],
+    )?;
 
     // Build the menu
     let menu = Menu::with_items(
@@ -154,14 +163,16 @@ pub fn create_menu(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
                     let _ = window.eval("window.location.reload()");
                 }
             }
+            "check_updates" => crate::recovery::check_for_updates(app),
+            "reset_local_data" => crate::recovery::reset_local_data(app),
             "documentation" => {
                 let _ = tauri::async_runtime::spawn(async {
-                    let _ = open::that("https://github.com/your-org/open-sunsama");
+                    let _ = open::that("https://opensunsama.com/docs");
                 });
             }
             "report_issue" => {
                 let _ = tauri::async_runtime::spawn(async {
-                    let _ = open::that("https://github.com/your-org/open-sunsama/issues");
+                    let _ = open::that("https://github.com/ShadowWalker2014/open-sunsama/issues");
                 });
             }
             _ => {}

@@ -17,6 +17,7 @@ import { useInView } from "react-intersection-observer";
 import { cn } from "@/lib/utils";
 import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
 import { trackGoal } from "@/lib/analytics";
+import { MarketingLayout } from "@/components/marketing/marketing-layout";
 
 // Platform configuration
 type PlatformKey = "windows" | "macos-arm64" | "macos-x64" | "linux";
@@ -328,234 +329,160 @@ export default function DownloadPage() {
   const allPlatforms = Object.values(PLATFORMS);
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans antialiased">
-      {/* Subtle background */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[400px] bg-primary/[0.03] blur-[100px] rounded-full" />
-      </div>
+    <MarketingLayout>
+      {/* Hero */}
+      <section className="pt-16 pb-12 md:pt-24 md:pb-16">
+        <div className="container px-4 mx-auto max-w-3xl text-center">
+          {/* App icon */}
+          <img
+            src="/open-sunsama-logo.png"
+            alt="Open Sunsama"
+            className="mx-auto h-16 w-16 rounded-2xl object-cover mb-6"
+          />
 
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-12 items-center justify-between px-4 mx-auto max-w-5xl">
-          <Link to="/" className="flex items-center gap-2">
-            <img
-              src="/open-sunsama-logo.png"
-              alt="Open Sunsama"
-              className="h-7 w-7 rounded-lg object-cover"
+          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight mb-3">
+            Open Sunsama for Desktop
+          </h1>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto mb-8">
+            Native performance, global hotkeys, and system integration.
+          </p>
+
+          {/* Primary download */}
+          {!isLoading && detectedRelease && (
+            <div className="space-y-3">
+              <Button size="lg" className="h-10 px-5 text-[13px]" asChild>
+                <a
+                  href={detectedRelease.downloadUrl}
+                  download
+                  onClick={() => trackGoal("download_app", { platform: detectedRelease.platform })}
+                >
+                  <detectedPlatformInfo.icon className="h-4 w-4" />
+                  Download for {detectedPlatformInfo.shortName}
+                </a>
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                v{detectedRelease.version} •{" "}
+                {formatFileSize(detectedRelease.fileSize)} •{" "}
+                {detectedPlatformInfo.fileType}
+              </p>
+            </div>
+          )}
+          {!isLoading && !detectedRelease && (
+            <p className="text-sm text-muted-foreground">
+              Desktop app coming soon for {detectedPlatformInfo.shortName}
+            </p>
+          )}
+          {isLoading && (
+            <div className="space-y-3">
+              <Skeleton className="h-10 w-48 mx-auto rounded-lg" />
+              <Skeleton className="h-4 w-32 mx-auto" />
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-12 border-t border-border/40 bg-muted/10">
+        <div className="container px-4 mx-auto max-w-3xl">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <FeatureItem
+              icon={Zap}
+              title="Tauri-Powered"
+              description="Lightweight, fast, secure"
             />
-            <span className="text-[13px] font-semibold">Open Sunsama</span>
-          </Link>
-          <div className="flex items-center gap-1.5">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 px-3 text-xs"
-              asChild
-            >
-              <Link to="/login">Sign in</Link>
-            </Button>
-            <Button size="sm" className="h-8 px-3 text-xs" asChild>
-              <Link to="/register">Get Started</Link>
-            </Button>
+            <FeatureItem
+              icon={Bell}
+              title="Native Notifications"
+              description="System tray integration"
+            />
+            <FeatureItem
+              icon={RefreshCw}
+              title="Auto Updates"
+              description="Always up to date"
+            />
           </div>
         </div>
-      </header>
+      </section>
 
-      <main className="relative">
-        {/* Hero */}
-        <section className="pt-16 pb-12 md:pt-24 md:pb-16">
-          <div className="container px-4 mx-auto max-w-3xl text-center">
-            {/* App icon */}
-            <img
-              src="/open-sunsama-logo.png"
-              alt="Open Sunsama"
-              className="mx-auto h-16 w-16 rounded-2xl object-cover mb-6"
-            />
+      {/* All platforms */}
+      <section className="py-12 border-t border-border/40">
+        <div className="container px-4 mx-auto max-w-2xl">
+          <h2 className="text-lg font-semibold tracking-tight text-center mb-6">
+            All Platforms
+          </h2>
 
-            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight mb-3">
-              Open Sunsama for Desktop
-            </h1>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto mb-8">
-              Native performance, global hotkeys, and system integration.
-            </p>
+          {error && (
+            <div className="text-xs text-destructive mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+              {error}
+            </div>
+          )}
 
-            {/* Primary download */}
-            {!isLoading && detectedRelease && (
-              <div className="space-y-3">
-                <Button size="lg" className="h-10 px-5 text-[13px]" asChild>
-                  <a
-                    href={detectedRelease.downloadUrl}
-                    download
-                    onClick={() => trackGoal("download_app", { platform: detectedRelease.platform })}
-                  >
-                    <detectedPlatformInfo.icon className="h-4 w-4" />
-                    Download for {detectedPlatformInfo.shortName}
-                  </a>
-                </Button>
-                <p className="text-xs text-muted-foreground">
-                  v{detectedRelease.version} •{" "}
-                  {formatFileSize(detectedRelease.fileSize)} •{" "}
-                  {detectedPlatformInfo.fileType}
-                </p>
-              </div>
-            )}
-            {!isLoading && !detectedRelease && (
-              <p className="text-sm text-muted-foreground">
-                Desktop app coming soon for {detectedPlatformInfo.shortName}
+          <div className="space-y-3">
+            {allPlatforms.map((platform, i) => (
+              <PlatformCard
+                key={platform.key}
+                platform={platform}
+                release={releases[platform.key]}
+                isDetected={platform.key === detectedPlatform}
+                isLoading={isLoading}
+                delay={i * 50}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Web app */}
+      <section className="py-12 border-t border-border/40">
+        <div className="container px-4 mx-auto max-w-2xl">
+          <div className="rounded-xl border border-border/40 bg-card/50 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <h3 className="text-[13px] font-semibold">
+                Prefer the browser?
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Access from any device with our web app.
               </p>
-            )}
-            {isLoading && (
-              <div className="space-y-3">
-                <Skeleton className="h-10 w-48 mx-auto rounded-lg" />
-                <Skeleton className="h-4 w-32 mx-auto" />
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Features */}
-        <section className="py-12 border-t border-border/40 bg-muted/10">
-          <div className="container px-4 mx-auto max-w-3xl">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <FeatureItem
-                icon={Zap}
-                title="Tauri-Powered"
-                description="Lightweight, fast, secure"
-              />
-              <FeatureItem
-                icon={Bell}
-                title="Native Notifications"
-                description="System tray integration"
-              />
-              <FeatureItem
-                icon={RefreshCw}
-                title="Auto Updates"
-                description="Always up to date"
-              />
             </div>
-          </div>
-        </section>
-
-        {/* All platforms */}
-        <section className="py-12 border-t border-border/40">
-          <div className="container px-4 mx-auto max-w-2xl">
-            <h2 className="text-lg font-semibold tracking-tight text-center mb-6">
-              All Platforms
-            </h2>
-
-            {error && (
-              <div className="text-xs text-destructive mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                {error}
-              </div>
-            )}
-
-            <div className="space-y-3">
-              {allPlatforms.map((platform, i) => (
-                <PlatformCard
-                  key={platform.key}
-                  platform={platform}
-                  release={releases[platform.key]}
-                  isDetected={platform.key === detectedPlatform}
-                  isLoading={isLoading}
-                  delay={i * 50}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Web app */}
-        <section className="py-12 border-t border-border/40">
-          <div className="container px-4 mx-auto max-w-2xl">
-            <div className="rounded-xl border border-border/40 bg-card/50 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div>
-                <h3 className="text-[13px] font-semibold">
-                  Prefer the browser?
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Access from any device with our web app.
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 px-3 text-xs"
-                asChild
-              >
-                <Link to="/app">
-                  Open Web App
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </section>
-
-        {/* Source */}
-        <section className="py-12 border-t border-border/40">
-          <div className="container px-4 mx-auto max-w-2xl text-center">
-            <h3 className="text-[13px] font-semibold mb-2">Open Source</h3>
-            <p className="text-xs text-muted-foreground mb-4">
-              Check source code and releases on GitHub.
-            </p>
             <Button
               variant="outline"
               size="sm"
               className="h-8 px-3 text-xs"
               asChild
             >
-              <a
-                href="https://github.com/ShadowWalker2014/open-sunsama"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Github className="h-3.5 w-3.5" />
-                View on GitHub
-              </a>
+              <Link to="/app">
+                Open Web App
+                <ExternalLink className="h-3.5 w-3.5" />
+              </Link>
             </Button>
           </div>
-        </section>
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-border/40 py-6">
-        <div className="container px-4 mx-auto max-w-5xl">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-3">
-            <div className="flex items-center gap-2">
-              <img
-                src="/open-sunsama-logo.png"
-                alt="Open Sunsama"
-                className="h-5 w-5 rounded object-cover"
-              />
-              <span className="text-[11px] text-muted-foreground">
-                © 2026 Open Sunsama
-              </span>
-            </div>
-            <nav className="flex items-center gap-4 text-[11px] text-muted-foreground">
-              <Link
-                to="/privacy"
-                className="hover:text-foreground transition-colors"
-              >
-                Privacy
-              </Link>
-              <Link
-                to="/terms"
-                className="hover:text-foreground transition-colors"
-              >
-                Terms
-              </Link>
-              <a
-                href="https://github.com/ShadowWalker2014/open-sunsama"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-foreground transition-colors"
-              >
-                <Github className="h-3.5 w-3.5" />
-              </a>
-            </nav>
-          </div>
         </div>
-      </footer>
-    </div>
+      </section>
+
+      {/* Source */}
+      <section className="py-12 border-t border-border/40">
+        <div className="container px-4 mx-auto max-w-2xl text-center">
+          <h3 className="text-[13px] font-semibold mb-2">Open Source</h3>
+          <p className="text-xs text-muted-foreground mb-4">
+            Check source code and releases on GitHub.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 px-3 text-xs"
+            asChild
+          >
+            <a
+              href="https://github.com/ShadowWalker2014/open-sunsama"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Github className="h-3.5 w-3.5" />
+              View on GitHub
+            </a>
+          </Button>
+        </div>
+      </section>
+    </MarketingLayout>
   );
 }

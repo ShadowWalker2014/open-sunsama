@@ -35,6 +35,9 @@ ENV VITE_WS_URL=$VITE_WS_URL
 # Build the packages and web app
 RUN bun run build --filter=@open-sunsama/types --filter=@open-sunsama/utils --filter=@open-sunsama/api-client --filter=@open-sunsama/web
 
+# Bundle the server with its dependencies; the production stage has no node_modules
+RUN bun build apps/web/server.ts --target=bun --outfile=apps/web/server.js
+
 # Production stage - serve static files
 FROM oven/bun:1.4.2-slim
 
@@ -42,11 +45,11 @@ WORKDIR /app
 
 # Copy built static files and the server from builder
 COPY --from=builder /app/apps/web/dist ./dist
-COPY --from=builder /app/apps/web/server.ts ./server.ts
+COPY --from=builder /app/apps/web/server.js ./server.js
 
 # Expose port
 ENV PORT=3000
 EXPOSE 3000
 
 # Static server with SPA fallback that serves pre-rendered blog pages
-CMD ["bun", "run", "server.ts"]
+CMD ["bun", "run", "server.js"]

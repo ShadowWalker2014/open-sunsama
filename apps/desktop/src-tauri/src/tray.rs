@@ -12,6 +12,13 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let show_hide = MenuItem::with_id(app, "show_hide", "Show/Hide Window", true, Some("CmdOrCtrl+Shift+O"))?;
     let separator2 = PredefinedMenuItem::separator(app)?;
     let settings = MenuItem::with_id(app, "settings", "Settings...", true, None::<&str>)?;
+    // Distinct ids from the app menu's, so the global menu handler doesn't
+    // run them a second time.
+    let check_updates =
+        MenuItem::with_id(app, "tray_check_updates", "Check for Updates...", true, None::<&str>)?;
+    let reset_local_data =
+        MenuItem::with_id(app, "tray_reset_local_data", "Reset Local Data and Reload", true, None::<&str>)?;
+    let separator3 = PredefinedMenuItem::separator(app)?;
     let quit = MenuItem::with_id(app, "quit", "Quit Open Sunsama", true, Some("CmdOrCtrl+Q"))?;
 
     let menu = Menu::with_items(
@@ -24,6 +31,9 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
             &show_hide,
             &separator2,
             &settings,
+            &check_updates,
+            &reset_local_data,
+            &separator3,
             &quit,
         ],
     )?;
@@ -71,6 +81,8 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
                     let _ = window.emit("navigate", "/app/settings");
                 }
             }
+            "tray_check_updates" => crate::recovery::check_for_updates(app),
+            "tray_reset_local_data" => crate::recovery::reset_local_data(app),
             "quit" => {
                 std::process::exit(0);
             }
