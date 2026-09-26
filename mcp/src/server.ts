@@ -21,7 +21,7 @@ export { MCP_TOOL_SCOPES } from "./lib/define-tool.js";
 export const MCP_SERVER_INFO = {
   name: "open-sunsama",
   title: "Open Sunsama",
-  version: "1.2.0",
+  version: "1.3.0",
   websiteUrl: "https://opensunsama.com",
 } as const;
 

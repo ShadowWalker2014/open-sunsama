@@ -1,6 +1,6 @@
 # Open Sunsama MCP Server
 
-An MCP (Model Context Protocol) server that enables AI agents like Claude, ChatGPT, Cursor, and other AI assistants to manage your tasks, time blocks, and calendar through the Open Sunsama API.
+An MCP (Model Context Protocol) server that enables AI agents like Claude, ChatGPT, Cursor, and other AI assistants to manage your tasks, time blocks, calendar, and Ideas through the Open Sunsama API.
 
 > **Most people don't need this package.** Open Sunsama hosts the same server at
 > **`https://api.opensunsama.com/mcp`** with OAuth sign-in. Add that URL to Claude
@@ -16,6 +16,7 @@ An MCP (Model Context Protocol) server that enables AI agents like Claude, ChatG
 - **Task Management**: Create, update, complete, delete, and schedule tasks
 - **Time Blocking**: Schedule focused work sessions on your calendar
 - **Subtasks**: Break down tasks into smaller actionable items
+- **Ideas**: Manage boards, columns, cards, and checklists, and promote ideas to tasks
 - **User Profile**: Access and update user preferences
 - **Full CRUD Operations**: Complete API coverage for AI-assisted productivity
 
