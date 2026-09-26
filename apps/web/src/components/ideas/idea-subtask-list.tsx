@@ -16,10 +16,11 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Check, GripVertical, Plus, X } from "lucide-react";
+import { Check, GripVertical, X } from "lucide-react";
 import type { IdeaSubtask } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
-import { Button, Input } from "@/components/ui";
+import { Button } from "@/components/ui";
+import { SubtaskAddRow } from "@/components/kanban/subtask-add-row";
 import {
   useIdeaSubtasks,
   useCreateIdeaSubtask,
@@ -135,21 +136,12 @@ export function IdeaSubtaskList({ ideaId }: { ideaId: string }) {
   const deleteSubtask = useDeleteIdeaSubtask();
   const reorderSubtasks = useReorderIdeaSubtasks();
 
-  const [draft, setDraft] = React.useState("");
-
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
   const ids = React.useMemo(() => subtasks.map((s) => s.id), [subtasks]);
-
-  const add = () => {
-    const trimmed = draft.trim();
-    if (!trimmed) return;
-    createSubtask.mutate({ ideaId, input: { title: trimmed } });
-    setDraft("");
-  };
 
   const onDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -199,23 +191,13 @@ export function IdeaSubtaskList({ ideaId }: { ideaId: string }) {
         </DndContext>
       )}
 
-      {/* Add subtask */}
-      <div className="flex items-center gap-2 px-1 py-1">
-        <Plus className="h-4 w-4 shrink-0 text-muted-foreground" />
-        <Input
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              add();
-            }
-          }}
-          onBlur={add}
-          placeholder="Add a subtask..."
-          className="h-auto border-none p-0 text-sm shadow-none focus-visible:ring-0"
-        />
-      </div>
+      <SubtaskAddRow
+        onAdd={(titles) => {
+          for (const title of titles) {
+            createSubtask.mutate({ ideaId, input: { title: title.slice(0, 500) } });
+          }
+        }}
+      />
     </div>
   );
 }

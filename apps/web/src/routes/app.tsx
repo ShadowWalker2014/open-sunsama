@@ -5,6 +5,7 @@ import type { Task } from "@open-sunsama/types";
 import { useAuth } from "@/hooks/useAuth";
 import { Header } from "@/components/layout/header";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
+import { InstallAppPrompt } from "@/components/pwa/install-app-prompt";
 import { Skeleton } from "@/components/ui";
 import {
   HoveredTaskProvider,
@@ -19,6 +20,7 @@ import {
   prefetchShortcutsModal,
 } from "@/components/ui/shortcuts-modal.lazy";
 import { GlobalShortcutsHandler } from "@/components/global-shortcuts-handler";
+import { DesktopShortcutsHandler } from "@/components/desktop-shortcuts-handler";
 import {
   CommandPalette,
   prefetchCommandPalette,
@@ -163,8 +165,14 @@ function AppLayoutInner() {
         <MobileBottomNav />
       </div>
 
+      {/* Phone browsers: offer the Add to Home Screen guide */}
+      <InstallAppPrompt />
+
       {/* Global Shortcuts Handler */}
       <GlobalShortcutsHandler onAddTask={handleAddTask} />
+
+      {/* Desktop app global shortcuts, tray and menu actions (Tauri only) */}
+      <DesktopShortcutsHandler onAddTask={handleAddTask} />
 
       {/* Shortcuts Modal */}
       <ShortcutsModal

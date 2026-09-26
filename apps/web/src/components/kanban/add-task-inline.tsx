@@ -9,6 +9,8 @@ import {
 } from "./add-task-modal.lazy";
 import { prefetchRichTextEditor } from "@/components/ui/rich-text-editor.lazy";
 import { useAddTaskPosition } from "@/hooks/useAddTaskPosition";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { TaskModal, prefetchTaskModal } from "./task-modal.lazy";
 
 interface AddTaskInlineProps {
   scheduledDate: string;
@@ -26,6 +28,8 @@ interface AddTaskInlineProps {
 export function AddTaskInline({ scheduledDate, className, compact }: AddTaskInlineProps) {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const { addPosition, setAddPosition } = useAddTaskPosition();
+  // Phones get the same bottom sheet used to edit tasks.
+  const isMobile = useIsMobile();
 
   const handlePositionChange = (position: AddPosition) => {
     setAddPosition(position);
@@ -50,7 +54,8 @@ export function AddTaskInline({ scheduledDate, className, compact }: AddTaskInli
             compact ? "h-7 px-2 text-xs" : "flex-1 h-9 gap-2"
           )}
           onClick={() => {
-            void prefetchAddTaskModal();
+            if (isMobile) void prefetchTaskModal();
+            else void prefetchAddTaskModal();
             void prefetchRichTextEditor();
             setIsModalOpen(true);
           }}
@@ -97,13 +102,22 @@ export function AddTaskInline({ scheduledDate, className, compact }: AddTaskInli
         </TooltipProvider>
       </div>
 
-      <AddTaskModal
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-        scheduledDate={scheduledDate}
-        addPosition={addPosition}
-        onAddPositionChange={handlePositionChange}
-      />
+      {isMobile ? (
+        <TaskModal
+          task={null}
+          open={isModalOpen}
+          onOpenChange={setIsModalOpen}
+          createDefaults={{ scheduledDate }}
+        />
+      ) : (
+        <AddTaskModal
+          open={isModalOpen}
+          onOpenChange={setIsModalOpen}
+          scheduledDate={scheduledDate}
+          addPosition={addPosition}
+          onAddPositionChange={handlePositionChange}
+        />
+      )}
     </>
   );
 }

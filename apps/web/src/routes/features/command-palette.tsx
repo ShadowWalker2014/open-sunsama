@@ -1,136 +1,114 @@
-import { FeatureLayout } from "@/components/layout/feature-layout";
-import { FeatureShot } from "@/components/landing/product-shot";
-import { Command, Search, Keyboard, ArrowRight } from "lucide-react";
-import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
+import { Calendar, Command, Monitor, MousePointer2, Timer, type LucideIcon } from "lucide-react";
+import { Reveal } from "@/components/landing/motion";
+import { CARD, CONTAINER, MarketingPageView, SECTION, SectionHeading } from "@/components/marketing";
+import page, { SHORTCUT_GROUPS, type ShortcutGroup } from "@/content/marketing/features/command-palette";
+import type { CustomSection } from "@/content/marketing/types";
+import { cn } from "@/lib/utils";
 
-function FeatureItem({
-  icon: Icon,
-  title,
-  description,
-}: {
-  icon: any;
-  title: string;
-  description: string;
-}) {
+const GROUP_ICONS: Record<string, LucideIcon> = {
+  "Anywhere in the app": Command,
+  "On the task under your cursor": MousePointer2,
+  Calendar: Calendar,
+  "Focus mode": Timer,
+  "Desktop app": Monitor,
+};
+
+/** Spoken names, so screen readers don't read "⌘" as a symbol. */
+const KEY_NAMES: Record<string, string> = {
+  "⌘": "Command",
+  "⇧": "Shift",
+  "⌥": "Option",
+  "⌫": "Delete",
+  "→": "Right arrow",
+  "←": "Left arrow",
+  "↑": "Up arrow",
+  "↓": "Down arrow",
+  "?": "Question mark",
+};
+
+function Keys({ keys }: { keys: string[] }) {
   return (
-    <div className="space-y-3">
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-        <Icon className="h-4 w-4" />
-      </div>
-      <h3 className="text-[13px] font-semibold">{title}</h3>
-      <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
-    </div>
+    <span className="flex shrink-0 items-center gap-1" aria-label={keys.map((key) => KEY_NAMES[key] ?? key).join(" + ")}>
+      {keys.map((key) => (
+        <kbd
+          key={key}
+          aria-hidden
+          className={cn(
+            "inline-flex h-[26px] min-w-[26px] items-center justify-center rounded-md border border-border bg-background px-1.5 font-medium text-foreground shadow-[inset_0_-2px_0_hsl(var(--border))] dark:border-white/[0.12] dark:bg-white/[0.04]",
+            KEY_NAMES[key] && key !== "?" ? "font-sans text-[14px]" : "font-mono text-[12px]"
+          )}
+        >
+          {key}
+        </kbd>
+      ))}
+    </span>
   );
 }
 
-export default function CommandPaletteFeaturePage() {
-  useSEO(SEO_CONFIGS.features.commandPalette);
+function GroupCard({ group, delay }: { group: ShortcutGroup; delay: number }) {
+  const Icon = GROUP_ICONS[group.title] ?? Command;
+  return (
+    <Reveal delay={delay} className={cn(CARD, "overflow-hidden")}>
+      <div className="flex items-start gap-3 border-b border-border/60 px-5 py-4">
+        <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <Icon className="h-3.5 w-3.5" />
+        </span>
+        <div className="min-w-0">
+          <h3 className="text-[15px] font-semibold tracking-[-0.01em]">{group.title}</h3>
+          <p className="mt-0.5 text-[13px] text-muted-foreground">{group.note}</p>
+        </div>
+      </div>
+      <dl className="divide-y divide-border/50 px-5">
+        {group.items.map((item) => (
+          <div key={item.label} className="flex items-center justify-between gap-4 py-2.5">
+            <dt className="min-w-0 text-[14px] text-foreground/85">{item.label}</dt>
+            <dd>
+              <Keys keys={item.keys} />
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </Reveal>
+  );
+}
+
+/** The full shortcut sheet: the "shortcuts" custom section of the content module. */
+function ShortcutReference() {
+  const section = page.sections.find((s): s is CustomSection => s.kind === "custom" && s.id === "shortcuts");
+  const byTitle = (title: string) => SHORTCUT_GROUPS.find((g) => g.title === title);
+  const columns = [
+    ["Anywhere in the app", "Calendar", "Desktop app"],
+    ["On the task under your cursor", "Focus mode"],
+  ].map((titles) => titles.map(byTitle).filter((g): g is ShortcutGroup => Boolean(g)));
 
   return (
-    <FeatureLayout
-      visual={<FeatureShot name="command-palette" alt="Command palette searching across tasks and ideas" />}
-      badge="Feature"
-      title="Command Palette"
-      subtitle="Access everything with ⌘K. Search tasks, run commands, and navigate your workflow instantly."
-    >
-      {/* Features */}
-      <section className="py-12 border-t border-border/40 bg-muted/10">
-        <div className="container px-4 mx-auto max-w-4xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <FeatureItem
-              icon={Search}
-              title="Task Search"
-              description="Instantly find any task by title. Fuzzy matching with 100+ result support."
-            />
-            <FeatureItem
-              icon={Command}
-              title="Quick Commands"
-              description="Add tasks, switch themes, navigate views - all without leaving your keyboard."
-            />
-            <FeatureItem
-              icon={Keyboard}
-              title="Context Actions"
-              description="Task-specific commands appear when hovering. Complete, defer, or delete in one keystroke."
-            />
-          </div>
+    <section id="shortcuts" className={SECTION} aria-labelledby="shortcuts-heading">
+      <div className={CONTAINER}>
+        <SectionHeading id="shortcuts-heading" eyebrow={section?.eyebrow} heading={section?.heading ?? ""} lead={section?.lead} />
+        {/* Phones: one column in reading order. md and up: two balanced columns. */}
+        <div className="mx-auto mt-12 flex max-w-5xl flex-col gap-4 md:hidden">
+          {SHORTCUT_GROUPS.map((group, i) => (
+            <GroupCard key={group.title} group={group} delay={i * 60} />
+          ))}
         </div>
-      </section>
-
-      {/* Available Commands */}
-      <section className="py-12 border-t border-border/40">
-        <div className="container px-4 mx-auto max-w-3xl">
-          <h3 className="text-[15px] font-semibold mb-6 text-center">Available Commands</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">General</h4>
-              <div className="space-y-2">
-                {[
-                  { key: "A", label: "Add new task" },
-                  { key: "?", label: "Show keyboard shortcuts" },
-                  { key: "⌘K", label: "Open command palette" },
-                ].map((cmd, i) => (
-                  <div key={i} className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">{cmd.label}</span>
-                    <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">{cmd.key}</kbd>
-                  </div>
-                ))}
-              </div>
+        <div className="mx-auto mt-12 hidden max-w-5xl grid-cols-2 gap-5 md:grid">
+          {columns.map((groups, col) => (
+            <div key={col} className="flex min-w-0 flex-col gap-5">
+              {groups.map((group, i) => (
+                <GroupCard key={group.title} group={group} delay={(col + i) * 80} />
+              ))}
             </div>
-            
-            <div>
-              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Navigation</h4>
-              <div className="space-y-2">
-                {[
-                  { label: "Go to Tasks (Kanban)" },
-                  { label: "Go to Calendar" },
-                  { label: "Go to Settings" },
-                  { label: "Switch theme (Light/Dark)" },
-                ].map((cmd, i) => (
-                  <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <ArrowRight className="h-3 w-3 text-primary" />
-                    {cmd.label}
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Task Actions (on hover)</h4>
-              <div className="space-y-2">
-                {[
-                  { key: "C", label: "Complete task" },
-                  { key: "Z", label: "Move to backlog" },
-                  { key: "⇧Z", label: "Defer to next week" },
-                  { key: "X", label: "Add to calendar" },
-                ].map((cmd, i) => (
-                  <div key={i} className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">{cmd.label}</span>
-                    <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">{cmd.key}</kbd>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">More Task Actions</h4>
-              <div className="space-y-2">
-                {[
-                  { key: "⌘D", label: "Duplicate task" },
-                  { key: "⌘⌫", label: "Delete task" },
-                  { key: "F", label: "Enter focus mode" },
-                  { key: "E", label: "Edit time estimate" },
-                ].map((cmd, i) => (
-                  <div key={i} className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">{cmd.label}</span>
-                    <kbd className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono">{cmd.key}</kbd>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
-      </section>
-    </FeatureLayout>
+      </div>
+    </section>
   );
+}
+
+/**
+ * /features/command-palette, built from the marketing kit. Copy and the
+ * shortcut list live in src/content/marketing/features/command-palette.ts.
+ */
+export default function CommandPaletteFeaturePage() {
+  return <MarketingPageView page={page} slots={{ shortcuts: <ShortcutReference /> }} />;
 }
