@@ -75,7 +75,7 @@
     "@changesets/cli": "^2.31.1",
     "@eslint/js": "^9.39.1",
     "@playwright/test": "^1.63.0",
-    "@types/node": "^22.20.4",
+    "@types/node": "^24.0.0",
     "eslint": "^9.39.5",
     "globals": "^14.0.0",
     "prettier": "^3.9.8",

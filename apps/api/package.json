@@ -44,7 +44,7 @@
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^22.20.4",
+    "@types/node": "^24.0.0",
     "@types/web-push": "^3.6.4",
     "@types/ws": "^8.18.1",
     "tsup": "^8.5.1",
