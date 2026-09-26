@@ -6,6 +6,8 @@
  * a no-op in development and tests.
  */
 
+import { getAvatarUrl } from "./utils";
+
 export type Goal =
   | "signup"
   | "create_task"
@@ -43,8 +45,10 @@ export function identifyUser(user: {
 }): void {
   const params: Record<string, string> = { user_id: user.id, email: user.email };
   if (user.name) params.name = user.name;
-  // DataFast rejects image URLs over 250 characters.
-  if (user.avatarUrl && user.avatarUrl.length <= 250) params.image = user.avatarUrl;
+  // Avatars are stored as API-relative paths; DataFast rejects anything but a
+  // full http(s) URL of at most 250 characters.
+  const image = getAvatarUrl(user.avatarUrl);
+  if (image && /^https?:/.test(image) && image.length <= 250) params.image = image;
   try {
     window.datafast?.("identify", params);
   } catch {
