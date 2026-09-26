@@ -8,16 +8,31 @@ AI-agent-friendly task management + time blocking app. TypeScript monorepo with 
 
 | Environment | Web                     | API                         | Prerequisites                          |
 | ----------- | ----------------------- | --------------------------- | -------------------------------------- |
-| Local       | http://localhost:3000   | http://localhost:3001       | `bun dev` running for both web and api |
+| Local       | http://localhost:3000   | http://localhost:3001       | `bun run dev:local` (see below)        |
 | Production  | https://opensunsama.com | https://api.opensunsama.com | None                                   |
 
 **Login credentials:** `.env.local` in project root (gitignored, real user account - NEVER commit).
+
+### Local dev and testing: no Docker
+
+**Never use Docker to develop or test.** No `docker run`, no `docker compose`, no local Postgres or Redis containers. The Docker VM slows the laptop and fills the disk. Run plain dev servers against the shared dev database instead:
+
+- **`bun run dev:local`** starts the API on :3001 and the web app on :3000. They use `dev-postgres`, the only service in Railway's `development` environment, and migrations run on start. Set `API_PORT` and `WEB_PORT` to run several worktrees side by side.
+- **In the browser pane,** use `preview_start` with the `.claude/launch.json` configs: `api` + `web` (3001/3000), or `api-demo` + `web-demo` (3101/3107) for demo recordings.
+- **Never start a local API from `apps/api/.env`.** That file points at the production database and Redis. `scripts/dev-local.mjs` passes every variable explicitly, blanks Redis, email, background jobs, S3 and OAuth, and refuses the production database.
+- **The dev database is shared and disposable.** Register throwaway users (`<name>-e2e@example.com`) through the API instead of touching real accounts. It runs Postgres 18; production runs 17.
+- **`docker-compose.yml` and the Dockerfiles exist for self-hosters.** Check changes to them in CI or on Railway, not with a local Docker.
 
 **MCP Tool:** Use `open-sunsama` MCP server to create/update tasks, time blocks, subtasks programmatically.
 
 ### Shipping a change (agents)
 
-- **Review and merge your own PR.** Read your full diff for bugs, fix what you find, wait for CI, then merge it yourself.
+- **Review and merge your own PR.** Read your full diff for bugs, fix what you find, wait for CI (`gh pr checks <N> --watch`), then merge it yourself.
+- **CI is required on main.** `.github/workflows/ci.yml` runs two checks on every PR, and a ruleset blocks merging until both pass:
+  - **Checks:** install with a frozen lockfile, typecheck, lint, unit tests, build, migrations match the schema, and the desktop bundle stays under 60 MB.
+  - **End-to-end:** a fresh Postgres, the built API and the web app, then the Playwright smoke tests in `e2e/` and the MCP OAuth suite.
+- **Nobody can skip CI, admins included.** Direct pushes to main are rejected; open a PR. If CI itself is wrong, fix CI in its own PR.
+- **Run the end-to-end tests locally** against a local database (never production): migrate it, then `DATABASE_URL=<local url> e2e/start-stack.sh && bun run e2e`. The stack uses ports 3201 (API) and 3207 (web).
 - **Validate in production before calling it done.** After the deploy, prove the change works end to end: check `railway logs --service api` for errors, query the data read-only, and test anything a user can see in the browser pane on https://opensunsama.com. An open PR or passing tests is not done.
 
 ---
@@ -138,6 +153,7 @@ bun run build        # Build all
 bun run typecheck    # Type check
 bun run lint         # Lint
 bun run test         # Tests
+bun run e2e          # Browser smoke tests (needs e2e/start-stack.sh running; locally, point it at dev-postgres — see the script header)
 
 # Database
 bun run db:generate  # Generate migrations
@@ -182,7 +198,7 @@ Quick reference:
 
 - **Source of truth:** `package.json` (root)
 - **Sync command:** `bun run version:sync`
-- **Current version:** v1.0.13
+- **Current version:** v1.0.17
 
 ---
 
@@ -192,7 +208,7 @@ Quick reference:
 
 Quick reference:
 
-- **Release:** `bun run release` (bumps, syncs, commits, tags and pushes; about 15 minutes to all platforms)
+- **Release:** `bun run release` (bumps and syncs the version, merges it through a PR once CI passes, then tags and pushes the tag; about 15 minutes to all platforms)
 - **Manual trigger:** GitHub → Actions → Desktop Release → Run workflow
 - **Downloads page:** https://opensunsama.com/download
 - **Platforms:** macOS (arm64/x64), Windows, Linux
@@ -281,6 +297,10 @@ railway status
 # List environment variables for a service
 railway variables --service api
 railway variables --service Postgres
+
+# The development environment holds only dev-postgres (the local dev database).
+# Keep checkouts linked to production and pass -e for dev:
+railway variables -e development -s dev-postgres
 
 # View logs (streams live)
 railway logs --service api

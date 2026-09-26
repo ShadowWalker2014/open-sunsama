@@ -1,7 +1,7 @@
 import * as React from "react";
-import { Plus, X, Check } from "lucide-react";
+import { X, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button, Input } from "@/components/ui";
+import { SubtaskAddRow } from "./subtask-add-row";
 
 export interface Subtask {
   id: string;
@@ -12,29 +12,31 @@ export interface Subtask {
 interface SubtaskListProps {
   subtasks: Subtask[];
   onSubtasksChange: (subtasks: Subtask[]) => void;
+  /** Lets a parent button focus the add field. */
+  addInputRef?: React.Ref<HTMLInputElement>;
   className?: string;
 }
 
 /**
- * Reusable subtask list component for creating/editing tasks.
- * Provides add, toggle, and delete functionality without drag-and-drop.
+ * Local-state subtask list for forms that create a task or idea, styled to
+ * match the live checklist in the task modal and focus mode.
  */
 export function SubtaskList({
   subtasks,
   onSubtasksChange,
+  addInputRef,
   className,
 }: SubtaskListProps) {
-  const [newSubtaskTitle, setNewSubtaskTitle] = React.useState("");
-
-  const addSubtask = () => {
-    if (!newSubtaskTitle.trim()) return;
-    const newSubtask: Subtask = {
-      id: `temp-${Date.now()}`,
-      title: newSubtaskTitle.trim(),
-      completed: false,
-    };
-    onSubtasksChange([...subtasks, newSubtask]);
-    setNewSubtaskTitle("");
+  const addSubtasks = (titles: string[]) => {
+    const now = Date.now();
+    onSubtasksChange([
+      ...subtasks,
+      ...titles.map((title, i) => ({
+        id: `temp-${now}-${i}`,
+        title: title.slice(0, 500),
+        completed: false,
+      })),
+    ]);
   };
 
   const toggleSubtask = (id: string) => {
@@ -50,10 +52,9 @@ export function SubtaskList({
   };
 
   return (
-    <div className={cn("space-y-2", className)}>
-      {/* Subtask list */}
+    <div className={className}>
       {subtasks.length > 0 && (
-        <div className="space-y-1 mb-2">
+        <div className="space-y-px">
           {subtasks.map((subtask) => (
             <SubtaskItem
               key={subtask.id}
@@ -64,24 +65,7 @@ export function SubtaskList({
           ))}
         </div>
       )}
-
-      {/* Add subtask input */}
-      <div className="flex items-center gap-2">
-        <Plus className="h-4 w-4 text-muted-foreground" />
-        <Input
-          value={newSubtaskTitle}
-          onChange={(e) => setNewSubtaskTitle(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              addSubtask();
-            }
-          }}
-          onBlur={addSubtask}
-          placeholder="Add a subtask..."
-          className="border-none p-0 h-auto text-sm shadow-none focus-visible:ring-0"
-        />
-      </div>
+      <SubtaskAddRow ref={addInputRef} onAdd={addSubtasks} />
     </div>
   );
 }
@@ -92,41 +76,45 @@ interface SubtaskItemProps {
   onDelete: () => void;
 }
 
-/**
- * Individual subtask item with checkbox and delete button.
- */
 function SubtaskItem({ subtask, onToggle, onDelete }: SubtaskItemProps) {
   return (
-    <div className="group flex items-center gap-2 py-1.5 px-2 -mx-2 rounded-md hover:bg-muted/50">
+    <div className="group -mx-2 flex min-h-8 items-start gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-muted/40">
       <button
         type="button"
+        role="checkbox"
+        aria-checked={subtask.completed}
+        aria-label={subtask.completed ? "Mark incomplete" : "Mark complete"}
         onClick={onToggle}
         className={cn(
-          "flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors",
+          "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-all duration-150 active:scale-90",
           subtask.completed
             ? "border-primary bg-primary text-primary-foreground"
-            : "border-muted-foreground/40 hover:border-primary"
+            : "border-muted-foreground/35 hover:border-primary hover:bg-primary/10"
         )}
       >
         {subtask.completed && <Check className="h-2.5 w-2.5" strokeWidth={3} />}
       </button>
       <span
         className={cn(
-          "flex-1 text-sm",
-          subtask.completed && "line-through text-muted-foreground"
+          "min-w-0 flex-1 break-words text-sm leading-5",
+          subtask.completed &&
+            "text-muted-foreground line-through decoration-muted-foreground/50"
         )}
       >
         {subtask.title}
       </span>
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="icon"
-        className="h-6 w-6 opacity-0 group-hover:opacity-100"
+        aria-label="Delete subtask"
         onClick={onDelete}
+        className={cn(
+          "-my-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded text-muted-foreground/60",
+          "opacity-0 transition-opacity hover:bg-muted hover:text-foreground",
+          "group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
+        )}
       >
-        <X className="h-3 w-3" />
-      </Button>
+        <X className="h-3.5 w-3.5" />
+      </button>
     </div>
   );
 }

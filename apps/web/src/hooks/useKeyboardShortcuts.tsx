@@ -9,9 +9,10 @@ export interface ShortcutDefinition {
     shift?: boolean;
     cmd?: boolean; // Meta key (Cmd on Mac, Ctrl on Windows)
     alt?: boolean;
+    super?: boolean; // Cmd on Mac, Win/Super elsewhere (desktop global shortcuts)
   };
   description: string;
-  category: "navigation" | "task" | "general" | "focus" | "calendar";
+  category: "navigation" | "task" | "general" | "focus" | "calendar" | "desktop";
 }
 
 // Define all shortcuts
@@ -186,20 +187,64 @@ export const SHORTCUTS: Record<string, ShortcutDefinition> = {
     description: "Next range",
     category: "calendar",
   },
+  // Desktop app shortcuts. Global ones (super) are registered system-wide in
+  // apps/desktop/src-tauri/src/lib.rs; the cmd ones are app-menu accelerators
+  // in menu.rs. Both reach the web app via DesktopShortcutsHandler, and the
+  // `?` modal only lists them when running in the desktop app.
+  desktopQuickAdd: {
+    key: "t",
+    modifiers: { super: true, shift: true },
+    description: "Add task for today, from any app",
+    category: "desktop",
+  },
+  desktopStartFocus: {
+    key: "f",
+    modifiers: { super: true, shift: true },
+    description: "Focus on current task, from any app",
+    category: "desktop",
+  },
+  desktopToggleWindow: {
+    key: "o",
+    modifiers: { super: true, shift: true },
+    description: "Show or hide Open Sunsama",
+    category: "desktop",
+  },
+  desktopNewTask: {
+    key: "n",
+    modifiers: { cmd: true },
+    description: "New task",
+    category: "desktop",
+  },
+  desktopToday: {
+    key: "1",
+    modifiers: { cmd: true },
+    description: "Go to Today",
+    category: "desktop",
+  },
+  desktopCalendar: {
+    key: "2",
+    modifiers: { cmd: true },
+    description: "Go to Calendar",
+    category: "desktop",
+  },
 };
 
 // Format shortcut for display (e.g., "Shift + Space", "Cmd + Delete")
 export function formatShortcut(shortcut: ShortcutDefinition): string {
   const parts: string[] = [];
+  const isMac = navigator.platform.includes("Mac");
 
+  if (shortcut.modifiers?.super) {
+    parts.push(isMac ? "⌘" : navigator.platform.includes("Win") ? "Win" : "Super");
+  }
   if (shortcut.modifiers?.cmd) {
-    parts.push(navigator.platform.includes("Mac") ? "⌘" : "Ctrl");
+    parts.push(isMac ? "⌘" : "Ctrl");
   }
   if (shortcut.modifiers?.shift) {
     parts.push("⇧");
   }
   if (shortcut.modifiers?.alt) {
-    parts.push(navigator.platform.includes("Mac") ? "⌥" : "Alt");
+    parts.push(isMac ? "⌥" : "Alt");
   }
 
   // Format the key nicely

@@ -1,6 +1,6 @@
 import { useParams, Navigate } from "@tanstack/react-router";
 import { BlogLayout } from "@/components/blog/blog-layout";
-import { blogMdxComponents } from "@/components/blog/media";
+import { blogMdxComponents, OssListProvider } from "@/components/blog/media";
 import { getBlogPost, getRelatedPosts } from "@/lib/blog";
 
 /**
@@ -21,7 +21,9 @@ export default function BlogPostPage() {
 
   return (
     <BlogLayout post={post} relatedPosts={relatedPosts}>
-      <Component components={blogMdxComponents} />
+      <OssListProvider name={post.title} slug={slug}>
+        <Component components={blogMdxComponents} />
+      </OssListProvider>
     </BlogLayout>
   );
 }

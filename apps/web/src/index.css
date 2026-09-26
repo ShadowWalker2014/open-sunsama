@@ -836,6 +836,188 @@ html.font-jetbrains body {
   @apply m-0 max-w-none rounded-none border-0;
 }
 
+/* <OssApp> (components/blog/media/oss-app.tsx): one ranked open source app */
+.blog-prose .oss-card {
+  @apply relative my-10 overflow-hidden rounded-2xl border bg-card;
+  border-color: var(--prose-hairline);
+  box-shadow:
+    0 1px 0 0 hsl(var(--foreground) / 0.03),
+    0 18px 44px -28px hsl(var(--shadow-color) / 0.35);
+  scroll-margin-top: 6rem;
+}
+
+/* :where() keeps these resets weaker than the .oss-* classes below */
+.blog-prose .oss-card :where(p, dl, dd) {
+  margin: 0;
+}
+
+.blog-prose .oss-card :where(a) {
+  color: inherit;
+  font-weight: inherit;
+  text-decoration: none;
+}
+
+.blog-prose .oss-card :where(img) {
+  @apply m-0 max-w-none rounded-none border-0;
+}
+
+.blog-prose .oss-card-inactive {
+  border-color: hsl(38 92% 50% / 0.35);
+}
+
+.blog-prose .oss-rank {
+  @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[15px] font-semibold tabular-nums;
+  color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.1);
+  box-shadow: inset 0 0 0 1px hsl(var(--primary) / 0.22);
+}
+
+.blog-prose .oss-name {
+  @apply text-[18px] font-semibold leading-tight tracking-[-0.02em] text-foreground md:text-[20px];
+}
+
+.blog-prose .oss-tagline {
+  @apply mt-1 text-[14.5px] leading-snug text-muted-foreground md:text-[15px];
+  text-wrap: pretty;
+}
+
+.blog-prose .oss-pill {
+  @apply inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase leading-none tracking-[0.05em] text-muted-foreground;
+  border-color: var(--prose-hairline);
+}
+
+.blog-prose .oss-pill-warn {
+  color: hsl(32 90% 36%);
+  border-color: hsl(38 92% 50% / 0.4);
+  background: hsl(38 92% 50% / 0.1);
+}
+
+.dark .blog-prose .oss-pill-warn {
+  color: hsl(38 92% 62%);
+}
+
+.blog-prose .oss-bestfor {
+  @apply mt-4 rounded-xl px-3.5 py-2.5 text-[14px] leading-snug md:text-[14.5px];
+  background: hsl(var(--primary) / 0.05);
+  box-shadow: inset 0 0 0 1px hsl(var(--primary) / 0.14);
+}
+
+.blog-prose .oss-bestfor > span {
+  @apply font-semibold text-foreground;
+}
+
+.blog-prose .oss-caveat {
+  @apply mt-3 flex gap-2 text-[13.5px] leading-snug;
+  color: hsl(32 90% 34%);
+}
+
+.dark .blog-prose .oss-caveat {
+  color: hsl(38 92% 64%);
+}
+
+.blog-prose .oss-credit {
+  @apply mt-2.5 text-center text-[12px] leading-snug text-muted-foreground;
+}
+
+.blog-prose .oss-credit a:hover {
+  @apply text-foreground underline underline-offset-2;
+}
+
+/* Facts: a hairline grid, 2 columns on phones and 4 from tablet up */
+.blog-prose .oss-facts {
+  @apply mt-5 grid grid-cols-2 gap-px border-y sm:grid-cols-4;
+  border-color: var(--prose-hairline);
+  background: var(--prose-hairline);
+}
+
+.blog-prose .oss-fact {
+  @apply min-w-0 bg-card px-4 py-3 md:px-5;
+}
+
+.blog-prose .oss-fact dt {
+  @apply m-0 text-[10.5px] font-semibold uppercase tracking-[0.07em] text-muted-foreground;
+}
+
+.blog-prose .oss-fact dd {
+  @apply mt-1 text-[13.5px] font-medium leading-snug text-foreground;
+  overflow-wrap: anywhere;
+}
+
+.blog-prose .oss-fact dd a:hover {
+  @apply underline underline-offset-2;
+}
+
+.blog-prose .oss-sub {
+  @apply block text-[12px] font-normal text-muted-foreground;
+}
+
+.blog-prose .oss-license {
+  @apply inline-flex max-w-full rounded-md px-1.5 py-0.5 text-[12.5px] font-semibold leading-tight;
+  background: hsl(var(--muted));
+  box-shadow: inset 0 0 0 1px var(--prose-hairline);
+}
+
+/* Custom (non-SPDX) licenses, e.g. non-commercial or source-available */
+.blog-prose .oss-license-custom {
+  color: hsl(32 90% 34%);
+  background: hsl(38 92% 50% / 0.1);
+  box-shadow: inset 0 0 0 1px hsl(38 92% 50% / 0.35);
+}
+
+.dark .blog-prose .oss-license-custom {
+  color: hsl(38 92% 64%);
+}
+
+.blog-prose .oss-links {
+  @apply flex flex-wrap items-center gap-2 px-5 py-4 md:px-6;
+}
+
+.blog-prose .oss-card .oss-btn {
+  @apply inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-[13.5px] font-medium text-foreground transition-colors;
+  border-color: var(--prose-hairline);
+  background: hsl(var(--background));
+}
+
+.blog-prose .oss-card .oss-btn:hover {
+  background: hsl(var(--muted));
+}
+
+.blog-prose .oss-card .oss-btn-primary {
+  @apply border-transparent;
+  color: hsl(var(--primary-foreground));
+  background: hsl(var(--primary));
+}
+
+.blog-prose .oss-card .oss-btn-primary:hover {
+  background: hsl(var(--primary) / 0.9);
+}
+
+.blog-prose .oss-card .oss-btn:focus-visible {
+  @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+}
+
+.blog-prose .oss-checked {
+  @apply ml-auto text-[12px] text-muted-foreground;
+}
+
+/* <OssTable> */
+.blog-prose .oss-table .table-wrapper {
+  @apply my-0;
+}
+
+.blog-prose .oss-table td {
+  @apply text-[13.5px];
+}
+
+.blog-prose .oss-table-status {
+  @apply mt-1 block text-[11px] font-semibold uppercase tracking-[0.05em];
+  color: hsl(32 90% 38%);
+}
+
+.dark .blog-prose .oss-table-status {
+  color: hsl(38 92% 62%);
+}
+
 /* Definition lists */
 .blog-prose dl {
   @apply my-5;
@@ -1134,4 +1316,94 @@ html.font-jetbrains body {
 }
 @media (prefers-reduced-motion: reduce) {
   .landing-settle { animation: none; }
+}
+
+/* Mobile bottom sheet (components/ui/bottom-sheet.tsx) */
+@keyframes sheet-in {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes sheet-out {
+  from { transform: translateY(var(--sheet-drag, 0px)); }
+  to { transform: translateY(100%); }
+}
+@keyframes sheet-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes sheet-overlay-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+.sheet-content[data-state="open"] {
+  animation: sheet-in 380ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.sheet-content[data-state="closed"] {
+  animation: sheet-out 240ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+.sheet-overlay[data-state="open"] {
+  animation: sheet-overlay-in 300ms ease-out;
+}
+.sheet-overlay[data-state="closed"] {
+  animation: sheet-overlay-out 240ms ease-in forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sheet-content[data-state],
+  .sheet-overlay[data-state] {
+    animation-duration: 1ms;
+  }
+}
+
+/* Phone list view: the new day slides in from the side it came from */
+@keyframes day-in-right {
+  from { opacity: 0; transform: translateX(28px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes day-in-left {
+  from { opacity: 0; transform: translateX(-28px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes today-pill-in {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Install guide phone demo (components/pwa/phone-demo.tsx). Each phase is
+   2.4s: the finger glides in (0–30%), presses (~40%), then rests. */
+@keyframes demo-tap {
+  0%, 34% { transform: translate(-50%, -50%) scale(1); }
+  42% { transform: translate(-50%, -50%) scale(0.72); }
+  52%, 100% { transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes demo-tap-ring {
+  0%, 38% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  44% { opacity: 1; transform: translate(-50%, -50%) scale(0.7); }
+  75%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); }
+}
+@keyframes demo-row-press {
+  0%, 38% { background-color: transparent; }
+  44%, 70% { background-color: rgba(249, 115, 22, 0.14); }
+  100% { background-color: rgba(249, 115, 22, 0.08); }
+}
+@keyframes demo-button-press {
+  0%, 38% { background-color: transparent; }
+  44%, 60% { background-color: rgba(0, 0, 0, 0.12); }
+  100% { background-color: transparent; }
+}
+@keyframes demo-icon-pop {
+  from { opacity: 0; transform: scale(0.2); }
+  to { opacity: 1; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-[demo-"] { animation: none !important; }
+}
+
+/* Floating add buttons on phones: clear the bottom tab bar (72px tall plus
+   the home-indicator safe area) with a 16px gap. */
+.fab-above-nav {
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px) + 16px);
+}
+/* Scroll areas under a floating add button: room to scroll the last row clear. */
+.pb-under-fab {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px) + 88px);
 }

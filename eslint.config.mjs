@@ -30,6 +30,13 @@ export default tseslint.config(
     },
   },
   {
+    // Plain-JS Node scripts; the browser globals cover code they run inside Playwright pages.
+    files: ["**/scripts/**/*.{js,mjs,cjs}"],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.browser },
+    },
+  },
+  {
     files: ["apps/web/public/sw.js"],
     languageOptions: {
       globals: {
