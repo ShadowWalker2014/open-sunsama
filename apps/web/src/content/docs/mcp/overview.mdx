@@ -6,7 +6,7 @@ export const frontmatter = {
   section: "mcp",
 };
 
-Open Sunsama runs a hosted [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server. Add one URL to your AI assistant, sign in, and it can read and plan your day: tasks, subtasks, calendar time blocks, and the meetings on your connected Google, Outlook, and iCloud calendars.
+Open Sunsama runs a hosted [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server. Add one URL to your AI assistant, sign in, and it can manage tasks, time blocks, and Ideas boards, and read meetings on your connected Google, Outlook, and iCloud calendars.
 
 ## Connect in one step
 
@@ -45,6 +45,8 @@ Once connected, ask in plain language:
 "Move everything I didn't finish today to tomorrow."
 
 "Add subtasks to 'Launch feature': write tests, update docs, deploy to staging."
+
+"Create an Ideas board for books, with columns for To read and Finished."
 ```
 
 ## How sign-in works
@@ -57,6 +59,8 @@ The connector uses OAuth 2.1, the same standard as "Sign in with Google". Here's
 
 The assistant never sees your password. Access tokens expire after an hour and refresh automatically. You can disconnect any app at any time in **Settings → MCP → Connected apps**, which revokes its access immediately.
 
+If you connected before Ideas tools were added, reconnect the app to grant `ideas:read` and `ideas:write`. API keys created earlier also need those scopes to use Ideas tools.
+
 Technical details for client developers:
 
 - Streamable HTTP transport at `https://api.opensunsama.com/mcp` (stateless, JSON responses).
@@ -66,7 +70,7 @@ Technical details for client developers:
 
 ## Available tools
 
-The server provides 24 tools. Each is annotated as read-only or destructive, so your assistant can ask before it deletes anything.
+The server provides 45 tools. Each is annotated as read-only or destructive, so your assistant can ask before it deletes anything.
 
 ### Tasks
 
@@ -100,6 +104,18 @@ Events synced from the calendars you connected in **Settings → Calendars** (Go
 | Tool | Description |
 | --- | --- |
 | `list_calendar_events` | List meetings and other events for a day or a range of days, optionally for chosen calendars |
+
+### Ideas
+
+The Ideas section has boards, columns, cards, and card checklists. The assistant can manage them with these tools:
+
+| Tools | Description |
+| --- | --- |
+| `list_idea_boards`, `create_idea_board`, `update_idea_board`, `delete_idea_board`, `reorder_idea_boards` | Manage boards and their display order |
+| `list_idea_columns`, `create_idea_column`, `update_idea_column`, `delete_idea_column`, `reorder_idea_columns` | Manage columns within a board |
+| `list_ideas`, `create_idea`, `update_idea`, `delete_idea`, `reorder_ideas` | Manage cards, completion, and movement between columns |
+| `promote_idea` | Create a planner task from an idea |
+| `list_idea_subtasks`, `create_idea_subtask`, `update_idea_subtask`, `delete_idea_subtask`, `reorder_idea_subtasks` | Manage a card's checklist |
 
 ### Subtasks
 
