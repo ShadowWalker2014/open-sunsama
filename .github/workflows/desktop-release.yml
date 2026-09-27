@@ -41,11 +41,12 @@ jobs:
             updater_bundle_path: apps/desktop/src-tauri/target/x86_64-apple-darwin/release/bundle/macos
             updater_file_pattern: '*.app.tar.gz'
           - platform: ubuntu-22.04
-            args: --bundles appimage
+            args: --bundles appimage,deb
             name: Linux
             artifact_name: linux
             file_pattern: '*.AppImage'
             bundle_path: apps/desktop/src-tauri/target/release/bundle/appimage
+            deb_bundle_path: apps/desktop/src-tauri/target/release/bundle/deb
             updater_bundle_path: apps/desktop/src-tauri/target/release/bundle/appimage
             updater_file_pattern: '*.AppImage'
           - platform: windows-latest
@@ -262,6 +263,11 @@ jobs:
 
           aws s3 cp "${{ steps.find_file.outputs.path }}" "$S3_DEST/${{ steps.find_file.outputs.file }}" $S3_OPTS
 
+          # The AppImage remains the updater artifact; distribute the Debian installer beside it.
+          if [ -n "${{ matrix.deb_bundle_path }}" ]; then
+            aws s3 cp "${{ matrix.deb_bundle_path }}"/*.deb "$S3_DEST/" $S3_OPTS
+          fi
+
           UPDATER_FILE="${{ steps.find_updater.outputs.updater_file }}"
           UPDATER_KEY="${{ steps.find_updater.outputs.updater_key }}"
           if [ -n "$UPDATER_FILE" ]; then
@@ -304,6 +310,14 @@ jobs:
         with:
           name: desktop-${{ matrix.name }}
           path: ${{ steps.find_file.outputs.path }}
+          retention-days: 30
+
+      - name: Upload Debian installer (backup)
+        if: matrix.platform == 'ubuntu-22.04'
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.name }}-deb
+          path: ${{ matrix.deb_bundle_path }}/*.deb
           retention-days: 30
 
   verify:
