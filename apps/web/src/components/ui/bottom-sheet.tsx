@@ -15,14 +15,17 @@ const DISMISS_VELOCITY = 0.6; // px per ms
 
 /**
  * Phone-native bottom sheet for a Radix `Dialog` root: slides up from the
- * bottom edge, rides above the on-screen keyboard, respects the safe areas
- * and closes when its grabber is dragged down.
+ * bottom edge, respects the safe areas and closes when its grabber is dragged
+ * down. With the keyboard open, the sheet stays anchored to the screen's
+ * bottom edge and pads its content up by the keyboard's height, so its
+ * background runs behind the (translucent, floating on iOS 26) keyboard and
+ * no gap can show between them.
  */
 export const BottomSheetContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   BottomSheetContentProps
 >(({ className, children, onDismiss, style, ...props }, ref) => {
-  const keyboardInset = useKeyboardInset();
+  const { keyboard, visibleHeight } = useKeyboardInset();
   const [dragY, setDragY] = React.useState(0);
   const drag = React.useRef<{ startY: number; lastY: number; lastT: number; v: number } | null>(
     null
@@ -69,11 +72,17 @@ export const BottomSheetContent = React.forwardRef<
           className
         )}
         style={{
-          bottom: keyboardInset,
-          maxHeight: `calc(100dvh - ${keyboardInset}px - env(safe-area-inset-top, 0px) - 16px)`,
-          paddingBottom: keyboardInset ? 0 : "env(safe-area-inset-bottom, 0px)",
+          bottom: 0,
+          // Keyboard open: everything above the keys is ours, minus a peek of
+          // the page so it still reads as a sheet.
+          maxHeight: keyboard
+            ? `${keyboard + visibleHeight - 12}px`
+            : "calc(100dvh - env(safe-area-inset-top, 0px) - 16px)",
+          paddingBottom: keyboard ? `${keyboard}px` : "env(safe-area-inset-bottom, 0px)",
           transform: dragY ? `translateY(${dragY}px)` : undefined,
-          transition: dragging ? "none" : "transform 280ms cubic-bezier(0.32, 0.72, 0, 1), bottom 180ms ease-out",
+          transition: dragging
+            ? "none"
+            : "transform 280ms cubic-bezier(0.32, 0.72, 0, 1), padding-bottom 200ms ease-out",
           ["--sheet-drag" as string]: `${Math.max(0, dragY)}px`,
           ...style,
         }}

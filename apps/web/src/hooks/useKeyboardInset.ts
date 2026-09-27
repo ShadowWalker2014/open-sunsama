@@ -1,23 +1,30 @@
 import * as React from "react";
 
+export interface KeyboardInset {
+  /** Height of the on-screen keyboard in CSS px (0 when closed). */
+  keyboard: number;
+  /** Height of the visible area above the keyboard. */
+  visibleHeight: number;
+}
+
 /**
- * Height of the on-screen keyboard in CSS pixels, from `visualViewport`.
- * Fixed elements pinned to the bottom (sheets, composers) add it to their
- * bottom offset so the keyboard never covers them. 0 when inactive.
+ * The on-screen keyboard's height and the space left above it, from
+ * `visualViewport`. Bottom sheets pad their content by `keyboard` so it sits
+ * above the keys while their background runs down behind them.
  */
-export function useKeyboardInset(active = true): number {
-  const [inset, setInset] = React.useState(0);
+export function useKeyboardInset(active = true): KeyboardInset {
+  const [state, setState] = React.useState<KeyboardInset>({ keyboard: 0, visibleHeight: 0 });
 
   React.useEffect(() => {
     const vv = typeof window !== "undefined" ? window.visualViewport : null;
     if (!active || !vv) {
-      setInset(0);
+      setState({ keyboard: 0, visibleHeight: 0 });
       return;
     }
     const update = () => {
-      const next = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      const covered = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
       // Browser chrome jitters by a pixel or two; only a real keyboard counts.
-      setInset(next > 60 ? Math.round(next) : 0);
+      setState({ keyboard: covered > 60 ? Math.round(covered) : 0, visibleHeight: Math.round(vv.height) });
     };
     update();
     vv.addEventListener("resize", update);
@@ -28,5 +35,5 @@ export function useKeyboardInset(active = true): number {
     };
   }, [active]);
 
-  return inset;
+  return state;
 }

@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowLeftRight, BadgeCheck, CalendarClock, CalendarDays, CheckSquare, Loader2, ShieldAlert, UserRound } from "lucide-react";
+import { ArrowLeftRight, BadgeCheck, CalendarClock, CalendarDays, CheckSquare, Lightbulb, Loader2, ShieldAlert, UserRound } from "lucide-react";
 import { AuthLayout } from "@/components/layout/auth-layout";
 import { AppLogo } from "@/components/settings/app-logo";
 import { Button } from "@/components/ui";
@@ -42,6 +42,12 @@ const PERMISSION_GROUPS = [
     label: "Calendar time blocks",
     read: "time-blocks:read",
     write: "time-blocks:write",
+  },
+  {
+    icon: Lightbulb,
+    label: "Ideas boards, columns, cards, and checklists",
+    read: "ideas:read",
+    write: "ideas:write",
   },
   {
     icon: CalendarDays,

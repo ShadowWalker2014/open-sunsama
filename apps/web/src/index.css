@@ -1397,3 +1397,13 @@ html.font-jetbrains body {
 @media (prefers-reduced-motion: reduce) {
   [class*="animate-[demo-"] { animation: none !important; }
 }
+
+/* Floating add buttons on phones: clear the bottom tab bar (72px tall plus
+   the home-indicator safe area) with a 16px gap. */
+.fab-above-nav {
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px) + 16px);
+}
+/* Scroll areas under a floating add button: room to scroll the last row clear. */
+.pb-under-fab {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px) + 88px);
+}
