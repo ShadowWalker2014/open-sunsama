@@ -52,6 +52,7 @@ export function NotesField({
           placeholder={placeholder}
           minHeight={minHeight}
           autoFocus
+          variant="plain"
         />
       </div>
     );
@@ -61,16 +62,15 @@ export function NotesField({
     <div
       onClick={() => setIsEditing(true)}
       className={cn(
-        "rounded-md px-2 py-1.5 cursor-text transition-colors border border-transparent",
-        "hover:border-input hover:bg-muted/30",
+        "cursor-text px-2 py-1.5",
         !notes && "text-muted-foreground"
       )}
       style={{ minHeight }}
     >
       {notes ? (
-        <HtmlContent html={notes} />
+        <HtmlContent html={notes} className="text-[15px]" />
       ) : (
-        <span className="text-[13px] text-muted-foreground">{placeholder}</span>
+        <span className="text-[15px] text-muted-foreground">{placeholder}</span>
       )}
     </div>
   );

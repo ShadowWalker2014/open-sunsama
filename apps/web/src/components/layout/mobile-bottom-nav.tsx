@@ -13,23 +13,23 @@ interface NavItem {
 const navItems: NavItem[] = [
   {
     href: "/app",
-    icon: <ListTodo className="h-6 w-6" />,
+    icon: <ListTodo className="h-[21px] w-[21px]" strokeWidth={1.65} />,
     label: "Tasks",
     matchExact: true,
   },
   {
     href: "/app/calendar",
-    icon: <Calendar className="h-6 w-6" />,
+    icon: <Calendar className="h-[21px] w-[21px]" strokeWidth={1.65} />,
     label: "Calendar",
   },
   {
     href: "/app/ideas",
-    icon: <Lightbulb className="h-6 w-6" />,
+    icon: <Lightbulb className="h-[21px] w-[21px]" strokeWidth={1.65} />,
     label: "Ideas",
   },
   {
     href: "/app/more",
-    icon: <MoreHorizontal className="h-6 w-6" />,
+    icon: <MoreHorizontal className="h-[21px] w-[21px]" strokeWidth={1.65} />,
     label: "More",
   },
 ];
@@ -37,7 +37,7 @@ const navItems: NavItem[] = [
 /**
  * Mobile-only bottom navigation bar
  * Shows on screens < lg breakpoint (1024px)
- * Touch-friendly with 64px minimum touch targets
+ * Keeps 56px touch targets with compact, light-stroke icons
  */
 export function MobileBottomNav() {
   const routerState = useRouterState();
@@ -47,7 +47,7 @@ export function MobileBottomNav() {
     <nav
       className={cn(
         "fixed bottom-0 left-0 right-0 z-50",
-        "border-t bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/80",
+        "bg-canvas/95 backdrop-blur-xl",
         "lg:hidden" // Hide on desktop
       )}
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
@@ -55,7 +55,7 @@ export function MobileBottomNav() {
       <div className="flex items-center justify-around px-2">
         {navItems.map((item) => {
           const isActive = item.matchExact
-            ? currentPath === item.href
+            ? ["/app", "/app/tasks", "/app/board"].includes(currentPath)
             : currentPath.startsWith(item.href);
 
           return (
@@ -63,25 +63,18 @@ export function MobileBottomNav() {
               key={item.href}
               to={item.href}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 py-2 px-3",
-                "min-h-[56px] min-w-[64px]", // Touch-friendly size (> 44px)
+                "flex flex-col items-center justify-center gap-1 py-1.5 px-3",
+                "h-14 min-w-[64px]", // Touch-friendly size (> 44px)
                 "transition-colors",
                 "active:opacity-70", // Touch feedback
                 isActive
-                  ? "text-foreground"
+                  ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
               )}
               aria-current={isActive ? "page" : undefined}
             >
-              <div
-                className={cn(
-                  "flex items-center justify-center rounded-full px-4 py-1.5 transition-colors",
-                  isActive && "bg-muted"
-                )}
-              >
-                {item.icon}
-              </div>
-              <span className="text-xs font-medium">{item.label}</span>
+              {item.icon}
+              <span className="text-[10px] font-medium">{item.label}</span>
             </Link>
           );
         })}

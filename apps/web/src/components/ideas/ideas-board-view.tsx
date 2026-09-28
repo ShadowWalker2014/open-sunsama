@@ -60,6 +60,7 @@ export function IdeasBoardView({
   );
   const [addingColumn, setAddingColumn] = React.useState(false);
   const [columnDraft, setColumnDraft] = React.useState("");
+  const columnsRef = React.useRef<HTMLDivElement>(null);
 
   // Mouse: instant distance-based drag; Touch: press-and-hold so swipes scroll.
   // No KeyboardSensor — Space/Enter on a focused card would start an accidental
@@ -69,7 +70,7 @@ export function IdeasBoardView({
       activationConstraint: { distance: 4 },
     }),
     useSensor(TouchSensor, {
-      activationConstraint: { delay: 200, tolerance: 8 },
+      activationConstraint: { delay: 350, tolerance: 8 },
     })
   );
 
@@ -110,6 +111,10 @@ export function IdeasBoardView({
     () => sortedColumns.map((c) => c.id),
     [sortedColumns]
   );
+
+  React.useEffect(() => {
+    columnsRef.current?.scrollTo({ left: 0, behavior: "instant" });
+  }, [boardId, columnsLoading]);
 
   // Deep link from the command palette: open the card's editor once the
   // board's ideas have loaded, then drop the param so closing the dialog
@@ -247,7 +252,7 @@ export function IdeasBoardView({
 
       {/* On mobile, snap each column into view while scrolling (Trello/Notion
           style); free horizontal scroll from sm up. Matches the kanban board. */}
-      <div className="flex min-h-0 flex-1 items-start gap-3.5 overflow-x-auto overflow-y-hidden p-4 snap-x snap-mandatory scroll-pl-4 sm:snap-none">
+      <div ref={columnsRef} className="flex min-h-0 flex-1 items-start gap-3.5 overflow-x-auto overflow-y-hidden p-3 sm:p-4 snap-x snap-mandatory scroll-pl-3 sm:scroll-pl-4 sm:snap-none">
         <SortableContext
           items={columnIds}
           strategy={horizontalListSortingStrategy}
@@ -268,7 +273,7 @@ export function IdeasBoardView({
 
         {/* Add column */}
         {addingColumn ? (
-          <div className="w-[272px] shrink-0 snap-start rounded-xl border border-border/60 bg-muted/40 p-2.5">
+          <div className="w-[272px] shrink-0 snap-start rounded-xl border border-border bg-muted/40 p-2.5">
             <Input
               autoFocus
               value={columnDraft}
@@ -290,7 +295,7 @@ export function IdeasBoardView({
           <button
             onClick={() => setAddingColumn(true)}
             className={cn(
-              "flex w-[272px] shrink-0 snap-start items-center gap-2 rounded-xl border border-dashed border-border/60 bg-transparent p-3 text-[13px] text-muted-foreground transition-colors",
+              "flex w-[272px] shrink-0 snap-start items-center gap-2 rounded-xl border border-dashed border-border bg-muted/20 p-3 text-[13px] text-muted-foreground transition-colors",
               "hover:border-muted-foreground/50 hover:bg-muted/50 hover:text-foreground"
             )}
           >

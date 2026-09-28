@@ -155,6 +155,8 @@ export type {
   CalendarAccount,
   Calendar,
   CalendarEvent,
+  CalendarEventAttendee,
+  CalendarRsvpResponse,
   ConnectCalDavRequest,
   CalendarEventQuery,
   UpdateCalendarRequest,

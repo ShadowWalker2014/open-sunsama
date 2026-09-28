@@ -141,10 +141,10 @@ function TasksListPageDesktop() {
     return null;
   }, []);
 
-  const { data, isLoading, isError, error, refetch } = useInfiniteSearchTasks({
+  const { data, isLoading, isError, error, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteSearchTasks({
     query: deferredQuery,
     status: statusFilter,
-    limit: 200, // Fetch more since we're not virtualizing
+    limit: 100,
   });
 
   // Flatten all pages into a single array of tasks
@@ -342,9 +342,9 @@ function TasksListPageDesktop() {
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="flex h-[calc(100vh-3.5rem)] flex-col">
+      <div className="flex h-full min-h-0 flex-col bg-canvas">
         {/* Compact toolbar */}
-        <div className="flex items-center gap-3 border-b px-4 py-2">
+        <div className="flex items-center gap-3 px-6 py-3">
           {/* Search */}
           <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -352,8 +352,10 @@ function TasksListPageDesktop() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search tasks..."
-              className="w-full h-7 pl-8 pr-3 rounded-md border bg-background text-xs outline-hidden focus:ring-1 focus:ring-primary"
+              placeholder="Search all tasks…"
+              aria-label="Search all tasks"
+              maxLength={200}
+              className="w-full h-7 pl-8 pr-3 rounded-md bg-surface text-xs outline-hidden focus:ring-1 focus:ring-primary"
             />
           </div>
 
@@ -362,11 +364,12 @@ function TasksListPageDesktop() {
             {(["active", "all", "completed"] as const).map((status) => (
               <button
                 key={status}
+                aria-pressed={statusFilter === status}
                 onClick={() => setStatusFilter(status)}
                 className={cn(
                   "px-2.5 py-1 text-xs font-medium rounded transition-colors capitalize cursor-pointer",
                   statusFilter === status
-                    ? "bg-background text-foreground shadow-xs"
+                    ? "bg-surface text-foreground shadow-card"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -378,17 +381,17 @@ function TasksListPageDesktop() {
           <div className="flex-1" />
 
           {/* Task count */}
-          <span className="text-xs text-muted-foreground">{totalTasks} tasks</span>
+          <span className="text-xs text-muted-foreground">{data?.pages[0]?.meta?.total ?? totalTasks} tasks</span>
 
           {/* New Task */}
-          <Button onClick={() => setIsAddModalOpen(true)} size="sm" variant="default" className="h-7 gap-1 text-xs px-2.5">
+          <Button onClick={() => setIsAddModalOpen(true)} size="sm" variant="ghost" className="h-7 gap-1 text-xs px-2.5">
             <Plus className="h-3.5 w-3.5" />
             New
           </Button>
         </div>
 
         {/* Task List */}
-        <div className="flex-1 overflow-y-auto px-3 py-3">
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4 scrollbar-thin">
           {isError ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <AlertCircle className="h-8 w-8 text-destructive/70 mb-3" />
@@ -408,7 +411,7 @@ function TasksListPageDesktop() {
               {Array.from({ length: 4 }).map((_, index) => (
                 <div
                   key={index}
-                  className="rounded-lg border border-border/60 bg-background/60 p-3"
+                  className="rounded-lg bg-surface p-3"
                 >
                   <div className="mb-2 h-4 w-28 animate-pulse rounded bg-muted" />
                   <div className="space-y-1">
@@ -424,18 +427,13 @@ function TasksListPageDesktop() {
               <p className="text-sm text-muted-foreground">No tasks found</p>
             </div>
           ) : (
-            <div className="max-w-3xl mx-auto space-y-1">
-              {/* Overdue - group by date, but for reordering we'll use the first task's date */}
-              {groupedTasks.overdue.length > 0 && (
-                <TaskGroup
-                  label="Overdue"
-                  tasks={groupedTasks.overdue}
-                  isOverdue
-                  dateKey={groupedTasks.overdue[0]?.scheduledDate || "backlog"}
-                  onSelectTask={setSelectedTask}
-                  onCompleteTask={handleComplete}
-                />
-              )}
+            <div className="max-w-4xl mx-auto">
+              {[...new Set(groupedTasks.overdue.map((t) => t.scheduledDate!))].sort().map((date) => (
+                <TaskGroup key={date} label={`${formatFutureDate(date)}${statusFilter === "active" ? " · Overdue" : ""}`}
+                  tasks={groupedTasks.overdue.filter((t) => t.scheduledDate === date)}
+                  isOverdue={statusFilter === "active"} dateKey={date}
+                  onSelectTask={setSelectedTask} onCompleteTask={handleComplete} />
+              ))}
 
               {/* Today */}
               {groupedTasks.today.length > 0 && (
@@ -474,7 +472,7 @@ function TasksListPageDesktop() {
               {/* No Date (Backlog) */}
               {groupedTasks.noDate.length > 0 && (
                 <TaskGroup
-                  label="No Date"
+                  label="Backlog"
                   tasks={groupedTasks.noDate}
                   dateKey="backlog"
                   defaultExpanded={groupedTasks.noDate.length <= 10}
@@ -482,6 +480,13 @@ function TasksListPageDesktop() {
                   onCompleteTask={handleComplete}
                 />
               )}
+            </div>
+          )}
+          {hasNextPage && (
+            <div className="flex justify-center py-5">
+              <Button variant="ghost" disabled={isFetchingNextPage} onClick={() => void fetchNextPage()}>
+                {isFetchingNextPage ? "Loading…" : "Load more tasks"}
+              </Button>
             </div>
           )}
         </div>

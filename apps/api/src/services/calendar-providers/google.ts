@@ -7,12 +7,14 @@ import type {
   ExternalCalendar,
   ExternalEvent,
   EventPatch,
+  RsvpResponse,
   SyncOptions,
   SyncResult,
 } from './index';
 import {
   ProviderAuthError,
   ProviderEventNotFoundError,
+  ProviderReadOnlyError,
 } from './index';
 import {
   getClientId,
@@ -377,6 +379,60 @@ export class GoogleCalendarProvider implements CalendarProvider {
 
     const data = (await response.json()) as GoogleEvent;
     const parsed = parseGoogleEvent(data);
+    if (!parsed) {
+      throw new Error('Google returned an event that could not be parsed');
+    }
+    return parsed;
+  }
+
+  async respondToEvent(
+    accessToken: string,
+    calendarId: string,
+    eventId: string,
+    response: RsvpResponse
+  ): Promise<ExternalEvent> {
+    const eventUrl = `${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`;
+    const current = await fetch(eventUrl, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!current.ok) {
+      if (current.status === 404 || current.status === 410) {
+        throw new ProviderEventNotFoundError('google');
+      }
+      if (current.status === 401 || current.status === 403) {
+        throw new ProviderAuthError('google');
+      }
+      throw new Error(`Google getEvent failed (${current.status})`);
+    }
+    const event = (await current.json()) as GoogleEvent;
+    const attendees = event.attendees ?? [];
+    if (!attendees.some((a) => a.self)) {
+      // Only invitees can answer; the organizer's own event has no RSVP.
+      throw new ProviderReadOnlyError('google');
+    }
+
+    // Google replaces the whole attendee list on PATCH, so send it back
+    // with only our own answer changed.
+    const updated = await fetch(`${eventUrl}?sendUpdates=all`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        attendees: attendees.map((a) =>
+          a.self ? { ...a, responseStatus: response } : a
+        ),
+      }),
+    });
+    if (!updated.ok) {
+      if (updated.status === 401 || updated.status === 403) {
+        throw new ProviderAuthError('google');
+      }
+      const error = await updated.text();
+      throw new Error(`Google RSVP failed (${updated.status}): ${error}`);
+    }
+    const parsed = parseGoogleEvent((await updated.json()) as GoogleEvent);
     if (!parsed) {
       throw new Error('Google returned an event that could not be parsed');
     }

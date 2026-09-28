@@ -26,6 +26,11 @@ interface RichTextEditorProps {
   placeholder?: string;
   className?: string;
   minHeight?: string;
+  /**
+   * "plain" edits in place with no box or focus ring: the text stays where
+   * it was when read, and the upload buttons appear only while editing.
+   */
+  variant?: "boxed" | "plain";
   enableFileUpload?: boolean;
   autoFocus?: boolean;
 }
@@ -332,6 +337,7 @@ export function RichTextEditor({
   minHeight = "80px",
   enableFileUpload = true,
   autoFocus = false,
+  variant = "boxed",
 }: RichTextEditorProps) {
   const uploadAttachment = useUploadAttachment();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -396,7 +402,7 @@ export function RichTextEditor({
         class: cn(
           // Compact text like Linear - smaller font, tighter spacing
           "prose dark:prose-invert max-w-none focus:outline-hidden px-2 py-1.5",
-          "text-[13px] leading-relaxed",
+          variant === "plain" ? "text-[15px] leading-relaxed" : "text-[13px] leading-relaxed",
           "prose-p:my-0.5 prose-ul:my-0.5 prose-ol:my-0.5 prose-li:my-0",
           "[&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5",
           // Compact, distinct headings (the base font is 13px)
@@ -522,26 +528,32 @@ export function RichTextEditor({
   if (!editor) {
     return (
       <div
-        className={cn("rounded-md border border-input bg-background", className)}
+        className={cn(
+          variant === "boxed" && "rounded-md border border-input bg-background",
+          className
+        )}
         style={{ minHeight }}
       />
     );
   }
 
   return (
-    <DragDropZone className={cn("relative", className)}>
+    <DragDropZone className={cn("group/editor relative", className)}>
       <div
         className={cn(
-          "rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-primary/50",
-          "transition-all"
+          "transition-all",
+          variant === "boxed" &&
+            "rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-primary/50"
         )}
       >
         {/* Editor Content */}
         <EditorContent editor={editor} />
 
         {/* Upload Toolbar */}
-        {enableFileUpload && (
-          <div className="flex items-center gap-1 px-2 py-1.5 border-t border-input/50">
+        {/* Plain editors still take pasted and dropped files; the
+            attachments row below them has the upload button. */}
+        {enableFileUpload && variant === "boxed" && (
+          <div className="flex items-center gap-1 border-t border-input/50 px-2 py-1.5">
             <input
               ref={fileInputRef}
               type="file"

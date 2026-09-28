@@ -1,17 +1,17 @@
 import * as React from "react";
 import { Check, Clock, ChevronDown, ChevronRight } from "lucide-react";
-import type { Task, TaskPriority } from "@open-sunsama/types";
+import type { Task } from "@open-sunsama/types";
 import { cn, formatDuration } from "@/lib/utils";
 import { useSubtasks, useUpdateSubtask } from "@/hooks/useSubtasks";
-import { useHoveredTask } from "@/hooks/useKeyboardShortcuts";
+import { useHoveredTask, TIME_EDIT_KEYS } from "@/hooks/useKeyboardShortcuts";
 import { TaskContextMenu } from "@/components/kanban/task-context-menu";
 
-const PRIORITY_DOT_COLORS: Record<TaskPriority, string> = {
-  P0: "bg-red-500",
-  P1: "bg-orange-500",
-  P2: "bg-blue-400",
-  P3: "bg-slate-300 dark:bg-slate-600",
-};
+import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
+import { DurationPicker } from "@/components/ui/duration-picker";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useUpdateTask } from "@/hooks/useTasks";
+import { EDIT_ESTIMATE_EVENT } from "@/components/task-shortcuts-handler";
+import { WithShortcut } from "@/components/ui/with-shortcut";
 
 export interface TaskRowProps {
   task: Task;
@@ -25,9 +25,18 @@ export function TaskRow({
   onComplete,
 }: TaskRowProps) {
   const { setHoveredTask } = useHoveredTask();
+  const updateTask = useUpdateTask();
+  const [durationOpen, setDurationOpen] = React.useState(false);
+  React.useEffect(() => {
+    const open = (e: Event) => {
+      if ((e as CustomEvent<string>).detail === task.id) setDurationOpen(true);
+    };
+    window.addEventListener(EDIT_ESTIMATE_EVENT, open);
+    return () => window.removeEventListener(EDIT_ESTIMATE_EVENT, open);
+  }, [task.id]);
   const isCompleted = !!task.completedAt;
   const [showSubtasks, setShowSubtasks] = React.useState(false);
-  const { data: subtasks = [] } = useSubtasks(task.id, { enabled: showSubtasks });
+  const { data: subtasks = [] } = useSubtasks(task.id);
   const updateSubtask = useUpdateSubtask();
 
   // Sort subtasks by position
@@ -58,13 +67,20 @@ export function TaskRow({
     <TaskContextMenu task={task} onEdit={onSelect}>
       <div
         data-task-id={task.id}
+        onKeyDown={(event) => {
+          if ((event.key === "Enter" || event.key === " ") &&
+              event.target instanceof HTMLElement &&
+              event.target.closest("button, input, textarea, [contenteditable=true]")) {
+            event.stopPropagation();
+          }
+        }}
         onMouseEnter={() => setHoveredTask(task)}
         onMouseLeave={() => setHoveredTask(null)}
       >
         <div
           className={cn(
-            "group flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer transition-colors",
-            "hover:bg-accent/50",
+            "group flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-colors",
+            "hover:bg-surface focus-within:bg-surface",
             isCompleted && "opacity-50"
           )}
           onClick={onSelect}
@@ -72,6 +88,8 @@ export function TaskRow({
         {/* Subtasks Toggle */}
         {hasSubtasks ? (
           <button
+            aria-label={showSubtasks ? "Collapse subtasks" : "Expand subtasks"}
+            aria-expanded={showSubtasks}
             onClick={handleToggleSubtasks}
             className="shrink-0 p-0.5 -ml-0.5 rounded hover:bg-accent transition-colors"
           >
@@ -85,8 +103,11 @@ export function TaskRow({
           <div className="w-4 shrink-0" />
         )}
 
-        {/* Checkbox */}
+        <WithShortcut label={isCompleted ? "Reopen task" : "Complete task"} shortcut="completeTask">
         <button
+          role="checkbox"
+          aria-checked={isCompleted}
+          aria-label={isCompleted ? "Reopen task" : "Complete task"}
           onClick={(e) => {
             e.stopPropagation();
             onComplete();
@@ -101,24 +122,21 @@ export function TaskRow({
           {isCompleted && <Check className="h-2.5 w-2.5" strokeWidth={3} />}
         </button>
 
-        {/* Priority Dot */}
-        <span
-          className={cn(
-            "h-2 w-2 shrink-0 rounded-full",
-            PRIORITY_DOT_COLORS[task.priority]
-          )}
-          title={task.priority}
-        />
+        </WithShortcut>
+        {/* Priority */}
+        {task.priority !== "P2" && <span title={PRIORITY_LABELS[task.priority]}><PriorityIcon priority={task.priority} className="h-3.5 w-3.5" /></span>}
 
         {/* Title */}
-        <span
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onSelect(); }}
           className={cn(
-            "flex-1 text-sm truncate",
+            "min-w-0 flex-1 text-left text-sm truncate focus-visible:outline-hidden focus-visible:underline",
             isCompleted && "line-through text-muted-foreground"
           )}
         >
           {task.title}
-        </span>
+        </button>
 
         {/* Subtask Progress Indicator */}
         {hasSubtasks && !showSubtasks && (
@@ -127,13 +145,20 @@ export function TaskRow({
           </span>
         )}
 
-        {/* Duration badge (optional) */}
-        {task.estimatedMins && (
-          <span className="flex items-center gap-1 text-xs text-muted-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Clock className="h-3 w-3" />
-            {formatDuration(task.estimatedMins)}
-          </span>
-        )}
+        <Popover open={durationOpen} onOpenChange={setDurationOpen}>
+          <PopoverTrigger asChild>
+            <button type="button" aria-label="Edit planned time" onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-1 rounded px-1 py-1 text-xs text-muted-foreground tabular-nums hover:bg-accent">
+              <Clock className="h-3 w-3" />
+              {task.estimatedMins ? formatDuration(task.estimatedMins) : "—"}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="end" onClick={(e) => e.stopPropagation()}>
+            <DurationPicker value={task.estimatedMins} label="Planned" shortcut={TIME_EDIT_KEYS.planned.toUpperCase()}
+              onChange={(estimatedMins) => { updateTask.mutate({ id: task.id, data: { estimatedMins } }); setDurationOpen(false); }}
+              onClose={() => setDurationOpen(false)} />
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Compact Subtasks List (Linear-style) */}
@@ -146,6 +171,7 @@ export function TaskRow({
               onClick={(e) => e.stopPropagation()}
             >
               <button
+                aria-label={`${subtask.completed ? "Reopen" : "Complete"} ${subtask.title}`}
                 onClick={(e) => handleSubtaskToggle(e, subtask.id, subtask.completed)}
                 className={cn(
                   "flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border transition-colors cursor-pointer",

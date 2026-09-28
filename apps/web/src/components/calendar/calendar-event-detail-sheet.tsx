@@ -10,8 +10,15 @@ import {
   Trash2,
   Loader2,
   Repeat,
+  Video,
+  Users,
 } from "lucide-react";
-import type { CalendarEvent } from "@open-sunsama/types";
+import type {
+  CalendarEvent,
+  CalendarEventAttendee,
+  CalendarRsvpResponse,
+} from "@open-sunsama/types";
+import { cn } from "@/lib/utils";
 import {
   Button,
   Sheet,
@@ -32,6 +39,7 @@ import {
 import {
   useUpdateCalendarEvent,
   useDeleteCalendarEvent,
+  useRespondToCalendarEvent,
 } from "@/hooks/useCalendars";
 import { toast } from "@/hooks/use-toast";
 import { HtmlContent } from "@/components/ui/html-content";
@@ -292,6 +300,23 @@ export function CalendarEventDetailSheet({
 
   const updateMutation = useUpdateCalendarEvent();
   const deleteMutation = useDeleteCalendarEvent();
+  const rsvpMutation = useRespondToCalendarEvent();
+  // The sheet holds the event as it was when opened, so track the answer
+  // here to show it at once and put it back if the provider refuses.
+  const [rsvpStatus, setRsvpStatus] = React.useState(event?.responseStatus);
+  React.useEffect(() => {
+    setRsvpStatus(event?.responseStatus);
+  }, [event?.id, event?.responseStatus]);
+  const handleRsvp = (response: CalendarRsvpResponse) => {
+    const previous = rsvpStatus;
+    setRsvpStatus(response);
+    if (event && !rsvpMutation.isPending) {
+      rsvpMutation.mutate(
+        { id: event.id, response },
+        { onError: () => setRsvpStatus(previous) }
+      );
+    }
+  };
 
   // When the sheet opens for a new event, reset edit state to view mode
   // and seed the editable values from the event.
@@ -469,12 +494,12 @@ export function CalendarEventDetailSheet({
                 aria-hidden
               />
               <span style={{ color: hexToRgba(color, 1) }}>{calendarName}</span>
-              {event?.responseStatus && (
+              {rsvpStatus && (
                 <span className="ml-auto text-muted-foreground">
-                  {event.responseStatus === "accepted" && "Going"}
-                  {event.responseStatus === "declined" && "Declined"}
-                  {event.responseStatus === "tentative" && "Maybe"}
-                  {event.responseStatus === "needsAction" && "Awaiting reply"}
+                  {rsvpStatus === "accepted" && "Going"}
+                  {rsvpStatus === "declined" && "Declined"}
+                  {rsvpStatus === "tentative" && "Maybe"}
+                  {rsvpStatus === "needsAction" && "Awaiting reply"}
                 </span>
               )}
             </div>
@@ -533,7 +558,17 @@ export function CalendarEventDetailSheet({
                   disabled={isMutating}
                 />
               ) : (
-                <ViewBody event={event} />
+                <ViewBody
+                  event={event}
+                  rsvpStatus={rsvpStatus ?? null}
+                  canRsvp={
+                    !calendarReadOnly &&
+                    calendarProvider !== "icloud" &&
+                    canAnswerInvitation(event)
+                  }
+                  onRsvp={handleRsvp}
+                  rsvpPending={rsvpMutation.isPending}
+                />
               )}
 
               <div className="border-t pt-5 space-y-2">
@@ -565,7 +600,7 @@ export function CalendarEventDetailSheet({
                       <Button
                         onClick={handleStartEdit}
                         className="w-full justify-start"
-                        variant="default"
+                        variant={meetingUrlFor(event) ? "outline" : "default"}
                       >
                         <Pencil className="mr-2 h-4 w-4" />
                         Edit event
@@ -643,9 +678,93 @@ export function CalendarEventDetailSheet({
   );
 }
 
-function ViewBody({ event }: { event: CalendarEvent }) {
+/** Meeting links people paste into the location or description. */
+const MEETING_URL =
+  /https:\/\/(?:meet\.google\.com|[\w.-]*zoom\.us|teams\.microsoft\.com|teams\.live\.com)\/[^\s"'<>]+/i;
+
+function meetingUrlFor(event: CalendarEvent): string | null {
+  if (event.conferenceUrl && /^https?:\/\//i.test(event.conferenceUrl)) return event.conferenceUrl;
+  const text = `${event.location ?? ""} ${event.description ?? ""}`;
+  return text.match(MEETING_URL)?.[0] ?? null;
+}
+
+/** Invitees can answer; organizers of their own event can't. */
+function canAnswerInvitation(event: CalendarEvent): boolean {
+  if (!event.responseStatus) return false;
+  const self = event.attendees?.find((a) => a.self);
+  return !self?.organizer;
+}
+
+const RSVP_OPTIONS: Array<{ value: CalendarRsvpResponse; label: string }> = [
+  { value: "accepted", label: "Yes" },
+  { value: "tentative", label: "Maybe" },
+  { value: "declined", label: "No" },
+];
+
+const ATTENDEE_STATUS_DOT: Record<string, string> = {
+  accepted: "bg-emerald-500",
+  declined: "bg-red-500",
+  tentative: "bg-amber-500",
+};
+
+const ATTENDEES_SHOWN = 6;
+
+function ViewBody({
+  event,
+  rsvpStatus,
+  canRsvp,
+  onRsvp,
+  rsvpPending,
+}: {
+  event: CalendarEvent;
+  rsvpStatus: CalendarEvent["responseStatus"];
+  canRsvp: boolean;
+  onRsvp: (response: CalendarRsvpResponse) => void;
+  rsvpPending: boolean;
+}) {
+  const meetingUrl = meetingUrlFor(event);
   return (
     <>
+      {meetingUrl && (
+        <Button asChild className="w-full justify-center">
+          <a href={meetingUrl} target="_blank" rel="noopener noreferrer">
+            <Video className="mr-2 h-4 w-4" />
+            Join meeting
+          </a>
+        </Button>
+      )}
+      {canRsvp && (
+        <div className="flex items-center gap-3 text-sm">
+          <span className="text-muted-foreground">Going?</span>
+          <div
+            role="radiogroup"
+            aria-label="Your answer"
+            className="flex flex-1 gap-1 rounded-md bg-muted/60 p-0.5"
+          >
+            {RSVP_OPTIONS.map((option) => {
+              const selected = rsvpStatus === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  disabled={rsvpPending}
+                  onClick={() => !selected && onRsvp(option.value)}
+                  className={cn(
+                    "flex-1 rounded px-2 py-1 text-xs font-medium transition-colors",
+                    selected
+                      ? "bg-surface text-foreground shadow-card"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
       <div className="flex items-start gap-3 text-sm">
         <Clock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
         <div className="text-foreground/90">{formatEventTime(event)}</div>
@@ -671,7 +790,66 @@ function ViewBody({ event }: { event: CalendarEvent }) {
           />
         </div>
       )}
+      {event.attendees && event.attendees.length > 0 && (
+        <AttendeeList attendees={event.attendees} />
+      )}
     </>
+  );
+}
+
+function AttendeeList({ attendees }: { attendees: CalendarEventAttendee[] }) {
+  const [expanded, setExpanded] = React.useState(false);
+  const going = attendees.filter((a) => a.responseStatus === "accepted").length;
+  const shown = expanded ? attendees : attendees.slice(0, ATTENDEES_SHOWN);
+  return (
+    <div className="flex items-start gap-3 text-sm">
+      <Users className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground" />
+      <div className="min-w-0 flex-1 space-y-2">
+        <p className="text-foreground/90">
+          {attendees.length} guests
+          <span className="text-muted-foreground"> · {going} going</span>
+        </p>
+        <ul className="space-y-1.5">
+          {shown.map((a) => (
+            <li key={a.email} className="flex items-center gap-2">
+              <span className="relative flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-medium uppercase text-muted-foreground">
+                {(a.name || a.email).slice(0, 2)}
+                <span
+                  className={cn(
+                    "absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full ring-2 ring-background",
+                    ATTENDEE_STATUS_DOT[a.responseStatus ?? ""] ??
+                      "bg-muted-foreground/40"
+                  )}
+                  aria-hidden
+                />
+              </span>
+              <span className="min-w-0 truncate text-foreground/90">
+                {a.name || a.email}
+                {a.self && (
+                  <span className="text-muted-foreground"> (you)</span>
+                )}
+              </span>
+              {a.organizer && (
+                <span className="flex-shrink-0 text-[11px] text-muted-foreground">
+                  Organizer
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+        {attendees.length > ATTENDEES_SHOWN && (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            {expanded
+              ? "Show fewer"
+              : `Show all ${attendees.length} guests`}
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 

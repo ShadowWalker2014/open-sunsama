@@ -2,6 +2,7 @@ import * as React from "react";
 import { X, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SubtaskAddRow } from "./subtask-add-row";
+import { useSubtaskStyles, subtaskCheckState } from "./subtask-size";
 
 export interface Subtask {
   id: string;
@@ -77,8 +78,14 @@ interface SubtaskItemProps {
 }
 
 function SubtaskItem({ subtask, onToggle, onDelete }: SubtaskItemProps) {
+  const size = useSubtaskStyles();
   return (
-    <div className="group -mx-2 flex min-h-8 items-start gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-muted/40">
+    <div
+      className={cn(
+        "group -mx-2 flex items-start rounded-md px-2 transition-colors hover:bg-muted/40",
+        size.row
+      )}
+    >
       <button
         type="button"
         role="checkbox"
@@ -86,17 +93,17 @@ function SubtaskItem({ subtask, onToggle, onDelete }: SubtaskItemProps) {
         aria-label={subtask.completed ? "Mark incomplete" : "Mark complete"}
         onClick={onToggle}
         className={cn(
-          "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-all duration-150 active:scale-90",
-          subtask.completed
-            ? "border-primary bg-primary text-primary-foreground"
-            : "border-muted-foreground/35 hover:border-primary hover:bg-primary/10"
+          "flex shrink-0 cursor-pointer items-center justify-center rounded-full border-[1.5px] transition-all duration-150 active:scale-90",
+          size.check,
+          subtaskCheckState(subtask.completed)
         )}
       >
-        {subtask.completed && <Check className="h-2.5 w-2.5" strokeWidth={3} />}
+        <Check className={size.checkIcon} strokeWidth={3} />
       </button>
       <span
         className={cn(
-          "min-w-0 flex-1 wrap-break-word text-sm leading-5",
+          "min-w-0 flex-1 break-words",
+          size.text,
           subtask.completed &&
             "text-muted-foreground line-through decoration-muted-foreground/50"
         )}

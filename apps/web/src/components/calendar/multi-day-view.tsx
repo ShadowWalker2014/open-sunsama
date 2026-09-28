@@ -1,3 +1,4 @@
+import type { CalendarCreateAnchor } from "@/hooks/useDragToCreate";
 import * as React from "react";
 import {
   format,
@@ -7,6 +8,7 @@ import {
   isToday,
   isWeekend,
   differenceInMinutes,
+  addMinutes,
 } from "date-fns";
 import type { CalendarEvent, TimeBlock } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
@@ -16,8 +18,11 @@ import {
   TIMELINE_START_HOUR,
   TIMELINE_END_HOUR,
   calculateYFromTime,
+  calculateTimeFromY,
+  snapToInterval,
 } from "@/hooks/useCalendarDnd";
 import { layoutOverlappingItems, type LayoutResult } from "./event-layout";
+import { useDragToCreate } from "@/hooks/useDragToCreate";
 import type {
   EventDragMode,
   useMultiDayEventDrag,
@@ -64,6 +69,8 @@ interface MultiDayViewProps {
   drag: MultiDayDrag;
   /** Whether time blocks can be moved and resized on the grid. */
   blocksEditable?: boolean;
+  /** Clicking an empty slot starts a one-hour block there. */
+  onTimeSlotClick?: (day: Date, startTime: Date, endTime: Date, anchor?: CalendarCreateAnchor) => void;
   className?: string;
 }
 
@@ -395,9 +402,16 @@ export function MultiDayView({
   externalEventCanEdit,
   drag,
   blocksEditable = false,
+  onTimeSlotClick,
   className,
 }: MultiDayViewProps) {
   const hours = React.useMemo(() => generateHours(), []);
+  // Press and drag on empty space to sweep out a new block.
+  const createDrag = useDragToCreate(
+    onTimeSlotClick
+      ? ({ day, start, end, anchor }) => onTimeSlotClick(day, start, end, anchor)
+      : undefined
+  );
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
   // Tick the now-indicator once per minute so it advances. Without
   // this, `new Date()` was captured at render time and the red line
@@ -694,6 +708,33 @@ export function MultiDayView({
                   // out of the column where the event was grabbed.
                   data-day-column
                   data-day={day.toISOString()}
+                  onClick={(e) => {
+                    if (
+                      !onTimeSlotClick ||
+                      drag.justEndedDrag ||
+                      createDrag.shouldIgnoreClick()
+                    ) {
+                      return;
+                    }
+                    // Clicks on blocks and events, and clicks bubbling up
+                    // from portals such as a block's menu, aren't slot
+                    // clicks.
+                    const target = e.target as HTMLElement;
+                    if (
+                      !e.currentTarget.contains(target) ||
+                      target.closest("[data-time-block]") ||
+                      target.closest("[data-external-event]")
+                    ) {
+                      return;
+                    }
+                    const y =
+                      e.clientY - e.currentTarget.getBoundingClientRect().top;
+                    const start = snapToInterval(
+                      calculateTimeFromY(Math.max(0, y), day)
+                    );
+                    onTimeSlotClick(day, start, addMinutes(start, 60), { x: e.clientX, y: e.clientY });
+                  }}
+                  onMouseDown={(e) => createDrag.startCreate(e, day)}
                   className={cn(
                     "flex-1 relative border-r last:border-r-0 min-w-0",
                     today && "bg-primary/2",
@@ -839,6 +880,29 @@ export function MultiDayView({
                       />
                     );
                   })}
+
+                  {/* Block being swept out by a drag on empty space */}
+                  {createDrag.range &&
+                    isSameDay(createDrag.range.day, day) && (
+                      <div
+                        className="absolute inset-x-1 z-30 rounded border-2 border-dashed border-primary bg-primary/10 pointer-events-none px-1.5 py-0.5"
+                        style={{
+                          top: `${calculateYFromTime(createDrag.range.start)}px`,
+                          height: `${Math.max(
+                            ((createDrag.range.end.getTime() -
+                              createDrag.range.start.getTime()) /
+                              3_600_000) *
+                              HOUR_HEIGHT,
+                            16
+                          )}px`,
+                        }}
+                      >
+                        <span className="text-[10px] font-semibold text-primary">
+                          {format(createDrag.range.start, "h:mm")} –{" "}
+                          {format(createDrag.range.end, "h:mm a")}
+                        </span>
+                      </div>
+                    )}
 
                   {/* Live drop preview while this column owns the
                       active drag — a dashed outline at the new

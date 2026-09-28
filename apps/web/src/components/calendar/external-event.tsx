@@ -238,16 +238,18 @@ export function ExternalEvent({
             {onResizeStart && !continuesFromPriorDay && (
               <div
                 data-resize="top"
+                title="Drag to change start time"
                 onMouseDown={handleTopResize}
-                className="absolute top-0 left-0 right-0 h-1.5 cursor-ns-resize hover:bg-foreground/10 rounded-t-md"
+                className="absolute top-0 left-0 right-0 z-20 h-2 cursor-ns-resize hover:bg-foreground/10 rounded-t-md"
               />
             )}
             {/* Bottom resize handle */}
             {onResizeStart && !continuesToNextDay && (
               <div
                 data-resize="bottom"
+                title="Drag to change end time"
                 onMouseDown={handleBottomResize}
-                className="absolute bottom-0 left-0 right-0 h-1.5 cursor-ns-resize hover:bg-foreground/10 rounded-b-md"
+                className="absolute bottom-0 left-0 right-0 z-20 h-2 cursor-ns-resize hover:bg-foreground/10 rounded-b-md"
               />
             )}
             {/* Content */}

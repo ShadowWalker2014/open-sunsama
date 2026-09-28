@@ -356,7 +356,7 @@ export function MobileCalendarView({
     // page-scroll, carrying the header off-screen.
     <div
       className={cn(
-        "flex h-[calc(100dvh-4rem)] flex-col overflow-hidden bg-background",
+        "flex h-full flex-col overflow-hidden bg-background",
         className
       )}
     >

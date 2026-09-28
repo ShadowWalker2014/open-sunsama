@@ -353,6 +353,8 @@ export async function upsertEvents(
             responseStatus: event.responseStatus,
             htmlLink: event.htmlLink,
             etag: event.etag,
+            attendees: event.attendees,
+            conferenceUrl: event.conferenceUrl,
             updatedAt: new Date(),
           })
           .where(eq(calendarEvents.id, existingInSlice.id));
@@ -399,6 +401,8 @@ export async function upsertEvents(
             responseStatus: event.responseStatus,
             htmlLink: event.htmlLink,
             etag: event.etag,
+            attendees: event.attendees,
+            conferenceUrl: event.conferenceUrl,
             updatedAt: new Date(),
           })
           .where(eq(calendarEvents.id, misattributed.id));
@@ -422,6 +426,8 @@ export async function upsertEvents(
         responseStatus: event.responseStatus,
         htmlLink: event.htmlLink,
         etag: event.etag,
+        attendees: event.attendees,
+        conferenceUrl: event.conferenceUrl,
       });
     }
   }

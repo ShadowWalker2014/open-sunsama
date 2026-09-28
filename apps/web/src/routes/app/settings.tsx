@@ -178,7 +178,7 @@ export default function SettingsPage() {
   // Mobile layout: List of sections that open sheets
   if (isMobile) {
     return (
-      <div className="h-[calc(100vh-2.75rem)] overflow-y-auto">
+      <div className="h-full overflow-y-auto">
         <div className="divide-y divide-border/40">
           {TABS.map((tab) => {
             const Icon = tab.icon;
@@ -218,7 +218,7 @@ export default function SettingsPage() {
 
   // Desktop layout: Sidebar + content
   return (
-    <div className="flex h-[calc(100vh-2.75rem)] overflow-hidden">
+    <div className="flex h-full overflow-hidden">
       {/* Left Navigation - Linear style */}
       <nav className="w-48 shrink-0 border-r border-border/40 bg-background/50 p-2">
         <div className="space-y-0.5">

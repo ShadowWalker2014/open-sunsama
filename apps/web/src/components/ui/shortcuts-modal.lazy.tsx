@@ -1,4 +1,5 @@
 import * as React from "react";
+import { preloadable } from "@/lib/preloadable";
 import type * as ShortcutsModalModuleNS from "./shortcuts-modal";
 
 /**
@@ -23,13 +24,11 @@ function importShortcutsModal(): Promise<ShortcutsModalModule> {
   return preload;
 }
 
-const LazyShortcutsModal = React.lazy(async () => {
-  const mod = await importShortcutsModal();
-  return { default: mod.ShortcutsModal };
-});
+const preloadableShortcutsModal = preloadable(() => importShortcutsModal().then((mod) => mod.ShortcutsModal));
+const LazyShortcutsModal = preloadableShortcutsModal.Component;
 
 export function prefetchShortcutsModal(): Promise<unknown> {
-  return importShortcutsModal();
+  return preloadableShortcutsModal.preload();
 }
 
 function ShortcutsModalLoadingShell({ open }: { open: boolean }) {

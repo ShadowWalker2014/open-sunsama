@@ -59,7 +59,7 @@
     --canvas: 220 14% 97.5%;
     --surface: 0 0% 100%;
     --surface-hover: 220 14% 99%;
-    --shadow-card: 0 1px 2px 0 rgb(16 24 40 / 0.06), 0 1px 3px 0 rgb(16 24 40 / 0.08);
+    --shadow-card: 0 0 0 1px rgb(16 24 40 / 0.05), 0 1px 3px 0 rgb(16 24 40 / 0.1);
     --shadow-card-hover: 0 2px 4px 0 rgb(16 24 40 / 0.08), 0 4px 10px -2px rgb(16 24 40 / 0.1);
 
     /* Transitions */
@@ -72,25 +72,26 @@
   }
 
   .dark {
-    /* Linear-style dark mode - deep, refined */
-    --background: 228 14% 7%;
-    --foreground: 220 13% 93%;
-    --card: 228 14% 9%;
-    --card-foreground: 220 13% 93%;
-    --popover: 228 14% 11%;
-    --popover-foreground: 220 13% 93%;
+    /* One neutral near-black scale (no blue tint), so the page reads as
+       clean black with crisp cards instead of muddy grey. */
+    --background: 240 5% 5%;
+    --foreground: 0 0% 95%;
+    --card: 240 4% 8%;
+    --card-foreground: 0 0% 95%;
+    --popover: 240 4% 10%;
+    --popover-foreground: 0 0% 95%;
     --primary: 24 95% 60%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 228 14% 13%;
-    --secondary-foreground: 220 13% 93%;
-    --muted: 228 14% 13%;
-    --muted-foreground: 220 9% 55%;
-    --accent: 228 14% 15%;
-    --accent-foreground: 220 13% 93%;
+    --secondary: 240 4% 12%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 240 4% 12%;
+    --muted-foreground: 240 5% 62%;
+    --accent: 240 4% 14.5%;
+    --accent-foreground: 0 0% 95%;
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 228 14% 15%;
-    --input: 228 14% 13%;
+    --border: 240 4% 15%;
+    --input: 240 4% 14%;
     --ring: 24 95% 60%;
 
     /* Dark mode extended tokens */
@@ -106,12 +107,14 @@
       0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
     --shadow-glow: 0 0 60px hsl(var(--primary-glow) / 0.2);
 
-    --chrome: 228 10% 4%;
-    --canvas: 228 7% 7.5%;
-    --surface: 228 6% 13%;
-    --surface-hover: 228 6% 15%;
-    --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.55), 0 2px 4px 0 rgb(0 0 0 / 0.3);
-    --shadow-card-hover: 0 2px 4px 0 rgb(0 0 0 / 0.6), 0 6px 12px -2px rgb(0 0 0 / 0.4);
+    /* Layers: black chrome, a near-black page, cards a step up with a
+       faint hairline so their edges stay crisp without a heavy shadow. */
+    --chrome: 240 6% 2.5%;
+    --canvas: 240 5% 5%;
+    --surface: 240 4% 8%;
+    --surface-hover: 240 4% 9.5%;
+    --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.06), 0 1px 2px 0 rgb(0 0 0 / 0.6);
+    --shadow-card-hover: 0 0 0 1px rgb(255 255 255 / 0.09), 0 2px 6px 0 rgb(0 0 0 / 0.6);
   }
 
   /* Font Variables */
@@ -251,6 +254,10 @@ html.font-jetbrains body {
     font-feature-settings:
       "rlig" 1,
       "calt" 1;
+    /* Grayscale antialiasing: without it macOS draws light text on dark
+       backgrounds noticeably bolder than its weight. */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   /* Subtle focus styles - prevent cut-off rings and reduce visual noise */
@@ -268,12 +275,12 @@ html.font-jetbrains body {
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
   }
 
   .scrollbar-thin::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
 
   .scrollbar-thin::-webkit-scrollbar-track {
@@ -281,7 +288,7 @@ html.font-jetbrains body {
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--muted-foreground) / 0.3);
+    background-color: hsl(var(--muted-foreground) / 0.2);
     border-radius: 4px;
   }
 
@@ -1431,9 +1438,9 @@ html.font-jetbrains body {
 /* Floating add buttons on phones: clear the bottom tab bar (72px tall plus
    the home-indicator safe area) with a 16px gap. */
 .fab-above-nav {
-  bottom: calc(72px + env(safe-area-inset-bottom, 0px) + 16px);
+  bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 16px);
 }
 /* Scroll areas under a floating add button: room to scroll the last row clear. */
 .pb-under-fab {
-  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px) + 88px);
+  padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 88px);
 }

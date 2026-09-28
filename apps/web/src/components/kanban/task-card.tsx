@@ -15,6 +15,8 @@ interface TaskCardProps {
   isDragging?: boolean;
   /** Start of the task's earliest time block that day, shown on the card. */
   scheduledTime?: Date | string | null;
+  /** The time is a projection, not a block on the calendar. */
+  timeIsProjected?: boolean;
 }
 
 /**
@@ -26,6 +28,7 @@ export function SortableTaskCard({
   onSelect,
   isDragging: externalDragging,
   scheduledTime,
+  timeIsProjected,
 }: TaskCardProps) {
   const [isHovered, setIsHovered] = React.useState(false);
   const completeTask = useCompleteTask();
@@ -159,6 +162,7 @@ export function SortableTaskCard({
           subtasksHidden={task.subtasksHidden}
           onUpdateTask={handleUpdateTask}
           scheduledTime={scheduledTime ?? null}
+          timeIsProjected={timeIsProjected ?? false}
         />
 
         {/* Drop indicator line - below */}

@@ -1,4 +1,5 @@
 import * as React from "react";
+import { preloadable } from "@/lib/preloadable";
 import { cn } from "@/lib/utils";
 import type * as RichTextEditorModuleNS from "./rich-text-editor";
 
@@ -23,6 +24,7 @@ type RichTextEditorProps = {
   minHeight?: string;
   enableFileUpload?: boolean;
   autoFocus?: boolean;
+  variant?: "boxed" | "plain";
 };
 
 type RichTextEditorModule = typeof RichTextEditorModuleNS;
@@ -36,10 +38,8 @@ function importEditorModule(): Promise<RichTextEditorModule> {
   return preloadPromise;
 }
 
-const LazyEditor = React.lazy(async () => {
-  const mod = await importEditorModule();
-  return { default: mod.RichTextEditor };
-});
+const preloadableEditor = preloadable(() => importEditorModule().then((mod) => mod.RichTextEditor));
+const LazyEditor = preloadableEditor.Component;
 
 /**
  * Hint the browser to start fetching the rich text editor chunk.
@@ -52,7 +52,7 @@ const LazyEditor = React.lazy(async () => {
  *   }, []);
  */
 export function prefetchRichTextEditor(): Promise<unknown> {
-  return importEditorModule();
+  return preloadableEditor.preload();
 }
 
 /**
@@ -65,9 +65,10 @@ function EditorFallback({
   placeholder,
   className,
   minHeight = "100px",
+  variant = "boxed",
 }: Pick<
   RichTextEditorProps,
-  "value" | "placeholder" | "className" | "minHeight"
+  "value" | "placeholder" | "className" | "minHeight" | "variant"
 >) {
   // Strip basic HTML tags so the placeholder reads as plaintext while
   // Tiptap is still loading.
@@ -78,8 +79,10 @@ function EditorFallback({
   return (
     <div
       className={cn(
-        "rounded-md border border-input bg-transparent px-3 py-2 text-sm",
-        "text-muted-foreground/80 whitespace-pre-wrap wrap-break-word",
+        variant === "boxed" &&
+          "rounded-md border border-input bg-transparent px-3 py-2 text-sm",
+        variant === "plain" && "px-2 py-1.5 text-[15px]",
+        "text-muted-foreground/80 whitespace-pre-wrap break-words",
         className
       )}
       style={{ minHeight }}
@@ -99,6 +102,7 @@ export function RichTextEditor(props: RichTextEditorProps) {
           placeholder={props.placeholder}
           className={props.className}
           minHeight={props.minHeight}
+          variant={props.variant}
         />
       }
     >

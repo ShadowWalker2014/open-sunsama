@@ -1,4 +1,5 @@
 import * as React from "react";
+import { preloadable } from "@/lib/preloadable";
 import type { Task } from "@open-sunsama/types";
 import type * as CommandPaletteModuleNS from "./command-palette";
 
@@ -30,13 +31,11 @@ function importCommandPalette(): Promise<CommandPaletteModule> {
   return preload;
 }
 
-const LazyCommandPalette = React.lazy(async () => {
-  const mod = await importCommandPalette();
-  return { default: mod.CommandPalette };
-});
+const preloadableCommandPalette = preloadable(() => importCommandPalette().then((mod) => mod.CommandPalette));
+const LazyCommandPalette = preloadableCommandPalette.Component;
 
 export function prefetchCommandPalette(): Promise<unknown> {
-  return importCommandPalette();
+  return preloadableCommandPalette.preload();
 }
 
 /**

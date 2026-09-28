@@ -1,8 +1,11 @@
+import type { CalendarCreateAnchor } from "@/hooks/useDragToCreate";
 import * as React from "react";
 import type { Task, TimeBlock } from "@open-sunsama/types";
 import { KanbanBoard, useKanbanNavigation } from "@/components/kanban";
+import { useBoardMode } from "@/components/kanban/kanban-board";
 import { KanbanCalendarPanel } from "@/components/kanban/kanban-calendar-panel";
-import { Sidebar } from "@/components/layout/sidebar";
+import { BacklogPanel } from "@/components/layout/backlog-panel";
+import { RightPanel } from "./right-panel";
 import { MobileBacklogSheet } from "@/components/layout/mobile-backlog-sheet";
 import { MobileTasksView } from "@/components/mobile";
 import { TasksDndProvider } from "@/lib/dnd/tasks-dnd-context";
@@ -19,6 +22,7 @@ import { useTask, useIsMobile } from "@/hooks";
 export function BoardPageContent() {
   const isMobile = useIsMobile();
   const [activeDate, setActiveDate] = React.useState<Date | null>(null);
+  const [mode, setMode] = useBoardMode();
 
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [selectedTaskId, setSelectedTaskId] = React.useState<string | null>(null);
@@ -29,6 +33,7 @@ export function BoardPageContent() {
   );
   const [timeBlockSheetOpen, setTimeBlockSheetOpen] = React.useState(false);
 
+  const [createAnchor, setCreateAnchor] = React.useState<CalendarCreateAnchor>();
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [createDialogDate, setCreateDialogDate] = React.useState<Date>(new Date());
   const [createDialogStartTime, setCreateDialogStartTime] = React.useState<Date>(
@@ -70,34 +75,47 @@ export function BoardPageContent() {
     setTimeBlockSheetOpen(true);
   };
 
+  const calendarPanel = activeDate && (
+    <KanbanCalendarPanel
+      date={activeDate}
+      className="w-full border-l-0"
+      onBlockClick={handleBlockClick}
+      onEditBlock={handleEditBlock}
+      onTimeSlotClick={(date, startTime, endTime, anchor) => {
+        setCreateAnchor(anchor);
+        setCreateDialogDate(date);
+        setCreateDialogStartTime(startTime);
+        setCreateDialogEndTime(endTime);
+        setCreateDialogOpen(true);
+      }}
+      onViewTask={handleViewTask}
+    />
+  );
+
   return (
     <TasksDndProvider>
-      <div className="flex h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-3.5rem)]">
-        <Sidebar className="hidden lg:flex" />
+      <div className="flex h-full min-h-0">
         <MobileBacklogSheet />
 
         <div className="flex flex-1 overflow-hidden">
           <div className="flex flex-1 flex-col overflow-hidden">
-            <KanbanBoard onFirstVisibleDateChange={setActiveDate}>
+            <KanbanBoard
+              onFirstVisibleDateChange={setActiveDate}
+              mode={mode}
+              onModeChange={setMode}
+              // Today puts the calendar beside the day, in the middle.
+              dayAside={mode === "day" ? <RightPanel calendar={calendarPanel} backlog={<BacklogPanel />} /> : undefined}
+            >
               <TasksKeyboardShortcuts />
             </KanbanBoard>
           </div>
 
-          {activeDate && (
-            <KanbanCalendarPanel
-              date={activeDate}
-              className="hidden w-[280px] shrink-0 xl:flex"
-              onBlockClick={handleBlockClick}
-              onEditBlock={handleEditBlock}
-              onTimeSlotClick={(date, startTime, endTime) => {
-                setCreateDialogDate(date);
-                setCreateDialogStartTime(startTime);
-                setCreateDialogEndTime(endTime);
-                setCreateDialogOpen(true);
-              }}
-              onViewTask={handleViewTask}
+          {mode !== "day" && <div className="hidden lg:flex">
+            <RightPanel
+              calendar={calendarPanel}
+              backlog={<BacklogPanel />}
             />
-          )}
+          </div>}
         </div>
       </div>
 
@@ -120,6 +138,7 @@ export function BoardPageContent() {
       />
 
       <CreateTimeBlockDialog
+        anchor={createAnchor}
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
         date={createDialogDate}
