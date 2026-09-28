@@ -1,0 +1,2726 @@
+{
+  "apps": [
+    {
+      "id": "open-sunsama",
+      "name": "Open Sunsama",
+      "tagline": "A daily planner with a kanban board of days, time blocking, focus mode and a hosted MCP server for AI agents.",
+      "categories": [
+        "planner",
+        "time-blocking",
+        "todo",
+        "focus"
+      ],
+      "website": "https://opensunsama.com",
+      "repo": "https://github.com/ShadowWalker2014/open-sunsama",
+      "docs": "https://opensunsama.com/docs",
+      "license": {
+        "spdx": "LicenseRef-Open-Sunsama-Non-Commercial",
+        "name": "Open Sunsama Non-Commercial License"
+      },
+      "stars": 65,
+      "latestRelease": {
+        "version": "v1.0.16",
+        "date": "2026-09-25"
+      },
+      "lastCommit": "2026-09-25",
+      "primaryLanguage": "TypeScript",
+      "platforms": [
+        "web",
+        "macos",
+        "windows",
+        "linux",
+        "server"
+      ],
+      "selfHost": "Docker",
+      "mobile": {
+        "available": false,
+        "how": "Mobile-friendly web app; no native iOS or Android app"
+      },
+      "sync": "Real-time sync, hosted or on your own server",
+      "api": [
+        "REST"
+      ],
+      "mcp": {
+        "kind": "official",
+        "url": "https://opensunsama.com/docs/mcp/overview",
+        "note": "Hosted MCP server at api.opensunsama.com/mcp with OAuth sign-in; 24 tools for tasks, subtasks, time blocks and calendar events."
+      },
+      "status": "active",
+      "caveat": "The code is public under a non-commercial license: you can read, run and self-host it for personal use. Companies need a commercial license.",
+      "screenshot": {
+        "blogShot": "board",
+        "light": "",
+        "width": 1600,
+        "height": 1000,
+        "source": "Captured from the Open Sunsama web app"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "Facts from .skills/seo-content/playbook.md section 3. No iOS/Android app; desktop app can't point at a self-hosted server."
+    },
+    {
+      "id": "vikunja",
+      "name": "Vikunja",
+      "tagline": "A self-hosted to-do app with lists, kanban, Gantt and table views.",
+      "categories": [
+        "todo",
+        "kanban",
+        "project-management"
+      ],
+      "website": "https://vikunja.io",
+      "repo": "https://github.com/go-vikunja/vikunja",
+      "docs": "https://vikunja.io/docs/",
+      "license": {
+        "spdx": "AGPL-3.0-or-later AND GPL-3.0-or-later",
+        "name": "GNU AGPL v3.0 or later (server and web app); GNU GPL v3.0 or later (desktop app)"
+      },
+      "stars": 5501,
+      "latestRelease": {
+        "version": "v2.6.0",
+        "date": "2026-08-31"
+      },
+      "lastCommit": "2026-09-24",
+      "primaryLanguage": "Go",
+      "platforms": [
+        "web",
+        "server",
+        "macos",
+        "windows",
+        "linux",
+        "android"
+      ],
+      "selfHost": "Docker, binary, packages",
+      "mobile": {
+        "available": true,
+        "how": "First-party Android app in alpha (Google Play beta); no official iOS app"
+      },
+      "sync": "Your own server",
+      "api": [
+        "REST",
+        "CalDAV",
+        "Webhooks",
+        "CLI"
+      ],
+      "mcp": {
+        "kind": "official",
+        "url": "https://github.com/go-vikunja/vikunja/tree/main/pkg/modules/mcp",
+        "note": "A built-in MCP server (streamable HTTP at /api/v2/mcp) landed on main in September 2026 and runs on try.vikunja.io, but it is not in the latest stable release (v2.6.0). Community option: https://github.com/democratize-technology/vikunja-mcp"
+      },
+      "status": "active",
+      "caveat": "The admin panel, audit logs and time tracking are in the paid Vikunja Pro add-on.",
+      "screenshot": {
+        "light": "/oss/vikunja.webp",
+        "dark": "/oss/vikunja-dark.webp",
+        "width": 1600,
+        "height": 971,
+        "source": "Official screenshot from vikunja.io, © the Vikunja project",
+        "sourceUrl": "https://vikunja.io/_image?href=%2F_astro%2F05-task-kanban.BBPpous4.png&w=2800&h=1700&q=95&f=png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE + README: AGPL-3.0-or-later for the repo, desktop/ is GPL-3.0-or-later. Vikunja Pro is also AGPLv3 per vikunja.io/pro. Releases: v2.6.0 (2026-08-31); desktop builds (dmg/exe/AppImage/deb/snap) in release assets. Android app: github.com/go-vikunja/app (alpha, Play beta, no GitHub release). MCP: pkg/modules/mcp + pkg/routes/api/v2/mcp.go, commit 2026-09-14 'feat(mcp): add the module and streamable-http transport'; try.vikunja.io (v2.6.0-519) answers /api/v2/mcp with 401. CLI = 'veans' agent CLI shipped in releases. Screenshot: I logged into try.vikunja.io with the published demo/demo login and captured it, but the shared demo is full of visitors' junk tasks ('testdasdasd', 'hmmmm', '测试'), so I used the official kanban light/dark pair from vikunja.io instead. Demo captures saved in scratchpad/oss/todo-work/vik-*.png if you prefer them."
+    },
+    {
+      "id": "super-productivity",
+      "name": "Super Productivity",
+      "tagline": "A to-do app with timeboxing, time tracking and focus mode that can pull in issues from Jira or GitHub.",
+      "categories": [
+        "todo",
+        "time-tracking",
+        "time-blocking",
+        "focus",
+        "pomodoro"
+      ],
+      "website": "https://super-productivity.com",
+      "repo": "https://github.com/super-productivity/super-productivity",
+      "docs": "https://github.com/super-productivity/super-productivity/wiki",
+      "license": {
+        "spdx": "MIT",
+        "name": "MIT License"
+      },
+      "stars": 22240,
+      "latestRelease": {
+        "version": "v19.1.0",
+        "date": "2026-09-19"
+      },
+      "lastCommit": "2026-09-24",
+      "primaryLanguage": "TypeScript",
+      "platforms": [
+        "web",
+        "macos",
+        "windows",
+        "linux",
+        "android",
+        "ios"
+      ],
+      "selfHost": "Docker (web app, sync server)",
+      "mobile": {
+        "available": true,
+        "how": "First-party Android (Google Play, F-Droid) and iOS (App Store) apps"
+      },
+      "sync": "Local by default; optional SuperSync, Dropbox or WebDAV",
+      "api": [
+        "REST",
+        "Plugins"
+      ],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/b0x42/Super-Productivity-MCP",
+        "note": "Community MCP server (MIT, 95 stars), listed in the app's own community-plugins list; another listed option is github.com/organicmoron/SP-MCP."
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/super-productivity.webp",
+        "dark": "/oss/super-productivity-dark.webp",
+        "width": 1600,
+        "height": 911,
+        "source": "Captured from the web app at app.super-productivity.com",
+        "sourceUrl": "https://app.super-productivity.com"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE: MIT. README: web app, Flathub, Snap, Google Play, F-Droid, App Store; sync via SuperSync (E2E, self-hostable server in packages/super-sync-server), Dropbox, WebDAV; APIs: sync server REST, plugin API, local REST API (wiki 3.01-API). Latest release v19.1.0 (2026-09-19). Screenshot: local-only web app; picked 'Productivity Suite' setup and added 6 sample tasks with time estimates via the real add-task bar; dark captured with prefers-color-scheme: dark."
+    },
+    {
+      "id": "tududi",
+      "name": "tududi",
+      "tagline": "A self-hosted app for tasks, projects, notes and areas, with CalDAV sync and a Telegram bot.",
+      "categories": [
+        "todo",
+        "project-management",
+        "notes"
+      ],
+      "website": "https://tududi.com",
+      "repo": "https://github.com/chrisvel/tududi",
+      "docs": "https://docs.tududi.com",
+      "license": {
+        "spdx": "MIT",
+        "name": "MIT License"
+      },
+      "stars": 3385,
+      "latestRelease": {
+        "version": "v1.5.0",
+        "date": "2026-09-16"
+      },
+      "lastCommit": "2026-09-24",
+      "primaryLanguage": "TypeScript",
+      "platforms": [
+        "web",
+        "server"
+      ],
+      "selfHost": "Docker",
+      "mobile": {
+        "available": true,
+        "how": "Installable web app (PWA) for Android and iOS; no native app"
+      },
+      "sync": "Your own server; CalDAV",
+      "api": [
+        "REST",
+        "CalDAV"
+      ],
+      "mcp": {
+        "kind": "official",
+        "url": "https://github.com/chrisvel/tududi/blob/main/docs/14-mcp-integration.md",
+        "note": "Built-in MCP server (stdio and HTTP) with tools for tasks, projects, inbox, notes, habits and more; added March 2026 (PR #953)."
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/tududi.webp",
+        "dark": "/oss/tududi-dark.webp",
+        "width": 1600,
+        "height": 847,
+        "source": "Official screenshot from the project's README, © the tududi project",
+        "sourceUrl": "https://raw.githubusercontent.com/chrisvel/tududi/main/screenshots/all-light.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE: MIT ('Tududi Developers'). README: Docker/docker-compose, SQLite or PostgreSQL, CalDAV sync (enabled by default), REST API /api/v1 with Swagger + API keys, Telegram integration, PWA. Official spelling is lowercase 'tududi'. tududi.com sells a hosted Cloud plan (EUR 5/month); the site mentions an in-page live demo that I did not find as a standalone URL, so I used the README screenshots (light + dark of the same Today screen). Latest release v1.5.0 (2026-09-16); v1.6.0-rc in progress."
+    },
+    {
+      "id": "tasks-org",
+      "name": "Tasks.org",
+      "tagline": "An Android to-do app, now also on desktop, that syncs with CalDAV, Google Tasks or EteSync.",
+      "categories": [
+        "todo"
+      ],
+      "website": "https://tasks.org",
+      "repo": "https://github.com/tasks/tasks",
+      "docs": "https://tasks.org/docs/",
+      "license": {
+        "spdx": "GPL-3.0-only",
+        "name": "GNU General Public License v3.0 only"
+      },
+      "stars": 5601,
+      "latestRelease": {
+        "version": "15.12",
+        "date": "2026-09-15"
+      },
+      "lastCommit": "2026-09-24",
+      "primaryLanguage": "Kotlin",
+      "platforms": [
+        "android",
+        "macos",
+        "windows",
+        "linux"
+      ],
+      "selfHost": null,
+      "mobile": {
+        "available": true,
+        "how": "First-party Android app (Google Play, F-Droid); no iOS app"
+      },
+      "sync": "Local only, or Google Tasks, CalDAV, EteSync or Tasks.org's own sync",
+      "api": [],
+      "mcp": {
+        "kind": "official",
+        "url": "https://github.com/tasks/tasks/tree/main/composeApp/src/desktopMain/kotlin/org/tasks/mcp",
+        "note": "The desktop app (early access) has a built-in MCP server, added September 2026. There is no MCP server for the Android app."
+      },
+      "status": "active",
+      "caveat": "Some features and the desktop app need a name-your-price subscription (from $1 a year).",
+      "screenshot": {
+        "light": "/oss/tasks-org.webp",
+        "dark": "/oss/tasks-org-dark.webp",
+        "width": 518,
+        "height": 922,
+        "source": "Official screenshot from the project's Google Play listing, © the Tasks.org project",
+        "sourceUrl": "https://raw.githubusercontent.com/tasks/tasks/main/fastlane/metadata/android/en-US/images/phoneScreenshots/4_en-US.jpg"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "Screenshot source: repo fastlane/metadata/android (the Google Play listing images). LICENSE file is GPLv3 text with no 'or later' statement; F-Droid metadata says GPL-3.0-only; some files carry GPL-3.0-or-later SPDX headers. Used GPL-3.0-only as the conservative value. Desktop early access since 2026-05 (tasks.org blog): macOS, Windows, Linux builds in release assets, unlocked by name-your-price subscription. Store text: 'some features require a subscription, from $1 per year'. MCP: composeApp/.../org/tasks/mcp/McpHttpServer.kt, commit 2026-09-10 'Add desktop MCP server'. Screenshot: cropped the phone screens out of the 'Custom themes' fastlane marketing image (light phone = light, dark phone = dark theme of the same list); no raw screenshot exists elsewhere. Small (518px wide). Latest release 15.12 (2026-09-15)."
+    },
+    {
+      "id": "planify",
+      "name": "Planify",
+      "tagline": "A to-do app for the Linux GNOME desktop that syncs with Todoist, Nextcloud or CalDAV.",
+      "categories": [
+        "todo",
+        "planner"
+      ],
+      "website": "https://useplanify.com",
+      "repo": "https://github.com/alainm23/planify",
+      "docs": null,
+      "license": {
+        "spdx": "GPL-3.0-or-later",
+        "name": "GNU General Public License v3.0 or later"
+      },
+      "stars": 5704,
+      "latestRelease": {
+        "version": "v4.20.0",
+        "date": "2026-09-10"
+      },
+      "lastCommit": "2026-09-21",
+      "primaryLanguage": "Vala",
+      "platforms": [
+        "linux"
+      ],
+      "selfHost": null,
+      "mobile": {
+        "available": false,
+        "how": "No mobile app"
+      },
+      "sync": "Local, Todoist, Nextcloud or CalDAV",
+      "api": [
+        "CLI"
+      ],
+      "mcp": {
+        "kind": "none",
+        "url": null,
+        "note": "We found no MCP server. (github.com/mrmorgan-ai/planify-mcp is for an unrelated project also called Planify.)"
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/planify.webp",
+        "width": 1122,
+        "height": 822,
+        "source": "Official screenshot from flathub.org, © the Planify project",
+        "sourceUrl": "https://raw.githubusercontent.com/alainm23/planify/main/data/resources/screenshot/screenshot-01.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE: GPLv3 text; metainfo project_license GPL-3.0+; source headers 'or (at your option) any later version'. Only official distribution is Flathub (README). cli/ folder ships a 'planify' CLI with add, list, update, list-projects, backup (talks to the app over D-Bus). Screenshot from data/resources/screenshot (the metainfo/Flathub screenshots); the official dark screenshots show a different layout, so no dark. Latest release v4.20.0 (2026-09-10). Image is the metainfo/Flathub default screenshot, downloaded from the raw GitHub URL the metainfo points to."
+    },
+    {
+      "id": "errands",
+      "name": "Errands",
+      "tagline": "A simple to-do app for the Linux GNOME desktop with sub-tasks and Nextcloud sync.",
+      "categories": [
+        "todo"
+      ],
+      "website": "https://github.com/mrvladus/Errands",
+      "repo": "https://github.com/mrvladus/Errands",
+      "docs": null,
+      "license": {
+        "spdx": "MIT",
+        "name": "MIT License"
+      },
+      "stars": 520,
+      "latestRelease": {
+        "version": "46.2.10",
+        "date": "2025-12-22"
+      },
+      "lastCommit": "2026-08-22",
+      "primaryLanguage": "Python",
+      "platforms": [
+        "linux"
+      ],
+      "selfHost": null,
+      "mobile": {
+        "available": false,
+        "how": "No mobile app"
+      },
+      "sync": "Local, or Nextcloud / CalDAV",
+      "api": [],
+      "mcp": {
+        "kind": "none",
+        "url": null,
+        "note": "We found no MCP server."
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/errands.webp",
+        "width": 1000,
+        "height": 700,
+        "source": "Official screenshot from the project's README, © the Errands project",
+        "sourceUrl": "https://raw.githubusercontent.com/mrvladus/Errands/main/screenshots/main.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE: MIT; metainfo project_license MIT. Flathub only (io.github.mrvladus.List); GNOME Circle app (apps.gnome.org/app/io.github.mrvladus.List). README: CalDAV sync, only Nextcloud known to work well. Last stable release 46.2.10 (2025-12-22); main gets small fixes, while a rewrite-in-c branch has daily commits (2026-09-24), so marked active. No homepage beyond the repo."
+    },
+    {
+      "id": "endeavour",
+      "name": "Endeavour",
+      "tagline": "The GNOME desktop's personal to-do app, formerly called GNOME To Do.",
+      "categories": [
+        "todo"
+      ],
+      "website": "https://gitlab.gnome.org/World/Endeavour",
+      "repo": "https://gitlab.gnome.org/World/Endeavour",
+      "docs": null,
+      "license": {
+        "spdx": "GPL-3.0-or-later",
+        "name": "GNU General Public License v3.0 or later"
+      },
+      "stars": 105,
+      "latestRelease": {
+        "version": "43.0",
+        "date": "2022-11-02"
+      },
+      "lastCommit": "2026-09-19",
+      "primaryLanguage": "C",
+      "platforms": [
+        "linux"
+      ],
+      "selfHost": null,
+      "mobile": {
+        "available": false,
+        "how": "No mobile app"
+      },
+      "sync": "Local, or Nextcloud / CalDAV through GNOME Online Accounts",
+      "api": [],
+      "mcp": {
+        "kind": "none",
+        "url": null,
+        "note": "We found no MCP server."
+      },
+      "status": "maintenance",
+      "caveat": "The last stable release was 43.0 in November 2022.",
+      "screenshot": {
+        "light": "/oss/endeavour.webp",
+        "width": 1600,
+        "height": 633,
+        "source": "Official screenshot from flathub.org, © the Endeavour project",
+        "sourceUrl": "https://dl.flathub.org/media/org/gnome/Todo/4c929ea0ad266aa09304f7334829646a/screenshots/image-2_orig.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "COPYING: GPLv3; src headers SPDX GPL-3.0-or-later; appdata GPL-3.0+. Tags: 43.0 (2022-11-02) latest stable; appdata lists 45~alpha (2025-06-08, development). Non-translation commits: last 2026-06-10 ('hide completed tasks' option), then 2025-10/09 small fixes; the rest are translations -> maintenance. Providers in src/engine: local, EDS, GOA. Appdata says Todoist and Todo.txt support is disabled. Flathub app id org.gnome.Todo. Screenshot cropped to remove empty space below the task list."
+    },
+    {
+      "id": "taskwarrior",
+      "name": "Taskwarrior",
+      "tagline": "A command-line to-do list with tags, projects, priorities, due dates and reports.",
+      "categories": [
+        "todo"
+      ],
+      "website": "https://taskwarrior.org",
+      "repo": "https://github.com/GothenburgBitFactory/taskwarrior",
+      "docs": "https://taskwarrior.org/docs/",
+      "license": {
+        "spdx": "MIT",
+        "name": "MIT License"
+      },
+      "stars": 6086,
+      "latestRelease": {
+        "version": "v3.5.0",
+        "date": "2026-08-16"
+      },
+      "lastCommit": "2026-09-25",
+      "primaryLanguage": "C++",
+      "platforms": [
+        "linux",
+        "macos"
+      ],
+      "selfHost": "Optional sync server",
+      "mobile": {
+        "available": false,
+        "how": "No official mobile app"
+      },
+      "sync": "Local; optional TaskChampion sync server or cloud storage (S3, GCS)",
+      "api": [
+        "CLI",
+        "Plugins"
+      ],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/omniwaifu/taskwarrior-mcp",
+        "note": "Several community MCP servers wrap the task CLI; omniwaifu/taskwarrior-mcp is the most recently maintained (MIT); acebaggins/taskwarrior-mcp has more stars but no commits since April 2025."
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/taskwarrior.webp",
+        "dark": "/oss/taskwarrior-dark.webp",
+        "width": 656,
+        "height": 445,
+        "source": "Official screenshot from taskwarrior.org, © the Taskwarrior project",
+        "sourceUrl": "https://taskwarrior.org/images/light-256.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE: MIT. taskwarrior.org/download: Linux, macOS (Homebrew), BSD; Windows only via WSL (Cygwin unsupported), so platforms exclude windows. Sync docs: TaskChampion sync server or AWS S3 / Google Cloud Storage. 'Plugins' = hooks/extensions ecosystem (taskwarrior.org/tools). Screenshots: theme samples light-256.png / dark-256.png (same commands), cropped to the 'task list' + 'task summary' part. Latest release v3.5.0 (2026-08-16)."
+    },
+    {
+      "id": "todo-txt",
+      "name": "todo.txt-cli",
+      "tagline": "A shell script that keeps your to-do list in one plain text file, todo.txt.",
+      "categories": [
+        "todo"
+      ],
+      "website": "http://todotxt.org",
+      "repo": "https://github.com/todotxt/todo.txt-cli",
+      "docs": "https://github.com/todotxt/todo.txt-cli/wiki",
+      "license": {
+        "spdx": "GPL-3.0-only",
+        "name": "GNU General Public License v3.0 only"
+      },
+      "stars": 6177,
+      "latestRelease": {
+        "version": "v2.14.0",
+        "date": "2026-09-01"
+      },
+      "lastCommit": "2026-09-06",
+      "primaryLanguage": "Shell",
+      "platforms": [
+        "linux",
+        "macos"
+      ],
+      "selfHost": null,
+      "mobile": {
+        "available": true,
+        "how": "No app from this project; many third-party apps read the same todo.txt file"
+      },
+      "sync": "Plain text file; sync it with any file sync tool",
+      "api": [
+        "CLI",
+        "Plugins"
+      ],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/danielmeint/todo-txt-mcp",
+        "note": "Community MCP server for todo.txt files (MIT, 8 stars); it works on the file format, not through todo.sh."
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/todo-txt.webp",
+        "width": 722,
+        "height": 382,
+        "source": "Official screenshot from the project's README, © the todo.txt-cli project",
+        "sourceUrl": "https://raw.githubusercontent.com/todotxt/todo.txt-cli/master/.github/example.gif"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE: GPLv3 text; todo.sh only points to LICENSE, no 'or later' statement -> GPL-3.0-only (conservative). Bash script; runs on Linux/macOS (and Windows through WSL/Cygwin, not claimed). 'Plugins' = add-ons (custom actions). Screenshot = last frame of the README demo GIF (.github/example.gif), no other official screenshot. Latest release v2.14.0 (2026-09-01). Name: repo/README title is 'todo.txt-cli' (project is 'Todo.txt')."
+    },
+    {
+      "id": "donetick",
+      "name": "Donetick",
+      "tagline": "A self-hosted app for shared tasks and chores, with flexible repeats and task rotation.",
+      "categories": [
+        "todo"
+      ],
+      "website": "https://donetick.com",
+      "repo": "https://github.com/donetick/donetick",
+      "docs": "https://docs.donetick.com",
+      "license": {
+        "spdx": "AGPL-3.0-only",
+        "name": "GNU Affero General Public License v3.0 only"
+      },
+      "stars": 2584,
+      "latestRelease": {
+        "version": "v0.1.79",
+        "date": "2026-08-18"
+      },
+      "lastCommit": "2026-08-18",
+      "primaryLanguage": "Go",
+      "platforms": [
+        "web",
+        "server"
+      ],
+      "selfHost": "Docker, binary",
+      "mobile": {
+        "available": true,
+        "how": "Early Android APK and an alpha iOS app on TestFlight"
+      },
+      "sync": "Your own server, or donetick.com",
+      "api": [
+        "REST",
+        "Webhooks"
+      ],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/jason1365/donetick-mcp-server",
+        "note": "Community MCP server (MIT, 11 stars, last commit November 2025). Donetick's main.go has only an empty '// MCP server' placeholder."
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/donetick.webp",
+        "width": 1520,
+        "height": 1030,
+        "source": "Official screenshot from the project's README, © the Donetick project",
+        "sourceUrl": "https://raw.githubusercontent.com/donetick/donetick/main/assets/screenshot.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE.md: AGPLv3 text; README says 'AGPLv3'; no 'or later' statement found -> AGPL-3.0-only (conservative). Frontend repo donetick/frontend is AGPL-3.0 too. README: Docker/compose, binaries (Linux/macOS in release assets), REST API + eAPI, webhooks, Home Assistant integration, Telegram/Discord/Pushover. Android APK in donetick/frontend releases dates from 2024-12; iOS alpha on TestFlight per README. No public demo found. Screenshot cropped to remove the gradient background and the drawn browser frame. Latest release v0.1.79 (2026-08-18)."
+    },
+    {
+      "id": "nextcloud-tasks",
+      "name": "Nextcloud Tasks",
+      "tagline": "The tasks app for Nextcloud, which stores tasks in your own server and syncs over CalDAV.",
+      "categories": [
+        "todo"
+      ],
+      "website": "https://apps.nextcloud.com/apps/tasks",
+      "repo": "https://github.com/nextcloud/tasks",
+      "docs": null,
+      "license": {
+        "spdx": "AGPL-3.0-or-later",
+        "name": "GNU Affero General Public License v3.0 or later"
+      },
+      "stars": 707,
+      "latestRelease": {
+        "version": "v0.18.1",
+        "date": "2026-06-29"
+      },
+      "lastCommit": "2026-09-24",
+      "primaryLanguage": "JavaScript",
+      "platforms": [
+        "web",
+        "server"
+      ],
+      "selfHost": "Nextcloud app",
+      "mobile": {
+        "available": true,
+        "how": "No own app; use any CalDAV app, such as Apple Reminders or Tasks.org"
+      },
+      "sync": "Your own Nextcloud server; CalDAV",
+      "api": [
+        "CalDAV"
+      ],
+      "mcp": {
+        "kind": "official",
+        "url": "https://github.com/nextcloud/context_agent",
+        "note": "Nextcloud's own Context Agent app exposes an MCP server with tools to add and list tasks (CalDAV to-dos). It is a separate app that needs AppAPI, not part of Tasks itself. Community option: https://github.com/cbcoutinho/nextcloud-mcp-server"
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/nextcloud-tasks.webp",
+        "width": 1600,
+        "height": 786,
+        "source": "Official screenshot from the project's README, © the Nextcloud Tasks project",
+        "sourceUrl": "https://raw.githubusercontent.com/nextcloud/tasks/master/screenshots/tasks-1.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE: AGPLv3 text; PHP headers 'version 3 of the License, or any later version' -> AGPL-3.0-or-later. appinfo/info.xml: licence agpl, Nextcloud 31-35, screenshot tasks-1.png. Releases v0.18.0 (2026-06-22), v0.18.1 (2026-06-29); recent commits mostly dependency bumps by the maintainer. MCP 'official' is a judgment call: Context Agent is maintained by Nextcloud (same org) and documented in the Nextcloud admin manual (admin_manual/ai/app_context_agent.rst), with add_task/list_tasks tools in ex_app/lib/all_tools/calendar.py."
+    },
+    {
+      "id": "calcurse",
+      "name": "calcurse",
+      "tagline": "A calendar and to-do list that runs in the terminal.",
+      "categories": [
+        "calendar",
+        "todo"
+      ],
+      "website": "https://calcurse.org",
+      "repo": "https://github.com/lfos/calcurse",
+      "docs": "https://calcurse.org/files/manual.html",
+      "license": {
+        "spdx": "BSD-2-Clause",
+        "name": "BSD 2-Clause \"Simplified\" License"
+      },
+      "stars": 1303,
+      "latestRelease": {
+        "version": "v4.8.2",
+        "date": "2025-08-07"
+      },
+      "lastCommit": "2026-08-05",
+      "primaryLanguage": "C",
+      "platforms": [
+        "linux",
+        "macos"
+      ],
+      "selfHost": null,
+      "mobile": {
+        "available": false,
+        "how": "No mobile app"
+      },
+      "sync": "Local files; optional CalDAV sync script",
+      "api": [
+        "CLI"
+      ],
+      "mcp": {
+        "kind": "none",
+        "url": null,
+        "note": "We found no MCP server."
+      },
+      "status": "maintenance",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/calcurse.webp",
+        "width": 804,
+        "height": 479,
+        "source": "Official screenshot from calcurse.org, © the calcurse project",
+        "sourceUrl": "https://calcurse.org/images/demo.gif"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "COPYING: BSD 2-clause text. Canonical repo per calcurse.org/devel is git.calcurse.org/calcurse.git (returned HTTP 502 when checked); github.com/lfos/calcurse is run by the maintainer Lukas Fleischer (lfos) and calcurse.org/support points bug reports to its GitHub issues, so it is the official mirror. No GitHub releases; latest tarball calcurse-4.8.2 (commit 'Release 4.8.2', 2025-08-07). Commits since: 2025-09 and 2026-08 (UTF-8 fixes) -> maintenance (small fixes only). calcurse-caldav script in contrib/. Screenshot = first frame of the demo GIF on calcurse.org (also in README)."
+    },
+    {
+      "id": "dayglance",
+      "name": "dayGLANCE",
+      "tagline": "A local-first day planner where you drag tasks onto a timeline to block out your day.",
+      "categories": [
+        "planner",
+        "time-blocking",
+        "focus"
+      ],
+      "website": "https://dayglance.app",
+      "repo": "https://github.com/krelltunez/dayGLANCE",
+      "docs": "https://docs.dayglance.app",
+      "license": {
+        "spdx": "MIT",
+        "name": "MIT License"
+      },
+      "stars": 158,
+      "latestRelease": {
+        "version": "v5.3.0",
+        "date": "2026-09-22"
+      },
+      "lastCommit": "2026-09-25",
+      "primaryLanguage": "JavaScript",
+      "platforms": [
+        "web",
+        "server",
+        "macos",
+        "windows",
+        "linux",
+        "android",
+        "ios"
+      ],
+      "selfHost": "Docker",
+      "mobile": {
+        "available": true,
+        "how": "First-party Android and iOS apps (paid in the stores; free APK on GitHub)"
+      },
+      "sync": "Local by default; optional Nextcloud / WebDAV, or iCloud on Apple devices",
+      "api": [],
+      "mcp": {
+        "kind": "official",
+        "url": "https://github.com/krelltunez/dayGLANCE#ai-assistants-mcp-server",
+        "note": "The desktop app includes a local MCP server (12 tools, 3 resources) for Claude, ChatGPT and other clients; off by default."
+      },
+      "status": "active",
+      "caveat": "The project started in January 2026 and is mostly built by one developer.",
+      "screenshot": {
+        "light": "/oss/dayglance.webp",
+        "dark": "/oss/dayglance-dark.webp",
+        "width": 1600,
+        "height": 1000,
+        "source": "Captured from the web app at dayglance.app",
+        "sourceUrl": "https://dayglance.app"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE: MIT (2026 krelltunez); README: store builds (Google Play, App Store) are paid convenience binaries, free Android APK + Electron desktop builds on GitHub releases; name/logo trademarked. Repo created 2026-01-24, 158 stars, 17 forks, 30 releases, latest v5.3.0 (2026-09-22). Contributors: 'claude' 3,487 commits, krelltunez 1,855, others under 25 each -> AI-assisted, effectively a solo project. Screenshot: local-only web app, skipped onboarding, added 7 sample scheduled tasks through the real 'New Scheduled Task' dialog; Playwright clock fixed to 2026-09-24 08:40 (America/New_York) so the timeline shows a workday instead of late evening. Dark via the app's own theme toggle."
+    },
+    {
+      "id": "nextcloud-calendar",
+      "name": "Nextcloud Calendar",
+      "tagline": "The calendar app for Nextcloud, with shared calendars, invites, free/busy and appointment booking.",
+      "categories": [
+        "calendar",
+        "scheduling"
+      ],
+      "website": "https://apps.nextcloud.com/apps/calendar",
+      "repo": "https://github.com/nextcloud/calendar",
+      "docs": "https://docs.nextcloud.com/server/latest/user_manual/en/groupware/calendar.html",
+      "license": {
+        "spdx": "AGPL-3.0-or-later",
+        "name": "GNU Affero General Public License v3.0 or later"
+      },
+      "stars": 1189,
+      "latestRelease": {
+        "version": "v6.6.1",
+        "date": "2026-09-20"
+      },
+      "lastCommit": "2026-09-25",
+      "primaryLanguage": "JavaScript",
+      "platforms": [
+        "web",
+        "server"
+      ],
+      "selfHost": "Nextcloud app",
+      "mobile": {
+        "available": true,
+        "how": "No first-party calendar app; phones sync over CalDAV (DAVx⁵ on Android, built in on iOS)"
+      },
+      "sync": "Your own Nextcloud server (CalDAV)",
+      "api": [
+        "CalDAV"
+      ],
+      "mcp": {
+        "kind": "official",
+        "url": "https://github.com/nextcloud/context_agent",
+        "note": "Nextcloud's own Context Agent app exposes an MCP server (at /index.php/apps/app_api/proxy/context_agent/mcp/, app-password auth) with calendar tools: list calendars, schedule events, find free times. It needs the AppAPI setup. A popular community option is https://github.com/cbcoutinho/nextcloud-mcp-server."
+      },
+      "status": "active",
+      "caveat": "It runs inside a Nextcloud server, so you need one first.",
+      "screenshot": {
+        "light": "/oss/nextcloud-calendar.webp",
+        "width": 1600,
+        "height": 725,
+        "source": "Official screenshot from github.com/nextcloud/calendar, © the Nextcloud Calendar project",
+        "sourceUrl": "https://raw.githubusercontent.com/nextcloud/calendar/main/screenshots/week_new_event.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "License from REUSE.toml, appinfo/info.xml SPDX headers and LICENSES/AGPL-3.0-or-later.txt (GitHub shows AGPL-3.0). Screenshot is the first <screenshot> in appinfo/info.xml, which feeds the app store listing (shows Week 44 of 2022). Latest tag v6.6.1; GitHub 'releases/latest' is stale (v3.3.2, 2022) because they publish via tags. Docs URL from info.xml <documentation><user>. MCP: Context Agent docs at docs.nextcloud.com/server/latest/admin_manual/ai/app_context_agent.html ('Using Nextcloud MCP Server'); appinfo registers ^/mcp route."
+    },
+    {
+      "id": "radicale",
+      "name": "Radicale",
+      "tagline": "A small CalDAV and CardDAV server that stores your calendars and contacts as plain files.",
+      "categories": [
+        "calendar-server"
+      ],
+      "website": "https://radicale.org",
+      "repo": "https://github.com/Kozea/Radicale",
+      "docs": "https://radicale.org/v3.html",
+      "license": {
+        "spdx": "GPL-3.0-or-later",
+        "name": "GNU General Public License v3.0 or later"
+      },
+      "stars": 5044,
+      "latestRelease": {
+        "version": "v3.8.1",
+        "date": "2026-09-24"
+      },
+      "lastCommit": "2026-09-24",
+      "primaryLanguage": "Python",
+      "platforms": [
+        "server"
+      ],
+      "selfHost": "Docker, pip",
+      "mobile": {
+        "available": true,
+        "how": "No app of its own; phones sync over CalDAV/CardDAV (DAVx⁵ on Android, built in on iOS)"
+      },
+      "sync": "CalDAV / CardDAV to your own server",
+      "api": [
+        "CalDAV",
+        "CardDAV",
+        "Plugins"
+      ],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/dominik1001/caldav-mcp",
+        "note": "No Radicale-specific server from the project. Generic CalDAV MCP servers such as dominik1001/caldav-mcp (list/create/update/delete events) work with any CalDAV server, Radicale included. Small Radicale-specific repos also exist, e.g. https://github.com/mvelak/radicale-mcp-server."
+      },
+      "status": "active",
+      "caveat": "It is only a sync server; its web page manages calendars but can't show or edit events.",
+      "screenshot": {
+        "light": "/oss/radicale.webp",
+        "width": 1600,
+        "height": 750,
+        "source": "Captured from a local install of Radicale 3.8.0",
+        "sourceUrl": "http://localhost:5232/.web/"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "No official screenshot exists (radicale.org has no images; repo has only icon.png). Installed radicale==3.8.0 from PyPI in a scratch venv, created 4 collections through the built-in web UI and added sample events/tasks/contacts with plain CalDAV/CardDAV PUTs (the web UI cannot add items), then stopped the server. License: COPYING.md is GPLv3 text; source headers say 'version 3 of the License, or (at your option) any later version'. Docker image kozea/radicale is listed in DOCUMENTATION.md. Plugins: auth/storage/rights/web backends are pluggable per the docs. Latest release v3.8.0 (2026-09-03)."
+    },
+    {
+      "id": "baikal",
+      "name": "Baïkal",
+      "tagline": "A lightweight CalDAV and CardDAV server in PHP, with a web admin to manage users and calendars.",
+      "categories": [
+        "calendar-server"
+      ],
+      "website": "https://sabre.io/baikal/",
+      "repo": "https://github.com/sabre-io/Baikal",
+      "docs": "https://sabre.io/baikal/",
+      "license": {
+        "spdx": "GPL-3.0-only",
+        "name": "GNU General Public License v3.0 only"
+      },
+      "stars": 3320,
+      "latestRelease": {
+        "version": "0.12.1",
+        "date": "2026-08-05"
+      },
+      "lastCommit": "2026-08-13",
+      "primaryLanguage": "PHP",
+      "platforms": [
+        "server"
+      ],
+      "selfHost": "PHP app",
+      "mobile": {
+        "available": true,
+        "how": "No app of its own; phones sync over CalDAV/CardDAV (DAVx⁵ on Android, built in on iOS)"
+      },
+      "sync": "CalDAV / CardDAV to your own server",
+      "api": [
+        "CalDAV",
+        "CardDAV"
+      ],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/dominik1001/caldav-mcp",
+        "note": "We found no Baïkal-specific MCP server. Generic CalDAV MCP servers such as dominik1001/caldav-mcp work with any CalDAV server, Baïkal included."
+      },
+      "status": "active",
+      "caveat": "It is only a sync server; you view and edit events in another calendar app.",
+      "screenshot": {
+        "light": "/oss/baikal.webp",
+        "width": 920,
+        "height": 610,
+        "source": "Official screenshot from sabre.io, © the Baïkal project",
+        "sourceUrl": "https://sabre.io/img/baikal-in-use.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE file is GPLv3 text and composer.json says GPL-3.0-only; older PHP file headers still say 'GPL version 2 or later' — used GPL-3.0-only per LICENSE + composer. Official screenshot is old (Baïkal 0.4.5 dashboard, cropped out of a Safari window); current release is 0.12.1 (2026-08-05) with a newer Bootstrap 5 UI — consider a local 0.12.1 capture if an up-to-date shot matters more than an official one. sabre.io/baikal/install has an 'Installation using Docker' section but no official image (community images like ckulka/baikal), so selfHost lists PHP only. Last commit 2026-08-13."
+    },
+    {
+      "id": "cal-diy",
+      "name": "Cal.diy (Cal.com community edition)",
+      "tagline": "A self-hosted booking page tool: share a link and people pick a free time on your calendar.",
+      "categories": [
+        "scheduling"
+      ],
+      "website": "https://www.cal.diy/",
+      "repo": "https://github.com/calcom/cal.diy",
+      "docs": "https://www.cal.diy/",
+      "license": {
+        "spdx": "MIT",
+        "name": "MIT License"
+      },
+      "stars": 48641,
+      "latestRelease": {
+        "version": "v6.2.0",
+        "date": "2026-03-01"
+      },
+      "lastCommit": "2026-09-20",
+      "primaryLanguage": "TypeScript",
+      "platforms": [
+        "web",
+        "server"
+      ],
+      "selfHost": "Docker, Node.js",
+      "mobile": {
+        "available": false,
+        "how": "No mobile app; the booking pages work in a phone browser"
+      },
+      "sync": "Your own server; connects to Google, Microsoft and CalDAV calendars",
+      "api": [
+        "REST",
+        "Webhooks"
+      ],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/nikolapavurdzhiev/calcom-mcp",
+        "note": "Cal.com's official MCP server (https://github.com/calcom/cal-mcp) is hardcoded to api.cal.com, so it serves hosted Cal.com, not a self-hosted Cal.diy. nikolapavurdzhiev/calcom-mcp is a community server for the Cal v2 API with a CALCOM_BASE_URL setting for self-hosted instances."
+      },
+      "status": "active",
+      "caveat": "This is Cal.com's old open-source repo, renamed; it drops team and enterprise features and is meant for personal self-hosting.",
+      "screenshot": {
+        "light": "/oss/cal-diy.webp",
+        "width": 594,
+        "height": 316,
+        "source": "Official screenshot from the project's README, © the Cal.diy project",
+        "sourceUrl": "https://github.com/calcom/cal.diy/assets/8019099/407e727e-ff19-4ca4-bcae-049dca05cf02"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "Rename verified: github.com/calcom/cal.com 301-redirects to calcom/cal.diy (same repo id 350360184, created 2021-03-22). README: 'Cal.diy is the open source community edition of Cal.com', 'a fork of Cal.com with all enterprise/commercial code removed', '100% MIT-licensed', no hosted version, 'strictly recommended for personal, non-production use'. LICENSE is MIT (© Cal.com, Inc.). The README 'booking-screen' is an 800x492 animated GIF (dark theme, 2023, still says 'Cal.com' under the widget); I took one frame with no cursor and cropped to the booking widget — small (594px) but the only official product image in the repo (other repo images are Cal.com enterprise feature promos). www.cal.diy is the self-hosting docs site. REST API = apps/api/v2; Docker image calcom/cal.diy on Docker Hub. Latest GitHub release v6.2.0 (2026-03-01); commits through 2026-09-20."
+    },
+    {
+      "id": "fossify-calendar",
+      "name": "Fossify Calendar",
+      "tagline": "An ad-free Android calendar with day, week, month and year views, widgets and event reminders.",
+      "categories": [
+        "calendar"
+      ],
+      "website": "https://www.fossify.org/apps/calendar",
+      "repo": "https://github.com/FossifyOrg/Calendar",
+      "docs": null,
+      "license": {
+        "spdx": "GPL-3.0-only",
+        "name": "GNU General Public License v3.0"
+      },
+      "stars": 2176,
+      "latestRelease": {
+        "version": "1.11.0",
+        "date": "2026-09-23"
+      },
+      "lastCommit": "2026-09-24",
+      "primaryLanguage": "Kotlin",
+      "platforms": [
+        "android"
+      ],
+      "selfHost": null,
+      "mobile": {
+        "available": true,
+        "how": "Android app (F-Droid, Google Play, IzzyOnDroid); no iOS app"
+      },
+      "sync": "Local, or CalDAV through Android sync apps like DAVx⁵",
+      "api": [],
+      "mcp": {
+        "kind": "none",
+        "url": null,
+        "note": "We found no MCP server. Events live in Android's calendar storage or sync over CalDAV, so a CalDAV MCP server can reach the same data on the server side."
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/fossify-calendar.webp",
+        "width": 692,
+        "height": 1495,
+        "source": "Official screenshot from github.com/FossifyOrg/Calendar, © the Fossify Calendar project",
+        "sourceUrl": "https://raw.githubusercontent.com/FossifyOrg/Calendar/main/fastlane/metadata/android/en-US/images/phoneScreenshots/1_en-US.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE is GPLv3 text; source files carry no headers and README doesn't say 'or later', so used GPL-3.0-only as the conservative value. Fastlane screenshot 1 is a marketing frame (caption + phone bezel); cropped to the phone screen only. README says it syncs with Google, Outlook, Nextcloud, Exchange — via Android's calendar provider (CalDAV sync app needed). Fork of Simple Mobile Tools' Simple Calendar. Latest release 1.11.0 (2026-09-23)."
+    },
+    {
+      "id": "etar",
+      "name": "Etar",
+      "tagline": "A simple Android calendar with month, week, day and agenda views, built on the old AOSP calendar.",
+      "categories": [
+        "calendar"
+      ],
+      "website": "https://f-droid.org/packages/ws.xsoh.etar/",
+      "repo": "https://github.com/Etar-Group/Etar-Calendar",
+      "docs": null,
+      "license": {
+        "spdx": "GPL-3.0-only AND Apache-2.0",
+        "name": "GNU GPL v3.0, with original AOSP code under Apache License 2.0"
+      },
+      "stars": 2603,
+      "latestRelease": {
+        "version": "v1.0.57",
+        "date": "2026-07-27"
+      },
+      "lastCommit": "2026-08-01",
+      "primaryLanguage": "Java",
+      "platforms": [
+        "android"
+      ],
+      "selfHost": null,
+      "mobile": {
+        "available": true,
+        "how": "Android app (F-Droid, Google Play); no iOS app"
+      },
+      "sync": "Local, or CalDAV through Android sync apps like DAVx⁵",
+      "api": [],
+      "mcp": {
+        "kind": "none",
+        "url": null,
+        "note": "We found no MCP server. Etar shows calendars stored in Android's calendar storage, so a CalDAV MCP server can reach the same data on the server side."
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/etar.webp",
+        "dark": "/oss/etar-dark.webp",
+        "width": 1080,
+        "height": 2160,
+        "source": "Official screenshot from github.com/Etar-Group/Etar-Calendar, © the Etar project",
+        "sourceUrl": "https://raw.githubusercontent.com/Etar-Group/Etar-Calendar/master/metadata/en-US/images/phoneScreenshots/p1.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "README: 'Licensed under the GPLv3 ... Except where otherwise noted', copyright includes The Android Open Source Project 2005-2013; repo ships LICENSE (GPLv3) and LICENSE.apache2. README says a CalDAV client isn't included; use DAVx5. Dark file is metadata p4.png (same March 2020 month view in dark theme; official). Screenshots date from 2020. No website besides F-Droid/Play listings (GitHub homepage field points to F-Droid). Latest release v1.0.57 (2026-07-27); commits through 2026-07-29."
+    },
+    {
+      "id": "thunderbird",
+      "name": "Thunderbird",
+      "tagline": "A desktop email app with a built-in calendar and task list that syncs over CalDAV.",
+      "categories": [
+        "calendar"
+      ],
+      "website": "https://www.thunderbird.net",
+      "repo": "https://github.com/thunderbird/thunderbird-desktop",
+      "releaseTag": {
+        "prefix": "THUNDERBIRD_",
+        "pattern": "^THUNDERBIRD_(\\d+)_(\\d+)(?:_(\\d+))?_RELEASE$"
+      },
+      "docs": "https://support.mozilla.org/en-US/products/thunderbird",
+      "license": {
+        "spdx": "MPL-2.0",
+        "name": "Mozilla Public License 2.0"
+      },
+      "stars": 164,
+      "latestRelease": {
+        "version": "156.0.1",
+        "date": "2026-09-22"
+      },
+      "lastCommit": "2026-09-25",
+      "primaryLanguage": "JavaScript",
+      "platforms": [
+        "windows",
+        "macos",
+        "linux"
+      ],
+      "selfHost": null,
+      "mobile": {
+        "available": false,
+        "how": "Thunderbird for Android is email only; calendar is desktop only for now"
+      },
+      "sync": "CalDAV, Google Calendar, local",
+      "api": [
+        "CalDAV",
+        "Plugins"
+      ],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/TKasperczyk/thunderbird-mcp",
+        "note": "Third-party MCP server (a Thunderbird add-on plus local bridge) with mail, contacts and calendar tools. Nothing official from Thunderbird."
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/thunderbird.webp",
+        "width": 1600,
+        "height": 1002,
+        "source": "Official screenshot from thunderbird.net, © the Thunderbird project",
+        "sourceUrl": "https://www.thunderbird.net/media/img/thunderbird/new/screens/calendar-screen.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "thunderbird/thunderbird-desktop describes itself as 'The official repository for the Thunderbird desktop email client'; README says it's built on top of the Firefox repo (checked out as comm/). No LICENSE file at repo root; source headers (e.g. calendar/moz.build) are MPL 2.0. The calendar lives in calendar/. Official thunderbird.net calendar screen shows a month view with no events (Aug 2024) — only official full-UI calendar image found; SUMO pages block curl. Thunderbird for Android has no calendar (SUMO Android 8 FAQ; 2026 mobile roadmap says it will be explored). Plugins = WebExtension add-ons."
+    },
+    {
+      "id": "gnome-calendar",
+      "name": "GNOME Calendar",
+      "tagline": "The simple calendar app for the GNOME desktop on Linux, with month, week and agenda views.",
+      "categories": [
+        "calendar"
+      ],
+      "website": "https://apps.gnome.org/Calendar/",
+      "repo": "https://gitlab.gnome.org/GNOME/gnome-calendar",
+      "docs": null,
+      "license": {
+        "spdx": "GPL-3.0-or-later",
+        "name": "GNU General Public License v3.0 or later"
+      },
+      "stars": 128,
+      "latestRelease": {
+        "version": "51.0",
+        "date": "2026-09-13"
+      },
+      "lastCommit": "2026-09-20",
+      "primaryLanguage": "C",
+      "platforms": [
+        "linux"
+      ],
+      "selfHost": null,
+      "mobile": {
+        "available": false,
+        "how": "No mobile app (desktop Linux only)"
+      },
+      "sync": "GNOME Online Accounts (Google, Nextcloud, Microsoft) or CalDAV",
+      "api": [
+        "CalDAV"
+      ],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/jamesdedon/gnome-calendar-mcp",
+        "note": "A small third-party server that reads and adds events through GNOME Shell's calendar service, which serves the same GNOME Online Accounts calendars GNOME Calendar shows. Very new, few users."
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/gnome-calendar.webp",
+        "width": 1379,
+        "height": 883,
+        "source": "Official screenshot from the project's README, © the GNOME Calendar project",
+        "sourceUrl": "https://static.gnome.org/appdata/gnome-50/org.gnome.Calendar/month-view.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "License from src/appdata metainfo (project_license GPL-3.0-or-later), COPYING (GPLv3), and source headers ('or any later version'). Screenshot is the metainfo default (GNOME 50) used in README and apps.gnome.org; cropped the transparent window-shadow margin. Distributed via distros and Flathub (org.gnome.Calendar). help.gnome.org/users/gnome-calendar/stable returned 404, so docs=null. Calendars come from Evolution Data Server; 'api: CalDAV' means it speaks CalDAV as a client. GitLab last activity 2026-09-24."
+    },
+    {
+      "id": "davx5",
+      "name": "DAVx⁵",
+      "tagline": "An Android app that syncs calendars, contacts and tasks from any CalDAV or CardDAV server.",
+      "categories": [
+        "calendar"
+      ],
+      "website": "https://www.davx5.com",
+      "repo": "https://github.com/bitfireAT/davx5-ose",
+      "docs": "https://manual.davx5.com/",
+      "license": {
+        "spdx": "GPL-3.0-only",
+        "name": "GNU General Public License v3.0"
+      },
+      "stars": 2897,
+      "latestRelease": {
+        "version": "v4.5.19-ose",
+        "date": "2026-08-03"
+      },
+      "lastCommit": "2026-09-24",
+      "primaryLanguage": "Kotlin",
+      "platforms": [
+        "android"
+      ],
+      "selfHost": null,
+      "mobile": {
+        "available": true,
+        "how": "Android app (F-Droid free, Google Play paid); no iOS app"
+      },
+      "sync": "CalDAV / CardDAV / WebDAV to any server",
+      "api": [
+        "CalDAV",
+        "CardDAV",
+        "WebDAV"
+      ],
+      "mcp": {
+        "kind": "official",
+        "url": "https://github.com/bitfireAT/davmcp",
+        "note": "bitfire (the DAVx⁵ makers) publishes davmcp, 'DAVx⁵ for AI': an experimental, separate MCP server for CalDAV event CRUD. It is not part of the Android app and its README says not for production use."
+      },
+      "status": "active",
+      "caveat": "It has no calendar screen of its own; it syncs events into your phone's calendar app.",
+      "screenshot": {
+        "light": "/oss/davx5.webp",
+        "width": 1210,
+        "height": 2460,
+        "source": "Official screenshot from github.com/bitfireAT/davx5-translations, © the DAVx⁵ project",
+        "sourceUrl": "https://raw.githubusercontent.com/bitfireAT/davx5-translations/main/fastlane/metadata/android/en-US/images/phoneScreenshots/2.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "README: 'DAVx⁵ is licensed under the GPLv3 License'; LICENSE is GPLv3 text; source headers just point to LICENSE, so GPL-3.0-only is the conservative value. fastlane/ in davx5-ose is a symlink into the l10n submodule (bitfireAT/davx5-translations); screenshot 2 (CalDAV collection list) is a marketing frame, cropped to the phone screen. 'OSE' = open-source edition; same app sold on Google Play. davmcp has no license set on GitHub, 2 stars, pushed 2026-09-23."
+    },
+    {
+      "id": "proton-calendar",
+      "name": "Proton Calendar",
+      "tagline": "An end-to-end encrypted calendar from Proton, on the web and on Android and iOS.",
+      "categories": [
+        "calendar"
+      ],
+      "website": "https://proton.me/calendar",
+      "repo": "https://github.com/ProtonMail/WebClients",
+      "releaseTag": {
+        "prefix": "proton-calendar@",
+        "pattern": "^proton-calendar@(\\d+)\\.(\\d+)\\.(\\d+)(?:\\.(\\d+))?$"
+      },
+      "docs": "https://proton.me/support/calendar",
+      "license": {
+        "spdx": "GPL-3.0-only",
+        "name": "GNU General Public License v3.0"
+      },
+      "stars": 5611,
+      "latestRelease": {
+        "version": "5.0.134.1",
+        "date": "2026-09-23"
+      },
+      "lastCommit": "2026-09-24",
+      "primaryLanguage": "TypeScript",
+      "platforms": [
+        "web",
+        "android",
+        "ios"
+      ],
+      "selfHost": null,
+      "mobile": {
+        "available": true,
+        "how": "First-party Android and iOS apps (source on GitHub)"
+      },
+      "sync": "Proton's servers (end-to-end encrypted)",
+      "api": [],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/PGielniak/proton-calendar-mcp",
+        "note": "Proton offers no public calendar API. PGielniak/proton-calendar-mcp drives the web app with Playwright to read and create events; https://github.com/Hattmakaren/proton-calendar-mcp is read-only via a share link. Both are tiny third-party projects."
+      },
+      "status": "active",
+      "caveat": "Only the apps are open source; Proton's servers are not, so you can't self-host it.",
+      "screenshot": {
+        "light": "/oss/proton-calendar.webp",
+        "width": 1600,
+        "height": 701,
+        "source": "Official screenshot from proton.me, © Proton AG",
+        "sourceUrl": "https://proton-cms-media.s3.eu-central-1.amazonaws.com/desktop_ui_proton_calendar_17d87f093b.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "Web client lives in ProtonMail/WebClients/applications/calendar (package.json license GPL-3.0; root LICENSE GPLv3 text; no 'or later' statement found, so GPL-3.0-only). Mobile source: github.com/ProtonMail/android-calendar and ProtonMail/ios-calendar (both GPL-3.0). Calendar is also inside the Proton Mail desktop app (applications/inbox-desktop) — not listed as a separate platform. Screenshot is the 'desktop_ui_proton_calendar' image on proton.me/calendar (served via Proton's CMS bucket); cropped the marketing margin, bottom has a slight fade from the original. Old repo ProtonMail/proton-calendar is archived."
+    },
+    {
+      "id": "tuta-calendar",
+      "name": "Tuta Calendar",
+      "tagline": "An end-to-end encrypted calendar from Tuta, on the web, desktop, Android and iOS.",
+      "categories": [
+        "calendar"
+      ],
+      "website": "https://tuta.com/calendar",
+      "repo": "https://github.com/tutao/tutanota",
+      "releaseTag": {
+        "prefix": "tuta-calendar-android-release-",
+        "pattern": "^tuta-calendar-android-release-(\\d+)\\.(\\d+)\\.(\\d+)$"
+      },
+      "docs": "https://tuta.com/support",
+      "license": {
+        "spdx": "GPL-3.0-only",
+        "name": "GNU General Public License v3.0"
+      },
+      "stars": 7945,
+      "latestRelease": {
+        "version": "360.260922.0",
+        "date": "2026-09-22"
+      },
+      "lastCommit": "2026-09-22",
+      "primaryLanguage": "TypeScript",
+      "platforms": [
+        "web",
+        "windows",
+        "macos",
+        "linux",
+        "android",
+        "ios"
+      ],
+      "selfHost": null,
+      "mobile": {
+        "available": true,
+        "how": "First-party Tuta Calendar apps for Android (incl. F-Droid) and iOS"
+      },
+      "sync": "Tuta's servers (end-to-end encrypted)",
+      "api": [],
+      "mcp": {
+        "kind": "none",
+        "url": null,
+        "note": "We found no MCP server for Tuta Calendar; Tuta has no public calendar API."
+      },
+      "status": "active",
+      "caveat": "Only the apps are open source; Tuta's servers are not, so you can't self-host it.",
+      "screenshot": {
+        "light": "/oss/tuta-calendar.webp",
+        "width": 1398,
+        "height": 622,
+        "source": "Official screenshot from tuta.com, © Tutao GmbH",
+        "sourceUrl": "https://tuta.com/assets/calendar-feature-ui-screen.Yw8JL3wO_ZjFI1a.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "Clients are in tutao/tutanota (LICENSE.txt GPLv3 text, package.json 'GPL-3.0' = GPL-3.0-only). The calendar app is src/applications/calendar-app with app-ios/calendar; desktop client includes calendar. The only clean official calendar UI image on tuta.com is a dark-theme web UI cropped out of a laptop mock-up (right edge cut at Friday by the original); other tuta.com images are collages or carry overlay graphics. Put in the light slot because it's the only one; it's dark UI."
+    },
+    {
+      "id": "pomatez",
+      "name": "Pomatez",
+      "tagline": "A desktop Pomodoro timer with a simple task list, break rules and a strict mode.",
+      "categories": [
+        "pomodoro",
+        "focus"
+      ],
+      "website": "https://zidoro.github.io/pomatez/",
+      "repo": "https://github.com/zidoro/pomatez",
+      "docs": null,
+      "license": {
+        "spdx": "MIT",
+        "name": "MIT License"
+      },
+      "stars": 4901,
+      "latestRelease": {
+        "version": "v1.11.0",
+        "date": "2026-05-19"
+      },
+      "lastCommit": "2026-05-19",
+      "primaryLanguage": "TypeScript",
+      "platforms": [
+        "windows",
+        "macos",
+        "linux"
+      ],
+      "selfHost": null,
+      "mobile": {
+        "available": false,
+        "how": "No mobile app"
+      },
+      "sync": "Local only",
+      "api": [],
+      "mcp": {
+        "kind": "none",
+        "url": null,
+        "note": "We found no MCP server for Pomatez."
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/pomatez.webp",
+        "dark": "/oss/pomatez-dark.webp",
+        "width": 340,
+        "height": 502,
+        "source": "Official screenshot from the project's website, © the Pomatez project",
+        "sourceUrl": "https://raw.githubusercontent.com/zidoro/pomatez/master/website/assets/images/work-time-light.PNG"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE is MIT (Roldan Montilla Jr). Releases: v1.8.0 (May 2025), v1.9.0 (Dec 2025), v1.10.0 (Dec 2025), v1.11.0 (19 May 2026) with features (translations, close confirmation, Tauri/Electron updates) -> active, though commits come in bursts. Last push May 2026. README: Windows, macOS, Linux; Snap and Homebrew. Screenshot: the website's own single-window images (website/assets/images/work-time-{light,dark}.PNG, 340x502, shows v1.0.0 UI; the app window really is this small). README preview.png is a multi-window marketing collage, so not used. Dark file is the project's matching dark timer screenshot. No API/CLI found. gh search 'pomatez mcp' returned nothing."
+    },
+    {
+      "id": "solanum",
+      "name": "Solanum",
+      "tagline": "A small Pomodoro timer for the GNOME desktop that times work laps and breaks.",
+      "categories": [
+        "pomodoro",
+        "focus"
+      ],
+      "website": "https://apps.gnome.org/Solanum/",
+      "repo": "https://gitlab.gnome.org/World/Solanum",
+      "docs": null,
+      "license": {
+        "spdx": "GPL-3.0-or-later",
+        "name": "GNU General Public License v3.0 or later"
+      },
+      "stars": 36,
+      "latestRelease": {
+        "version": "6.0.0",
+        "date": "2025-04-06"
+      },
+      "lastCommit": "2026-03-24",
+      "primaryLanguage": "Rust",
+      "platforms": [
+        "linux"
+      ],
+      "selfHost": null,
+      "mobile": {
+        "available": false,
+        "how": "No iOS or Android app"
+      },
+      "sync": "Local only",
+      "api": [],
+      "mcp": {
+        "kind": "none",
+        "url": null,
+        "note": "We found no MCP server for Solanum."
+      },
+      "status": "maintenance",
+      "caveat": "Linux only; it ships as a Flatpak on Flathub.",
+      "screenshot": {
+        "light": "/oss/solanum.webp",
+        "width": 406,
+        "height": 406,
+        "source": "Official screenshot from the project's README, © the Solanum project",
+        "sourceUrl": "https://gitlab.gnome.org/World/Solanum/-/raw/main/data/screenshots/screenshot-1.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE.md is GPL v3 text; README license notice says 'either version 3 of the License, or (at your option) any later version'; Flathub metadata says GPL-3.0-or-later. Written in Rust/GTK. Last release 6.0.0 (6 Apr 2025, dependency updates + metainfo). Since then only translation commits (last Mar 2026); last feature commit Jul 2024 (fullscreen during breaks) -> maintenance. Not archived. No docs site. Screenshot cropped of shadow margin only (518px original, 406px after crop; small native window)."
+    },
+    {
+      "id": "pomotroid",
+      "name": "Pomotroid",
+      "tagline": "A Pomodoro timer for your desktop with session stats, themes and global shortcuts.",
+      "categories": [
+        "pomodoro",
+        "focus"
+      ],
+      "website": "https://pomotroid.app",
+      "repo": "https://github.com/Splode/pomotroid",
+      "docs": null,
+      "license": {
+        "spdx": "MIT",
+        "name": "MIT License"
+      },
+      "stars": 5517,
+      "latestRelease": {
+        "version": "v1.7.1",
+        "date": "2026-05-11"
+      },
+      "lastCommit": "2026-06-19",
+      "primaryLanguage": "Rust",
+      "platforms": [
+        "windows",
+        "macos",
+        "linux"
+      ],
+      "selfHost": null,
+      "mobile": {
+        "available": false,
+        "how": "No mobile app"
+      },
+      "sync": "Local only",
+      "api": [],
+      "mcp": {
+        "kind": "none",
+        "url": null,
+        "note": "We found no MCP server for Pomotroid."
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/pomotroid.webp",
+        "dark": "/oss/pomotroid-dark.webp",
+        "width": 296,
+        "height": 478,
+        "source": "Official screenshot from the project's README, © the Pomotroid project",
+        "sourceUrl": "https://raw.githubusercontent.com/Splode/pomotroid/main/.github/images/pomotroid-screens.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE MIT (Christopher Murphy). Rewritten in Tauri 2 + Rust + Svelte 5; v1.7.1 released 11 May 2026; dependabot merges June 2026; push Sep 2026 -> active. Builds: Windows installer/exe, macOS universal DMG, Linux .deb + AppImage (unsigned). Has an opt-in local WebSocket server (ws://127.0.0.1:1314) for overlays; that is not in the allowed api list so api is []. All official images are overlapping multi-window composites; light and dark files are crops of the single short-break (light theme) and long-break (dark theme) windows from pomotroid-screens.png. The light crop trims the window's right edge (hidden behind another window); the dark crop trims the left edge. No docs site besides README/THEMES.md."
+    },
+    {
+      "id": "stretchly",
+      "name": "Stretchly",
+      "tagline": "A desktop app that reminds you to take short and long breaks from your computer.",
+      "categories": [
+        "focus"
+      ],
+      "website": "https://hovancik.net/stretchly",
+      "repo": "https://github.com/hovancik/stretchly",
+      "docs": "https://github.com/hovancik/stretchly#readme",
+      "license": {
+        "spdx": "BSD-2-Clause",
+        "name": "BSD 2-Clause \"Simplified\" License"
+      },
+      "stars": 6552,
+      "latestRelease": {
+        "version": "v1.22.1",
+        "date": "2026-08-13"
+      },
+      "lastCommit": "2026-08-14",
+      "primaryLanguage": "JavaScript",
+      "platforms": [
+        "windows",
+        "macos",
+        "linux"
+      ],
+      "selfHost": null,
+      "mobile": {
+        "available": false,
+        "how": "No mobile app"
+      },
+      "sync": "Local only",
+      "api": [
+        "CLI"
+      ],
+      "mcp": {
+        "kind": "none",
+        "url": null,
+        "note": "We found no MCP server for Stretchly."
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/stretchly.webp",
+        "width": 1117,
+        "height": 837,
+        "source": "Official screenshot from the project's README, © the Stretchly project",
+        "sourceUrl": "https://raw.githubusercontent.com/hovancik/stretchly/master/minibreak.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE is BSD 2-clause (Jan Hovancik). Electron app; v1.22.1 released 13 Aug 2026 -> active. Installers for macOS (unsigned; Homebrew tap), Windows (Chocolatey, winget) and Linux per README. README: the `stretchly` command controls a running instance from the command line. Dark mode exists (README dark.png), but that shows the Preferences window, not the break screen, so no dark file. Stretchly is a break reminder, not a Pomodoro timer; category set to focus only. The 'docs' value is the README (no separate docs site found)."
+    },
+    {
+      "id": "kimai",
+      "name": "Kimai",
+      "tagline": "A web app for tracking work hours, with timesheets, reports, invoices and teams.",
+      "categories": [
+        "time-tracking"
+      ],
+      "website": "https://www.kimai.org",
+      "repo": "https://github.com/kimai/kimai",
+      "docs": "https://www.kimai.org/documentation/",
+      "license": {
+        "spdx": "AGPL-3.0-or-later",
+        "name": "GNU Affero General Public License v3.0 or later"
+      },
+      "stars": 5043,
+      "latestRelease": {
+        "version": "2.67.0",
+        "date": "2026-09-13"
+      },
+      "lastCommit": "2026-09-15",
+      "primaryLanguage": "PHP",
+      "platforms": [
+        "web",
+        "server"
+      ],
+      "selfHost": "Docker, PHP app",
+      "mobile": {
+        "available": true,
+        "how": "Responsive web app; iOS and Android apps are third-party only"
+      },
+      "sync": "Your own server",
+      "api": [
+        "REST",
+        "Plugins"
+      ],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/glazperle/kimai_mcp",
+        "note": "Several third-party Kimai MCP servers exist (e.g. glazperle/kimai_mcp, NightSquawk/kimai-mcp-server) plus third-party plugins; none are from the Kimai project."
+      },
+      "status": "active",
+      "caveat": "Some extra features are sold as paid plugins in the Kimai store.",
+      "screenshot": {
+        "light": "/oss/kimai.webp",
+        "dark": "/oss/kimai-dark.webp",
+        "width": 1600,
+        "height": 1000,
+        "source": "Captured from the public demo at demo.kimai.org",
+        "sourceUrl": "https://demo.kimai.org/en/timesheet/"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE file is AGPL v3 text; composer.json says AGPL-3.0-or-later. Release 2.67.0 on 13 Sep 2026 -> active. Demo login john_user / password is published at kimai.org/en/demo. Captured the 'My times' timesheet; the dark file is Kimai following the browser's prefers-color-scheme (no account setting changed). Demo data is generated lorem-ipsum. kimai.org/en/integrations lists only third-party mobile/desktop apps (Cloudrizon, Timai, CodeTimer etc.). Hosted SaaS at kimai.cloud. Plugins marketplace has paid and free plugins (README)."
+    },
+    {
+      "id": "activitywatch",
+      "name": "ActivityWatch",
+      "tagline": "An automatic time tracker that logs which apps and websites you use, stored on your computer.",
+      "categories": [
+        "time-tracking"
+      ],
+      "website": "https://activitywatch.net",
+      "repo": "https://github.com/ActivityWatch/activitywatch",
+      "docs": "https://docs.activitywatch.net",
+      "license": {
+        "spdx": "MPL-2.0",
+        "name": "Mozilla Public License 2.0"
+      },
+      "stars": 18976,
+      "latestRelease": {
+        "version": "v0.13.2",
+        "date": "2024-10-05"
+      },
+      "lastCommit": "2026-09-19",
+      "primaryLanguage": "Python",
+      "platforms": [
+        "windows",
+        "macos",
+        "linux",
+        "android"
+      ],
+      "selfHost": null,
+      "mobile": {
+        "available": true,
+        "how": "Android app (Play Store and APK); no iOS app"
+      },
+      "sync": "Local only (sync between devices is in testing)",
+      "api": [
+        "REST"
+      ],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/8bitgentleman/activitywatch-mcp-server",
+        "note": "Third-party MCP servers read your local ActivityWatch data (8bitgentleman/activitywatch-mcp-server and others); none are official."
+      },
+      "status": "active",
+      "caveat": "The last stable release is from October 2024; newer versions are betas.",
+      "screenshot": {
+        "light": "/oss/activitywatch.webp",
+        "width": 1600,
+        "height": 912,
+        "source": "Official screenshot from activitywatch.net, © the ActivityWatch project",
+        "sourceUrl": "https://activitywatch.net/img/screenshots/thelifeimliving/activity.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE.txt is MPL 2.0. Latest stable v0.13.2 (5 Oct 2024); v0.14.0 betas published through 18 Sep 2026 and aw-webui/aw-server-rust/aw-android commits daily in Sep 2026 -> active. Docs: sync 'currently being worked on and is in a testing phase' (aw-sync). Runs a local server with web UI and REST API at localhost:5600; it is not meant to be hosted as a shared server, so selfHost is null. Screenshot is from the official screenshots page (contributed by a user, hosted on activitywatch.net), cropped to the top of the Activity view (no dark file: the site's dark shots are different screens/data)."
+    },
+    {
+      "id": "traggo",
+      "name": "Traggo",
+      "tagline": "A self-hosted time tracker where you tag spans of time instead of filing them under tasks.",
+      "categories": [
+        "time-tracking"
+      ],
+      "website": "https://traggo.net",
+      "repo": "https://github.com/traggo/server",
+      "docs": "https://traggo.net",
+      "license": {
+        "spdx": "GPL-3.0-only",
+        "name": "GNU General Public License v3.0"
+      },
+      "stars": 1633,
+      "latestRelease": {
+        "version": "v0.8.3",
+        "date": "2026-03-01"
+      },
+      "lastCommit": "2026-07-31",
+      "primaryLanguage": "Go",
+      "platforms": [
+        "web",
+        "server"
+      ],
+      "selfHost": "Docker, binary",
+      "mobile": {
+        "available": false,
+        "how": "No mobile app; web UI only"
+      },
+      "sync": "Your own server",
+      "api": [
+        "GraphQL"
+      ],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/IlyaBizyaev/traggo-mcp",
+        "note": "Small third-party MCP servers exist (IlyaBizyaev/traggo-mcp, ChrQR/traggo-mcp-server); none are official."
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/traggo.webp",
+        "width": 1344,
+        "height": 830,
+        "source": "Official screenshot from the project's README, © the Traggo project",
+        "sourceUrl": "https://raw.githubusercontent.com/traggo/server/master/.github/traggo_calendar.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE is plain GPL v3 text with no 'or later' notice found, so recorded conservatively as GPL-3.0-only (GitHub reports GPL-3.0). Releases: v0.8.1 (Jan 2026, fixes + click-to-edit feature), v0.8.2 (Jan 2026), v0.8.3 (1 Mar 2026, security fix); last commit 31 Jul 2026 (README). Small, occasional development; 'active' is borderline (last release ~7 months ago). No public demo found. Install guide: Docker, docker-compose, binary, AUR. API is GraphQL (graphql/ folder). Screenshot shows the dark default UI (the README shots are dark); it is the only official screenshot set, so it is stored as the main file with no -dark variant; top 8px browser remnant cropped."
+    },
+    {
+      "id": "solidtime",
+      "name": "solidtime",
+      "tagline": "A modern time tracker for freelancers and agencies, with projects, clients and billable rates.",
+      "categories": [
+        "time-tracking"
+      ],
+      "website": "https://www.solidtime.io",
+      "repo": "https://github.com/solidtime-io/solidtime",
+      "docs": "https://docs.solidtime.io",
+      "license": {
+        "spdx": "AGPL-3.0-or-later",
+        "name": "GNU Affero General Public License v3.0 or later"
+      },
+      "stars": 8928,
+      "latestRelease": {
+        "version": "v0.21.0",
+        "date": "2026-09-22"
+      },
+      "lastCommit": "2026-09-24",
+      "primaryLanguage": "PHP",
+      "platforms": [
+        "web",
+        "server",
+        "macos",
+        "windows",
+        "linux"
+      ],
+      "selfHost": "Docker",
+      "mobile": {
+        "available": false,
+        "how": "No mobile app"
+      },
+      "sync": "Your own server or solidtime Cloud",
+      "api": [
+        "REST"
+      ],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/SwamiRama/solidtime-mcp-server",
+        "note": "Third-party MCP server (SwamiRama/solidtime-mcp-server) uses the solidtime API; we found no official one."
+      },
+      "status": "active",
+      "caveat": "Some advanced self-hosted features need the paid On-Premise Business plan.",
+      "screenshot": {
+        "light": "/oss/solidtime.webp",
+        "dark": "/oss/solidtime-dark.webp",
+        "width": 1600,
+        "height": 700,
+        "source": "Official screenshot from docs.solidtime.io, © the solidtime project",
+        "sourceUrl": "https://raw.githubusercontent.com/solidtime-io/docs/main/static/img/timesheet/timesheet-overview-light.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE.md is AGPL v3 text; composer.json says AGPL-3.0-or-later. v0.21.0 released 22 Sep 2026 -> active. Official brand spelling is lowercase 'solidtime'. Desktop app repo solidtime-io/solidtime-desktop (AGPL-3.0) for macOS/Windows/Linux; browser extension for Chrome/Firefox. docs/self-hosting/on-premise-business.md: paid plan 'provides access to advanced features and extensions for self-hosted solidtime instances' (open-core). Hosted cloud at app.solidtime.io. No public demo (signup needed), so used the docs repo's matching light/dark timesheet screenshots, cropped the empty bottom half. README banner is marketing, not used."
+    },
+    {
+      "id": "timetagger",
+      "name": "TimeTagger",
+      "tagline": "A web-based time tracker built around an interactive timeline and #tags.",
+      "categories": [
+        "time-tracking"
+      ],
+      "website": "https://timetagger.app",
+      "repo": "https://github.com/almarklein/timetagger",
+      "docs": "https://timetagger.readthedocs.io",
+      "license": {
+        "spdx": "GPL-3.0-only",
+        "name": "GNU General Public License v3.0"
+      },
+      "stars": 1789,
+      "latestRelease": {
+        "version": "v26.1.3",
+        "date": "2026-02-02"
+      },
+      "lastCommit": "2026-05-17",
+      "primaryLanguage": "Python",
+      "platforms": [
+        "web",
+        "server"
+      ],
+      "selfHost": "Docker, pip (Python)",
+      "mobile": {
+        "available": true,
+        "how": "Responsive web app; no native app"
+      },
+      "sync": "Your own server (or the paid timetagger.app)",
+      "api": [
+        "REST",
+        "CLI"
+      ],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/regismesquita/timetagger-mcp",
+        "note": "Third-party MCP server (regismesquita/timetagger-mcp) to start/stop timers and get reports; none official."
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/timetagger.webp",
+        "width": 1600,
+        "height": 1182,
+        "source": "Captured from the public demo at timetagger.app",
+        "sourceUrl": "https://timetagger.app/demo"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE is plain GPL v3 text; README says 'subject to the GPL-3.0 License'; setup.py license='GPL-3.0' with no 'or later' -> recorded conservatively as GPL-3.0-only. Contributors sign a CLA so the author can use code on the paid timetagger.app service (EUR 3/month hosted). v26.1.3 released 2 Feb 2026; commits Apr and May 2026 (features/fixes) -> active, but pace is slow. Web API documented at timetagger.readthedocs.io/en/latest/webapi/; official CLI at almarklein/timetagger_cli (MIT). Demo shows generated data; closed the intro dialog with Escape, captured day view, cropped grey page margins. The demo did not switch to dark with prefers-color-scheme, so no dark file."
+    },
+    {
+      "id": "joplin",
+      "name": "Joplin",
+      "tagline": "A Markdown note and to-do app for desktop and phone that syncs through the service you pick.",
+      "categories": [
+        "notes",
+        "todo"
+      ],
+      "website": "https://joplinapp.org",
+      "repo": "https://github.com/laurent22/joplin",
+      "docs": "https://joplinapp.org/help/",
+      "license": {
+        "spdx": "AGPL-3.0-or-later AND LicenseRef-Joplin-Server-Personal-Use",
+        "name": "GNU Affero General Public License v3.0 or later (apps); Joplin Server Personal Use License (packages/server)"
+      },
+      "stars": 56480,
+      "latestRelease": {
+        "version": "v3.7.18",
+        "date": "2026-09-11"
+      },
+      "lastCommit": "2026-09-23",
+      "primaryLanguage": "TypeScript",
+      "platforms": [
+        "windows",
+        "macos",
+        "linux",
+        "ios",
+        "android",
+        "server"
+      ],
+      "selfHost": "Docker (Joplin Server)",
+      "mobile": {
+        "available": true,
+        "how": "First-party iOS and Android apps"
+      },
+      "sync": "Joplin Cloud, Joplin Server, Nextcloud, WebDAV, Dropbox, OneDrive, S3 or a local folder",
+      "api": [
+        "REST",
+        "Plugins",
+        "CLI"
+      ],
+      "mcp": {
+        "kind": "official",
+        "url": "https://github.com/laurent22/joplin/blob/dev/readme/apps/ai_mcp.md",
+        "note": "Built into the desktop app since v3.7 (changelog: 'New: Add MCP server', #15699). Off by default; runs over HTTP on the Web Clipper port with a token. Tools: search, semantic search, read, create/update/trash notes, notebooks, tags."
+      },
+      "status": "active",
+      "caveat": "The apps are AGPL, but Joplin Server is under a personal-use license, not an open source one.",
+      "screenshot": {
+        "light": "/oss/joplin.webp",
+        "width": 1480,
+        "height": 1232,
+        "source": "Official screenshot from the project's README, © the Joplin project",
+        "sourceUrl": "https://raw.githubusercontent.com/laurent22/joplin/dev/Assets/WebsiteAssets/images/home-top-img-2x.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "Root LICENSE (dev branch): all code AGPL-3.0-or-later unless a directory has its own LICENSE; packages/server/LICENSE.md is the 'Joplin Server Personal Use License' v1 (Dec 2021) - source-available, not OSI. A few vendored forks (fork-htmlparser2, turndown, etc.) keep their own MIT/BSD licenses. GitHub shows NOASSERTION because of this. Logos/icons are all-rights-reserved. MCP verified in packages/lib/services/mcp/McpServer.ts, readme/apps/ai_mcp.md and desktop changelog (v3.7.3 pre-release 2026-06-23; latest stable v3.7.18 2026-09-11). REST = Data API via the clipper service; CLI = terminal app (packages/app-cli). No first-party web app (Joplin Cloud only shows shared notes). Screenshot: README hero image is a laptop+phone marketing composite; I cropped to the desktop window's note list + editor only (phone and laptop bezel removed, sidebar partly hidden by the phone so excluded). No UI edits."
+    },
+    {
+      "id": "trilium",
+      "name": "Trilium Notes",
+      "tagline": "A note app for building a large personal knowledge base as a tree, with scripting and a web server.",
+      "categories": [
+        "notes"
+      ],
+      "website": "https://triliumnotes.org",
+      "repo": "https://github.com/TriliumNext/Trilium",
+      "docs": "https://docs.triliumnotes.org/",
+      "license": {
+        "spdx": "AGPL-3.0-or-later",
+        "name": "GNU Affero General Public License v3.0 or later"
+      },
+      "stars": 37976,
+      "latestRelease": {
+        "version": "v0.105.0",
+        "date": "2026-08-19"
+      },
+      "lastCommit": "2026-09-24",
+      "primaryLanguage": "TypeScript",
+      "platforms": [
+        "web",
+        "windows",
+        "macos",
+        "linux",
+        "server"
+      ],
+      "selfHost": "Docker, binary",
+      "mobile": {
+        "available": true,
+        "how": "Mobile web view from your server; Android and iOS only via community apps (TriliumDroid, Trinote)"
+      },
+      "sync": "Your own server",
+      "api": [
+        "REST"
+      ],
+      "mcp": {
+        "kind": "official",
+        "url": "https://github.com/TriliumNext/Trilium/blob/main/docs/User%20Guide/User%20Guide/AI/MCP.md",
+        "note": "Built-in MCP server since v0.103.0 (off by default; Options > AI/LLM). HTTP transport only, authenticated with an ETAPI token. Docs also list community servers such as perfectra1n/triliumnext-mcp."
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/trilium.webp",
+        "width": 1201,
+        "height": 802,
+        "source": "Official screenshot from the project's README, © the Trilium Notes project",
+        "sourceUrl": "https://raw.githubusercontent.com/TriliumNext/Trilium/main/docs/app.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "TriliumNext/Trilium is the maintained continuation of zadam/trilium: the original author handed the repo to the community (github.com/zadam/trilium now redirects to TriliumNext/Trilium). README: versions up to v0.90.4 are compatible with zadam's last release v0.63.7. LICENSE is AGPL-3.0 text; README license section says 'version 3 ... or (at your option) any later version' -> AGPL-3.0-or-later. REST = ETAPI. Scripting/custom widgets exist but not a plugin marketplace, so I left Plugins out. No official iOS/Android apps (README points to TriliumDroid, Pocket Trilium, Trinote - all third-party). Web = the server's web UI (no hosted SaaS by the project; README lists third-party sync hosts). Latest release v0.105.0 (2026-08-19). Screenshot cropped only to remove the drop-shadow margin."
+    },
+    {
+      "id": "logseq",
+      "name": "Logseq",
+      "tagline": "An outliner for notes and daily journals, with tasks, links between pages and plugins.",
+      "categories": [
+        "notes"
+      ],
+      "website": "https://logseq.com",
+      "repo": "https://github.com/logseq/logseq",
+      "docs": "https://docs.logseq.com/",
+      "license": {
+        "spdx": "AGPL-3.0-only",
+        "name": "GNU Affero General Public License v3.0 only"
+      },
+      "stars": 45051,
+      "latestRelease": {
+        "version": "2.0.1",
+        "date": "2026-07-13"
+      },
+      "lastCommit": "2026-09-24",
+      "primaryLanguage": "Clojure",
+      "platforms": [
+        "web",
+        "windows",
+        "macos",
+        "linux",
+        "ios",
+        "android"
+      ],
+      "selfHost": "Docker (web app, sync server)",
+      "mobile": {
+        "available": true,
+        "how": "First-party iOS and Android apps; the new database-version mobile app is in alpha"
+      },
+      "sync": "Local files; paid Logseq Sync (self-hostable for DB graphs) or any file-sync tool",
+      "api": [
+        "Plugins",
+        "CLI"
+      ],
+      "mcp": {
+        "kind": "official",
+        "url": "https://github.com/logseq/docs/blob/master/db-version.md#mcp-server",
+        "note": "The database version (2.0 beta) ships an MCP server in the desktop app (Settings > AI) and in the logseq CLI; Streamable HTTP via the local HTTP server with a token. Not available in the older file-based 0.10.x app."
+      },
+      "status": "active",
+      "caveat": "The new database version (Logseq 2.0) is still in beta, and its sync and new mobile app are in alpha.",
+      "screenshot": {
+        "light": "/oss/logseq.webp",
+        "dark": "/oss/logseq-dark.webp",
+        "width": 1600,
+        "height": 800,
+        "source": "Captured from the public demo at demo.logseq.com",
+        "sourceUrl": "https://demo.logseq.com"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE.md is AGPL v3 text; package.json declares 'AGPL-3.0-only'. Latest non-prerelease 2.0.1 (2026-07-13) is titled 'Logseq 2.0 Beta (DB version)'; previous stable file-based line is 0.10.15 (2025-12-01). README: DB version beta, 'data loss is possible'; new mobile app and RTC sync in alpha; Logseq Sync is a paid, invite-only feature that 'can also be self hosted'. MCP verified in src/electron/electron/mcp_server.cljs and logseq/docs db-version.md. The desktop app also has a local HTTP API server (used by MCP) - not listed as REST since it is an RPC-style endpoint. Web = demo.logseq.com / app.logseq.com (browser app, data local). Screenshot: demo journal page with left sidebar opened (keyboard shortcut t l), scrolled to show the NOW/LATER tasks; cropped bottom to remove a YouTube embed. Dark = demo with Logseq's own dark theme (set via the app's localStorage theme key)."
+    },
+    {
+      "id": "appflowy",
+      "name": "AppFlowy",
+      "tagline": "A workspace for docs, wikis and task boards, built as an open source Notion alternative.",
+      "categories": [
+        "notes",
+        "kanban",
+        "project-management"
+      ],
+      "website": "https://appflowy.com",
+      "repo": "https://github.com/AppFlowy-IO/AppFlowy",
+      "docs": "https://docs.appflowy.io/docs",
+      "license": {
+        "spdx": "AGPL-3.0-only",
+        "name": "GNU Affero General Public License v3.0"
+      },
+      "stars": 76916,
+      "latestRelease": {
+        "version": "0.14.5",
+        "date": "2026-09-22"
+      },
+      "lastCommit": "2026-06-26",
+      "primaryLanguage": "Dart",
+      "platforms": [
+        "web",
+        "windows",
+        "macos",
+        "linux",
+        "ios",
+        "android",
+        "server"
+      ],
+      "selfHost": "Docker (commercial build)",
+      "mobile": {
+        "available": true,
+        "how": "First-party iOS and Android apps"
+      },
+      "sync": "AppFlowy Cloud or your own server (commercial build)",
+      "api": [],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/CAREEMER/appflowy-mcp",
+        "note": "No official MCP server (the app has an MCP client for its AI features, not a server). Several community servers exist; CAREEMER/appflowy-mcp (MIT) targets self-hosted AppFlowy Cloud over HTTP."
+      },
+      "status": "active",
+      "caveat": "The apps are open source, but the current sync server is a commercial build whose free self-host tier allows one user.",
+      "screenshot": {
+        "light": "/oss/appflowy.webp",
+        "dark": "/oss/appflowy-dark.webp",
+        "width": 1600,
+        "height": 689,
+        "source": "Captured from the web app at appflowy.com",
+        "sourceUrl": "https://appflowy.com/5fca8c8a-8126-428e-bb5e-0efeef22ab56/Board-68154112-2410-4e04-b9be-a23c6bd7c4de"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "Client repo LICENSE is AGPL v3 text with no 'or later' statement (README: 'Distributed under the AGPLv3 License'), so AGPL-3.0-only used conservatively. AppFlowy-IO/AppFlowy-Cloud (AGPL) is ARCHIVED; its README says to self-host from AppFlowy-IO/AppFlowy-SelfHost-Commercial, which ships prebuilt Docker images of a 'commercial AppFlowy Cloud codebase' under the 'AppFlowy Self-Hosted Commercial License'; Free Tier = 1 user seat per instance. AppFlowy-Web (browser client) is AGPL and active. MCP: frontend/rust-lib/flowy-ai/src/mcp is an MCP *client* manager; no official server found (searched repo, org, web). The Cloud REST API is used by community tools but I found no public API docs, so api left empty. Screenshot: a public AppFlowy template page (Agile Sprint Board) rendered by AppFlowy's own web app; light and dark via prefers-color-scheme. Rejected: README images (appflowy.com/_next media links 404) and website feature images (stylized mockups with placeholder bars); Flathub (verified) screenshots are real but from 2023."
+    },
+    {
+      "id": "affine",
+      "name": "AFFiNE",
+      "tagline": "A local-first workspace that mixes docs, whiteboards and databases in one place.",
+      "categories": [
+        "notes"
+      ],
+      "website": "https://affine.pro",
+      "repo": "https://github.com/toeverything/AFFiNE",
+      "docs": "https://docs.affine.pro/",
+      "license": {
+        "spdx": "MIT AND MPL-2.0 AND LicenseRef-AFFiNE-EE",
+        "name": "MIT (apps and editor); server code under the AFFiNE Enterprise Edition license, with Community Edition parts under MPL-2.0"
+      },
+      "stars": 72950,
+      "latestRelease": {
+        "version": "v0.27.4",
+        "date": "2026-08-17"
+      },
+      "lastCommit": "2026-09-22",
+      "primaryLanguage": "TypeScript",
+      "platforms": [
+        "web",
+        "windows",
+        "macos",
+        "linux",
+        "ios",
+        "android",
+        "server"
+      ],
+      "selfHost": "Docker",
+      "mobile": {
+        "available": true,
+        "how": "First-party iOS and Android apps"
+      },
+      "sync": "Local-first; AFFiNE Cloud or your own server",
+      "api": [],
+      "mcp": {
+        "kind": "official",
+        "url": "https://affine.pro/mcp",
+        "note": "Built into AFFiNE Cloud and self-hosted servers (with AI features enabled); per-client credentials from workspace settings; read-only by default, read-write rolling out. Community alternative: DAWNCR0W/affine-mcp-server (MIT)."
+      },
+      "status": "active",
+      "caveat": "Some server features are under a paid Enterprise Edition license; the Community Edition is free to self-host.",
+      "screenshot": {
+        "light": "/oss/affine.webp",
+        "dark": "/oss/affine-dark.webp",
+        "width": 1600,
+        "height": 856,
+        "source": "Captured from the web app at app.affine.pro",
+        "sourceUrl": "https://app.affine.pro"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "Root LICENSE (canary): packages/backend and packages/common/native are under packages/backend/server/LICENSE (the 'AFFiNE Enterprise Edition (EE) license': production use needs an EE subscription; dev/test free); everything else MIT (LICENSE-MIT). The EE license itself says it 'applies only to the part of this Software that is not distributed as part of AFFiNE Community Edition (CE)', and CE parts are under MPL-2.0. README: 'AFFiNE Community Edition (CE) ... is free for self-host under the MIT license' - this conflicts slightly with the LICENSE files (MPL-2.0 for CE server), so SPDX lists all three. GitHub shows NOASSERTION. Contributions need a CLA. MCP verified in packages/backend/server/src/plugins/copilot/mcp and mcp-credentials GraphQL ops, plus affine.pro/mcp (dated 2026-08-20). The server has a GraphQL API used by the apps and community tools, but I found no public API docs, so api left empty. Screenshot: app.affine.pro opens a local 'Demo Workspace' without login (data in browser); I closed the app's own 'saved in this browser' warning banner with its X button; cropped bottom to cut a half-visible table. Dark = same page with prefers-color-scheme dark (AFFiNE follows system theme)."
+    },
+    {
+      "id": "anytype",
+      "name": "Anytype",
+      "tagline": "An encrypted, local-first app for notes, tasks and linked objects that syncs peer to peer.",
+      "categories": [
+        "notes"
+      ],
+      "website": "https://anytype.io",
+      "repo": "https://github.com/anyproto/anytype-ts",
+      "docs": "https://doc.anytype.io/anytype",
+      "license": {
+        "spdx": "LicenseRef-Any-Source-Available-1.0",
+        "name": "Any Source Available License 1.0"
+      },
+      "stars": 8848,
+      "latestRelease": {
+        "version": "v0.57.1-beta",
+        "date": "2026-09-22"
+      },
+      "lastCommit": "2026-09-22",
+      "primaryLanguage": "TypeScript",
+      "platforms": [
+        "windows",
+        "macos",
+        "linux",
+        "ios",
+        "android"
+      ],
+      "selfHost": "Docker (any-sync network)",
+      "mobile": {
+        "available": true,
+        "how": "First-party iOS and Android apps"
+      },
+      "sync": "End-to-end encrypted sync via the Anytype network or your own any-sync nodes",
+      "api": [
+        "REST"
+      ],
+      "mcp": {
+        "kind": "official",
+        "url": "https://github.com/anyproto/anytype-mcp",
+        "note": "Official MCP server by Any Association (MIT, npm @anyproto/anytype-mcp); wraps the local Anytype API and needs an API key from the desktop app."
+      },
+      "status": "active",
+      "caveat": "Anytype's apps are source-available, not open source: commercial use is limited to networks Any Association allows.",
+      "screenshot": {
+        "light": "/oss/anytype.webp",
+        "width": 1600,
+        "height": 893,
+        "source": "Official screenshot from flathub.org, © the Anytype project",
+        "sourceUrl": "https://dl.flathub.org/media/io/anytype/anytype/b05e6b225c13832a3ebad1b3db3b1ebc/screenshots/image-1_orig.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE.md in anytype-ts (and anytype-heart, anytype-kotlin) is the 'Any Source Available License 1.0': use/modify/redistribute only for Non-Commercial Use or Commercial Use in 'Allowed Networks' (networks.any.coop) - not OSI open source. any-sync protocol and any-sync-dockercompose (self-hosted sync) are MIT. Flathub listing is verified by anytype.io and itself labels the license LicenseRef-proprietary. REST = local Anytype API (developers.anytype.io). No first-party hosted web app (README has a dev-only 'web mode'), so web omitted. No screenshots in README; anytype.io exposes only an og image. Flathub dark screenshot shows a different screen, so no dark variant. Consider dropping from an 'open source' list or keeping only with the caveat."
+    },
+    {
+      "id": "kanboard",
+      "name": "Kanboard",
+      "tagline": "A simple self-hosted kanban board for projects, with list, calendar and Gantt views.",
+      "categories": [
+        "kanban",
+        "project-management"
+      ],
+      "website": "https://kanboard.org",
+      "repo": "https://github.com/kanboard/kanboard",
+      "docs": "https://docs.kanboard.org/",
+      "license": {
+        "spdx": "MIT",
+        "name": "MIT License"
+      },
+      "stars": 9883,
+      "latestRelease": {
+        "version": "v1.2.54",
+        "date": "2026-08-29"
+      },
+      "lastCommit": "2026-09-11",
+      "primaryLanguage": "PHP",
+      "platforms": [
+        "web",
+        "server"
+      ],
+      "selfHost": "PHP app, Docker",
+      "mobile": {
+        "available": false,
+        "how": "No mobile app; use the web app in a phone browser"
+      },
+      "sync": "Your own server",
+      "api": [
+        "JSON-RPC",
+        "Plugins",
+        "Webhooks"
+      ],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/bivex/kanboard-mcp",
+        "note": "No official server. Several third-party servers wrap Kanboard's JSON-RPC API; bivex/kanboard-mcp (Go) is the most starred."
+      },
+      "status": "maintenance",
+      "caveat": "The author says Kanboard is in maintenance mode: small fixes only, no new major features.",
+      "screenshot": {
+        "light": "/oss/kanboard.webp",
+        "width": 1013,
+        "height": 452,
+        "source": "Official screenshot from kanboard.org, © the Kanboard project",
+        "sourceUrl": "https://kanboard.org/assets/img/board.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "License: LICENSE is MIT (composer.json 'MIT'). README states 'This application is in maintenance mode' (author not developing major features; community releases continue: v1.2.54 on 2026-08-29, 68 commits since 2026-03-24). Status set to maintenance per the project's own statement even though releases are regular. API is JSON-RPC (docs.kanboard.org/v1/api/), not REST, so REST is left out of api[]. Webhooks: docs.kanboard.org/v1/dev/webhooks/. Plugins: docs.kanboard.org/v1/plugins/. iCal feed exists (docs.kanboard.org/v1/user/ical/), not CalDAV. No public demo found; kanboard.org hero image is small (1013x452) and old but is the official board shot. MCP: gh search found bivex/kanboard-mcp (28 stars), ChristianJStarr/kanboard-mcp (plugin), ErnestoCorona/kanboard-mcp; none official."
+    },
+    {
+      "id": "wekan",
+      "name": "WeKan",
+      "tagline": "A self-hosted kanban board like Trello, with swimlanes, checklists and custom fields.",
+      "categories": [
+        "kanban"
+      ],
+      "website": "https://wekan.fi",
+      "repo": "https://github.com/wekan/wekan",
+      "docs": "https://github.com/wekan/wekan/tree/main/docs",
+      "license": {
+        "spdx": "MIT",
+        "name": "MIT License"
+      },
+      "stars": 21094,
+      "latestRelease": {
+        "version": "v12.01",
+        "date": "2026-09-24"
+      },
+      "lastCommit": "2026-09-25",
+      "primaryLanguage": "JavaScript",
+      "platforms": [
+        "web",
+        "server",
+        "windows",
+        "macos",
+        "linux"
+      ],
+      "selfHost": "Docker, Snap, Sandstorm and more",
+      "mobile": {
+        "available": false,
+        "how": "No mobile app; use the web app in a phone browser"
+      },
+      "sync": "Your own server",
+      "api": [
+        "REST",
+        "Webhooks"
+      ],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/namar0x0309/wekan-mcp",
+        "note": "No official server. A few small third-party servers exist (namar0x0309/wekan-mcp, omriza5/wekan-mcp-server)."
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/wekan.webp",
+        "width": 1600,
+        "height": 1000,
+        "source": "Captured from the public demo at boards.wekan.team",
+        "sourceUrl": "https://boards.wekan.team/b/D2SzJKZDS4Z48yeQH/wekan-r-open-source-kanban-board-with-mit-license"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE is MIT (Copyright Lauri Ojansivu). README links this public read-only board as 'Public read-only board at WeKan demo'; captured without login (board header is not shown to anonymous viewers; the top bar is the swimlane title). Platforms/self-host from wekan.fi/install: Windows/Mac/Linux .zip bundle (no container), Snap, Docker, Sandstorm, Kubernetes. The desktop 'bundle' is a server bundle you open in a browser, so windows/macos/linux mean the server runs there, not a native desktop client. REST API docs: docs/API/REST-API.md; webhooks: docs/Features/Webhooks. v12.01 released 2026-09-24. Official repo screenshots (public/screenshot1.webp etc.) date from ~2021 so the live board was preferred."
+    },
+    {
+      "id": "planka",
+      "name": "PLANKA",
+      "tagline": "A self-hosted Trello-style kanban board with real-time updates, Markdown cards and a stopwatch.",
+      "categories": [
+        "kanban"
+      ],
+      "website": "https://planka.app",
+      "repo": "https://github.com/plankanban/planka",
+      "docs": "https://docs.planka.cloud/docs/welcome/",
+      "license": {
+        "spdx": "LicenseRef-PLANKA-Community-License",
+        "name": "PLANKA Community License"
+      },
+      "stars": 12579,
+      "latestRelease": {
+        "version": "v2.2.1",
+        "date": "2026-08-10"
+      },
+      "lastCommit": "2026-09-17",
+      "primaryLanguage": "JavaScript",
+      "platforms": [
+        "web",
+        "server"
+      ],
+      "selfHost": "Docker, Helm",
+      "mobile": {
+        "available": false,
+        "how": "No app for the free edition; phone and tablet support is a paid PLANKA Pro feature"
+      },
+      "sync": "Your own server",
+      "api": [
+        "REST",
+        "Webhooks"
+      ],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/gogogadgetbytes/planka-mcp",
+        "note": "No official server. Several third-party servers exist (gogogadgetbytes/planka-mcp, chmald/planka-mcp, omnicoreos/planka-mcp for 2.x)."
+      },
+      "status": "active",
+      "caveat": "PLANKA is source-available under a fair-use license, not an OSI open source license: hosting it for others for money is not allowed.",
+      "screenshot": {
+        "light": "/oss/planka.webp",
+        "width": 1080,
+        "height": 360,
+        "source": "Official screenshot from the project's README, © the PLANKA project",
+        "sourceUrl": "https://raw.githubusercontent.com/plankanban/planka/master/assets/demo.gif"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE.md = 'PLANKA Community License' v1.1 (May 20, 2025): files are under a 'Fair Use License' allowing personal, internal-organization, friends/family, non-profit and education use; 'operating PLANKA as a hosted service for third parties for any commercial gain' is prohibited; files marked '.pe.' are under a separate commercial Pro/Enterprise license. README calls it 'fair-code'. v1.x (e.g. v1.26.3) was AGPL-3.0; the license changed with v2. Not OSI-approved -> caveat. Community vs Pro table in README: REST API + webhooks are in Community; phones/tablets, themes, calendar/timeline views, SSO are Pro-only. The planka.app live demo is the Pro edition (pro.demo.planka.cloud) so it was not used; planka.app board-view.webp is captioned 'PLANKA with the new themes' (Pro). A local install of Community v2.2.1 was attempted but its first login requires accepting PLANKA's End User Terms of Service, which I did not accept without the user's approval; so the screenshot is frame 1 of the README demo.gif (board titled 'Community Version'), which is small (1080x360). Recommend dropping or flagging as not open source."
+    },
+    {
+      "id": "focalboard",
+      "name": "Focalboard",
+      "tagline": "A self-hosted board, table and calendar tool for tasks and projects, like a simple Trello or Notion.",
+      "categories": [
+        "kanban",
+        "project-management"
+      ],
+      "website": "https://github.com/mattermost-community/focalboard",
+      "repo": "https://github.com/mattermost-community/focalboard",
+      "releaseTag": {
+        "prefix": "v7.",
+        "pattern": "^v(\\d+)\\.(\\d+)\\.(\\d+)$"
+      },
+      "docs": "https://github.com/mattermost-community/focalboard/tree/main/docs",
+      "license": {
+        "spdx": "AGPL-3.0-only AND Apache-2.0",
+        "name": "GNU AGPL v3.0 for the source (Apache 2.0 for admin tools and config files); Mattermost's compiled builds are MIT"
+      },
+      "stars": 26486,
+      "latestRelease": {
+        "version": "7.11.4",
+        "date": "2023-09-25"
+      },
+      "lastCommit": "2025-06-11",
+      "primaryLanguage": "TypeScript",
+      "platforms": [
+        "web",
+        "server",
+        "windows",
+        "linux"
+      ],
+      "selfHost": "Binary, Docker",
+      "mobile": {
+        "available": false,
+        "how": "No mobile app"
+      },
+      "sync": "Your own server; the desktop app is local only",
+      "api": [
+        "REST"
+      ],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/gmjuhasz/focalboard-mcp-server",
+        "note": "No official server. Small third-party servers exist (gmjuhasz/focalboard-mcp-server, p3psi-boo/focalboard-mcp)."
+      },
+      "status": "unmaintained",
+      "caveat": "The repository says it is no longer maintained. The last standalone releases shipped in 2023.",
+      "screenshot": {
+        "light": "/oss/focalboard.webp",
+        "width": 1600,
+        "height": 1020,
+        "source": "Official screenshot from the project's README, © the Focalboard project",
+        "sourceUrl": "https://raw.githubusercontent.com/mattermost-community/focalboard/main/website/site/static/img/hero.jpg"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "README opens with: 'This repository is currently not maintained. If you're interested in becoming a maintainer please let us know'. 0 commits since 2026-03-24. LICENSE.txt (Mattermost Licensing): compiled versions by Mattermost under MIT; source under AGPL v3.0 (or a commercial license); Admin Tools and Configuration Files (webapp/html-templates/, app-config.json, config.json, webapp/i18n/, server/model/, plugin/) under Apache 2.0. AGPL version not stated as 'or later' -> AGPL-3.0-only. Latest GitHub release v8.0.0 (2024-06-13) only ships the Mattermost plugin; last release with focalboard-win.zip / focalboard-linux.tar.gz / focalboard-server-linux-amd64 is v7.10.6 (2023-10-11). Mac App Store link in README returns 404, so macos is omitted; Microsoft Store listing still returns 200. www.focalboard.com returns HTTP 530 (Cloudflare) on 2026-09-24, so website is set to the repo. Docker: docker/Dockerfile builds from source. REST API: server/swagger docs. The Mattermost Boards plugin now lives at mattermost/mattermost-plugin-boards."
+    },
+    {
+      "id": "taiga",
+      "name": "Taiga",
+      "tagline": "A self-hosted agile project tool with Scrum backlogs, sprints, kanban boards and issues.",
+      "categories": [
+        "kanban",
+        "project-management"
+      ],
+      "website": "https://taiga.io",
+      "repo": "https://github.com/taigaio/taiga-back",
+      "docs": "https://docs.taiga.io/",
+      "license": {
+        "spdx": "MPL-2.0 AND AGPL-3.0-only",
+        "name": "Mozilla Public License 2.0 (backend, taiga-back) and GNU AGPL v3.0 (web front end, taiga-front)"
+      },
+      "stars": 851,
+      "latestRelease": {
+        "version": "6.10.2",
+        "date": "2026-07-02"
+      },
+      "lastCommit": "2026-09-23",
+      "primaryLanguage": "Python",
+      "platforms": [
+        "web",
+        "server"
+      ],
+      "selfHost": "Docker",
+      "mobile": {
+        "available": false,
+        "how": "No official mobile app; use the web app"
+      },
+      "sync": "Your own server",
+      "api": [
+        "REST",
+        "Webhooks",
+        "Plugins"
+      ],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/OFFSET3/taiga-mcp",
+        "note": "No official server. Several third-party servers exist (OFFSET3/taiga-mcp, greddy7574/taigaMcpServer, illodev/taiga-mcp)."
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/taiga.webp",
+        "width": 1600,
+        "height": 900,
+        "source": "Captured from the web app at tree.taiga.io",
+        "sourceUrl": "https://tree.taiga.io/project/transformap/kanban"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "Taiga is split across repos: taigaio/taiga-back (Django API/core, LICENSE = MPL 2.0, file headers 'Mozilla Public License, v. 2.0') and taigaio/taiga-front (Angular web client, LICENSE = GNU AGPL v3, headers say 'GNU Affero General Public License' with no 'or later' -> AGPL-3.0-only); taigaio/taiga-docker is the official install (MPL-2.0). taiga-back chosen as the canonical repo. kaleidos-ventures/taiga ('Taiga next') last pushed 2023-12 and is not the current product. Activity: taiga-back 36 commits since 2026-03-24 (security and bug fixes, a GitHub attachments feature), taiga-front 21. Screenshot: tree.taiga.io is Taiga's own hosted web app; Taiga's own public project has kanban turned off and an empty backlog, so a public, archived community project (TransforMap) was captured anonymously; the pink 'This project was archived. It is now read-only.' bar is real app UI for that project; the cookie banner was hidden. taiga.io's own screenshots are 640px wide and unreadable. API docs docs.taiga.io/api.html, webhooks docs.taiga.io/webhooks.html; plugins via taiga-contrib-* repos."
+    },
+    {
+      "id": "nextcloud-deck",
+      "name": "Nextcloud Deck",
+      "tagline": "A kanban board app for Nextcloud, for personal planning and team projects.",
+      "categories": [
+        "kanban"
+      ],
+      "website": "https://apps.nextcloud.com/apps/deck",
+      "repo": "https://github.com/nextcloud/deck",
+      "docs": "https://deck.readthedocs.io/en/latest/",
+      "license": {
+        "spdx": "AGPL-3.0-or-later",
+        "name": "GNU Affero General Public License v3.0 or later"
+      },
+      "stars": 1423,
+      "latestRelease": {
+        "version": "v1.19.0",
+        "date": "2026-09-16"
+      },
+      "lastCommit": "2026-09-24",
+      "primaryLanguage": "JavaScript",
+      "platforms": [
+        "web",
+        "server"
+      ],
+      "selfHost": "Nextcloud app",
+      "mobile": {
+        "available": true,
+        "how": "Community apps: Nextcloud Deck for Android (F-Droid, Google Play) and Next Deck for iOS"
+      },
+      "sync": "Your Nextcloud server",
+      "api": [
+        "REST",
+        "CalDAV"
+      ],
+      "mcp": {
+        "kind": "community",
+        "url": "https://github.com/cbcoutinho/nextcloud-mcp-server",
+        "note": "No official Deck server. The community Nextcloud MCP server includes 15 Deck tools (boards, stacks, cards, labels)."
+      },
+      "status": "active",
+      "caveat": "Deck runs only inside a Nextcloud server.",
+      "screenshot": {
+        "light": "/oss/nextcloud-deck.webp",
+        "width": 1600,
+        "height": 650,
+        "source": "Official screenshot from apps.nextcloud.com, © the Nextcloud Deck project",
+        "sourceUrl": "https://download.bitgrid.net/nextcloud/deck/screenshots/1.0/Deck-1.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "README SPDX header AGPL-3.0-or-later; LICENSES/AGPL-3.0-or-later.txt; info.xml <licence>agpl</licence>. Screenshot is the one listed in appinfo/info.xml and the README; its original host download.bitgrid.net no longer resolves, so it was fetched through the Nextcloud App Store image proxy (usercontent.apps.nextcloud.com); it shows Deck 1.0 (2020) and was cropped at the bottom to remove empty space. Mobile apps listed in README are third-party: stefan-niedermann/nextcloud-deck (Android) and holger-dev/nextdeck (iOS). CalDAV: repo has lib/DAV/Calendar.php and CalendarPlugin.php (boards exposed to the Nextcloud calendar). REST API: deck.readthedocs.io/en/latest/API/. README warns Deck is 'not yet ready for intensive usage' with many boards/cards. v1.19.0 released 2026-09-16."
+    },
+    {
+      "id": "plane",
+      "name": "Plane",
+      "tagline": "An open source project tool for issues, sprints (cycles), roadmaps and docs, like Jira or Linear.",
+      "categories": [
+        "kanban",
+        "project-management"
+      ],
+      "website": "https://plane.so",
+      "repo": "https://github.com/makeplane/plane",
+      "docs": "https://docs.plane.so/",
+      "license": {
+        "spdx": "AGPL-3.0-only",
+        "name": "GNU Affero General Public License v3.0"
+      },
+      "stars": 59847,
+      "latestRelease": {
+        "version": "v1.4.2",
+        "date": "2026-08-23"
+      },
+      "lastCommit": "2026-09-24",
+      "primaryLanguage": "TypeScript",
+      "platforms": [
+        "web",
+        "server"
+      ],
+      "selfHost": "Docker, Kubernetes",
+      "mobile": {
+        "available": false,
+        "how": "Official iOS and Android apps work only with Plane Cloud and the paid self-hosted edition, not the free Community Edition"
+      },
+      "sync": "Your own server",
+      "api": [
+        "REST",
+        "Webhooks"
+      ],
+      "mcp": {
+        "kind": "official",
+        "url": "https://github.com/makeplane/plane-mcp-server",
+        "note": "Plane maintains an official MCP server (makeplane/plane-mcp-server, MIT)."
+      },
+      "status": "active",
+      "caveat": "Only the free Community Edition is open source; paid editions add closed-source features and the mobile apps.",
+      "screenshot": {
+        "light": "/oss/plane.webp",
+        "width": 1600,
+        "height": 1043,
+        "source": "Official screenshot from the project's README, © the Plane project",
+        "sourceUrl": "https://media.docs.plane.so/GitHub-readme/github-top.webp"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE.txt is GNU AGPL v3 (package.json 'AGPL-3.0', no 'or later') -> AGPL-3.0-only. developers.plane.so/self-hosting/editions-and-versions: Community Edition is AGPL v3 with parity to the Cloud Free tier; Commercial Edition is closed-source and license-key gated. docs.plane.so/devices/mobile: mobile app 'not available on the Community Edition'. plane.so/download also lists desktop apps (macOS, Linux; Windows on older version) that connect to self-hosted instances, but the FAQ does not say whether they work with Community Edition, so desktop platforms are omitted. The README hero screenshot is from a newer UI and its sidebar shows items (e.g. Initiatives, Teamspaces, Dashboards) that may be paid-edition features — could not confirm which. API: developers.plane.so/api-reference, webhooks: developers.plane.so/dev-tools/intro-webhooks. No public demo without sign-up."
+    },
+    {
+      "id": "tasks-md",
+      "name": "Tasks.md",
+      "tagline": "A self-hosted kanban board that saves every card as a Markdown file in a folder.",
+      "categories": [
+        "kanban"
+      ],
+      "website": "https://github.com/BaldissaraMatheus/Tasks.md",
+      "repo": "https://github.com/BaldissaraMatheus/Tasks.md",
+      "docs": null,
+      "license": {
+        "spdx": "MIT",
+        "name": "MIT License"
+      },
+      "stars": 2200,
+      "latestRelease": {
+        "version": "3.3.0",
+        "date": "2026-03-08"
+      },
+      "lastCommit": "2026-03-08",
+      "primaryLanguage": "JavaScript",
+      "platforms": [
+        "web",
+        "server"
+      ],
+      "selfHost": "Docker",
+      "mobile": {
+        "available": false,
+        "how": "No app; the web app can be installed as a PWA on a phone"
+      },
+      "sync": "Markdown files on your server",
+      "api": [],
+      "mcp": {
+        "kind": "none",
+        "url": null,
+        "note": "We found no MCP server. Because cards are plain Markdown files, any file-system MCP server can read and edit them."
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/tasks-md.webp",
+        "dark": "/oss/tasks-md-dark.webp",
+        "width": 1600,
+        "height": 906,
+        "source": "Captured from a local install of Tasks.md 3.3.0",
+        "sourceUrl": "https://github.com/BaldissaraMatheus/Tasks.md/releases/tag/3.3.0"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE MIT. Latest release 3.3.0 on 2026-03-08 (about 6.5 months ago; releases every 1-2 months through 2025-2026); README says 'This is a low maintenance project' with a deliberately narrow scope — status could reasonably be 'maintenance' if no release lands soon. Only official screenshot is the README demo.gif (800x328, unreadable), so I ran tag 3.3.0 from source locally (same steps as its Dockerfile/entrypoint; Docker Desktop storage was failing), created 3 lanes and 7 cards with tags through the real UI, and captured light and dark (app follows the OS theme). Homepage on GitHub points to Docker Hub; website set to the repo. No documented API (the backend has internal HTTP endpoints only). Official Docker image baldissaramatheus/tasks.md. MCP: gh search for 'tasks.md mcp'/'tasksmd' found nothing."
+    },
+    {
+      "id": "kaneo",
+      "name": "Kaneo",
+      "tagline": "A clean, self-hosted project tool with boards, lists, a calendar and Gantt charts.",
+      "categories": [
+        "kanban",
+        "project-management"
+      ],
+      "website": "https://kaneo.app",
+      "repo": "https://github.com/usekaneo/kaneo",
+      "docs": "https://kaneo.app/docs/core",
+      "license": {
+        "spdx": "MIT",
+        "name": "MIT License"
+      },
+      "stars": 9185,
+      "latestRelease": {
+        "version": "v2.27.0",
+        "date": "2026-09-24"
+      },
+      "lastCommit": "2026-09-25",
+      "primaryLanguage": "TypeScript",
+      "platforms": [
+        "web",
+        "server"
+      ],
+      "selfHost": "Docker, Helm",
+      "mobile": {
+        "available": false,
+        "how": "No mobile app"
+      },
+      "sync": "Your own server",
+      "api": [
+        "REST",
+        "Webhooks"
+      ],
+      "mcp": {
+        "kind": "official",
+        "url": "https://kaneo.app/docs/core/integrations/mcp",
+        "note": "Built in: every instance serves an HTTP MCP endpoint at /api/mcp, and the official @kaneo/mcp npm package covers stdio clients."
+      },
+      "status": "active",
+      "caveat": null,
+      "screenshot": {
+        "light": "/oss/kaneo.webp",
+        "dark": "/oss/kaneo-dark.webp",
+        "width": 1600,
+        "height": 926,
+        "source": "Official screenshot from kaneo.app, © the Kaneo project",
+        "sourceUrl": "https://raw.githubusercontent.com/usekaneo/kaneo/main/apps/site/public/images/product/board-light.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE MIT (Copyright 2024 Andrej Acevski). No public demo: kaneo.app only offers Kaneo Cloud sign-up/trial, which I did not use. Screenshots are the website's official product images in the repo (apps/site/public/images/product/board-light.png and board-dark.png, same screen, UI shows v2.26.0). REST API: apps/docs/api-reference (OpenAPI at /api/openapi). Webhooks: generic-webhook integration plugin in apps/api/src/plugins/generic-webhook, plus GitHub/Gitea integrations. MCP: README 'MCP Server' section. Mobile app: none found (not exhaustively confirmed). v2.27.0 released 2026-09-24."
+    },
+    {
+      "id": "openproject",
+      "name": "OpenProject",
+      "tagline": "A self-hosted project management suite with boards, Gantt charts, time tracking and wikis.",
+      "categories": [
+        "kanban",
+        "project-management",
+        "time-tracking"
+      ],
+      "website": "https://www.openproject.org",
+      "repo": "https://github.com/opf/openproject",
+      "docs": "https://www.openproject.org/docs/",
+      "license": {
+        "spdx": "GPL-3.0-only",
+        "name": "GNU General Public License v3.0 only"
+      },
+      "stars": 16201,
+      "latestRelease": {
+        "version": "v17.8.0",
+        "date": "2026-09-02"
+      },
+      "lastCommit": "2026-09-24",
+      "primaryLanguage": "Ruby",
+      "platforms": [
+        "web",
+        "server",
+        "ios",
+        "android"
+      ],
+      "selfHost": "Docker, packages, Helm",
+      "mobile": {
+        "available": true,
+        "how": "Official iOS and Android app (beta)"
+      },
+      "sync": "Your own server",
+      "api": [
+        "REST",
+        "Webhooks",
+        "Plugins"
+      ],
+      "mcp": {
+        "kind": "official",
+        "url": "https://www.openproject.org/docs/system-admin-guide/integrations/mcp-server/",
+        "note": "Built-in MCP server at /mcp, but it is a paid Enterprise add-on (Professional plan and up). For the free Community edition, community servers exist, e.g. AndyEverything/openproject-mcp-server."
+      },
+      "status": "active",
+      "caveat": "Some features, including the built-in MCP server, are paid Enterprise add-ons.",
+      "screenshot": {
+        "light": "/oss/openproject.webp",
+        "width": 1600,
+        "height": 900,
+        "source": "Captured from the web app at community.openproject.org",
+        "sourceUrl": "https://community.openproject.org/projects/OP/boards/7065"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE is GPL v3; COPYRIGHT says 'under the terms of the GNU General Public License version 3' (no 'or later') -> GPL-3.0-only; derived from ChiliProject (GPLv2+). Screenshot: community.openproject.org is OpenProject's own public instance where it develops the product; the 'Dream Team - Review' action board (Kanban) is public and was captured without login. The instance did not switch to dark theme for anonymous users, so no dark shot. MCP: repo has lib/api/mcp.rb and app/services/mcp_tools.rb; docs say 'This feature is an Enterprise add-on and can only be used with Enterprise cloud or Enterprise on-premises in plans Professional, Premium, Corporate'. Mobile: docs/mobile-app-guide/ says the OpenProject Mobile app (Beta) is available for iOS and Android; docs do not state whether it requires an Enterprise plan. API v3 docs www.openproject.org/docs/api/; webhooks under system-admin-guide/api-and-webhooks. v17.8.0 released 2026-09-02."
+    },
+    {
+      "id": "leantime",
+      "name": "Leantime",
+      "tagline": "A self-hosted project tool with kanban, Gantt and timesheets, plus a personal My Work page and calendar.",
+      "categories": [
+        "kanban",
+        "project-management",
+        "time-tracking",
+        "planner"
+      ],
+      "website": "https://leantime.io",
+      "repo": "https://github.com/Leantime/leantime",
+      "docs": "https://docs.leantime.io/",
+      "license": {
+        "spdx": "AGPL-3.0-only",
+        "name": "GNU Affero General Public License v3.0 only"
+      },
+      "stars": 11653,
+      "latestRelease": {
+        "version": "v3.10.0",
+        "date": "2026-09-24"
+      },
+      "lastCommit": "2026-09-24",
+      "primaryLanguage": "PHP",
+      "platforms": [
+        "web",
+        "server"
+      ],
+      "selfHost": "PHP app, Docker",
+      "mobile": {
+        "available": false,
+        "how": "No mobile app; use the web app in a phone browser"
+      },
+      "sync": "Your own server",
+      "api": [
+        "JSON-RPC",
+        "Plugins"
+      ],
+      "mcp": {
+        "kind": "official",
+        "url": "https://marketplace.leantime.io/product/mcp-server/",
+        "note": "Official MCP server is a paid plugin (beta) from the Leantime marketplace, with the Leantime/leantime-mcp bridge for stdio clients. A free community option is daniel-eder/leantime-mcp."
+      },
+      "status": "active",
+      "caveat": "Some add-ons, including the MCP server, are paid plugins.",
+      "screenshot": {
+        "light": "/oss/leantime.webp",
+        "width": 1600,
+        "height": 968,
+        "source": "Official screenshot from the project's README, © the Leantime project",
+        "sourceUrl": "https://raw.githubusercontent.com/Leantime/leantime/master/public/assets/images/Screenshots/mywork-v3.5.png"
+      },
+      "checkedAt": "2026-09-24",
+      "notes": "LICENSE is GNU AGPL v3; composer.json 'license': 'AGPL-3.0-only'. README exception: plugins in /app/Plugins may be under other licenses including the enterprise license. README feature table says all listed features (kanban, Gantt, table, list and calendar views, timesheets, goals, docs/wikis) are in the OSS version. Planner angle: the screenshot is the 'My Work' dashboard with personal to-dos and a day calendar; README also shows timesheets and a personal calendar — worth a mention in a planner post. API is JSON-RPC 2.0 (docs.leantime.io/api/usage), not REST, so REST is left out of api[]. Chat notifications go to Slack/Mattermost/Discord; no general webhooks found. demo.leantime.io exists but publishes no login, so it was not used. The README also has an official dark screenshot (dark.png) but it is an older My Work layout, not the same screen, so no dark image. MCP: marketplace.leantime.io/product/mcp-server (paid, beta, Leantime 3.7.3+); support article support.leantime.io/en/article/leantime-mcp-server-dkomm9/. v3.10.0 released 2026-09-24."
+    }
+  ]
+}

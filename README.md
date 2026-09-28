@@ -303,25 +303,20 @@ Open http://localhost:3000 and create your account. The API creates the database
 
 <br />
 
-Prerequisites: [Bun](https://bun.sh) 1.4.2 (run `mise install` when using mise) and PostgreSQL 15+. S3-compatible storage is optional, for file uploads.
+Prerequisites: [Bun](https://bun.sh) 1.4.2 (run `mise install` when using mise) and PostgreSQL 15+ (Homebrew's `postgresql@17`, or a hosted database such as Neon or Supabase). S3-compatible storage is optional, for file uploads.
 
 ```bash
 git clone https://github.com/ShadowWalker2014/open-sunsama.git
 cd open-sunsama
 mise install
 bun install
-docker compose up -d postgres   # PostgreSQL only, on localhost:5431
 
-# Configure environment (root + API)
-cp .env.example .env
-cp apps/api/.env.example apps/api/.env   # DATABASE_URL already points at the Docker PostgreSQL
-#   JWT_SECRET              → openssl rand -base64 32
-#   CALENDAR_ENCRYPTION_KEY → openssl rand -hex 32
-#   API_URL / WEB_APP_URL   → your public URLs (the MCP connector uses them for OAuth)
-
-bun run db:migrate
-bun run dev
+# API on :3001 and web app on :3000. Tables are created on start;
+# Redis, email, background jobs and OAuth stay off.
+DEV_DATABASE_URL=postgresql://localhost:5432/opensunsama bun run dev:local
 ```
+
+To run with integrations turned on, copy `apps/api/.env.example` to `apps/api/.env`, fill it in, and use `bun run dev`.
 
 | Service | URL |
 | --- | --- |

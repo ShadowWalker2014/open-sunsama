@@ -1,0 +1,241 @@
+export const frontmatter = {
+  title: "9 Best Open Source Kanban Boards in 2026 (Trello Alternatives)",
+  description: "The 9 best open source kanban boards in 2026, from a personal board for your day to self-hosted Trello alternatives for teams. Licenses and status compared.",
+  date: "2026-09-24",
+  updated: "2026-09-24",
+  author: "Open Sunsama Team",
+  tags: ["open-source", "self-hosted", "kanban", "trello", "alternatives"],
+  readingTime: 12,
+  image: "/blog-best-open-source-kanban-boards.webp",
+  faqs: [
+    {
+      question: "What is the best open source kanban board?",
+      answer: "Open Sunsama is our pick for a personal kanban: a board of days with time blocking and any AI agent. For a team Trello replacement, WeKan is the closest match. Vikunja and Kaneo are strong all-round picks, and Taiga or Plane suit agile teams.",
+    },
+    {
+      question: "What is the best open source Trello alternative?",
+      answer: "WeKan is the closest to Trello, with boards, lists, cards, swimlanes and a Trello import. Vikunja can also import your Trello boards and adds list, Gantt and table views. Both run on your own server with Docker.",
+    },
+    {
+      question: "Can I self-host a kanban board with Docker?",
+      answer: "Yes. WeKan, Vikunja, Kaneo, Kanboard, Taiga, Plane and Tasks.md all offer Docker setups. Nextcloud Deck installs as an app inside a Nextcloud server instead.",
+    },
+    {
+      question: "Is Kanboard still maintained?",
+      answer: "Kanboard is in maintenance mode. Its author says it gets fixes and small releases, but no new major features. It still works well if you want a board that stays the same.",
+    },
+    {
+      question: "Is Focalboard still maintained?",
+      answer: "No. The Focalboard repository says it is not maintained, and its last standalone releases shipped in 2023. Pick WeKan, Vikunja or Kaneo for a new board.",
+    },
+    {
+      question: "Which open source kanban boards work with AI agents?",
+      answer: "Open Sunsama has a hosted MCP server with OAuth sign-in for Claude, ChatGPT and Cursor. Kaneo has an MCP endpoint built into every instance, and Plane has an official MCP server. Vikunja has one on its main branch, and the rest rely on community servers.",
+    },
+    {
+      question: "Is Open Sunsama open source?",
+      answer: "The code is public on GitHub. It uses a non-commercial license: you can read it, run it and self-host it for personal use. Companies need a commercial license. It is not an OSI license like MIT or GPL.",
+    },
+  ],
+};
+
+The best open source kanban board for planning your own day is **Open Sunsama**. It is a personal kanban: a board of days, with time blocking and any AI agent. It is built for one person's plan, not for tracking a team's project.
+
+For a team, the best open source Trello alternative is **WeKan**. **Vikunja** and **Kaneo** are strong all-round picks, and **Taiga** or **Plane** fit agile teams.
+
+We build Open Sunsama, so we put it first — here is why, and where others fit better.
+
+A kanban board is a set of columns with cards you drag from left to right. Some boards track a team's project, and others plan one person's week.
+
+The right pick depends on which job you have.
+
+## Key takeaways
+
+- **Best overall:** Open Sunsama, the best personal kanban for planning your day. A board of days, time blocking and any AI agent.
+- **Closest to Trello:** WeKan, with swimlanes, checklists and a Trello import.
+- **Best all-rounder:** Vikunja, with kanban, list, Gantt and table views of the same tasks.
+- **Cleanest new board:** Kaneo, MIT licensed, with MCP built in.
+- **Set it and forget it:** Kanboard, now in maintenance mode.
+- **For Nextcloud users:** Nextcloud Deck.
+- **For agile teams:** Plane or Taiga.
+- **For Markdown lovers:** Tasks.md, where every card is a file.
+
+<OssTable ids={["open-sunsama", "wekan", "vikunja", "kaneo", "kanboard", "nextcloud-deck", "plane", "taiga", "tasks-md"]} />
+
+## A personal kanban plans your day, and a team kanban tracks a project
+
+Trello made the board famous for teams. But many people search "open source kanban" to plan their own work. Those are two different jobs.
+
+A **team board** has columns like To do, Doing and Done. Many people share it, and cards move as the project moves. WeKan, Kanboard, Taiga and Plane are built for this.
+
+A **personal board** has a column for each day. You drag tasks into the day you will do them, then give them a time. Open Sunsama is built for this, and it is the only one here that puts the board next to your calendar.
+
+<Shot id="board" alt="Open Sunsama board with a backlog column next to a column for each day" caption="A personal kanban: your backlog and each day side by side." />
+
+## How we compared
+
+We read each project's license file, releases, docs and open issues. We pulled stars and releases from GitHub, GitLab and Codeberg on September 24, 2026. Each card below shows those facts, with a link to the source code.
+
+We captured the screenshots ourselves from each app's public demo or web app, or took them from the project's official images. The card says which.
+
+We build Open Sunsama and use it every day. We did not run every other board for weeks, so we don't claim to have tested them.
+
+## 1. Open Sunsama: the best personal kanban for planning your day
+
+<OssApp id="open-sunsama" rank={1} bestFor="Planning your own days on a board of days, with time blocking and any AI agent." />
+
+**Verdict:** best overall for personal planning. It is kanban for your day, not for a team's project.
+
+<DemoVideo id="tour" />
+
+Each column is a day, next to your backlog. You drag the tasks you will really do into Today. The column adds up your time estimates, so you see when the day is full.
+
+<Clip id="plan-day" caption="Drag tasks from the backlog into Today to plan your day." />
+
+The rest of the week works the same way. Drag a task from Today to Thursday, or back to the backlog. Unfinished tasks roll over on their own.
+
+<Clip id="week-plan" caption="Move tasks between days on the board to plan your week." />
+
+Then you block time. Drag a card onto the calendar, next to your Google, Outlook or iCloud meetings. For someday ideas, Ideas boards give you Trello-style columns and cards, away from your days.
+
+- **Good:** keyboard shortcuts on every card, a focus timer that tracks planned vs actual time, and a hosted MCP server. Claude or ChatGPT can move cards and plan your week. See the [kanban board](/features/kanban) page.
+- **Falls short:** it plans one person's work. There are no shared team boards, swimlanes or WIP limits. There is no iOS or Android app; phones use the mobile web app.
+- **Pick it if** you want a board that plans your days, not a project. Self-host it with [Docker](/docs/self-hosting/docker), or see why we call it an [open source task manager](/open-source-task-manager).
+
+## 2. WeKan: the closest open source Trello
+
+<OssApp id="wekan" rank={2} bestFor="Teams moving off Trello who want the same boards, lists and cards on their own server." />
+
+**Verdict:** the most complete Trello-style board you can self-host.
+
+- **Good:** swimlanes, checklists, labels, custom fields and board permissions. It imports Trello boards from their JSON export, with lists, cards and comments.
+- **Falls short:** there is no mobile app, so phones use the web app. It can feel heavy for one person's to-do list.
+- **Pick it if** your team already thinks in Trello boards and wants to keep that shape.
+
+## 3. Vikunja: kanban plus lists, Gantt and tables
+
+<OssApp id="vikunja" rank={3} bestFor="People and small teams who want kanban plus list, Gantt and table views of the same tasks." />
+
+**Verdict:** the best all-round pick if you want more than a board.
+
+- **Good:** the same tasks show as a list, a board, a Gantt chart or a table. It imports from Trello, Todoist, WeKan and more. CalDAV puts tasks in your calendar app.
+- **Falls short:** the admin panel and time tracking sit in a paid Pro add-on. The Android app is still in alpha.
+- **Pick it if** you want a board today and a to-do app tomorrow, in one place.
+
+## 4. Kaneo: a clean new board with MCP built in
+
+<OssApp id="kaneo" rank={4} bestFor="Small teams who want a clean, modern board with calendar and Gantt views, and AI agent access." />
+
+**Verdict:** the cleanest modern board here, and the project ships often.
+
+- **Good:** boards, lists, a calendar and Gantt charts in a calm design. Every instance serves an MCP endpoint, so your agent can read and move cards. Setup is one Docker Compose file.
+- **Falls short:** it is younger than WeKan or Kanboard, and there is no mobile app.
+- **Pick it if** you want an MIT board that looks modern and works with AI agents.
+
+## 5. Kanboard: a small board that keeps working
+
+<OssApp id="kanboard" rank={5} bestFor="People who want a fast, simple board they set up once and forget." />
+
+**Verdict:** a tiny, fast board that has run for over a decade. Its author now says it is in maintenance mode.
+
+- **Good:** swimlanes, subtasks, time tracking, automatic actions and plugins. It runs on almost any PHP host.
+- **Falls short:** expect fixes, not new features. The design looks dated next to Kaneo or Plane.
+- **Pick it if** you want a board that stays the same for years.
+
+## 6. Nextcloud Deck: kanban inside your Nextcloud
+
+<OssApp id="nextcloud-deck" rank={6} bestFor="Nextcloud users who want boards next to their files, calendar and contacts." />
+
+**Verdict:** the easy pick if Nextcloud already runs your files and calendar.
+
+- **Good:** boards share Nextcloud's users and groups. Cards with due dates show in Nextcloud Calendar. Community apps exist for Android and iOS.
+- **Falls short:** you need a whole Nextcloud server. Its own README warns it is not ready for very heavy use with many boards.
+- **Pick it if** you already run Nextcloud and want boards without another server.
+
+## 7. Plane: an open source Jira or Linear
+
+<OssApp id="plane" rank={7} bestFor="Software teams who want issues, sprints and roadmaps, like Jira or Linear, on their own server." />
+
+**Verdict:** the most polished open source tool for software teams.
+
+- **Good:** issues, cycles (sprints), modules and pages, with kanban, list, calendar, Gantt and spreadsheet views. Plane runs an official MCP server.
+- **Falls short:** only the Community Edition is open source. The mobile apps and some features need a paid edition. It is far more than one person needs.
+- **Pick it if** your team wants Jira-style tracking without Jira.
+
+## 8. Taiga: Scrum and kanban for agile teams
+
+<OssApp id="taiga" rank={8} bestFor="Agile teams who want Scrum backlogs, sprints and kanban boards in one tool." />
+
+**Verdict:** a mature agile tool with real Scrum support.
+
+- **Good:** backlogs, sprints, user stories, issues and kanban boards. It imports from Trello, Jira and GitHub.
+- **Falls short:** it is heavy for a simple board, and there is no official mobile app.
+- **Pick it if** your team runs Scrum and wants a board next to its sprints.
+
+## 9. Tasks.md: a board made of Markdown files
+
+<OssApp id="tasks-md" rank={9} bestFor="People who want every card saved as a plain Markdown file in a folder they own." />
+
+**Verdict:** the simplest board here, and your data is just files.
+
+- **Good:** each lane is a folder and each card is a Markdown file. You can edit cards in any text editor, and back them up with the rest of your files.
+- **Falls short:** the project keeps its scope small on purpose. There is no API, so an AI agent needs a file-system MCP server to edit cards.
+- **Pick it if** you love Markdown and want a board with no database.
+
+## How to move from Trello to an open source board
+
+Most boards here can bring your Trello cards with you. Start with an export from Trello.
+
+1. **Export your board.** In Trello, open the board menu, then **Print, export and share**, then the JSON export.
+2. **Import into WeKan.** On the boards page, choose to import from Trello and paste the JSON. WeKan brings over lists, cards, labels, comments and attachments, and maps members to WeKan users.
+3. **Or import into Vikunja.** Vikunja's migration page signs in to Trello and copies your boards over. It can also import from WeKan and Todoist.
+4. **Or import into Taiga or Nextcloud Deck.** Taiga has a Trello importer that your admin turns on with a Trello API key. Deck imports Trello JSON with a server command, `occ deck:import`.
+5. **Check attachments and members.** Imports are rarely perfect. Open a few busy cards and compare them with Trello before you delete anything.
+
+If the board was your personal to-do list, you may not need a team board at all. Move those cards into a planner that shows them next to your calendar.
+
+## Which kanban boards work with AI agents?
+
+An AI agent reaches your board over MCP. Here is where each board stands.
+
+- **Open Sunsama:** a hosted MCP server with OAuth sign-in. Claude, ChatGPT and Cursor can add tasks, move them between days and block time. See the [MCP setup guide](/docs/mcp/overview).
+- **Kaneo:** an MCP endpoint in every instance, plus an official npm package.
+- **Plane:** an official MCP server from the Plane team.
+- **Vikunja:** a built-in MCP server on its main branch, not yet in a stable release.
+- **WeKan, Kanboard, Taiga and Nextcloud Deck:** community MCP servers only.
+- **Tasks.md:** no MCP server, but a file-system MCP server can edit the Markdown cards.
+
+## Focalboard is no longer maintained
+
+Focalboard was a popular pick, and it still shows up in older lists. Its [repository](https://github.com/mattermost-community/focalboard) now says it is not maintained, and the last standalone releases shipped in 2023.
+
+We left it out of the ranking. If you run it today, plan a move to WeKan, Vikunja or Kaneo.
+
+Two more tools have kanban boards inside a bigger project suite. [OpenProject](https://www.openproject.org) and [Leantime](https://leantime.io) add Gantt charts and timesheets, which suits teams that track hours.
+
+## Open source licenses in plain words
+
+Every board here shows its license on its card. Here is what those licenses mean for you.
+
+| License | What it means for you |
+|---|---|
+| **MIT** (WeKan, Kaneo, Kanboard, Tasks.md) | Use, change and share the code for anything. |
+| **AGPL-3.0** (Vikunja, Nextcloud Deck, Plane) | Use and change it freely. If you run a changed version for others, share your code. |
+| **MPL-2.0 and AGPL-3.0** (Taiga) | The server and the web app use two different sharing licenses. Both let you self-host freely. |
+| **Non-commercial** (Open Sunsama) | Read it, run it and self-host it for personal use. Companies need a commercial license. |
+
+A note on PLANKA, which many people search for. Since version 2, PLANKA uses its own fair-use license, not an open source one. You can self-host it for yourself or your team, but you can't sell it as a hosted service, so we left it out.
+
+Open Sunsama's license is not an OSI license like MIT or GPL either. We say so because it matters if you are a company.
+
+## Which one should you pick?
+
+- **For most people: Open Sunsama.** If the board is for planning your own days, pick the one built for that.
+- **Solo daily planning:** Open Sunsama. Your board, your calendar and your AI agent in one place.
+- **Small team replacing Trello:** WeKan for the closest match, or Vikunja if you want more views.
+- **Nextcloud users:** Nextcloud Deck.
+- **Agile teams:** Plane for software teams, Taiga for Scrum.
+- **Markdown lovers:** Tasks.md.
+- **A modern board that works with AI agents:** Kaneo.
+
+Building a full stack you own? See our picks for [open source to-do list apps](/blog/best-open-source-todo-list-apps), [planner apps](/blog/best-open-source-planner-apps), [calendar apps](/blog/best-open-source-calendar-apps) and [focus apps](/blog/best-open-source-focus-apps). For hosting, read our [self-hosted productivity apps guide](/blog/self-hosted-productivity-apps) or the full list of [open source productivity apps](/blog/best-open-source-productivity-apps).

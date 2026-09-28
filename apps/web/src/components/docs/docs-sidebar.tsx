@@ -57,7 +57,7 @@ export function DocsSidebar({ sections, currentSlug }: DocsSidebarProps) {
   };
 
   return (
-    <nav className="py-4 overflow-y-auto h-[calc(100vh-3rem)]">
+    <nav className="py-4 overflow-y-auto h-[calc(100vh-3.5rem)]">
       <div className="space-y-1 px-2">
         {sections.map((section) => {
           const Icon = sectionIcons[section.id] ?? Book;

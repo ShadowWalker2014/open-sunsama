@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronRight, Home } from "lucide-react";
-import { useEffect } from "react";
+import { breadcrumbListJsonLd } from "@/lib/structured-data";
+import { JsonLd } from "./json-ld";
 
 interface BreadcrumbItem {
   label: string;
@@ -11,43 +12,11 @@ interface BreadcrumbsProps {
   items: BreadcrumbItem[];
 }
 
+/** Visible trail plus BreadcrumbList JSON-LD (marketing pages use components/marketing/breadcrumbs.tsx). */
 export function Breadcrumbs({ items }: BreadcrumbsProps) {
-  // Add schema markup
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.type = "application/ld+json";
-    script.id = "breadcrumb-schema";
-    script.textContent = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://opensunsama.com"
-        },
-        ...items.map((item, index) => ({
-          "@type": "ListItem",
-          "position": index + 2,
-          "name": item.label,
-          "item": item.href ? `https://opensunsama.com${item.href}` : undefined
-        }))
-      ]
-    });
-    
-    const existing = document.getElementById("breadcrumb-schema");
-    if (existing) existing.remove();
-    
-    document.head.appendChild(script);
-    
-    return () => {
-      script.remove();
-    };
-  }, [items]);
-
   return (
     <nav aria-label="Breadcrumb" className="text-[11px] text-muted-foreground mb-4">
+      <JsonLd id="breadcrumb-schema" data={breadcrumbListJsonLd(items)} />
       <ol className="flex items-center gap-1.5 flex-wrap">
         <li>
           <Link 

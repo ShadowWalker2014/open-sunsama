@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { clockDuration } from "@/lib/blog-media";
 import { cn } from "@/lib/utils";
 import { BorderBeam } from "./border-beam";
-import { useIntro, useReducedMotion, useScrollProgress } from "./motion";
+import { HeadlineReveal, introStyle, useIntro, useReducedMotion, useScrollProgress } from "./motion";
 import { BrowserFrame, ThemedShot, type ShotName } from "./product-shot";
 import { getVideo, VideoLightbox } from "./video-lightbox";
 
@@ -37,20 +37,7 @@ const VIEWS: Array<{ id: ShotName; label: string; icon: typeof LayoutGrid; alt: 
 ];
 
 const AUTOPLAY_MS = 4800;
-const WORKS_WITH = ["Claude", "ChatGPT", "Claude Code", "Cursor", "VS Code", "Any MCP client"];
-
-/** Staggered intro: each item transitions from its "before" state after mount. */
-function introStyle(ready: boolean, delay: number, reduced: boolean): React.CSSProperties {
-  if (reduced) return {};
-  return {
-    transition:
-      "opacity 700ms cubic-bezier(0.2,0.8,0.2,1), transform 800ms cubic-bezier(0.2,0.8,0.2,1), filter 700ms ease",
-    transitionDelay: `${delay}ms`,
-    opacity: ready ? 1 : 0,
-    transform: ready ? "none" : "translateY(14px)",
-    filter: ready ? "none" : "blur(6px)",
-  };
-}
+export const WORKS_WITH = ["Claude", "ChatGPT", "Claude Code", "Cursor", "VS Code", "Any MCP client"];
 
 function Showcase({ ready, reduced }: { ready: boolean; reduced: boolean }) {
   const [active, setActive] = React.useState(0);
@@ -203,7 +190,8 @@ function Showcase({ ready, reduced }: { ready: boolean; reduced: boolean }) {
   );
 }
 
-function FloatingChip({
+/** A small card floating beside a product frame, parallaxed with the page scroll (`--p`). */
+export function FloatingChip({
   children,
   className,
   depth,
@@ -247,7 +235,6 @@ export function Hero() {
   const ready = useIntro();
   const tour = getVideo("tour");
   const reduced = useReducedMotion();
-  let wordIndex = 0;
 
   return (
     <section className="relative overflow-hidden pb-20 pt-16 md:pb-28 md:pt-24">
@@ -279,37 +266,7 @@ export function Hero() {
         </div>
 
         <h1 className="mx-auto mt-7 max-w-4xl text-[40px] font-semibold leading-[1.04] tracking-[-0.035em] sm:text-[56px] md:text-[68px]">
-          {HEADLINE.map((line) => (
-            <span key={line.text} className="block">
-              {line.text.split(" ").map((word) => {
-                const delay = 90 + wordIndex++ * 55;
-                return (
-                  <span key={`${line.text}-${word}`} className="inline-block overflow-hidden pb-[0.08em] align-bottom">
-                    <span
-                      className={cn(
-                        "inline-block",
-                        line.accent &&
-                          "bg-gradient-to-br from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent"
-                      )}
-                      style={
-                        reduced
-                          ? undefined
-                          : {
-                              transition: "transform 900ms cubic-bezier(0.2,0.8,0.2,1), opacity 700ms ease",
-                              transitionDelay: `${delay}ms`,
-                              transform: ready ? "none" : "translateY(105%)",
-                              opacity: ready ? 1 : 0,
-                            }
-                      }
-                    >
-                      {word}
-                    </span>
-                    {" "}
-                  </span>
-                );
-              })}
-            </span>
-          ))}
+          <HeadlineReveal lines={HEADLINE} ready={ready} reduced={reduced} />
         </h1>
 
         <p

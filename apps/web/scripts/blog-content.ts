@@ -15,6 +15,19 @@ import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import { BLOG_MEDIA } from "../src/lib/blog-media";
+import {
+  formatStars,
+  getOssApp,
+  licenseShort,
+  licenseUrl,
+  mcpLabel,
+  monthYear,
+  type OssApp,
+  outboundLink,
+  platformList,
+  STATUS_LABELS,
+  tableOrder,
+} from "../src/lib/oss-apps";
 
 export const BLOG_DIR = path.resolve(import.meta.dir, "../src/content/blog");
 
@@ -76,14 +89,13 @@ const figure = (media: Element, caption?: string) =>
 
 type JsxNode = Extract<RootContent, { type: "mdxJsxFlowElement" | "mdxJsxTextElement" }>;
 
-function attr(node: JsxNode, name: string): string | undefined {
+/** An attribute's value: a string, or a plain literal in braces (rank={2}, ids={["a", "b"]}). */
+function attrValue(node: JsxNode, name: string): unknown {
   for (const a of node.attributes) {
     if (a.type !== "mdxJsxAttribute" || a.name !== name) continue;
     if (typeof a.value === "string") return a.value;
-    // caption={"..."}: evaluate a plain literal, ignore anything else
     try {
-      const value: unknown = new Function(`return (${a.value?.value ?? ""});`)();
-      return typeof value === "string" ? value : undefined;
+      return new Function(`return (${a.value?.value ?? ""});`)() as unknown;
     } catch {
       return undefined;
     }
@@ -91,13 +103,141 @@ function attr(node: JsxNode, name: string): string | undefined {
   return undefined;
 }
 
+function attr(node: JsxNode, name: string): string | undefined {
+  const value = attrValue(node, name);
+  return typeof value === "string" ? value : undefined;
+}
+
+const link = (url: string, label: string, follow = false): Element => {
+  const { href, target, rel } = outboundLink(url, follow);
+  return el("a", { href, ...(target ? { target } : {}), ...(rel ? { rel: rel.split(" ") } : {}) }, [text(label)]);
+};
+
+/** The used <OssApp>s and <OssTable>s, for the ItemList JSON-LD. */
+export interface OssUsage {
+  cards: { id: string; rank?: number }[];
+  tables: string[][];
+}
+
+/** Mirrors components/blog/media/oss-app.tsx: the same facts, links and credit. */
+function renderOssApp(app: OssApp, rank: number | undefined, bestFor: string | undefined): Element {
+  const checked = monthYear(app.checkedAt);
+  const shot = app.screenshot;
+  const title = `${rank != null ? `${rank}. ` : ""}${app.name}`;
+  const fact = (label: string, value: ElementContent[]): ElementContent[] => [
+    el("dt", {}, [text(label)]),
+    el("dd", {}, value),
+  ];
+  const children: ElementContent[] = [
+    el("p", {}, [
+      el("strong", {}, [text(title)]),
+      ...(app.status !== "active" ? [text(` (${STATUS_LABELS[app.status]})`)] : []),
+    ]),
+    el("p", {}, [text(app.tagline)]),
+  ];
+  if (bestFor) children.push(el("p", {}, [el("strong", {}, [text("Best for:")]), text(` ${bestFor}`)]));
+  if (app.caveat) children.push(el("p", {}, [el("strong", {}, [text("Note:")]), text(` ${app.caveat}`)]));
+  if (shot.light) {
+    children.push(
+      figure(
+        el("img", {
+          src: shot.light,
+          alt: `${app.name} screenshot`,
+          width: shot.width,
+          height: shot.height,
+          loading: "lazy",
+          decoding: "async",
+        }),
+        shot.source
+      )
+    );
+  }
+  children.push(
+    el("dl", {}, [
+      ...fact("License", [
+        link(licenseUrl(app), licenseShort(app)),
+        ...(licenseShort(app) !== app.license.name ? [text(` (${app.license.name})`)] : []),
+      ]),
+      ...fact("Stars", [text(`${formatStars(app.stars)} (as of ${checked})`)]),
+      ...fact("Latest release", [
+        text(app.latestRelease ? `${app.latestRelease.version} (${monthYear(app.latestRelease.date)})` : "No tagged releases"),
+      ]),
+      ...fact("Language", [text(app.primaryLanguage ?? "n/a")]),
+      ...fact("Platforms", [text(platformList(app))]),
+      ...fact("Self-host", [text(app.selfHost ?? "No server")]),
+      ...fact("API", [text(app.api.length ? app.api.join(", ") : "None")]),
+      ...fact("MCP", [app.mcp.url ? link(app.mcp.url, mcpLabel(app)) : text(mcpLabel(app))]),
+    ]),
+    el("p", {}, [
+      link(app.repo, "Source code", true),
+      text(" · "),
+      link(app.website, "Website"),
+      ...(app.docs ? [text(" · "), link(app.docs, "Docs")] : []),
+      text(` · Facts checked ${checked}`),
+    ])
+  );
+  return el("section", { id: `app-${app.id}`, ariaLabel: title }, children);
+}
+
+/** Mirrors components/blog/media/oss-table.tsx. */
+function renderOssTable(apps: OssApp[]): Element {
+  const cells = (tag: string, values: (string | ElementContent)[]) =>
+    el(
+      "tr",
+      {},
+      values.map((v) => el(tag, tag === "th" ? { scope: "col" } : {}, [typeof v === "string" ? text(v) : v]))
+    );
+  const checked = monthYear(apps.map((a) => a.checkedAt).sort()[0]);
+  return figure(
+    el("table", {}, [
+      el("thead", {}, [
+        cells("th", ["App", "License", "Stars", "Latest release", "Platforms", "Self-host", "API", "MCP"]),
+      ]),
+      el(
+        "tbody",
+        {},
+        apps.map((app) =>
+          cells("td", [
+            link(app.repo, app.status === "active" ? app.name : `${app.name} (${STATUS_LABELS[app.status]})`, true),
+            licenseShort(app),
+            formatStars(app.stars),
+            app.latestRelease ? `${app.latestRelease.version} (${monthYear(app.latestRelease.date)})` : "None",
+            platformList(app),
+            app.selfHost ?? "No",
+            app.api.length ? app.api.join(", ") : "None",
+            mcpLabel(app),
+          ])
+        )
+      ),
+    ]),
+    `Stars, licenses and releases from each project's repository, checked ${checked}. App names link to the source code.`
+  );
+}
+
 /**
  * The HTML each media component stands for, mirroring what
  * src/components/blog/media renders (light theme, same captions).
  */
-function renderMedia(node: JsxNode, videosUsed: Set<string>): Element | null {
+function renderMedia(node: JsxNode, videosUsed: Set<string>, oss: OssUsage): Element | null {
   const id = attr(node, "id") ?? "";
   const caption = attr(node, "caption");
+
+  if (node.name === "OssApp") {
+    const app = getOssApp(id);
+    if (!app) return null;
+    const rankValue = attrValue(node, "rank");
+    const rank = typeof rankValue === "number" ? rankValue : undefined;
+    oss.cards.push({ id, rank });
+    return renderOssApp(app, rank, attr(node, "bestFor"));
+  }
+
+  if (node.name === "OssTable") {
+    const ids = attrValue(node, "ids");
+    const apps = Array.isArray(ids) ? tableOrder(ids.filter((i): i is string => typeof i === "string")) : [];
+    if (!apps.length) return null;
+    oss.tables.push(apps.map((a) => a.id));
+    return renderOssTable(apps);
+  }
 
   if (node.name === "Shot") {
     const shot = BLOG_MEDIA.shots[id];
@@ -163,10 +303,10 @@ function renderMedia(node: JsxNode, videosUsed: Set<string>): Element | null {
   return null;
 }
 
-const MEDIA = new Set(["Shot", "Clip", "DemoVideo"]);
+const MEDIA = new Set(["Shot", "Clip", "DemoVideo", "OssApp", "OssTable"]);
 
 /** Drops ESM and {expressions}, turns media JSX into HTML, unwraps other JSX. */
-function mapMdxNodes(videosUsed: Set<string>) {
+function mapMdxNodes(videosUsed: Set<string>, oss: OssUsage) {
   const walk = (children: RootContent[]): RootContent[] =>
     children.flatMap((node): RootContent[] => {
       switch (node.type) {
@@ -177,9 +317,9 @@ function mapMdxNodes(videosUsed: Set<string>) {
         case "mdxJsxFlowElement":
         case "mdxJsxTextElement": {
           if (!node.name || !MEDIA.has(node.name)) return walk(node.children as RootContent[]);
-          const media = renderMedia(node, videosUsed);
+          const media = renderMedia(node, videosUsed, oss);
           if (!media) {
-            console.warn(`  <${node.name} id="${attr(node, "id")}"> is not in blog-media.json; skipped`);
+            console.warn(`  <${node.name} id="${attr(node, "id")}"> is not in blog-media.json or oss-apps.json; skipped`);
             return [];
           }
           // mdast-util-to-hast turns an unknown node into its data.hName/hProperties/hChildren
@@ -227,17 +367,21 @@ function addHeadingIds() {
   };
 }
 
-/** The post body as HTML, plus the DemoVideo ids it uses (for VideoObject JSON-LD). */
+/**
+ * The post body as HTML, plus the DemoVideo ids it uses (for VideoObject
+ * JSON-LD) and its <OssApp>/<OssTable> apps (for ItemList JSON-LD).
+ */
 export async function renderBody(source: string) {
   const videosUsed = new Set<string>();
+  const oss: OssUsage = { cards: [], tables: [] };
   const file = await unified()
     .use(remarkParse)
     .use(remarkMdx)
     .use(remarkGfm)
-    .use(mapMdxNodes(videosUsed))
+    .use(mapMdxNodes(videosUsed, oss))
     .use(remarkRehype)
     .use(addHeadingIds)
     .use(rehypeStringify)
     .process(source);
-  return { html: String(file), videosUsed: [...videosUsed] };
+  return { html: String(file), videosUsed: [...videosUsed], oss };
 }

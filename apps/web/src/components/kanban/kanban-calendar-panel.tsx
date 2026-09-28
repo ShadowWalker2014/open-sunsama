@@ -1,15 +1,18 @@
 import * as React from "react";
+import { useDndMonitor, useDroppable, type DragMoveEvent } from "@dnd-kit/core";
 import {
   format,
   isSameDay,
   setHours,
   addMinutes,
+  differenceInMinutes,
   startOfDay,
   endOfDay,
 } from "date-fns";
 import type {
   TimeBlock as TimeBlockType,
   CalendarEvent,
+  Task,
 } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import {
@@ -21,6 +24,7 @@ import {
   useCalendarEvents,
   useCalendars,
   useCalendarAccounts,
+  useUpdateCalendarEvent,
 } from "@/hooks/useCalendars";
 import { TimeBlock, TimeBlockPreview } from "@/components/calendar/time-block";
 import { ExternalEvent } from "@/components/calendar/external-event";
@@ -42,6 +46,31 @@ import {
 } from "@/hooks/useCalendarDnd";
 
 const DEFAULT_LAYOUT: LayoutResult = { lane: 0, columnCount: 1 };
+
+/** Block length for a task dropped from the board with no estimate. */
+export const DEFAULT_DROP_MINS = 30;
+
+/** Data the board's drag context reads when a card is dropped here. */
+export interface CalendarDropData {
+  type: "calendar";
+  date: string;
+  /** Snapped start time under the pointer's vertical position. */
+  timeAt: (clientY: number) => Date;
+}
+
+/** The pointer's position during a dnd-kit drag. */
+export function dragPointerY(event: {
+  activatorEvent: Event | null;
+  delta: { y: number };
+}): number | null {
+  const start = event.activatorEvent;
+  if (!start) return null;
+  const y =
+    "touches" in start
+      ? (start as TouchEvent).touches[0]?.clientY
+      : (start as MouseEvent).clientY;
+  return y === undefined ? null : y + event.delta.y;
+}
 
 // Imported from the central source so adding a new provider is a
 // one-line change in one place.
@@ -132,6 +161,32 @@ export function KanbanCalendarPanel({
   // Mutations
   const moveTimeBlock = useMoveTimeBlock();
   const cascadeResizeTimeBlock = useCascadeResizeTimeBlock();
+  const updateCalendarEvent = useUpdateCalendarEvent();
+
+  // Synced events move and resize on the board's calendar the same way
+  // they do on the Calendar page: the new times are written to Google,
+  // Outlook or iCloud.
+  const writeEventTimes = React.useCallback(
+    (eventId: string, startTime: Date, endTime: Date) => {
+      updateCalendarEvent.mutate({
+        id: eventId,
+        rangeFrom: fromDate,
+        rangeTo: toDate,
+        patch: {
+          startTime,
+          endTime,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
+      });
+    },
+    [updateCalendarEvent, fromDate, toDate]
+  );
+
+  const eventCanEdit = React.useCallback(
+    (event: CalendarEvent) =>
+      !event.isAllDay && !(calendarReadOnlyById.get(event.calendarId) ?? true),
+    [calendarReadOnlyById]
+  );
 
   // Calendar DnD hook
   const {
@@ -142,6 +197,8 @@ export function KanbanCalendarPanel({
     timelineRef,
     startBlockDrag,
     startBlockResize,
+    startEventDrag,
+    startEventResize,
     updateDrag,
     endDrag,
     cancelDrag,
@@ -152,6 +209,53 @@ export function KanbanCalendarPanel({
     onBlockResize: (blockId, startTime, endTime) => {
       cascadeResizeTimeBlock.mutate({ id: blockId, startTime, endTime });
     },
+    onEventMove: writeEventTimes,
+    onEventResize: writeEventTimes,
+  });
+
+  // Board cards can be dropped on the timeline to block them at that time.
+  const timeAt = React.useCallback(
+    (clientY: number) => {
+      const rect = timelineRef.current?.getBoundingClientRect();
+      const y = rect ? clientY - rect.top : 0;
+      return snapToInterval(calculateTimeFromY(Math.max(0, y), date), SNAP_INTERVAL);
+    },
+    [date, timelineRef]
+  );
+  const dropData: CalendarDropData = { type: "calendar", date: dateString, timeAt };
+  const { setNodeRef: setDropRef, isOver: isCardOver } = useDroppable({
+    id: `calendar-${dateString}`,
+    data: dropData,
+  });
+  const setTimelineNode = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      (timelineRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+      setDropRef(node);
+    },
+    [timelineRef, setDropRef]
+  );
+  const [cardPreview, setCardPreview] = React.useState<{
+    title: string;
+    start: Date;
+    end: Date;
+  } | null>(null);
+  useDndMonitor({
+    onDragMove(event: DragMoveEvent) {
+      const task = event.active.data.current?.task as Task | undefined;
+      const y = dragPointerY(event);
+      if (event.over?.id !== `calendar-${dateString}` || !task || y === null) {
+        setCardPreview(null);
+        return;
+      }
+      const start = timeAt(y);
+      setCardPreview({
+        title: task.title,
+        start,
+        end: addMinutes(start, task.estimatedMins ?? DEFAULT_DROP_MINS),
+      });
+    },
+    onDragEnd: () => setCardPreview(null),
+    onDragCancel: () => setCardPreview(null),
   });
 
   const hours = React.useMemo(
@@ -328,6 +432,12 @@ export function KanbanCalendarPanel({
       return;
     }
 
+    // React bubbles clicks from portals (a block's right-click menu) up
+    // the component tree to here; only real clicks on the grid count.
+    if (!e.currentTarget.contains(e.target as Node)) {
+      return;
+    }
+
     // Don't trigger during drag operations
     if (dragState) {
       return;
@@ -357,13 +467,13 @@ export function KanbanCalendarPanel({
   return (
     <div
       className={cn(
-        "flex flex-col h-full w-[280px] bg-background border-l",
+        "flex flex-col h-full w-[280px] bg-canvas border-l border-border/40",
         className
       )}
     >
       {/* Header — height matched to the board toolbar (h-14) so the two
           top rows line up as one uniform band. */}
-      <div className="flex h-14 flex-shrink-0 flex-col justify-center border-b px-3 leading-tight">
+      <div className="flex h-14 flex-shrink-0 flex-col justify-center px-3 leading-tight">
         <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
           {format(date, "EEE")}
         </div>
@@ -407,7 +517,7 @@ export function KanbanCalendarPanel({
       >
         <div className="flex" style={{ minHeight: hours.length * HOUR_HEIGHT }}>
           {/* Time Labels Column */}
-          <div className="w-10 flex-shrink-0 sticky left-0 bg-background z-10">
+          <div className="w-10 flex-shrink-0 sticky left-0 bg-canvas z-10">
             {hours.map((hour) => (
               <div
                 key={hour}
@@ -423,11 +533,12 @@ export function KanbanCalendarPanel({
 
           {/* Timeline Content */}
           <div
-            ref={timelineRef}
+            ref={setTimelineNode}
             className={cn(
               "relative flex-1",
               isDragging ? "cursor-grabbing" : "cursor-default",
-              isToday && "bg-primary/[0.02]"
+              isToday && "bg-primary/[0.02]",
+              isCardOver && "bg-primary/[0.04]"
             )}
             onMouseMove={handleTimelineMouseMove}
             onMouseUp={handleTimelineMouseUp}
@@ -469,15 +580,37 @@ export function KanbanCalendarPanel({
 
             {/* External calendar events — drawn behind time blocks so
                 user-created blocks always layer on top. */}
-            {timedEvents.map((event) => (
-              <ExternalEvent
-                key={event.id}
-                event={event}
-                displayDate={date}
-                layout={itemLayouts.get(`event:${event.id}`) ?? DEFAULT_LAYOUT}
-                onClick={() => handleExternalEventClick(event)}
-              />
-            ))}
+            {timedEvents.map((event) => {
+              const canEdit = eventCanEdit(event);
+              return (
+                <ExternalEvent
+                  key={event.id}
+                  event={event}
+                  displayDate={date}
+                  layout={
+                    itemLayouts.get(`event:${event.id}`) ?? DEFAULT_LAYOUT
+                  }
+                  onClick={() => handleExternalEventClick(event)}
+                  {...(canEdit
+                    ? {
+                        onDragStart: (e: React.MouseEvent) => {
+                          e.preventDefault();
+                          startEventDrag(event, e.clientY);
+                        },
+                        onResizeStart: (
+                          e: React.MouseEvent,
+                          edge: "top" | "bottom"
+                        ) => {
+                          e.preventDefault();
+                          startEventResize(event, edge, e.clientY);
+                        },
+                      }
+                    : {})}
+                  isDragging={dragState?.eventId === event.id}
+                  justEndedDrag={justEndedDrag}
+                />
+              );
+            })}
 
             {/* Time blocks */}
             {dayBlocks.map((block) => (
@@ -496,12 +629,28 @@ export function KanbanCalendarPanel({
               />
             ))}
 
+            {/* Where a board card will land */}
+            {cardPreview && (
+              <TimeBlockPreview
+                title={cardPreview.title}
+                startTime={cardPreview.start}
+                endTime={cardPreview.end}
+                top={calculateYFromTime(cardPreview.start)}
+                height={
+                  (differenceInMinutes(cardPreview.end, cardPreview.start) /
+                    60) *
+                  HOUR_HEIGHT
+                }
+              />
+            )}
+
             {/* Drop preview */}
             {dropPreview && dragState && (
               <TimeBlockPreview
                 title={
                   dragState.task?.title ||
                   dragState.block?.title ||
+                  dragState.event?.title ||
                   "New Time Block"
                 }
                 startTime={dropPreview.startTime}
@@ -510,7 +659,9 @@ export function KanbanCalendarPanel({
                 height={dropPreview.height}
                 {...(dragState.block?.color
                   ? { color: dragState.block.color }
-                  : {})}
+                  : dragState.event?.calendar?.color
+                    ? { color: dragState.event.calendar.color }
+                    : {})}
               />
             )}
           </div>

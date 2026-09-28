@@ -130,12 +130,12 @@ export function Sidebar({ className }: SidebarProps) {
         aria-label="Backlog"
         {...peek.panelHandlers}
         className={cn(
-          "absolute inset-y-0 left-0 z-30 flex overflow-hidden border-r border-border/40 bg-background",
+          "absolute inset-y-0 left-0 z-30 flex overflow-hidden bg-canvas",
           // Instant while dragging so drop targets are measured where they are.
           !peek.dragging && "transition-[width,box-shadow] duration-200 ease-out",
           isExpanded ? "w-60" : "w-9",
           peek.open && "shadow-[8px_0_24px_-12px_rgb(0_0_0/0.25)] dark:shadow-[8px_0_24px_-12px_rgb(0_0_0/0.7)]",
-          isOver && "border-primary/30"
+          isOver && "ring-1 ring-inset ring-primary/30"
         )}
       >
         {/* Drop feedback when a task is dragged over the backlog */}
