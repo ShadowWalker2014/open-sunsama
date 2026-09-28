@@ -85,15 +85,14 @@ export function IdeaColumnView({
       ref={setNodeRef}
       style={style}
       className={cn(
-        // Borderless on the page, like the task board's day columns.
-        "flex h-full w-[272px] shrink-0 snap-start snap-always flex-col gap-2 rounded-lg p-1.5 transition-colors",
-        isOver && "bg-primary/5 ring-1 ring-inset ring-primary/20"
+        "flex h-full min-h-0 w-[272px] shrink-0 snap-start snap-always flex-col gap-2 rounded-xl border border-border bg-muted/40 p-2 transition-colors",
+        isOver && "border-primary/40 bg-primary/5 ring-1 ring-inset ring-primary/20"
       )}
     >
       {/* Column header. No flex `gap` here — the grip handle manages its own
           spacing so it can collapse to zero width when not hovered.
           `shrink-0` keeps it pinned above the scrolling card list. */}
-      <div className="group/colhead flex shrink-0 items-center px-1">
+      <div className="group/colhead flex min-h-9 shrink-0 items-center border-b border-border px-1 pb-2">
         {renaming ? (
           <Input
             autoFocus
@@ -168,7 +167,7 @@ export function IdeaColumnView({
           DayColumn). Using Radix ScrollArea rather than a raw `overflow-y-auto`
           div keeps dnd-kit's sortable measurement + auto-scroll well-behaved,
           while the header above and the "Add idea" button below stay pinned. */}
-      <ScrollArea className="-mr-1.5 flex-1 pr-1.5">
+      <ScrollArea className="-mr-1 min-h-0 flex-1 pr-1">
         <div className="flex flex-col gap-2">
           <SortableContext items={ideaIds} strategy={verticalListSortingStrategy}>
             {ideas.map((idea) => (
@@ -195,7 +194,7 @@ export function IdeaColumnView({
       {/* Add idea — opens the modal (same chrome as Add Task) */}
       <button
         onClick={() => setAddOpen(true)}
-        className="flex shrink-0 items-center gap-2 rounded-md px-2 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
+        className="flex shrink-0 items-center gap-2 rounded-md px-2 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
       >
         <Plus className="h-4 w-4" />
         Add idea
