@@ -407,7 +407,13 @@ test("mobile Ideas can jump to distant columns and swipe over cards", async ({ b
     const box = (await card.boundingBox())!;
     const cdp = await context.newCDPSession(page);
     const x = box.x + box.width * 0.7, y = box.y + box.height / 2;
-    await cdp.send("Input.synthesizeScrollGesture", { x, y, xDistance: -190, yDistance: 0, speed: 700, gestureSourceType: "touch" });
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] });
+    for (let step = 1; step <= 10; step++) {
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: x - step * 19, y }] });
+      // Give each touch move a frame, like a finger crossing the card.
+      await page.waitForTimeout(16);
+    }
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
     await expect(picker).not.toHaveValue(columns[0]!.id);
     await expect(page.getByRole("dialog")).toBeHidden();
     const unchanged = await api<{columnId: string}>("GET", `/ideas/${idea.id}`, undefined, session.token);
