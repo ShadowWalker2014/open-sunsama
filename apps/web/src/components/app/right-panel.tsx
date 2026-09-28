@@ -1,3 +1,4 @@
+import { IdeasPlannerTray } from "@/components/ideas/ideas-planner-tray";
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -5,6 +6,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Inbox,
+  Lightbulb,
   Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,14 +19,19 @@ import {
 } from "@/components/ui";
 import { shouldIgnoreShortcut } from "@/hooks/useKeyboardShortcuts";
 
-export type RightPanelTab = "calendar" | "backlog";
+export type RightPanelTab = "calendar" | "backlog" | "ideas";
 
 const STORAGE_KEY = "open-sunsama-right-panel";
 
 function readState(): { open: boolean; tab: RightPanelTab } {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null");
-    if (saved && (saved.tab === "calendar" || saved.tab === "backlog")) {
+    if (
+      saved &&
+      (saved.tab === "calendar" ||
+        saved.tab === "backlog" ||
+        saved.tab === "ideas")
+    ) {
       return { open: saved.open !== false, tab: saved.tab };
     }
   } catch {
@@ -95,7 +102,13 @@ export function RightPanel({
       <div className="flex h-full flex-shrink-0">
         {state.open && (
           <div className="h-full w-[320px] border-l border-border/40">
-            {state.tab === "calendar" ? calendar : backlog}
+            {state.tab === "calendar" ? (
+              calendar
+            ) : state.tab === "ideas" ? (
+              <IdeasPlannerTray />
+            ) : (
+              backlog
+            )}
           </div>
         )}
 
@@ -131,6 +144,13 @@ export function RightPanel({
             badge={backlogCount}
           >
             <Inbox className="h-4 w-4" />
+          </RailButton>
+          <RailButton
+            label="Ideas"
+            active={state.open && state.tab === "ideas"}
+            onClick={() => selectTab("ideas")}
+          >
+            <Lightbulb className="h-4 w-4" />
           </RailButton>
           <div className="my-1 h-px w-6 bg-border/60" />
           <Tooltip>
