@@ -61,25 +61,26 @@
   }
 
   .dark {
-    /* Linear-style dark mode - deep, refined */
-    --background: 228 14% 7%;
-    --foreground: 220 13% 93%;
-    --card: 228 14% 9%;
-    --card-foreground: 220 13% 93%;
-    --popover: 240 3% 14.5%;
-    --popover-foreground: 220 13% 93%;
+    /* One neutral near-black scale (no blue tint), so the page reads as
+       clean black with crisp cards instead of muddy grey. */
+    --background: 240 5% 5%;
+    --foreground: 0 0% 95%;
+    --card: 240 4% 10%;
+    --card-foreground: 0 0% 95%;
+    --popover: 240 4% 11.5%;
+    --popover-foreground: 0 0% 95%;
     --primary: 24 95% 60%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 228 14% 13%;
-    --secondary-foreground: 220 13% 93%;
-    --muted: 228 14% 13%;
-    --muted-foreground: 220 9% 55%;
-    --accent: 228 14% 15%;
-    --accent-foreground: 220 13% 93%;
+    --secondary: 240 4% 12%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 240 4% 12%;
+    --muted-foreground: 240 5% 62%;
+    --accent: 240 4% 14.5%;
+    --accent-foreground: 0 0% 95%;
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 228 14% 15%;
-    --input: 228 14% 13%;
+    --border: 240 4% 15%;
+    --input: 240 4% 14%;
     --ring: 24 95% 60%;
 
     /* Dark mode extended tokens */
@@ -95,14 +96,14 @@
       0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
     --shadow-glow: 0 0 60px hsl(var(--primary-glow) / 0.2);
 
-    /* Sunsama's dark greys, measured: chrome rgb(8,9,10), page
-       rgb(19,19,20), cards rgb(33,33,35) with a hard black drop shadow. */
-    --chrome: 210 11% 3.5%;
-    --canvas: 240 3% 7.6%;
-    --surface: 240 3% 13.3%;
-    --surface-hover: 240 3% 15.5%;
-    --shadow-card: 1px 2px 4px 0 rgb(0 0 0 / 0.6);
-    --shadow-card-hover: 1px 3px 8px 0 rgb(0 0 0 / 0.7);
+    /* Layers: black chrome, a near-black page, cards a step up with a
+       faint hairline so their edges stay crisp without a heavy shadow. */
+    --chrome: 240 6% 2.5%;
+    --canvas: 240 5% 5.5%;
+    --surface: 240 4% 10%;
+    --surface-hover: 240 4% 12%;
+    --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.045), 0 1px 2px 0 rgb(0 0 0 / 0.5);
+    --shadow-card-hover: 0 0 0 1px rgb(255 255 255 / 0.07), 0 2px 6px 0 rgb(0 0 0 / 0.55);
   }
 
   /* Font Variables */

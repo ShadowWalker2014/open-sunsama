@@ -5,8 +5,13 @@ import {
   ArrowUpDown,
   Check,
   CalendarDays,
+  Columns3,
+  Square,
 } from "lucide-react";
+import { format, isToday } from "date-fns";
+import type { BoardMode } from "./kanban-board";
 import type { TaskSortBy } from "@open-sunsama/types";
+import { cn } from "@/lib/utils";
 import {
   Button,
   DropdownMenu,
@@ -59,6 +64,9 @@ interface KanbanBoardToolbarProps {
   onNavigateToDate: (date: Date) => void;
   /** The day at the left edge, marked in the calendar. */
   firstVisibleDate: Date | null;
+  /** Board (several days) or Today (one day). */
+  mode: BoardMode;
+  onModeChange: (mode: BoardMode) => void;
   sortBy: SortOption;
   onSortChange: (sort: SortOption) => void;
   /** Substring filter applied to task titles/notes across the day columns. */
@@ -95,6 +103,8 @@ export function KanbanBoardToolbar({
   onNavigateToday,
   onNavigateToDate,
   firstVisibleDate,
+  mode,
+  onModeChange,
   sortBy,
   onSortChange,
   searchQuery,
@@ -134,7 +144,10 @@ export function KanbanBoardToolbar({
               <WithShortcut label="Go to date" side="bottom">
                 <Button variant="ghost" className="h-8 gap-1.5 px-2.5">
                   <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                  Today
+                  {/* One day at a time shows which day it is. */}
+                  {mode === "day" && firstVisibleDate && !isToday(firstVisibleDate)
+                    ? format(firstVisibleDate, "EEE, MMM d")
+                    : "Today"}
                 </Button>
               </WithShortcut>
             </PopoverTrigger>
@@ -179,6 +192,37 @@ export function KanbanBoardToolbar({
 
       {/* Right-side actions */}
       <div className="flex items-center gap-2">
+        {/* Today (one day) or Board (several days), as in Sunsama */}
+        <div
+          role="radiogroup"
+          aria-label="View"
+          className="flex h-8 items-center rounded-md bg-muted/50 p-0.5"
+        >
+          {(
+            [
+              { value: "day", label: "Today", icon: Square },
+              { value: "board", label: "Board", icon: Columns3 },
+            ] as const
+          ).map(({ value, label, icon: Icon }) => (
+            <button
+              key={value}
+              type="button"
+              role="radio"
+              aria-checked={mode === value}
+              onClick={() => onModeChange(value)}
+              className={cn(
+                "flex h-7 items-center gap-1.5 rounded px-2 text-[13px] transition-colors",
+                mode === value
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {label}
+            </button>
+          ))}
+        </div>
+
         {/* Filter the visible day columns down to matching cards */}
         <ViewSearch
           value={searchQuery}
