@@ -14,6 +14,8 @@ interface UnscheduledTasksProps {
   tasks: Task[];
   isLoading?: boolean;
   scheduledDate: string;
+  /** Which day the list is for, shown when the grid spans several days. */
+  dateLabel?: string;
   onTaskDragStart?: (task: Task, e: React.MouseEvent) => void;
   onTaskClick?: (task: Task) => void;
   className?: string;
@@ -27,6 +29,7 @@ export function UnscheduledTasksPanel({
   tasks,
   isLoading = false,
   scheduledDate,
+  dateLabel,
   onTaskDragStart,
   onTaskClick,
   className,
@@ -41,7 +44,12 @@ export function UnscheduledTasksPanel({
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div className="flex items-center gap-2">
           <ListTodo className="h-4 w-4 text-muted-foreground" />
-          <h3 className="text-sm font-semibold">Unscheduled</h3>
+          <div className="leading-tight">
+            <h3 className="text-sm font-semibold">Unscheduled</h3>
+            {dateLabel && (
+              <p className="text-[11px] text-muted-foreground">{dateLabel}</p>
+            )}
+          </div>
           {taskCount > 0 && (
             <Badge variant="secondary" className="h-5 min-w-[20px] justify-center">
               {taskCount}

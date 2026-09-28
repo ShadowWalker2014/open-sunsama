@@ -28,6 +28,7 @@ import {
   useCreateTimeBlock,
   useMoveTimeBlock,
   useCascadeResizeTimeBlock,
+  useMoveTask,
 } from "@/hooks";
 import { useAuth } from "@/hooks/useAuth";
 import { useSavePreferences } from "@/hooks/useUserPreferences";
@@ -40,7 +41,8 @@ import {
 } from "@/hooks/useCalendars";
 import { useCalendarDnd } from "@/hooks/useCalendarDnd";
 import { Timeline } from "./timeline";
-import { MultiDayView } from "./multi-day-view";
+import { MultiDayView, BLOCK_DRAG_PREFIX } from "./multi-day-view";
+import { useMultiDayEventDrag } from "./multi-day-event-drag";
 import { MonthView } from "./month-view";
 import { UnscheduledTasksPanel } from "./unscheduled-tasks";
 import { DragOverlay } from "./drag-overlay";
@@ -50,6 +52,12 @@ import {
   AddTaskModal,
   prefetchAddTaskModal,
 } from "@/components/kanban/add-task-modal.lazy";
+
+/** Drag ids for tasks dragged in from the task list. */
+const TASK_DRAG_PREFIX = "task:";
+
+/** Length of the block a task gets when it has no time estimate. */
+const DEFAULT_TASK_BLOCK_MINS = 30;
 
 /**
  * Persist the calendar view mode in localStorage so the user's choice
@@ -242,8 +250,8 @@ export function CalendarView({
   // Format date for API calls
   const dateString = format(selectedDate, "yyyy-MM-dd");
 
-  // Fetch tasks for selected date (only used for unscheduled-tasks panel
-  // in day view). For multi-day / month we don't show that panel.
+  // Tasks for the selected date feed the unscheduled-tasks panel, which
+  // shows in the day, 3-day and week views.
   const { data: allTasks = [], isLoading: isLoadingTasks } = useTasks({
     scheduledDate: dateString,
     limit: 200,
@@ -317,6 +325,72 @@ export function CalendarView({
 
   // Calendar DnD hook
   const updateCalendarEvent = useUpdateCalendarEvent();
+  const moveTask = useMoveTask();
+
+  // 3-day and week views: one drag controller for events, time blocks and
+  // tasks dragged in from the list. Ids tell the three apart.
+  const multiDayDrag = useMultiDayEventDrag({
+    onCommit: (id, startTime, endTime, mode) => {
+      if (id.startsWith(TASK_DRAG_PREFIX)) {
+        const taskId = id.slice(TASK_DRAG_PREFIX.length);
+        const task = unscheduledTasks.find((t) => t.id === taskId);
+        if (!task) return;
+        // A task lives on the day it's blocked, so dropping it on another
+        // day moves the task there too.
+        const dropDate = format(startTime, "yyyy-MM-dd");
+        if (task.scheduledDate !== dropDate) {
+          moveTask.mutate({ id: taskId, targetDate: dropDate });
+        }
+        createTimeBlock.mutate({
+          taskId,
+          title: task.title,
+          startTime,
+          endTime,
+        });
+        return;
+      }
+      if (id.startsWith(BLOCK_DRAG_PREFIX)) {
+        const blockId = id.slice(BLOCK_DRAG_PREFIX.length);
+        if (mode === "move") {
+          moveTimeBlock.mutate({ id: blockId, startTime, endTime });
+          // Keep the task on the same day as its block.
+          const block = timeBlocks.find((b) => b.id === blockId);
+          const dropDate = format(startTime, "yyyy-MM-dd");
+          if (
+            block?.taskId &&
+            format(new Date(block.startTime), "yyyy-MM-dd") !== dropDate
+          ) {
+            moveTask.mutate({ id: block.taskId, targetDate: dropDate });
+          }
+        } else {
+          cascadeResizeTimeBlock.mutate({ id: blockId, startTime, endTime });
+        }
+        return;
+      }
+      updateCalendarEvent.mutate({
+        id,
+        rangeFrom: fromDate,
+        rangeTo: toDate,
+        patch: {
+          startTime,
+          endTime,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
+      });
+    },
+  });
+
+  const { startExternalDrag } = multiDayDrag;
+  const handleMultiDayTaskDragStart = React.useCallback(
+    (task: Task, e: React.MouseEvent) => {
+      startExternalDrag(
+        `${TASK_DRAG_PREFIX}${task.id}`,
+        task.estimatedMins ?? DEFAULT_TASK_BLOCK_MINS,
+        e
+      );
+    },
+    [startExternalDrag]
+  );
 
   const {
     dragState,
@@ -711,32 +785,28 @@ export function CalendarView({
         )}
 
         {(viewMode === "3-day" || viewMode === "week") && (
-          <MultiDayView
-            days={range.days}
-            calendarEvents={calendarEvents}
-            timeBlocks={timeBlocks}
-            isLoading={isLoading}
-            onExternalEventClick={handleExternalEventClick}
-            onExternalEventReschedule={(eventId, startTime, endTime) => {
-              // Same write-back path as the day-view drag — the
-              // mutation hook handles optimistic update + rollback +
-              // cross-range invalidation. Browser local TZ preserved
-              // so the round-trip doesn't shift the displayed time.
-              updateCalendarEvent.mutate({
-                id: eventId,
-                rangeFrom: fromDate,
-                rangeTo: toDate,
-                patch: {
-                  startTime,
-                  endTime,
-                  timezone:
-                    Intl.DateTimeFormat().resolvedOptions().timeZone,
-                },
-              });
-            }}
-            externalEventCanEdit={externalEventCanEdit}
-            {...(onBlockClick ? { onBlockClick } : {})}
-          />
+          <>
+            <UnscheduledTasksPanel
+              tasks={unscheduledTasks}
+              isLoading={isLoading}
+              scheduledDate={dateString}
+              dateLabel={format(selectedDate, "EEE, MMM d")}
+              onTaskDragStart={handleMultiDayTaskDragStart}
+              className="w-64"
+              {...(onTaskClick ? { onTaskClick } : {})}
+            />
+            <MultiDayView
+              days={range.days}
+              calendarEvents={calendarEvents}
+              timeBlocks={timeBlocks}
+              isLoading={isLoading}
+              drag={multiDayDrag}
+              blocksEditable
+              onExternalEventClick={handleExternalEventClick}
+              externalEventCanEdit={externalEventCanEdit}
+              {...(onBlockClick ? { onBlockClick } : {})}
+            />
+          </>
         )}
 
         {viewMode === "month" && (
