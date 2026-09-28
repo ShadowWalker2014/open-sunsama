@@ -152,6 +152,8 @@ function localMidnightTodayUtc(): Date {
   );
 }
 
+const LOOKS_LIKE_HTML = /<\/?[a-z][\s\S]*?>/i;
+
 /**
  * Detects whether `value` is provider-supplied HTML or plain text, and
  * returns sanitizer-ready HTML in either case.
@@ -172,8 +174,7 @@ function localMidnightTodayUtc(): Date {
  */
 function descriptionToHtml(value: string): string {
   if (!value) return "";
-  const looksLikeHtml = /<\/?[a-z][\s\S]*?>/i.test(value);
-  if (looksLikeHtml) return value;
+  if (LOOKS_LIKE_HTML.test(value)) return value;
   // Plain text path: escape HTML, convert newlines, then auto-link URLs.
   const escaped = value
     .replace(/&/g, "&amp;")
@@ -197,6 +198,34 @@ function autoLink(escapedHtml: string): string {
   );
 }
 
+/**
+ * Plain-text view of a provider description for the edit textarea, so the
+ * user edits words instead of Google's `<br>` and `<i>` markup.
+ */
+function descriptionToPlainText(value: string): string {
+  if (!value || !LOOKS_LIKE_HTML.test(value)) return value;
+  const withBreaks = value
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|li|h[1-6])>/gi, "\n");
+  const doc = new DOMParser().parseFromString(withBreaks, "text/html");
+  return (doc.body.textContent ?? "").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+/**
+ * Turns edited plain text back into the format the event came in with:
+ * HTML descriptions get escaped text with `<br>` line breaks and links,
+ * plain-text descriptions stay plain.
+ */
+function plainTextToDescription(text: string, original: string): string {
+  if (!LOOKS_LIKE_HTML.test(original)) return text;
+  const escaped = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\n/g, "<br>");
+  return autoLink(escaped);
+}
+
 interface EditableState {
   title: string;
   description: string;
@@ -213,7 +242,7 @@ function buildInitialState(event: CalendarEvent): EditableState {
   const end = new Date(event.endTime);
   return {
     title: event.title,
-    description: event.description ?? "",
+    description: descriptionToPlainText(event.description ?? ""),
     location: event.location ?? "",
     isAllDay: event.isAllDay,
     start: event.isAllDay
@@ -341,14 +370,12 @@ export function CalendarEventDetailSheet({
     }
 
     try {
-      // Provider descriptions for Google/Outlook are rich HTML, but
-      // the edit textarea shows the raw markup. If the user didn't
-      // touch the description, skip the patch entirely — sending
-      // back the textarea's value would round-trip plain text and
-      // destroy the original HTML server-side. Only patch when the
-      // string actually changed.
+      // The textarea holds a plain-text view of the description. Skip the
+      // patch when it wasn't touched so the provider's original HTML
+      // (links, formatting) survives an edit to the time or title.
+      const originalDescription = event.description ?? "";
       const descriptionUnchanged =
-        editState.description === (event.description ?? "");
+        editState.description === descriptionToPlainText(originalDescription);
       await updateMutation.mutateAsync({
         id: event.id,
         rangeFrom,
@@ -357,7 +384,13 @@ export function CalendarEventDetailSheet({
           title: trimmedTitle,
           ...(descriptionUnchanged
             ? {}
-            : { description: editState.description.trim() || null }),
+            : {
+                description:
+                  plainTextToDescription(
+                    editState.description.trim(),
+                    originalDescription
+                  ) || null,
+              }),
           location: editState.location.trim() || null,
           startTime: startDate,
           endTime: endDate,

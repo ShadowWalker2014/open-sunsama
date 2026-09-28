@@ -303,15 +303,15 @@ export function IdeaCard({
       {...(overlay ? {} : sortable.listeners)}
       onClick={overlay ? undefined : handleClick}
       className={cn(
-        "group relative flex flex-col gap-1.5 rounded-lg px-3 py-2.5 transition-all duration-200",
-        "bg-card hover:bg-card/80",
-        "border border-border/40 hover:border-border/60",
+        "group relative flex flex-col gap-1.5 rounded-md px-3 py-2.5 transition-[background-color,box-shadow,opacity] duration-150",
+        "bg-surface hover:bg-surface-hover",
+        !overlay && !isCompleted && "shadow-card hover:shadow-card-hover",
         dragDisabled ? "cursor-pointer" : "cursor-grab active:cursor-grabbing",
         "touch-none select-none",
         overlay &&
           "shadow-xl ring-2 ring-primary/20 rotate-[0.5deg] cursor-grabbing",
         !overlay && sortable.isDragging && "opacity-30 z-50",
-        isCompleted && "opacity-50 hover:opacity-60 bg-card/50"
+        isCompleted && "opacity-50 hover:opacity-60"
       )}
     >
       {/* Drop indicator lines (only on the hovered card during a drag) */}
