@@ -1,15 +1,18 @@
 import * as React from "react";
+import { useDndMonitor, useDroppable, type DragMoveEvent } from "@dnd-kit/core";
 import {
   format,
   isSameDay,
   setHours,
   addMinutes,
+  differenceInMinutes,
   startOfDay,
   endOfDay,
 } from "date-fns";
 import type {
   TimeBlock as TimeBlockType,
   CalendarEvent,
+  Task,
 } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import {
@@ -43,6 +46,31 @@ import {
 } from "@/hooks/useCalendarDnd";
 
 const DEFAULT_LAYOUT: LayoutResult = { lane: 0, columnCount: 1 };
+
+/** Block length for a task dropped from the board with no estimate. */
+export const DEFAULT_DROP_MINS = 30;
+
+/** Data the board's drag context reads when a card is dropped here. */
+export interface CalendarDropData {
+  type: "calendar";
+  date: string;
+  /** Snapped start time under the pointer's vertical position. */
+  timeAt: (clientY: number) => Date;
+}
+
+/** The pointer's position during a dnd-kit drag. */
+export function dragPointerY(event: {
+  activatorEvent: Event | null;
+  delta: { y: number };
+}): number | null {
+  const start = event.activatorEvent;
+  if (!start) return null;
+  const y =
+    "touches" in start
+      ? (start as TouchEvent).touches[0]?.clientY
+      : (start as MouseEvent).clientY;
+  return y === undefined ? null : y + event.delta.y;
+}
 
 // Imported from the central source so adding a new provider is a
 // one-line change in one place.
@@ -183,6 +211,51 @@ export function KanbanCalendarPanel({
     },
     onEventMove: writeEventTimes,
     onEventResize: writeEventTimes,
+  });
+
+  // Board cards can be dropped on the timeline to block them at that time.
+  const timeAt = React.useCallback(
+    (clientY: number) => {
+      const rect = timelineRef.current?.getBoundingClientRect();
+      const y = rect ? clientY - rect.top : 0;
+      return snapToInterval(calculateTimeFromY(Math.max(0, y), date), SNAP_INTERVAL);
+    },
+    [date, timelineRef]
+  );
+  const dropData: CalendarDropData = { type: "calendar", date: dateString, timeAt };
+  const { setNodeRef: setDropRef, isOver: isCardOver } = useDroppable({
+    id: `calendar-${dateString}`,
+    data: dropData,
+  });
+  const setTimelineNode = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      (timelineRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+      setDropRef(node);
+    },
+    [timelineRef, setDropRef]
+  );
+  const [cardPreview, setCardPreview] = React.useState<{
+    title: string;
+    start: Date;
+    end: Date;
+  } | null>(null);
+  useDndMonitor({
+    onDragMove(event: DragMoveEvent) {
+      const task = event.active.data.current?.task as Task | undefined;
+      const y = dragPointerY(event);
+      if (event.over?.id !== `calendar-${dateString}` || !task || y === null) {
+        setCardPreview(null);
+        return;
+      }
+      const start = timeAt(y);
+      setCardPreview({
+        title: task.title,
+        start,
+        end: addMinutes(start, task.estimatedMins ?? DEFAULT_DROP_MINS),
+      });
+    },
+    onDragEnd: () => setCardPreview(null),
+    onDragCancel: () => setCardPreview(null),
   });
 
   const hours = React.useMemo(
@@ -454,11 +527,12 @@ export function KanbanCalendarPanel({
 
           {/* Timeline Content */}
           <div
-            ref={timelineRef}
+            ref={setTimelineNode}
             className={cn(
               "relative flex-1",
               isDragging ? "cursor-grabbing" : "cursor-default",
-              isToday && "bg-primary/[0.02]"
+              isToday && "bg-primary/[0.02]",
+              isCardOver && "bg-primary/[0.04]"
             )}
             onMouseMove={handleTimelineMouseMove}
             onMouseUp={handleTimelineMouseUp}
@@ -548,6 +622,21 @@ export function KanbanCalendarPanel({
                 isDragging={dragState?.blockId === block.id}
               />
             ))}
+
+            {/* Where a board card will land */}
+            {cardPreview && (
+              <TimeBlockPreview
+                title={cardPreview.title}
+                startTime={cardPreview.start}
+                endTime={cardPreview.end}
+                top={calculateYFromTime(cardPreview.start)}
+                height={
+                  (differenceInMinutes(cardPreview.end, cardPreview.start) /
+                    60) *
+                  HOUR_HEIGHT
+                }
+              />
+            )}
 
             {/* Drop preview */}
             {dropPreview && dragState && (
