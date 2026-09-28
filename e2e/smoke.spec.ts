@@ -296,3 +296,60 @@ test("mobile subtask titles keep readable width alongside timer controls", async
   expect(title!.height).toBeLessThan(50);
   await expect(row.getByRole("button", { name: "Start subtask timer" })).toBeVisible();
 });
+
+test("completion cannot leave a task or subtask timer running after concurrent starts", async () => {
+  const session = await register();
+  for (const completion of ["task", "task-patch", "subtask"]) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const task = await api<{id: string}>("POST", "/tasks", { title: "Concurrent completion" }, session.token);
+      const subtask = await api<{id: string}>("POST", `/tasks/${task.id}/subtasks`, { title: "Subtask" }, session.token);
+      const completePath = completion === "subtask" ? `/tasks/${task.id}/subtasks/${subtask.id}` : completion === "task-patch" ? `/tasks/${task.id}` : `/tasks/${task.id}/complete`;
+      const body = completion === "subtask" ? { completed: true } : completion === "task-patch" ? { completedAt: new Date().toISOString() } : {};
+      const [start, complete] = await Promise.all([
+        fetch(`${API}/tasks/${task.id}/subtasks/${subtask.id}/timer/start`, { method: "POST", headers: { Authorization: `Bearer ${session.token}` } }),
+        fetch(`${API}${completePath}`, { method: completion === "task" ? "POST" : "PATCH", headers: { Authorization: `Bearer ${session.token}`, "Content-Type": "application/json" }, body: JSON.stringify(body) }),
+      ]);
+      expect([200, 400]).toContain(start.status);
+      expect(complete.status).toBe(200);
+      const current = await api<{completedAt: string | null; timerStartedAt: string | null}>("GET", `/tasks/${task.id}`, undefined, session.token);
+      const subtasks = await api<Array<{completed: boolean; timerStartedAt: string | null}>>("GET", `/tasks/${task.id}/subtasks`, undefined, session.token);
+      expect(subtasks[0]!.timerStartedAt).toBeNull();
+      if (completion === "subtask") expect(subtasks[0]!.completed).toBe(true);
+      else { expect(current.completedAt).toBeTruthy(); expect(current.timerStartedAt).toBeNull(); }
+    }
+  }
+});
+
+test("E edits planned time and W edits actual time consistently", async ({ page }) => {
+  const session = await register();
+  const task = await api<{id: string}>("POST", "/tasks", { title: "Shortcut consistency", scheduledDate: today, estimatedMins:30 }, session.token);
+  await api("PATCH", `/tasks/${task.id}`, { actualMins: 5 }, session.token);
+  await signInWithToken(page, session);
+  await page.goto("/app");
+  const card = todayColumn(page).locator(`[data-task-id="${task.id}"]`);
+  await card.hover();
+  await page.keyboard.press("e");
+  await expect(page.getByRole("textbox", { name: "Planned", exact: true })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await card.getByText("Shortcut consistency", { exact: true }).click();
+  for (const view of ["modal", "focus", "list"]) {
+    if (view === "focus") await page.getByRole("button", { name: "Open in focus mode" }).click();
+    if (view === "list") {
+      await page.goto("/app/tasks");
+      await page.getByRole("button", { name: "Shortcut consistency", exact: true }).hover();
+    } else await page.getByRole("button", { name: "Start timer", exact: true }).focus();
+    await page.keyboard.press("e");
+    const planned = page.getByRole("textbox", { name: "Planned", exact: true });
+    await expect(planned).toBeVisible();
+    await expect(planned).toHaveValue("0:30");
+    await expect(page.getByRole("dialog").last().getByText("E", { exact: true })).toBeVisible();
+    await page.keyboard.press("Escape");
+    if (view === "list") continue;
+    await page.getByRole("button", { name: "Start timer", exact: true }).focus();
+    await page.keyboard.press("w");
+    await expect(page.getByRole("textbox", { name: "Actual", exact: true })).toHaveValue("0:05");
+    await expect(page.getByRole("dialog").last().getByText("W", { exact: true })).toBeVisible();
+    await page.keyboard.press("Escape");
+    if (view === "focus") await expect(page).toHaveURL(new RegExp(`/app/focus/${task.id}`));
+  }
+});

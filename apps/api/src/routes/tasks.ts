@@ -33,6 +33,7 @@ import { publishEvent } from "../lib/websocket/index.js";
 import { stopTimerFields } from "../lib/timer.js";
 import {
   startTaskTimer,
+  withTimerTransition,
   stopTaskTimer,
   stopSubtaskTimers,
 } from "../lib/timer-service.js";
@@ -306,89 +307,91 @@ tasksRouter.patch(
     const userId = c.get("userId");
     const { id } = c.req.valid("param");
     const updates = c.req.valid("json");
-    const db = getDb();
+    return withTimerTransition(getDb(), userId, async (db, publishEvent) => {
 
-    const [existing] = await db
-      .select()
-      .from(tasks)
-      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
-      .limit(1);
-    if (!existing) throw new NotFoundError("Task", id);
+      const [existing] = await db
+        .select()
+        .from(tasks)
+        .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+        .limit(1);
+      if (!existing) throw new NotFoundError("Task", id);
 
-    const updateData: Record<string, unknown> = { updatedAt: new Date() };
-    if (updates.title !== undefined) updateData.title = updates.title;
-    if (updates.notes !== undefined) updateData.notes = updates.notes;
-    if (updates.scheduledDate !== undefined)
-      updateData.scheduledDate = updates.scheduledDate;
-    if (updates.estimatedMins !== undefined)
-      updateData.estimatedMins = updates.estimatedMins;
-    if (updates.priority !== undefined) updateData.priority = updates.priority;
-    if (updates.completedAt !== undefined)
-      updateData.completedAt = updates.completedAt
-        ? new Date(updates.completedAt)
-        : null;
-    if (updates.position !== undefined) updateData.position = updates.position;
-    if (updates.subtasksHidden !== undefined)
-      updateData.subtasksHidden = updates.subtasksHidden;
-    let timerStopped: number | null = null;
-    if (updates.actualMins !== undefined) {
-      // A typed actual time replaces what the timer logged; a running timer
-      // carries on from it.
-      updateData.actualMins = updates.actualMins;
-      updateData.timerAccumulatedSeconds = (updates.actualMins ?? 0) * 60;
-      if (existing.timerStartedAt) updateData.timerStartedAt = new Date();
-    }
-    if (updates.completedAt) {
-      // Completing a task stops its timers, as POST /complete does.
-      await stopSubtaskTimers(db, userId, { taskId: id });
-      if (existing.timerStartedAt) {
-        if (updates.actualMins !== undefined) {
-          updateData.timerStartedAt = null;
-          timerStopped = updates.actualMins ?? 0;
-        } else {
-          const fields = stopTimerFields(existing);
-          Object.assign(updateData, fields);
-          timerStopped = fields.actualMins;
+      const updateData: Record<string, unknown> = { updatedAt: new Date() };
+      if (updates.title !== undefined) updateData.title = updates.title;
+      if (updates.notes !== undefined) updateData.notes = updates.notes;
+      if (updates.scheduledDate !== undefined)
+        updateData.scheduledDate = updates.scheduledDate;
+      if (updates.estimatedMins !== undefined)
+        updateData.estimatedMins = updates.estimatedMins;
+      if (updates.priority !== undefined) updateData.priority = updates.priority;
+      if (updates.completedAt !== undefined)
+        updateData.completedAt = updates.completedAt
+          ? new Date(updates.completedAt)
+          : null;
+      if (updates.position !== undefined) updateData.position = updates.position;
+      if (updates.subtasksHidden !== undefined)
+        updateData.subtasksHidden = updates.subtasksHidden;
+      let timerStopped: number | null = null;
+      if (updates.actualMins !== undefined) {
+        // A typed actual time replaces what the timer logged; a running timer
+        // carries on from it.
+        updateData.actualMins = updates.actualMins;
+        updateData.timerAccumulatedSeconds = (updates.actualMins ?? 0) * 60;
+        if (existing.timerStartedAt) updateData.timerStartedAt = new Date();
+      }
+      if (updates.completedAt) {
+        // Completing a task stops its timers, as POST /complete does.
+        await stopSubtaskTimers(db, userId, { taskId: id });
+        if (existing.timerStartedAt) {
+          if (updates.actualMins !== undefined) {
+            updateData.timerStartedAt = null;
+            timerStopped = updates.actualMins ?? 0;
+          } else {
+            const fields = stopTimerFields(existing);
+            Object.assign(updateData, fields);
+            timerStopped = fields.actualMins;
+          }
         }
       }
-    }
 
-    const [updatedTask] = await db
-      .update(tasks)
-      .set(updateData)
-      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
-      .returning();
+      const [updatedTask] = await db
+        .update(tasks)
+        .set(updateData)
+        .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+        .returning();
 
-    if (
-      updatedTask &&
-      updates.scheduledDate !== undefined &&
-      updates.scheduledDate !== existing.scheduledDate
-    ) {
-      const moved = await moveBlocksWithTasks(
-        userId,
-        [{ taskId: id, from: existing.scheduledDate }],
-        updatedTask.scheduledDate
-      );
-      if (moved > 0) publishEvent(userId, "timeblock:updated", { taskId: id });
-    }
+      if (
+        updatedTask &&
+        updates.scheduledDate !== undefined &&
+        updates.scheduledDate !== existing.scheduledDate
+      ) {
+        const moved = await moveBlocksWithTasks(
+          userId,
+          [{ taskId: id, from: existing.scheduledDate }],
+          updatedTask.scheduledDate,
+          db
+        );
+        if (moved > 0) publishEvent(userId, "timeblock:updated", { taskId: id });
+      }
 
-    // Publish realtime event (fire and forget)
-    // Use 'task:completed' if completedAt changed to a truthy value, otherwise 'task:updated'
-    if (updatedTask && timerStopped !== null) {
-      publishEvent(userId, "timer:stopped", {
-        taskId: updatedTask.id,
-        actualMins: timerStopped,
-      });
-    }
-    if (updatedTask) {
-      const eventType = updates.completedAt ? "task:completed" : "task:updated";
-      publishEvent(userId, eventType, {
-        taskId: updatedTask.id,
-        scheduledDate: updatedTask.scheduledDate,
-      });
-    }
+      // Publish realtime event (fire and forget)
+      // Use 'task:completed' if completedAt changed to a truthy value, otherwise 'task:updated'
+      if (updatedTask && timerStopped !== null) {
+        publishEvent(userId, "timer:stopped", {
+          taskId: updatedTask.id,
+          actualMins: timerStopped,
+        });
+      }
+      if (updatedTask) {
+        const eventType = updates.completedAt ? "task:completed" : "task:updated";
+        publishEvent(userId, eventType, {
+          taskId: updatedTask.id,
+          scheduledDate: updatedTask.scheduledDate,
+        });
+      }
 
-    return c.json({ success: true, data: updatedTask });
+      return c.json({ success: true, data: updatedTask });
+    });
   }
 );
 
@@ -482,48 +485,49 @@ tasksRouter.post(
   async (c) => {
     const userId = c.get("userId");
     const { id } = c.req.valid("param");
-    const db = getDb();
+    return withTimerTransition(getDb(), userId, async (db, publishEvent) => {
 
-    const [existing] = await db
-      .select()
-      .from(tasks)
-      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
-      .limit(1);
-    if (!existing) throw new NotFoundError("Task", id);
+      const [existing] = await db
+        .select()
+        .from(tasks)
+        .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+        .limit(1);
+      if (!existing) throw new NotFoundError("Task", id);
 
-    // Auto-stop timer if running
-    const updateData: Record<string, unknown> = {
-      completedAt: new Date(),
-      updatedAt: new Date(),
-    };
+      // Auto-stop timer if running
+      const updateData: Record<string, unknown> = {
+        completedAt: new Date(),
+        updatedAt: new Date(),
+      };
 
-    await stopSubtaskTimers(db, userId, { taskId: id });
-    if (existing.timerStartedAt) {
-      const fields = stopTimerFields(existing);
-      Object.assign(updateData, fields);
+      await stopSubtaskTimers(db, userId, { taskId: id });
+      if (existing.timerStartedAt) {
+        const fields = stopTimerFields(existing);
+        Object.assign(updateData, fields);
 
-      // Broadcast timer:stopped before task:completed
-      publishEvent(userId, "timer:stopped", {
-        taskId: id,
-        actualMins: fields.actualMins,
-      });
-    }
+        // Broadcast timer:stopped before task:completed
+        publishEvent(userId, "timer:stopped", {
+          taskId: id,
+          actualMins: fields.actualMins,
+        });
+      }
 
-    const [updatedTask] = await db
-      .update(tasks)
-      .set(updateData)
-      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
-      .returning();
+      const [updatedTask] = await db
+        .update(tasks)
+        .set(updateData)
+        .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+        .returning();
 
-    // Publish realtime event (fire and forget)
-    if (updatedTask) {
-      publishEvent(userId, "task:completed", {
-        taskId: updatedTask.id,
-        scheduledDate: updatedTask.scheduledDate,
-      });
-    }
+      // Publish realtime event (fire and forget)
+      if (updatedTask) {
+        publishEvent(userId, "task:completed", {
+          taskId: updatedTask.id,
+          scheduledDate: updatedTask.scheduledDate,
+        });
+      }
 
-    return c.json({ success: true, data: updatedTask });
+      return c.json({ success: true, data: updatedTask });
+    });
   }
 );
 
