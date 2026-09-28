@@ -7,6 +7,7 @@ import type {
   ExternalCalendar,
   ExternalEvent,
   EventPatch,
+  RsvpResponse,
   SyncOptions,
   SyncResult,
 } from './index';
@@ -175,7 +176,7 @@ export class OutlookCalendarProvider implements CalendarProvider {
     } else {
       const params = new URLSearchParams({
         $top: '250',
-        $select: 'id,subject,body,location,start,end,isAllDay,recurrence,seriesMasterId,showAs,responseStatus,webLink,changeKey',
+        $select: 'id,subject,body,location,start,end,isAllDay,recurrence,seriesMasterId,showAs,responseStatus,attendees,organizer,isOrganizer,onlineMeeting,onlineMeetingUrl,webLink,changeKey',
       });
 
       if (options.timeMin && options.timeMax) {
@@ -404,6 +405,45 @@ export class OutlookCalendarProvider implements CalendarProvider {
     if (!response.ok && response.status !== 404 && response.status !== 410) {
       throw await mapOutlookError('deleteEvent', response);
     }
+  }
+
+  async respondToEvent(
+    accessToken: string,
+    calendarId: string,
+    eventId: string,
+    response: RsvpResponse
+  ): Promise<ExternalEvent> {
+    void calendarId; // Outlook resolves by event id alone (see updateEvent).
+    const action = {
+      accepted: 'accept',
+      declined: 'decline',
+      tentative: 'tentativelyAccept',
+    }[response];
+    const eventUrl = `${GRAPH_API}/me/events/${encodeURIComponent(eventId)}`;
+    const answered = await fetch(`${eventUrl}/${action}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ sendResponse: true }),
+    });
+    if (!answered.ok) {
+      throw await mapOutlookError('respondToEvent', answered);
+    }
+
+    // The answer endpoints return 202 with no body; read the event back.
+    const current = await fetch(eventUrl, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!current.ok) {
+      throw await mapOutlookError('respondToEvent', current);
+    }
+    const parsed = parseOutlookEvent((await current.json()) as OutlookEvent);
+    if (!parsed) {
+      throw new Error('Outlook returned an event that could not be parsed');
+    }
+    return parsed;
   }
 }
 

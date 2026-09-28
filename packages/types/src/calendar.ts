@@ -35,6 +35,17 @@ export interface Calendar {
   updatedAt: string;
 }
 
+export interface CalendarEventAttendee {
+  email: string;
+  name: string | null;
+  responseStatus: 'accepted' | 'declined' | 'tentative' | 'needsAction' | null;
+  organizer: boolean;
+  /** The connected account's own entry. */
+  self: boolean;
+}
+
+export type CalendarRsvpResponse = 'accepted' | 'declined' | 'tentative';
+
 export interface CalendarEvent {
   id: string;
   calendarId: string;
@@ -52,6 +63,10 @@ export interface CalendarEvent {
   status: 'confirmed' | 'tentative' | 'cancelled';
   responseStatus: 'accepted' | 'declined' | 'tentative' | 'needsAction' | null;
   htmlLink: string | null;
+  /** Guests, or null when the event has none or the provider doesn't say. */
+  attendees?: CalendarEventAttendee[] | null;
+  /** Video call join URL (Google Meet, Teams, Zoom). */
+  conferenceUrl?: string | null;
   calendar?: Calendar;
   createdAt: string;
   updatedAt: string;

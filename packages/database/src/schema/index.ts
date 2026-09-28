@@ -152,6 +152,7 @@ export type {
   UpdateCalendarEvent,
   EventStatus,
   ResponseStatus,
+  EventAttendee,
 } from "./calendar-events";
 
 export {
