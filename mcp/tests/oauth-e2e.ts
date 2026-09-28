@@ -689,7 +689,12 @@ async function main() {
     await keyClient.connect(new StreamableHTTPClientTransport(MCP_URL, {
       requestInit: { headers: { "X-API-Key": apiKey } },
     }));
-    check("API-key SDK client lists tools", (await keyClient.listTools()).tools.length === 45);
+    const keyTools = (await keyClient.listTools()).tools;
+    check(
+      "API-key SDK client lists the same tools as OAuth",
+      JSON.stringify(keyTools.map((t) => t.name).sort()) === JSON.stringify(tools.map((t) => t.name).sort()),
+      keyTools.length
+    );
     const keyTasks = await keyClient.callTool({ name: "list_tasks", arguments: { date: today } });
     check("API-key SDK client lists tasks", !keyTasks.isError, keyTasks.content);
     const keyProfile = await keyClient.callTool({ name: "get_user_profile", arguments: {} });
