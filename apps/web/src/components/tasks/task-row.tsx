@@ -3,7 +3,7 @@ import { Check, Clock, ChevronDown, ChevronRight } from "lucide-react";
 import type { Task } from "@open-sunsama/types";
 import { cn, formatDuration } from "@/lib/utils";
 import { useSubtasks, useUpdateSubtask } from "@/hooks/useSubtasks";
-import { useHoveredTask } from "@/hooks/useKeyboardShortcuts";
+import { useHoveredTask, TIME_EDIT_KEYS } from "@/hooks/useKeyboardShortcuts";
 import { TaskContextMenu } from "@/components/kanban/task-context-menu";
 
 import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
@@ -147,7 +147,7 @@ export function TaskRow({
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="end" onClick={(e) => e.stopPropagation()}>
-            <DurationPicker value={task.estimatedMins} label="Planned" shortcut="E"
+            <DurationPicker value={task.estimatedMins} label="Planned" shortcut={TIME_EDIT_KEYS.planned.toUpperCase()}
               onChange={(estimatedMins) => { updateTask.mutate({ id: task.id, data: { estimatedMins } }); setDurationOpen(false); }}
               onClose={() => setDurationOpen(false)} />
           </PopoverContent>

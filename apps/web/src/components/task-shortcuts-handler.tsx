@@ -1,3 +1,4 @@
+import { matchesTimeEditShortcut } from "@/hooks/useKeyboardShortcuts";
 import * as React from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -215,8 +216,7 @@ export function TaskShortcutsHandler({
 
       // Edit estimate (E)
       if (
-        SHORTCUTS.editEstimate &&
-        matchesShortcut(event, SHORTCUTS.editEstimate)
+        matchesTimeEditShortcut(event, "planned")
       ) {
         if (hoveredTask) {
           event.preventDefault();

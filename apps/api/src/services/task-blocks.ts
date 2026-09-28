@@ -1,6 +1,7 @@
 /**
  * Keeps a task's time blocks on the task's day.
  */
+import type { TimerDb } from "../lib/timer-service.js";
 import { getDb, and, eq, timeBlocks } from '@open-sunsama/database';
 
 export interface TaskDayChange {
@@ -18,9 +19,9 @@ export interface TaskDayChange {
 export async function moveBlocksWithTasks(
   userId: string,
   changes: TaskDayChange[],
-  to: string | null
+  to: string | null,
+  db: TimerDb = getDb()
 ): Promise<number> {
-  const db = getDb();
   let changed = 0;
   for (const { taskId, from } of changes) {
     if (!from || from === to) continue;

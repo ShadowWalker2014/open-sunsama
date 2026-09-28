@@ -1,3 +1,4 @@
+import { TIME_EDIT_KEYS, matchesTimeEditShortcut } from "@/hooks/useKeyboardShortcuts";
 import * as React from "react";
 import { createPortal } from "react-dom";
 import {
@@ -226,7 +227,7 @@ export function TaskModal({
     });
   };
 
-  // Handle keyboard shortcuts: F for focus, E for actual time, W for planned time, D/Z/Shift+Z for date, @ for date input
+  // Handle keyboard shortcuts: F for focus, E for planned time, W for actual time, D/Z/Shift+Z for date, @ for date input
   React.useEffect(() => {
     if (!open || !task) return;
 
@@ -261,13 +262,13 @@ export function TaskModal({
         return;
       }
 
-      if (e.key === "e" || e.key === "E") {
+      if (matchesTimeEditShortcut(e, "actual")) {
         e.preventDefault();
         actualTimeRef.current?.open();
         return;
       }
 
-      if (e.key === "w" || e.key === "W") {
+      if (matchesTimeEditShortcut(e, "planned")) {
         e.preventDefault();
         plannedTimeRef.current?.open();
         return;
@@ -750,7 +751,7 @@ export function TaskModal({
         onChange={handleActualMinsChange}
         label="Actual"
         dropdownHeader="Actual"
-        shortcutHint="E"
+        shortcutHint={TIME_EDIT_KEYS.actual.toUpperCase()}
         placeholder="0:00"
         className={timeValue}
       />
@@ -763,7 +764,7 @@ export function TaskModal({
       onChange={handleDurationChange}
       label="Planned"
       dropdownHeader="Planned"
-      shortcutHint={isCompose ? undefined : "W"}
+      shortcutHint={isCompose ? undefined : TIME_EDIT_KEYS.planned.toUpperCase()}
       placeholder="--:--"
       className={timeValue}
     />
