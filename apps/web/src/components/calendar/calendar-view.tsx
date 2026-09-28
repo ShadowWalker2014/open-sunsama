@@ -802,6 +802,7 @@ export function CalendarView({
               isLoading={isLoading}
               drag={multiDayDrag}
               blocksEditable
+              {...(onTimeSlotClick ? { onTimeSlotClick } : {})}
               onExternalEventClick={handleExternalEventClick}
               externalEventCanEdit={externalEventCanEdit}
               {...(onBlockClick ? { onBlockClick } : {})}
