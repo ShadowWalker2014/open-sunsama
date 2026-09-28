@@ -21,6 +21,7 @@ import type { OAuthClientProvider } from "@modelcontextprotocol/client";
 import type {
   OAuthClientInformationMixed,
   OAuthClientMetadata,
+  OAuthDiscoveryState,
   OAuthTokens,
 } from "@modelcontextprotocol/client";
 
@@ -188,6 +189,7 @@ class MemoryProvider implements OAuthClientProvider {
   info?: OAuthClientInformationMixed;
   savedTokens?: OAuthTokens;
   verifier?: string;
+  savedDiscoveryState?: OAuthDiscoveryState;
   lastAuthorizationUrl?: URL;
 
   get redirectUrl() {
@@ -223,6 +225,12 @@ class MemoryProvider implements OAuthClientProvider {
   codeVerifier() {
     if (!this.verifier) throw new Error("no verifier");
     return this.verifier;
+  }
+  saveDiscoveryState(state: OAuthDiscoveryState) {
+    this.savedDiscoveryState = state;
+  }
+  discoveryState() {
+    return this.savedDiscoveryState;
   }
 }
 
@@ -274,7 +282,7 @@ async function main() {
   check("callback has code", !!callback.searchParams.get("code"));
   check("callback has iss (RFC 9207)", callback.searchParams.get("iss") === asm.issuer);
   check("callback echoes state", callback.searchParams.get("state") === authUrl.searchParams.get("state"));
-  await transport.finishAuth(callback.searchParams.get("code")!);
+  await transport.finishAuth(callback.searchParams);
   check("tokens saved", !!provider.savedTokens?.access_token?.startsWith("osat_"));
   check("refresh token issued", !!provider.savedTokens?.refresh_token?.startsWith("osrt_"));
 
