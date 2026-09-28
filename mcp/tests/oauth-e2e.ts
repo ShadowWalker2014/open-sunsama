@@ -282,6 +282,7 @@ async function main() {
   check("callback has code", !!callback.searchParams.get("code"));
   check("callback has iss (RFC 9207)", callback.searchParams.get("iss") === asm.issuer);
   check("callback echoes state", callback.searchParams.get("state") === authUrl.searchParams.get("state"));
+  check("SDK saved discovery state for the callback", provider.savedDiscoveryState?.authorizationServerUrl === asm.issuer);
   await transport.finishAuth(callback.searchParams);
   check("tokens saved", !!provider.savedTokens?.access_token?.startsWith("osat_"));
   check("refresh token issued", !!provider.savedTokens?.refresh_token?.startsWith("osrt_"));
@@ -305,6 +306,15 @@ async function main() {
   );
   check("OAuth grant includes calendar:read", provider.savedTokens?.scope?.split(" ").includes("calendar:read") === true, provider.savedTokens?.scope);
   const createTask = tools.find((t) => t.name === "create_task");
+  check(
+    "create_task exposes a JSON Schema with a required string title",
+    createTask?.inputSchema.type === "object" &&
+      createTask.inputSchema.properties?.title?.type === "string" &&
+      createTask.inputSchema.required?.includes("title") === true,
+    createTask?.inputSchema
+  );
+  const invalidTask = await client.callTool({ name: "create_task", arguments: { title: 42 } });
+  check("invalid tool arguments are rejected by the MCP server", invalidTask.isError === true, invalidTask);
   check("tools carry titles", tools.every((t) => typeof t.title === "string" && t.title.length > 0));
   check(
     "tools carry required annotations",
@@ -672,6 +682,28 @@ async function main() {
   });
   check("X-API-Key works on /mcp", viaHeader.status === 200 && !(await json(viaHeader)).result?.isError);
   check("Bearer os_ API key works on /mcp", (await mcpCall(apiKey, "tools/list")).status === 200);
+  // A second, independent SDK client exercises the deployed HTTP transport
+  // with the traditional API-key header (as in a configured desktop agent).
+  const keyClient = new Client({ name: "api-key-e2e", version: "1.0.0" });
+  try {
+    await keyClient.connect(new StreamableHTTPClientTransport(MCP_URL, {
+      requestInit: { headers: { "X-API-Key": apiKey } },
+    }));
+    check("API-key SDK client lists tools", (await keyClient.listTools()).tools.length === 45);
+    const keyTasks = await keyClient.callTool({ name: "list_tasks", arguments: { date: today } });
+    check("API-key SDK client lists tasks", !keyTasks.isError, keyTasks.content);
+    const keyProfile = await keyClient.callTool({ name: "get_user_profile", arguments: {} });
+    check("API-key SDK client reads profile", !keyProfile.isError && toolText(keyProfile).includes("mcp-e2e-"), keyProfile.content);
+    const keyBoard = await keyClient.callTool({ name: "create_idea_board", arguments: { name: "SDK API key board" } });
+    const boardId = JSON.parse(toolText(keyBoard))?.id as string | undefined;
+    check("API-key SDK client creates Ideas board", !keyBoard.isError && !!boardId, keyBoard.content);
+    const keyBoards = await keyClient.callTool({ name: "list_idea_boards", arguments: {} });
+    check("API-key SDK client lists Ideas board", !keyBoards.isError && toolText(keyBoards).includes(boardId!), keyBoards.content);
+    const keyDelete = await keyClient.callTool({ name: "delete_idea_board", arguments: { id: boardId } });
+    check("API-key SDK client deletes Ideas board", !keyDelete.isError, keyDelete.content);
+  } finally {
+    await keyClient.close();
+  }
   const keyBoardResult = await mcpCall(apiKey, "tools/call", { name: "create_idea_board", arguments: { name: "API key board" } });
   const keyBoard = JSON.parse(keyBoardResult.body.result?.content?.[0]?.text ?? "null") as { id: string } | null;
   check("API key can create Ideas board", !!keyBoard?.id, keyBoardResult.body);
