@@ -214,8 +214,8 @@ function MultiDayEvent({
         height: `${Math.max(height - 2, 16)}px`,
         left: `${leftPct}%`,
         width: `${widthPct}%`,
-        backgroundColor: hexToRgba(color, 0.12),
-        borderColor: hexToRgba(color, 0.55),
+        backgroundColor: hexToRgba(color, 0.2),
+        borderColor: color,
       }}
       onClick={(e) => {
         e.stopPropagation();
@@ -260,7 +260,7 @@ function MultiDayEvent({
           className="absolute bottom-0 left-0 right-0 h-1 cursor-ns-resize hover:bg-foreground/10 rounded-b"
         />
       )}
-      <p className="truncate text-[10px] font-medium text-foreground/85">
+      <p className="truncate text-[10px] font-medium text-foreground">
         {event.title}
       </p>
       {height >= 28 && (
