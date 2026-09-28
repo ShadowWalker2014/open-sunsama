@@ -570,7 +570,8 @@ test("Ideas tray navigates columns and drags an idea into today's tasks", async 
   await expect(tray.getByText('Planner ideas',{exact:true})).toBeVisible();
   await tray.getByRole('tab',{name:/Ready.*0/}).click();
   await expect(tray.getByText('Ideas for ready go here.')).toBeVisible();
-  await tray.getByRole('tab').first().click();
+  await tray.getByRole('tab',{name:/Ready.*0/}).press('ArrowLeft');
+  await expect(tray.getByRole('tab').first()).toHaveAttribute('aria-selected','true');
   const source = (await tray.getByText('Idea to plan',{exact:true}).boundingBox())!;
   const target = (await todayColumn(page).boundingBox())!;
   await page.mouse.move(source.x+45,source.y+8);
