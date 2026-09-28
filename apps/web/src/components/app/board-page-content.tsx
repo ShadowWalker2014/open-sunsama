@@ -2,7 +2,8 @@ import * as React from "react";
 import type { Task, TimeBlock } from "@open-sunsama/types";
 import { KanbanBoard, useKanbanNavigation } from "@/components/kanban";
 import { KanbanCalendarPanel } from "@/components/kanban/kanban-calendar-panel";
-import { Sidebar } from "@/components/layout/sidebar";
+import { BacklogPanel } from "@/components/layout/backlog-panel";
+import { RightPanel } from "./right-panel";
 import { MobileBacklogSheet } from "@/components/layout/mobile-backlog-sheet";
 import { MobileTasksView } from "@/components/mobile";
 import { TasksDndProvider } from "@/lib/dnd/tasks-dnd-context";
@@ -73,7 +74,6 @@ export function BoardPageContent() {
   return (
     <TasksDndProvider>
       <div className="flex h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-3.5rem)]">
-        <Sidebar className="hidden lg:flex" />
         <MobileBacklogSheet />
 
         <div className="flex flex-1 overflow-hidden">
@@ -83,21 +83,28 @@ export function BoardPageContent() {
             </KanbanBoard>
           </div>
 
-          {activeDate && (
-            <KanbanCalendarPanel
-              date={activeDate}
-              className="hidden w-[280px] flex-shrink-0 xl:flex"
-              onBlockClick={handleBlockClick}
-              onEditBlock={handleEditBlock}
-              onTimeSlotClick={(date, startTime, endTime) => {
-                setCreateDialogDate(date);
-                setCreateDialogStartTime(startTime);
-                setCreateDialogEndTime(endTime);
-                setCreateDialogOpen(true);
-              }}
-              onViewTask={handleViewTask}
+          <div className="hidden lg:flex">
+            <RightPanel
+              calendar={
+                activeDate && (
+                  <KanbanCalendarPanel
+                    date={activeDate}
+                    className="w-full border-l-0"
+                    onBlockClick={handleBlockClick}
+                    onEditBlock={handleEditBlock}
+                    onTimeSlotClick={(date, startTime, endTime) => {
+                      setCreateDialogDate(date);
+                      setCreateDialogStartTime(startTime);
+                      setCreateDialogEndTime(endTime);
+                      setCreateDialogOpen(true);
+                    }}
+                    onViewTask={handleViewTask}
+                  />
+                )
+              }
+              backlog={<BacklogPanel />}
             />
-          )}
+          </div>
         </div>
       </div>
 

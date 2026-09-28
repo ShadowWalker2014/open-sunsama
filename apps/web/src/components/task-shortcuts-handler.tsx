@@ -20,7 +20,10 @@ import { useAutoSchedule } from "@/hooks";
 import { taskKeys } from "@/lib/query-keys";
 import { toast } from "@/hooks/use-toast";
 import { addDays, startOfWeek, startOfDay, format, parseISO } from "date-fns";
-import type { Task } from "@open-sunsama/types";
+import type { Task, TaskPriority } from "@open-sunsama/types";
+
+/** Asks the card with this task id to open its planned-time picker. */
+export const EDIT_ESTIMATE_EVENT = "open-sunsama:edit-estimate";
 
 interface TaskShortcutsHandlerProps {
   onNavigateToday: () => void;
@@ -182,6 +185,22 @@ export function TaskShortcutsHandler({
         return;
       }
 
+      // Priority (0–3) on the hovered task
+      if (
+        hoveredTask &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        ["0", "1", "2", "3"].includes(event.key)
+      ) {
+        event.preventDefault();
+        updateTask.mutate({
+          id: hoveredTask.id,
+          data: { priority: `P${event.key}` as TaskPriority },
+        });
+        return;
+      }
+
       // Delete task (Cmd + Delete/Backspace)
       if (
         SHORTCUTS.deleteTask &&
@@ -199,9 +218,11 @@ export function TaskShortcutsHandler({
         SHORTCUTS.editEstimate &&
         matchesShortcut(event, SHORTCUTS.editEstimate)
       ) {
-        if (hoveredTask && onEditEstimate) {
+        if (hoveredTask) {
           event.preventDefault();
-          onEditEstimate(hoveredTask.id);
+          if (onEditEstimate) onEditEstimate(hoveredTask.id);
+          // Cards open their own planned-time picker.
+          else window.dispatchEvent(new CustomEvent(EDIT_ESTIMATE_EVENT, { detail: hoveredTask.id }));
         }
         return;
       }

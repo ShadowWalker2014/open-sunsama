@@ -1,6 +1,6 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Flag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TaskPriority } from "@open-sunsama/types";
 
@@ -87,11 +87,27 @@ export interface PriorityBadgeProps
   showDot?: boolean;
 }
 
+/**
+ * Priorities keep their P0–P3 codes, each with a short description. P2 is
+ * the default, "Normal", and cards don't mark it. `key` picks it in the
+ * priority menus.
+ */
+export const PRIORITY_META: Record<
+  TaskPriority,
+  { description: string; key: string; flagClass: string; filled: boolean }
+> = {
+  P0: { description: "Urgent", key: "0", flagClass: "text-red-500", filled: true },
+  P1: { description: "High", key: "1", flagClass: "text-orange-500", filled: true },
+  P2: { description: "Normal", key: "2", flagClass: "text-muted-foreground", filled: false },
+  P3: { description: "Low", key: "3", flagClass: "text-muted-foreground/60", filled: true },
+};
+
+/** "P1 · High" */
 const PRIORITY_LABELS: Record<TaskPriority, string> = {
-  P0: "P0",
-  P1: "P1",
-  P2: "P2",
-  P3: "P3",
+  P0: `P0 · ${PRIORITY_META.P0.description}`,
+  P1: `P1 · ${PRIORITY_META.P1.description}`,
+  P2: `P2 · ${PRIORITY_META.P2.description}`,
+  P3: `P3 · ${PRIORITY_META.P3.description}`,
 };
 
 const PRIORITY_SHORT_LABELS: Record<TaskPriority, string> = {
@@ -166,46 +182,15 @@ export function PriorityIcon({
   size?: "sm" | "default" | "lg";
   className?: string;
 }) {
-  const sizeClasses = {
-    sm: "h-3 w-3",
-    default: "h-4 w-4",
-    lg: "h-5 w-5",
-  };
-
-  const barHeights: Record<TaskPriority, string[]> = {
-    P0: ["h-full", "h-full", "h-full", "h-full"],
-    P1: ["h-1/4", "h-1/2", "h-3/4", "h-full"],
-    P2: ["h-1/4", "h-1/2", "h-3/4", "h-0"],
-    P3: ["h-1/4", "h-1/2", "h-0", "h-0"],
-  };
-
-  const colorClasses: Record<TaskPriority, string> = {
-    P0: "bg-red-500",
-    P1: "bg-orange-500",
-    P2: "bg-blue-500",
-    P3: "bg-slate-300 dark:bg-slate-500",
-  };
-
+  const sizeClasses = { sm: "h-3 w-3", default: "h-3.5 w-3.5", lg: "h-4 w-4" };
+  const meta = PRIORITY_META[priority];
   return (
-    <div
-      className={cn(
-        "flex items-end gap-0.5",
-        sizeClasses[size],
-        className
-      )}
-      title={PRIORITY_LABELS[priority]}
-    >
-      {barHeights[priority].map((height, i) => (
-        <div
-          key={i}
-          className={cn(
-            "w-0.5 rounded-sm transition-all duration-150",
-            height === "h-0" ? "bg-transparent" : colorClasses[priority],
-            height
-          )}
-        />
-      ))}
-    </div>
+    <Flag
+      className={cn(sizeClasses[size], meta.flagClass, className)}
+      fill={meta.filled ? "currentColor" : "none"}
+      strokeWidth={meta.filled ? 0 : 2}
+      aria-label={PRIORITY_LABELS[priority]}
+    />
   );
 }
 
