@@ -129,6 +129,16 @@ export function Header({ className }: HeaderProps) {
 
         {/* Actions */}
         <div className="flex items-center gap-1">
+          {/* Keeps shortcuts discoverable without a text hint */}
+          <button
+            type="button"
+            onClick={() => setShowShortcutsModal(true)}
+            title="Keyboard shortcuts · ?"
+            aria-label="Keyboard shortcuts"
+            className="mr-1 hidden lg:flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <Keyboard className="h-3.5 w-3.5" />
+          </button>
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

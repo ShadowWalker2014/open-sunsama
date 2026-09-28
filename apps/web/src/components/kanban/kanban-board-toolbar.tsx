@@ -1,5 +1,11 @@
 import * as React from "react";
-import { ChevronLeft, ChevronRight, ArrowUpDown, Check } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ArrowUpDown,
+  Check,
+  CalendarDays,
+} from "lucide-react";
 import type { TaskSortBy } from "@open-sunsama/types";
 import {
   Button,
@@ -7,9 +13,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  ShortcutHint,
   ViewSearch,
 } from "@/components/ui";
+import { WithShortcut, KeyCaps } from "@/components/ui/with-shortcut";
+import { MonthGrid } from "@/components/ui/month-grid";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { SHORTCUTS, formatShortcut } from "@/hooks/useKeyboardShortcuts";
 
 // Extended sort option that includes direction
 export type SortOption = "position" | "priority-desc" | "priority-asc" | "createdAt-desc" | "createdAt-asc";
@@ -46,6 +55,10 @@ interface KanbanBoardToolbarProps {
   onNavigatePrevious: () => void;
   onNavigateNext: () => void;
   onNavigateToday: () => void;
+  /** Puts a day at the left edge of the board. */
+  onNavigateToDate: (date: Date) => void;
+  /** The day at the left edge, marked in the calendar. */
+  firstVisibleDate: Date | null;
   sortBy: SortOption;
   onSortChange: (sort: SortOption) => void;
   /** Substring filter applied to task titles/notes across the day columns. */
@@ -80,11 +93,23 @@ export function KanbanBoardToolbar({
   onNavigatePrevious,
   onNavigateNext,
   onNavigateToday,
+  onNavigateToDate,
+  firstVisibleDate,
   sortBy,
   onSortChange,
   searchQuery,
   onSearchQueryChange,
 }: KanbanBoardToolbarProps) {
+  const [goToOpen, setGoToOpen] = React.useState(false);
+  const go = (action: () => void) => {
+    action();
+    setGoToOpen(false);
+  };
+  const goToRows = [
+    { label: "Go to today", shortcut: SHORTCUTS.focusToday, action: onNavigateToday },
+    { label: "Go to next day", shortcut: SHORTCUTS.nextDay, action: onNavigateNext },
+    { label: "Go to previous day", shortcut: SHORTCUTS.previousDay, action: onNavigatePrevious },
+  ];
   const currentSortLabel = SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? "Manual";
 
   return (
@@ -92,32 +117,62 @@ export function KanbanBoardToolbar({
       <div className="flex items-center gap-2 sm:gap-3">
         {/* Navigation Arrows */}
         <div className="flex items-center gap-0.5 sm:gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onNavigatePrevious}
-            title="Previous day"
-            className="h-8 w-8"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={onNavigateToday}
-            className="group h-8 px-2.5"
-          >
-            <span>Today</span>
-            <ShortcutHint shortcutKey="goToToday" className="ml-2 hidden sm:flex" showOnHover />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onNavigateNext}
-            title="Next day"
-            className="h-8 w-8"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+          <WithShortcut label="Previous day" shortcut="previousDay" side="bottom">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onNavigatePrevious}
+              aria-label="Previous day"
+              className="h-8 w-8"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          </WithShortcut>
+          {/* Sunsama's date menu: jump to today, step a day, or pick any date. */}
+          <Popover open={goToOpen} onOpenChange={setGoToOpen}>
+            <PopoverTrigger asChild>
+              <WithShortcut label="Go to date" side="bottom">
+                <Button variant="ghost" className="h-8 gap-1.5 px-2.5">
+                  <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                  Today
+                </Button>
+              </WithShortcut>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-auto p-0">
+              <div className="p-1">
+                {goToRows.map((row) => (
+                  <button
+                    key={row.label}
+                    type="button"
+                    onClick={() => go(row.action)}
+                    className="flex w-full items-center justify-between gap-6 rounded px-2.5 py-1.5 text-sm transition-colors hover:bg-accent"
+                  >
+                    {row.label}
+                    {row.shortcut && (
+                      <KeyCaps keys={formatShortcut(row.shortcut).split(" ")} />
+                    )}
+                  </button>
+                ))}
+              </div>
+              <div className="border-t border-border/60">
+                <MonthGrid
+                  selected={firstVisibleDate}
+                  onSelect={(date) => go(() => onNavigateToDate(date))}
+                />
+              </div>
+            </PopoverContent>
+          </Popover>
+          <WithShortcut label="Next day" shortcut="nextDay" side="bottom">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onNavigateNext}
+              aria-label="Next day"
+              className="h-8 w-8"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </WithShortcut>
         </div>
 
       </div>

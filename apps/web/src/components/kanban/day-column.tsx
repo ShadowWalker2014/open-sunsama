@@ -1,5 +1,15 @@
 import * as React from "react";
-import { format, isToday, isPast, isYesterday, startOfDay, endOfDay } from "date-fns";
+import {
+  format,
+  isToday,
+  isTomorrow,
+  isPast,
+  isYesterday,
+  startOfDay,
+  endOfDay,
+  startOfWeek,
+  endOfWeek,
+} from "date-fns";
 import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -181,10 +191,20 @@ export function DayColumn({
   // laid end to end from the workday start around blocks and meetings.
   const { user } = useAuth();
   const workStartHour = user?.preferences?.workStartHour ?? 9;
-  const { data: dayEvents } = useCalendarEvents(
-    startOfDay(date).toISOString(),
-    endOfDay(date).toISOString()
+  // One request per week, shared by that week's seven columns.
+  const { data: weekEvents } = useCalendarEvents(
+    startOfWeek(date, { weekStartsOn: 1 }).toISOString(),
+    endOfWeek(date, { weekStartsOn: 1 }).toISOString()
   );
+  const dayEvents = React.useMemo(() => {
+    const from = startOfDay(date).getTime();
+    const to = endOfDay(date).getTime();
+    return (weekEvents ?? []).filter(
+      (e) =>
+        new Date(e.startTime).getTime() <= to &&
+        new Date(e.endTime).getTime() >= from
+    );
+  }, [weekEvents, date]);
   const projectedStartByTaskId = React.useMemo(
     () =>
       projectTaskStarts({
@@ -196,7 +216,7 @@ export function DayColumn({
             start: new Date(b.startTime),
             end: new Date(b.endTime),
           })),
-          ...(dayEvents ?? [])
+          ...dayEvents
             .filter((e) => !e.isAllDay && e.responseStatus !== "declined")
             .map((e) => ({ start: new Date(e.startTime), end: new Date(e.endTime) })),
         ],
@@ -227,19 +247,34 @@ export function DayColumn({
         isDragging && !isDropTarget && "bg-muted/20",
         // Drop target highlight with ring
         isDropTarget && "bg-primary/5 ring-2 ring-primary/20 ring-inset",
+        // Today is warm-tinted top to bottom so the eye lands on it.
+        today && !isDropTarget && "bg-primary/[0.045] sm:rounded-lg",
         // Past days are slightly muted
         pastDay && "opacity-60"
       )}
     >
       {/* Day header, as in Sunsama: weekday and date, a progress bar on
           today, then a solid "Add task" bar that anchors the column. */}
-      <div className="sticky top-0 z-10 bg-canvas px-2 pt-4 pb-2">
+      <div className="px-2 pt-4 pb-2">
         <button
           onClick={() => onDateClick?.(date)}
           className="block px-1 text-left transition-opacity hover:opacity-70"
         >
-          <div className="text-xl font-semibold tracking-tight text-foreground">
-            {format(date, "EEEE")}
+          <div className="flex items-center gap-2 text-xl font-semibold tracking-tight text-foreground">
+            {today ? "Today" : isTomorrow(date) ? "Tomorrow" : format(date, "EEEE")}
+            {pendingTasks.length > 0 && (
+              <span
+                className={cn(
+                  "rounded px-1.5 py-px text-xs font-semibold tabular-nums",
+                  today
+                    ? "bg-primary/15 text-primary"
+                    : "bg-muted text-muted-foreground"
+                )}
+                aria-label={`${pendingTasks.length} open tasks`}
+              >
+                {pendingTasks.length}
+              </span>
+            )}
           </div>
           <div className="text-sm text-muted-foreground">
             {getFormattedDate()}

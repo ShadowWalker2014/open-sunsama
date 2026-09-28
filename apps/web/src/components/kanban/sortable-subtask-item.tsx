@@ -5,6 +5,7 @@ import { X, GripVertical, Check } from "lucide-react";
 import type { Subtask } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { useHoveredTask } from "@/hooks/useKeyboardShortcuts";
+import { useSubtaskStyles, subtaskCheckState } from "./subtask-size";
 
 // Re-export for convenience
 export type { Subtask };
@@ -27,6 +28,7 @@ export function SortableSubtaskItem({
   onUpdate,
 }: SortableSubtaskItemProps) {
   const { setHoveredSubtaskId } = useHoveredTask();
+  const size = useSubtaskStyles();
   const [isEditing, setIsEditing] = React.useState(false);
   const [editValue, setEditValue] = React.useState(subtask.title);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -82,7 +84,8 @@ export function SortableSubtaskItem({
       style={style}
       data-subtask-id={subtask.id}
       className={cn(
-        "group relative -mx-2 flex min-h-8 items-start gap-2.5 rounded-md px-2 py-1.5 transition-colors",
+        "group relative -mx-2 flex items-start rounded-md px-2 transition-colors",
+        size.row,
         "hover:bg-muted/40",
         isEditing && "bg-muted/40",
         isDragging && "z-10 bg-muted/60 shadow-sm"
@@ -114,13 +117,12 @@ export function SortableSubtaskItem({
         aria-label={subtask.completed ? "Mark incomplete" : "Mark complete"}
         onClick={onToggle}
         className={cn(
-          "mt-0.5 flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full border-[1.5px] transition-all duration-150 active:scale-90",
-          subtask.completed
-            ? "border-primary bg-primary text-primary-foreground"
-            : "border-muted-foreground/35 hover:border-primary hover:bg-primary/10"
+          "flex shrink-0 cursor-pointer items-center justify-center rounded-full border-[1.5px] transition-all duration-150 active:scale-90",
+          size.check,
+          subtaskCheckState(subtask.completed)
         )}
       >
-        {subtask.completed && <Check className="h-2.5 w-2.5" strokeWidth={3} />}
+        <Check className={size.checkIcon} strokeWidth={3} />
       </button>
 
       {isEditing ? (
@@ -133,13 +135,17 @@ export function SortableSubtaskItem({
           onKeyDown={handleKeyDown}
           data-escape-local="true"
           aria-label="Edit subtask"
-          className="min-w-0 flex-1 border-none bg-transparent p-0 text-sm leading-5 outline-none focus:ring-0"
+          className={cn(
+            "min-w-0 flex-1 border-none bg-transparent p-0 outline-none focus:ring-0",
+            size.text
+          )}
         />
       ) : (
         <span
           onClick={() => onUpdate && setIsEditing(true)}
           className={cn(
-            "min-w-0 flex-1 break-words text-sm leading-5 transition-colors",
+            "min-w-0 flex-1 break-words transition-colors",
+            size.text,
             onUpdate && "cursor-text",
             subtask.completed &&
               "text-muted-foreground line-through decoration-muted-foreground/50"

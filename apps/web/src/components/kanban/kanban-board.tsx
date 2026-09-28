@@ -43,6 +43,7 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
     navigatePrevious,
     navigateNext,
     navigateToToday,
+    navigateToDate,
     handleScroll,
     firstVisibleDate,
   } = useKanbanDates({ containerRef, isDragging });
@@ -59,19 +60,6 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
   React.useEffect(() => {
     onFirstVisibleDateChange?.(firstVisibleDate);
   }, [firstVisibleDate, onFirstVisibleDateChange]);
-
-  // Navigate to a specific date
-  const navigateToDate = React.useCallback((targetDate: Date) => {
-    const targetIndex = dates.findIndex((d) => 
-      d.dateString === targetDate.toISOString().split('T')[0]
-    );
-    if (targetIndex >= 0) {
-      virtualizer.scrollToIndex(targetIndex, {
-        align: "start",
-        behavior: "smooth",
-      });
-    }
-  }, [dates, virtualizer]);
 
   // Memoize navigation context value
   const navigationContextValue = React.useMemo(
@@ -93,6 +81,8 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
           onNavigatePrevious={navigatePrevious}
           onNavigateNext={navigateNext}
           onNavigateToday={navigateToToday}
+          onNavigateToDate={navigateToDate}
+          firstVisibleDate={firstVisibleDate}
           sortBy={sortBy}
           onSortChange={onSortChange}
           searchQuery={searchQuery}

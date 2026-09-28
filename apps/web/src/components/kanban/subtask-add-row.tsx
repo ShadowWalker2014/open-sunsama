@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSubtaskStyles } from "./subtask-size";
 
 interface SubtaskAddRowProps {
   /** Called with one or more trimmed, non-empty titles. */
@@ -29,10 +30,11 @@ export const SubtaskAddRow = React.forwardRef<
   HTMLInputElement,
   SubtaskAddRowProps
 >(function SubtaskAddRow(
-  { onAdd, placeholder = "Add a subtask…", autoFocus, className },
+  { onAdd, placeholder = "Add subtask", autoFocus, className },
   ref
 ) {
   const [draft, setDraft] = React.useState("");
+  const size = useSubtaskStyles();
   const inputRef = React.useRef<HTMLInputElement>(null);
   React.useImperativeHandle(ref, () => inputRef.current!, []);
 
@@ -54,19 +56,21 @@ export const SubtaskAddRow = React.forwardRef<
   return (
     <div
       className={cn(
-        "group/add -mx-2 flex min-h-8 items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors",
+        "group/add -mx-2 flex items-center rounded-md px-2 transition-colors",
+        size.row,
         "hover:bg-muted/40 focus-within:bg-muted/40",
         className
       )}
     >
       <div
         className={cn(
-          "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[1.5px] border-dashed transition-colors",
+          "flex shrink-0 items-center justify-center rounded-full border-[1.5px] transition-colors",
+          size.check.replace("mt-0.5 ", ""),
           "border-muted-foreground/30 text-muted-foreground/50",
           "group-focus-within/add:border-primary/60 group-focus-within/add:text-primary"
         )}
       >
-        <Plus className="h-2.5 w-2.5" strokeWidth={2.5} />
+        <Plus className={size.checkIcon} strokeWidth={2.5} />
       </div>
       <input
         ref={inputRef}
@@ -97,7 +101,10 @@ export const SubtaskAddRow = React.forwardRef<
           add(parseSubtaskTitles(draft + text));
         }}
         onBlur={commit}
-        className="min-w-0 flex-1 border-none bg-transparent p-0 text-sm leading-5 outline-none placeholder:text-muted-foreground/50 focus:ring-0"
+        className={cn(
+          "min-w-0 flex-1 border-none bg-transparent p-0 outline-none placeholder:text-muted-foreground/50 focus:ring-0",
+          size.text
+        )}
       />
       {draft.trim() && (
         <kbd className="hidden shrink-0 rounded border border-border/60 px-1 font-sans text-[10px] leading-4 text-muted-foreground/70 sm:inline">
