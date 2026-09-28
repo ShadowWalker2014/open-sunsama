@@ -76,7 +76,7 @@ import { PriorityMenu } from "./priority-menu";
 import { PriorityIcon, PRIORITY_META } from "@/components/ui/priority-badge";
 import { WithShortcut } from "@/components/ui/with-shortcut";
 import { useCreateTaskSeries } from "@/hooks/useTaskSeries";
-import { useTaskTimerToggle } from "@/hooks/useTaskTimerToggle";
+import { formatClock, useTaskTimerToggle } from "@/hooks/useTaskTimerToggle";
 import { useTaskTimerDisplay } from "./task-time-badge";
 
 // ============================================
@@ -179,7 +179,6 @@ export function TaskModal({
   // Live timer display — ticks every second when timer is active
   const {
     isTimerRunning,
-    displayText: liveTimeText,
     liveSeconds,
   } = useTaskTimerDisplay(
     liveTask ??
@@ -736,7 +735,7 @@ export function TaskModal({
               : "text-emerald-500"
           )}
         >
-          {liveTimeText}
+          {formatClock(liveSeconds)}
         </span>
       </div>
     ) : (
