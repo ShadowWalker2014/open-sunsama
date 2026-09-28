@@ -8,6 +8,7 @@ import {
 import { Clock } from "lucide-react";
 import type { Task } from "@open-sunsama/types";
 import { useTasks } from "@/hooks/useTasks";
+import { useTimeBlocks } from "@/hooks/useTimeBlocks";
 import { cn, formatDuration } from "@/lib/utils";
 import { ScrollArea, Skeleton } from "@/components/ui";
 import { SortableTaskCard, TaskCard, TaskCardPlaceholder } from "./task-card";
@@ -55,6 +56,20 @@ export function DayColumn({
     refetch,
   } = useTasks({ scheduledDate: dateString, limit: 200 });
   const { activeTask, activeOverColumn, isDragging } = useTasksDnd();
+
+  // A task's time block is its place on the calendar; the card shows the
+  // earliest block's start so the board and calendar tell the same story.
+  const { data: timeBlocks } = useTimeBlocks({ date: dateString });
+  const blockStartByTaskId = React.useMemo(() => {
+    const starts = new Map<string, Date>();
+    for (const block of timeBlocks ?? []) {
+      if (!block.taskId) continue;
+      const start = new Date(block.startTime);
+      const current = starts.get(block.taskId);
+      if (!current || start < current) starts.set(block.taskId, start);
+    }
+    return starts;
+  }, [timeBlocks]);
 
   const { setNodeRef, isOver: isOverDroppable } = useDroppable({
     id: `day-${dateString}`,
@@ -181,13 +196,12 @@ export function DayColumn({
   return (
     <div
       ref={setNodeRef}
+      data-board-day={dateString}
       className={cn(
         "flex h-full flex-shrink-0 flex-col transition-colors duration-150",
         fill
           ? "w-full"
-          : "w-[calc(100vw-1rem)] sm:w-[280px] sm:min-w-[280px] sm:max-w-[280px] border-r border-border/40",
-        // Today highlight
-        today && "bg-primary/[0.02]",
+          : "w-[calc(100vw-1rem)] sm:w-[280px] sm:min-w-[280px] sm:max-w-[280px] sm:px-1",
         // Subtle highlight during any drag operation
         isDragging && !isDropTarget && "bg-muted/20",
         // Drop target highlight with ring
@@ -199,8 +213,7 @@ export function DayColumn({
       {/* Day Header - Sunsama style */}
       <div
         className={cn(
-          "sticky top-0 z-10 border-b border-border/40 bg-background px-3 pt-3 pb-2",
-          today && "bg-primary/[0.03]"
+          "sticky top-0 z-10 bg-canvas px-3 pt-3 pb-2"
         )}
       >
         {/* Top row: Day name and task count - clickable */}
@@ -262,7 +275,7 @@ export function DayColumn({
 
       {/* Tasks */}
       <ScrollArea className="flex-1">
-        <div className="p-2 space-y-1">
+        <div className="p-2 space-y-2">
           {isError ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <p className="text-xs text-destructive">Failed to load</p>
@@ -291,6 +304,7 @@ export function DayColumn({
                     task={task}
                     onSelect={onSelectTask}
                     isDragging={activeTaskId === task.id}
+                    scheduledTime={blockStartByTaskId.get(task.id) ?? null}
                   />
                 ))}
               </SortableContext>
@@ -309,11 +323,11 @@ export function DayColumn({
 
               {/* Completed Tasks */}
               {completedTasks.length > 0 && (
-                <div className="pt-3 mt-3 border-t border-border/40">
+                <div className="mt-5">
                   <p className="text-xs font-medium text-muted-foreground mb-2 px-1">
                     Completed ({completedTasks.length})
                   </p>
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     {completedTasks.map((task) => (
                       <TaskCard
                         key={task.id}

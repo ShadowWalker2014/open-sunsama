@@ -59,6 +59,12 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        chrome: "hsl(var(--chrome))",
+        canvas: "hsl(var(--canvas))",
+        surface: {
+          DEFAULT: "hsl(var(--surface))",
+          hover: "hsl(var(--surface-hover))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -69,6 +75,8 @@ const config: Config = {
       },
       boxShadow: {
         'glow': 'var(--shadow-glow)',
+        'card': 'var(--shadow-card)',
+        'card-hover': 'var(--shadow-card-hover)',
         'glow-sm': '0 0 20px hsl(var(--primary-glow) / 0.1)',
         'glow-lg': '0 0 60px hsl(var(--primary-glow) / 0.3)',
       },
