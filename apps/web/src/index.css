@@ -243,6 +243,10 @@ html.font-jetbrains body {
     font-feature-settings:
       "rlig" 1,
       "calt" 1;
+    /* Grayscale antialiasing: without it macOS draws light text on dark
+       backgrounds noticeably bolder than its weight. */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   /* Subtle focus styles - prevent cut-off rings and reduce visual noise */
