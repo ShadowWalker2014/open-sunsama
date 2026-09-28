@@ -246,7 +246,7 @@ export function DayColumn({
         fill
           ? "w-full"
           : wide
-            ? "w-full max-w-[380px] px-1"
+            ? "w-full max-w-[340px] px-1"
             : "w-[calc(100vw-1rem)] sm:w-[280px] sm:min-w-[280px] sm:max-w-[280px] sm:px-1",
         // Subtle highlight during any drag operation
         isDragging && !isDropTarget && "bg-muted/20",
@@ -265,8 +265,15 @@ export function DayColumn({
             onClick={() => onDateClick?.(date)}
             className="block px-1 text-left transition-opacity hover:opacity-70"
           >
-            <div className="flex items-center gap-2 text-xl font-semibold tracking-tight text-foreground">
-              {today ? "Today" : isTomorrow(date) ? "Tomorrow" : format(date, "EEEE")}
+            <div className="flex items-center gap-2 text-lg font-semibold tracking-tight text-foreground">
+              {/* The Today view names the weekday; the toolbar says Today. */}
+              {wide
+                ? format(date, "EEEE")
+                : today
+                  ? "Today"
+                  : isTomorrow(date)
+                    ? "Tomorrow"
+                    : format(date, "EEEE")}
               {pendingTasks.length > 0 && (
                 <span
                   className={cn(
@@ -299,7 +306,7 @@ export function DayColumn({
           )}
         </div>
 
-        <div className="mt-3 flex h-9 items-center rounded-md bg-surface pr-1.5 shadow-card">
+        <div className="mt-2.5 flex h-8 items-center rounded-md bg-surface pr-1.5 shadow-card">
           <AddTaskInline scheduledDate={dateString} variant="bar" showLabel={today} />
           {totalEstimatedMins > 0 && (
             <span

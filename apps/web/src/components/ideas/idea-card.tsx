@@ -1,4 +1,6 @@
 import * as React from "react";
+import { SubtaskChecklistPreview } from "@/components/kanban/task-card-content";
+import { useIdeaSubtasks, useUpdateIdeaSubtask } from "@/hooks/useIdeaSubtasks";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { format, addDays, startOfWeek } from "date-fns";
@@ -11,7 +13,6 @@ import {
   Pencil,
   Columns3,
   Trash2,
-  ListChecks,
 } from "lucide-react";
 import type { Idea, IdeaColumn, TaskPriority } from "@open-sunsama/types";
 import { cn, formatDuration } from "@/lib/utils";
@@ -212,7 +213,6 @@ export function IdeaCard({
   const hasNotes =
     !!idea.notes && idea.notes.replace(/<[^>]*>/g, "").trim().length > 0;
   const subtaskTotal = idea.subtaskCount ?? 0;
-  const subtaskDone = idea.subtaskDoneCount ?? 0;
 
   const style: React.CSSProperties = overlay
     ? {}
@@ -303,7 +303,7 @@ export function IdeaCard({
       {...(overlay ? {} : sortable.listeners)}
       onClick={overlay ? undefined : handleClick}
       className={cn(
-        "group relative flex flex-col gap-1.5 rounded-md px-3 py-2.5 transition-[background-color,box-shadow,opacity] duration-150",
+        "group relative flex flex-col gap-1 rounded-lg px-3 py-2 transition-[background-color,box-shadow,opacity] duration-150",
         "bg-surface hover:bg-surface-hover",
         !overlay && !isCompleted && "shadow-card hover:shadow-card-hover",
         dragDisabled ? "cursor-pointer" : "cursor-grab active:cursor-grabbing",
@@ -332,8 +332,8 @@ export function IdeaCard({
           className={cn(
             "relative mt-0.5 flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full border-[1.5px] transition-all duration-150",
             isCompleted
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-muted-foreground/40 hover:border-primary hover:bg-primary/10"
+              ? "border-emerald-500 bg-emerald-500 text-white"
+              : "border-muted-foreground/40 hover:border-emerald-500"
           )}
         >
           {isCompleted && <Check className="h-2.5 w-2.5" strokeWidth={3} />}
@@ -433,7 +433,10 @@ export function IdeaCard({
               aria-label="Priority"
               onClick={(e) => e.stopPropagation()}
               className={cn(
-                "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium transition-all duration-150",
+                "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold transition-all duration-150",
+                // Normal is the default, so it only shows on hover.
+                idea.priority === "P2" &&
+                  "opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100",
                 "hover:ring-1 hover:ring-primary/30",
                 "focus:outline-none focus:ring-1 focus:ring-primary/50",
                 PRIORITY_STYLES[idea.priority]
@@ -476,12 +479,6 @@ export function IdeaCard({
           </PopoverContent>
         </Popover>
 
-        {subtaskTotal > 0 && (
-          <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground tabular-nums">
-            <ListChecks className="h-3 w-3" />
-            {subtaskDone}/{subtaskTotal}
-          </span>
-        )}
         {inPlanner && (
           <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
             <Check className="h-3 w-3" strokeWidth={2.5} />
@@ -489,6 +486,9 @@ export function IdeaCard({
           </span>
         )}
       </div>
+
+      {/* Subtasks right on the card, tickable, as on task cards */}
+      {subtaskTotal > 0 && <IdeaSubtaskPreview ideaId={idea.id} />}
 
       {/* ⋯ menu — appears on hover */}
       {!overlay && (
@@ -546,5 +546,23 @@ export function IdeaCard({
         />
       )}
     </>
+  );
+}
+
+function IdeaSubtaskPreview({ ideaId }: { ideaId: string }) {
+  const { data: subtasks = [] } = useIdeaSubtasks(ideaId);
+  const update = useUpdateIdeaSubtask();
+  if (!subtasks.length) return null;
+  return (
+    <div className="pl-6" onPointerDown={(e) => e.stopPropagation()}>
+      <SubtaskChecklistPreview
+        subtasks={subtasks}
+        onToggleSubtask={(id) => {
+          const current = subtasks.find((s) => s.id === id);
+          if (!current) return;
+          update.mutate({ ideaId, subtaskId: id, input: { completed: !current.completed } });
+        }}
+      />
+    </div>
   );
 }
