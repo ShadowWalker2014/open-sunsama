@@ -153,6 +153,7 @@ test("a subtask timer also times its task", async ({ page }) => {
     session.token
   );
   expect(subtasks[0]?.timerStartedAt).toBeNull();
+});
 
 test("an idea with subtasks becomes a task for today", async ({ page }) => {
   const session = await register();
