@@ -46,6 +46,8 @@ interface DayColumnProps {
   searchQuery?: string;
   /** Fill the parent's width (the phone board shows one day per screen). */
   fill?: boolean;
+  /** The single, wider column of the desktop Today view. */
+  wide?: boolean;
 }
 
 /**
@@ -59,6 +61,7 @@ export function DayColumn({
   sortBy = "position",
   searchQuery = "",
   fill = false,
+  wide = false,
 }: DayColumnProps) {
   // Use explicit limit to prevent accidental truncation (API default is 50)
   const {
@@ -242,13 +245,13 @@ export function DayColumn({
         "flex h-full flex-shrink-0 flex-col transition-colors duration-150",
         fill
           ? "w-full"
-          : "w-[calc(100vw-1rem)] sm:w-[280px] sm:min-w-[280px] sm:max-w-[280px] sm:px-1",
+          : wide
+            ? "w-full max-w-[340px] px-1"
+            : "w-[calc(100vw-1rem)] sm:w-[280px] sm:min-w-[280px] sm:max-w-[280px] sm:px-1",
         // Subtle highlight during any drag operation
         isDragging && !isDropTarget && "bg-muted/20",
         // Drop target highlight with ring
         isDropTarget && "bg-primary/5 ring-2 ring-primary/20 ring-inset",
-        // Today is warm-tinted top to bottom so the eye lands on it.
-        today && !isDropTarget && "bg-primary/[0.045] sm:rounded-lg",
         // Past days are slightly muted
         pastDay && "opacity-60"
       )}
@@ -256,30 +259,40 @@ export function DayColumn({
       {/* Day header, as in Sunsama: weekday and date, a progress bar on
           today, then a solid "Add task" bar that anchors the column. */}
       <div className="px-2 pt-4 pb-2">
-        <button
-          onClick={() => onDateClick?.(date)}
-          className="block px-1 text-left transition-opacity hover:opacity-70"
-        >
-          <div className="flex items-center gap-2 text-xl font-semibold tracking-tight text-foreground">
-            {today ? "Today" : isTomorrow(date) ? "Tomorrow" : format(date, "EEEE")}
-            {pendingTasks.length > 0 && (
-              <span
-                className={cn(
-                  "rounded px-1.5 py-px text-xs font-semibold tabular-nums",
-                  today
-                    ? "bg-primary/15 text-primary"
-                    : "bg-muted text-muted-foreground"
-                )}
-                aria-label={`${pendingTasks.length} open tasks`}
-              >
-                {pendingTasks.length}
-              </span>
-            )}
-          </div>
-          <div className="text-sm text-muted-foreground">
-            {getFormattedDate()}
-          </div>
-        </button>
+        {/* The phone board shows the day in its week strip instead. */}
+        {!fill && (
+          <button
+            onClick={() => onDateClick?.(date)}
+            className="block px-1 text-left transition-opacity hover:opacity-70"
+          >
+            <div className="flex items-center gap-2 text-lg font-semibold tracking-tight text-foreground">
+              {/* The Today view names the weekday; the toolbar says Today. */}
+              {wide
+                ? format(date, "EEEE")
+                : today
+                  ? "Today"
+                  : isTomorrow(date)
+                    ? "Tomorrow"
+                    : format(date, "EEEE")}
+              {pendingTasks.length > 0 && (
+                <span
+                  className={cn(
+                    "rounded px-1.5 py-px text-xs font-semibold tabular-nums",
+                    today
+                      ? "bg-primary/15 text-primary"
+                      : "bg-muted text-muted-foreground"
+                  )}
+                  aria-label={`${pendingTasks.length} open tasks`}
+                >
+                  {pendingTasks.length}
+                </span>
+              )}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {getFormattedDate()}
+            </div>
+          </button>
+        )}
 
         {/* Reserved on every day so the add bars line up across columns */}
         <div className="mx-1 mt-2.5 h-1.5 overflow-hidden rounded-full">
@@ -293,7 +306,7 @@ export function DayColumn({
           )}
         </div>
 
-        <div className="mt-3 flex h-9 items-center rounded-md bg-surface pr-1.5 shadow-card">
+        <div className="mt-2.5 flex h-8 items-center rounded-md bg-surface pr-1.5 shadow-card">
           <AddTaskInline scheduledDate={dateString} variant="bar" showLabel={today} />
           {totalEstimatedMins > 0 && (
             <span

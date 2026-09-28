@@ -725,7 +725,7 @@ export function TaskModal({
     </WithShortcut>
   );
 
-  const timeValue = "font-sans text-lg font-normal tabular-nums tracking-normal";
+  const timeValue = "font-sans text-base font-normal tabular-nums tracking-normal";
   const actualColumn = !isCompose && (
     isTimerRunning ? (
       <div className="flex flex-col items-center gap-1">
@@ -824,7 +824,7 @@ export function TaskModal({
         rows={1}
         className={cn(
           "min-w-0 flex-1 resize-none overflow-hidden border-none bg-transparent p-0 font-medium tracking-tight leading-snug shadow-none placeholder:text-muted-foreground/45 focus:outline-none focus:ring-0",
-          isMobile ? "text-[22px]" : "text-[28px] leading-9",
+          isMobile ? "text-xl" : "text-2xl leading-8",
           isCompleted && "text-muted-foreground line-through"
         )}
         placeholder={isCompose ? "What needs to be done?" : "Task title"}

@@ -15,6 +15,9 @@ import type {
   Task,
 } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
+import { useTasks } from "@/hooks/useTasks";
+import { useAuth } from "@/hooks/useAuth";
+import { DEFAULT_PLANNED_MINS, projectTaskStarts } from "@/lib/task-projection";
 import {
   useTimeBlocks,
   useMoveTimeBlock,
@@ -296,6 +299,41 @@ export function KanbanCalendarPanel({
     );
   }, [timeBlocks, date]);
 
+  // Sunsama-style ghost blocks: open tasks with no block of their own, laid
+  // out where the day's list order puts them (the same projected starts the
+  // cards show). Clicking one opens the task.
+  const { user } = useAuth();
+  const workStartHour = user?.preferences?.workStartHour ?? 9;
+  const workEndHour = user?.preferences?.workEndHour ?? 17;
+  const { data: dayTasks = [] } = useTasks({ scheduledDate: dateString, limit: 200 });
+  const projected = React.useMemo(() => {
+    const open = dayTasks
+      .filter((t) => !t.completedAt)
+      .sort((a, b) => a.position - b.position);
+    const blocked = new Set(
+      dayBlocks.map((b) => b.taskId).filter((id): id is string => !!id)
+    );
+    const busy = [
+      ...dayBlocks.map((b) => ({ start: new Date(b.startTime), end: new Date(b.endTime) })),
+      ...calendarEvents
+        .filter((e) => !e.isAllDay && e.responseStatus !== "declined")
+        .map((e) => ({ start: new Date(e.startTime), end: new Date(e.endTime) })),
+    ];
+    const starts = projectTaskStarts({
+      day: date,
+      tasks: open,
+      blockedTaskIds: blocked,
+      busy,
+      workStartHour,
+    });
+    return open.flatMap((task) => {
+      const start = starts.get(task.id);
+      if (!start) return [];
+      const mins = task.estimatedMins || DEFAULT_PLANNED_MINS;
+      return [{ task, start, end: addMinutes(start, mins) }];
+    });
+  }, [dayTasks, dayBlocks, calendarEvents, date, workStartHour]);
+
   // Bucket the visible-range events into timed (drawn on the timeline)
   // and all-day (drawn in the banner above). Same shape as the main
   // CalendarView's per-day bucketer — kept inline because the panel is
@@ -567,6 +605,42 @@ export function KanbanCalendarPanel({
               />
             ))}
 
+            {/* Where the workday starts and ends, as a zigzag like Sunsama's */}
+            {[workStartHour, workEndHour].map((hour) =>
+              hour > TIMELINE_START_HOUR && hour <= TIMELINE_END_HOUR ? (
+                <WorkdayEdge
+                  key={hour}
+                  top={(hour - TIMELINE_START_HOUR) * HOUR_HEIGHT}
+                  label={hour === workStartHour ? "Workday starts" : "Workday ends"}
+                />
+              ) : null
+            )}
+
+            {/* Tasks without a block, where the list order projects them */}
+            {!isDragging &&
+              projected.map(({ task, start, end }) => (
+                <button
+                  key={task.id}
+                  type="button"
+                  data-projected-task={task.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onViewTask?.(task.id);
+                  }}
+                  title={`${task.title} · projected ${format(start, "h:mm a")}`}
+                  className="absolute left-1 right-2 z-10 overflow-hidden rounded border border-dotted border-primary/50 bg-primary/[0.04] px-1.5 text-left text-[11px] leading-4 text-primary transition-colors hover:bg-primary/[0.09]"
+                  style={{
+                    top: calculateYFromTime(start) + 1,
+                    height: Math.max(
+                      16,
+                      (differenceInMinutes(end, start) / 60) * HOUR_HEIGHT - 2
+                    ),
+                  }}
+                >
+                  <span className="line-clamp-2">{task.title}</span>
+                </button>
+              ))}
+
             {/* Current time indicator - thin red line with dot */}
             {currentTimePosition !== null && (
               <div
@@ -688,6 +762,28 @@ export function KanbanCalendarPanel({
         }
       />
     </div>
+  );
+}
+
+/** A zigzag across the timeline marking the start or end of the workday. */
+function WorkdayEdge({ top, label }: { top: number; label: string }) {
+  const id = React.useId();
+  return (
+    <svg
+      aria-label={label}
+      role="img"
+      className="pointer-events-none absolute left-0 right-0 z-[5] text-muted-foreground/40"
+      style={{ top: top - 3 }}
+      height="6"
+      width="100%"
+    >
+      <defs>
+        <pattern id={id} width="8" height="6" patternUnits="userSpaceOnUse">
+          <path d="M0 5 L4 1 L8 5" fill="none" stroke="currentColor" strokeWidth="1" />
+        </pattern>
+      </defs>
+      <rect width="100%" height="6" fill={`url(#${id})`} />
+    </svg>
   );
 }
 
