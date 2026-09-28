@@ -46,7 +46,7 @@ test.afterEach(() => {
 });
 
 const todayColumn = (page: Page) =>
-  page.locator("div.flex-col.border-r").filter({ has: page.getByRole("button", { name: /^Today/ }) });
+  page.locator("[data-board-day]").filter({ has: page.getByRole("button", { name: /^Today/ }) });
 
 test("signs in with email and password", async ({ page }) => {
   const { email } = await register();

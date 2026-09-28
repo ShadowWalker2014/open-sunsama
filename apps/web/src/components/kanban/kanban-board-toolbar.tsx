@@ -91,7 +91,7 @@ export function KanbanBoardToolbar({
   const currentSortLabel = SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? "Manual";
 
   return (
-    <div className="flex h-14 flex-shrink-0 items-center justify-between border-b px-3 sm:px-4">
+    <div className="flex h-14 flex-shrink-0 items-center justify-between px-3 sm:px-4">
       <div className="flex items-center gap-2 sm:gap-3">
         {/* Navigation Arrows */}
         <div className="flex items-center gap-0.5 sm:gap-1">
