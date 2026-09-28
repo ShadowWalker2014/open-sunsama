@@ -67,6 +67,13 @@ export function TaskRow({
     <TaskContextMenu task={task} onEdit={onSelect}>
       <div
         data-task-id={task.id}
+        onKeyDown={(event) => {
+          if ((event.key === "Enter" || event.key === " ") &&
+              event.target instanceof HTMLElement &&
+              event.target.closest("button, input, textarea, [contenteditable=true]")) {
+            event.stopPropagation();
+          }
+        }}
         onMouseEnter={() => setHoveredTask(task)}
         onMouseLeave={() => setHoveredTask(null)}
       >
