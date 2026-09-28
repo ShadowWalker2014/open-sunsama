@@ -33,7 +33,9 @@ export interface UseKanbanDatesReturn {
   navigateNext: () => void;
   navigateToToday: () => void;
   /** Scrolls so the day sits at the left edge, loading its range if needed. */
-  navigateToDate: (date: Date) => void;
+  navigateToDate: (date: Date, options?: { instant?: boolean }) => void;
+  /** The day at the left edge right now, read from the scroll position. */
+  getLeadingDate: () => Date | null;
   handleScroll: () => void;
   firstVisibleDate: Date | null;
   lastVisibleDate: Date | null;
@@ -115,19 +117,27 @@ export function useKanbanDates({
   const pendingDateRef = React.useRef<Date | null>(null);
 
   const navigateToDate = React.useCallback(
-    (target: Date) => {
+    (target: Date, options?: { instant?: boolean }) => {
       const day = startOfDay(target);
       const key = format(day, "yyyy-MM-dd");
       const index = dates.findIndex((d) => d.dateString === key);
-      if (index >= 0) {
+      if (index >= 0 && options?.instant && containerRef.current) {
+        containerRef.current.scrollLeft = index * COLUMN_WIDTH;
+      } else if (index >= 0) {
         virtualizer.scrollToIndex(index, { align: "start", behavior: "smooth" });
       } else {
         pendingDateRef.current = day;
         setCenterDate(day);
       }
     },
-    [dates, virtualizer]
+    [dates, virtualizer, containerRef]
   );
+
+  const getLeadingDate = React.useCallback(() => {
+    const left = containerRef.current?.scrollLeft;
+    if (left === undefined) return null;
+    return dates[Math.round(left / COLUMN_WIDTH)]?.date ?? null;
+  }, [dates, containerRef]);
 
   const navigateToToday = React.useCallback(
     () => navigateToDate(new Date()),
@@ -196,6 +206,7 @@ export function useKanbanDates({
     navigateNext,
     navigateToToday,
     navigateToDate,
+    getLeadingDate,
     handleScroll,
     firstVisibleDate,
     lastVisibleDate,

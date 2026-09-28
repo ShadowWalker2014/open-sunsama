@@ -46,6 +46,8 @@ interface DayColumnProps {
   searchQuery?: string;
   /** Fill the parent's width (the phone board shows one day per screen). */
   fill?: boolean;
+  /** The single, wider column of the desktop Today view. */
+  wide?: boolean;
 }
 
 /**
@@ -59,6 +61,7 @@ export function DayColumn({
   sortBy = "position",
   searchQuery = "",
   fill = false,
+  wide = false,
 }: DayColumnProps) {
   // Use explicit limit to prevent accidental truncation (API default is 50)
   const {
@@ -242,13 +245,13 @@ export function DayColumn({
         "flex h-full flex-shrink-0 flex-col transition-colors duration-150",
         fill
           ? "w-full"
-          : "w-[calc(100vw-1rem)] sm:w-[280px] sm:min-w-[280px] sm:max-w-[280px] sm:px-1",
+          : wide
+            ? "w-full max-w-[380px] px-1"
+            : "w-[calc(100vw-1rem)] sm:w-[280px] sm:min-w-[280px] sm:max-w-[280px] sm:px-1",
         // Subtle highlight during any drag operation
         isDragging && !isDropTarget && "bg-muted/20",
         // Drop target highlight with ring
         isDropTarget && "bg-primary/5 ring-2 ring-primary/20 ring-inset",
-        // Today is warm-tinted top to bottom so the eye lands on it.
-        today && !isDropTarget && "bg-primary/[0.045] sm:rounded-lg",
         // Past days are slightly muted
         pastDay && "opacity-60"
       )}
