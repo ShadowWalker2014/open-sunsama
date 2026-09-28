@@ -9,8 +9,8 @@
  * - Starting what already runs, or stopping what is stopped, changes
  *   nothing, so double clicks and a second device can't lose time.
  */
+import type { getDb } from "@open-sunsama/database";
 import {
-  getDb,
   eq,
   and,
   ne,
