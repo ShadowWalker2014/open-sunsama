@@ -44,7 +44,7 @@ export function AnswerBlock({
         </Reveal>
         {points && points.length > 0 && (
           <Reveal delay={120} className="min-w-0 lg:pt-2">
-            <div className="relative overflow-hidden rounded-2xl border border-primary/25 bg-primary/[0.035] p-6 dark:bg-primary/[0.06] md:p-7">
+            <div className="relative overflow-hidden rounded-2xl border border-primary/25 bg-primary/[0.035] p-6 dark:bg-primary/6 md:p-7">
               <div className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-[radial-gradient(closest-side,hsl(var(--primary)/0.18),transparent)] blur-xl" />
               <p className="relative text-[12px] font-semibold uppercase tracking-[0.14em] text-primary">{pointsTitle}</p>
               <ul className="relative mt-4 space-y-3.5">

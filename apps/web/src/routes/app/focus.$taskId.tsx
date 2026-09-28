@@ -309,7 +309,7 @@ export default function FocusPage() {
   return (
     <div className="fixed inset-0 z-50 bg-background overflow-auto">
       {/* Top bar - minimal */}
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border/50">
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-xs border-b border-border/50">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 h-12 flex items-center justify-between">
           <button
             onClick={handleClose}
@@ -387,7 +387,7 @@ export default function FocusPage() {
               }}
               autoFocus
               className={cn(
-                "flex-1 text-xl sm:text-2xl font-semibold bg-transparent border-none outline-none tracking-tight",
+                "flex-1 text-xl sm:text-2xl font-semibold bg-transparent border-none outline-hidden tracking-tight",
                 "focus:ring-0 placeholder:text-muted-foreground/50",
                 isCompleted && "line-through text-muted-foreground"
               )}

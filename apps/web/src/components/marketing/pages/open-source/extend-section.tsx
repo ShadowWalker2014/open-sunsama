@@ -100,14 +100,14 @@ export function ExtendSection({ section }: { section: CustomSection }) {
                     {toolGroups.map((group) => (
                       <li
                         key={group.label}
-                        className="rounded-md border border-border/70 bg-background px-2 py-0.5 text-[12px] text-foreground/80 dark:border-white/[0.08]"
+                        className="rounded-md border border-border/70 bg-background px-2 py-0.5 text-[12px] text-foreground/80 dark:border-white/8"
                       >
                         {group.label} <span className="font-jetbrains font-semibold tabular-nums text-foreground">{group.count}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
-                <p className="mt-6 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">Then ask</p>
+                <p className="mt-6 text-[11.5px] font-semibold uppercase tracking-widest text-muted-foreground">Then ask</p>
                 <ul className="mt-3 grid gap-2">
                   {prompts.map((prompt) => (
                     <li key={prompt} className="flex gap-2.5 rounded-lg bg-muted/50 px-3 py-2.5 text-[13.5px] leading-snug">
@@ -121,10 +121,10 @@ export function ExtendSection({ section }: { section: CustomSection }) {
                   <ArrowRight className="h-3.5 w-3.5" />
                 </SmartLink>
               </div>
-              <div className="relative min-w-0 border-t border-border/60 bg-muted/30 p-5 dark:border-white/[0.06] md:p-7 lg:flex lg:items-center lg:border-l lg:border-t-0 lg:p-8">
+              <div className="relative min-w-0 border-t border-border/60 bg-muted/30 p-5 dark:border-white/6 md:p-7 lg:flex lg:items-center lg:border-l lg:border-t-0 lg:p-8">
                 <figure className="w-full">
                   <BrowserFrame>
-                    <div className="relative aspect-[16/10] w-full overflow-hidden">
+                    <div className="relative aspect-16/10 w-full overflow-hidden">
                       <ClipPlayer id="ai-plan" label="Claude plans the afternoon over MCP while tasks and time blocks appear live in Open Sunsama" controls />
                     </div>
                   </BrowserFrame>
@@ -145,10 +145,10 @@ export function ExtendSection({ section }: { section: CustomSection }) {
                 detail="Create a key in Settings, pick its scopes, and script your day from cron, n8n or Home Assistant."
               />
               <div className="mt-5 overflow-hidden rounded-xl border border-border/70 dark:border-white/[0.07]">
-                <div className="border-b border-border/60 bg-muted/40 px-3.5 py-2 font-jetbrains text-[11.5px] text-muted-foreground dark:border-white/[0.06]">
+                <div className="border-b border-border/60 bg-muted/40 px-3.5 py-2 font-jetbrains text-[11.5px] text-muted-foreground dark:border-white/6">
                   X-API-Key: os_live_…
                 </div>
-                <ul className="divide-y divide-border/50 dark:divide-white/[0.05]">
+                <ul className="divide-y divide-border/50 dark:divide-white/5">
                   {endpoints.map((endpoint) => (
                     <li key={`${endpoint.method} ${endpoint.path}`} className="flex items-center gap-2.5 px-3.5 py-2">
                       <span

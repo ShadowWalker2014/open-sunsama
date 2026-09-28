@@ -46,7 +46,7 @@ export function OpenSourceHero({ page }: { page: MarketingPageContent }) {
         <Breadcrumbs items={page.breadcrumbs} path={page.path} className="mb-8 md:mb-10" />
         <div className="text-center">
           <div style={introStyle(ready, 0, reduced)}>
-            <p className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 py-1 pl-1 pr-3 text-[12px] font-medium text-muted-foreground shadow-sm backdrop-blur">
+            <p className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 py-1 pl-1 pr-3 text-[12px] font-medium text-muted-foreground shadow-xs backdrop-blur-sm">
               {hero.badge && (
                 <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground">
                   {hero.badge}
@@ -81,7 +81,7 @@ export function OpenSourceHero({ page }: { page: MarketingPageContent }) {
               <Button
                 variant="outline"
                 size="lg"
-                className="group h-11 w-full gap-2.5 rounded-lg bg-background/70 pl-2 pr-4 text-[14px] backdrop-blur sm:w-auto"
+                className="group h-11 w-full gap-2.5 rounded-lg bg-background/70 pl-2 pr-4 text-[14px] backdrop-blur-sm sm:w-auto"
               >
                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                   <Play className="h-3.5 w-3.5 translate-x-px fill-current" />
@@ -113,7 +113,7 @@ export function OpenSourceHero({ page }: { page: MarketingPageContent }) {
                 }
           }
         >
-          <div ref={tiltRef} className="relative [--p:0] [perspective:2200px]">
+          <div ref={tiltRef} className="relative [--p:0] perspective-[2200px]">
             <div
               className="relative origin-top will-change-transform"
               style={
@@ -127,7 +127,7 @@ export function OpenSourceHero({ page }: { page: MarketingPageContent }) {
             >
               <div className={cn(SUNRISE_GLOW, "-inset-x-16 -top-16 bottom-[20%]")} />
               <BrowserFrame className="relative" url="tasks.your-domain.com">
-                <div className="relative aspect-[16/10] w-full overflow-hidden">
+                <div className="relative aspect-16/10 w-full overflow-hidden">
                   {"clip" in hero.media && <ClipPlayer id={hero.media.clip} label={hero.media.alt} priority controls />}
                 </div>
               </BrowserFrame>

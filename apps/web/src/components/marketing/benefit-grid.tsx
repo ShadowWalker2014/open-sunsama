@@ -48,7 +48,7 @@ export function BenefitGrid({ items }: { items: BenefitItem[] }) {
             {item.href ? (
               <SmartLink
                 href={item.href}
-                className="group relative flex h-full items-start gap-4 p-5 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:block sm:p-6"
+                className="group relative flex h-full items-start gap-4 p-5 transition-colors hover:bg-muted/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:block sm:p-6"
               >
                 {body}
               </SmartLink>

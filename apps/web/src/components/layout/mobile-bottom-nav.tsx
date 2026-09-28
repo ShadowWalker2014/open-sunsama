@@ -47,7 +47,7 @@ export function MobileBottomNav() {
     <nav
       className={cn(
         "fixed bottom-0 left-0 right-0 z-50",
-        "border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80",
+        "border-t bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/80",
         "lg:hidden" // Hide on desktop
       )}
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}

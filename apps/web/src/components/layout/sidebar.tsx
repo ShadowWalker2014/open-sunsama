@@ -120,7 +120,7 @@ export function Sidebar({ className }: SidebarProps) {
     // the panel itself overlays the board while peeking.
     <div
       className={cn(
-        "relative h-full flex-shrink-0 transition-[width] duration-200 ease-out",
+        "relative h-full shrink-0 transition-[width] duration-200 ease-out",
         isPinned ? "w-60" : "w-9",
         className
       )}
@@ -174,7 +174,7 @@ export function Sidebar({ className }: SidebarProps) {
           inert={!isExpanded}
           aria-hidden={!isExpanded}
           className={cn(
-            "flex w-60 flex-shrink-0 flex-col transition-opacity duration-150",
+            "flex w-60 shrink-0 flex-col transition-opacity duration-150",
             isExpanded ? "opacity-100" : "pointer-events-none opacity-0"
           )}
         >

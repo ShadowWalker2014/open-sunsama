@@ -174,11 +174,11 @@ export default function BlogPage() {
       <SkipLink />
       <SiteHeader />
 
-      <main id="main" tabIndex={-1} className="focus:outline-none">
+      <main id="main" tabIndex={-1} className="focus:outline-hidden">
         <BlogHero searchInput={searchInput} onSearchChange={setSearchInput} />
 
         <div>
-          <div className="sticky top-14 z-40 py-3 backdrop-blur-xl [background:linear-gradient(hsl(var(--background)/0.85),hsl(var(--background)/0.85)_70%,hsl(var(--background)/0))] supports-[backdrop-filter]:[background:linear-gradient(hsl(var(--background)/0.7),hsl(var(--background)/0.7)_70%,hsl(var(--background)/0))]">
+          <div className="sticky top-14 z-40 py-3 backdrop-blur-xl [background:linear-gradient(hsl(var(--background)/0.85),hsl(var(--background)/0.85)_70%,hsl(var(--background)/0))] supports-backdrop-filter:[background:linear-gradient(hsl(var(--background)/0.7),hsl(var(--background)/0.7)_70%,hsl(var(--background)/0))]">
             <BlogTopicTabs selectedTag={searchParams.tag} onSelect={setTag} />
           </div>
 

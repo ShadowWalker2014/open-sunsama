@@ -97,7 +97,7 @@ export const SubtaskAddRow = React.forwardRef<
           add(parseSubtaskTitles(draft + text));
         }}
         onBlur={commit}
-        className="min-w-0 flex-1 border-none bg-transparent p-0 text-sm leading-5 outline-none placeholder:text-muted-foreground/50 focus:ring-0"
+        className="min-w-0 flex-1 border-none bg-transparent p-0 text-sm leading-5 outline-hidden placeholder:text-muted-foreground/50 focus:ring-0"
       />
       {draft.trim() && (
         <kbd className="hidden shrink-0 rounded border border-border/60 px-1 font-sans text-[10px] leading-4 text-muted-foreground/70 sm:inline">

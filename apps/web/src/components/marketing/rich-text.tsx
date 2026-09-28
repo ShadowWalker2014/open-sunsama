@@ -4,7 +4,7 @@ import { parseInline } from "@/content/marketing/types";
 import { cn } from "@/lib/utils";
 
 const LINK =
-  "font-medium text-foreground underline decoration-border underline-offset-4 transition-colors hover:text-primary hover:decoration-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm";
+  "font-medium text-foreground underline decoration-border underline-offset-4 transition-colors hover:text-primary hover:decoration-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring rounded-sm";
 
 /**
  * Renders content-module text with its inline markup ([label](href), **bold**).

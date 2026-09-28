@@ -49,7 +49,7 @@ function CommandPaletteLoadingShell({ open }: { open: boolean }) {
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-background/40 pt-[15vh] backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-background/40 pt-[15vh] backdrop-blur-xs"
       aria-hidden="true"
     >
       <div className="w-[min(640px,90vw)] rounded-lg border bg-popover p-4 shadow-lg">

@@ -79,7 +79,7 @@ function EditorFallback({
     <div
       className={cn(
         "rounded-md border border-input bg-transparent px-3 py-2 text-sm",
-        "text-muted-foreground/80 whitespace-pre-wrap break-words",
+        "text-muted-foreground/80 whitespace-pre-wrap wrap-break-word",
         className
       )}
       style={{ minHeight }}

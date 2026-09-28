@@ -353,7 +353,7 @@ function TasksListPageDesktop() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search tasks..."
-              className="w-full h-7 pl-8 pr-3 rounded-md border bg-background text-xs outline-none focus:ring-1 focus:ring-primary"
+              className="w-full h-7 pl-8 pr-3 rounded-md border bg-background text-xs outline-hidden focus:ring-1 focus:ring-primary"
             />
           </div>
 
@@ -366,7 +366,7 @@ function TasksListPageDesktop() {
                 className={cn(
                   "px-2.5 py-1 text-xs font-medium rounded transition-colors capitalize cursor-pointer",
                   statusFilter === status
-                    ? "bg-background text-foreground shadow-sm"
+                    ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >

@@ -199,7 +199,7 @@ export function AppErrorScreen({ error }: { error: unknown }) {
 
         <details className="rounded-md border border-border bg-muted/40 p-3 text-xs">
           <summary className="cursor-pointer select-none font-medium">Error details</summary>
-          <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words text-muted-foreground">
+          <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap wrap-break-word text-muted-foreground">
             {message}
             {stack ? `\n\n${stack}` : ""}
           </pre>

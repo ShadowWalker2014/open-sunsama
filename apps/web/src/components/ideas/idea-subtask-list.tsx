@@ -102,7 +102,7 @@ function IdeaSubtaskItem({
               setEditing(false);
             }
           }}
-          className="flex-1 border-none bg-transparent p-0 text-sm outline-none focus:ring-0"
+          className="flex-1 border-none bg-transparent p-0 text-sm outline-hidden focus:ring-0"
         />
       ) : (
         <span

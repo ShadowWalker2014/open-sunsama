@@ -341,7 +341,7 @@ export function IdeaCard({
 
         <p
           className={cn(
-            "min-w-0 flex-1 text-sm leading-snug text-foreground break-words line-clamp-3",
+            "min-w-0 flex-1 text-sm leading-snug text-foreground wrap-break-word line-clamp-3",
             isCompleted && "line-through text-muted-foreground"
           )}
         >
@@ -435,7 +435,7 @@ export function IdeaCard({
               className={cn(
                 "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium transition-all duration-150",
                 "hover:ring-1 hover:ring-primary/30",
-                "focus:outline-none focus:ring-1 focus:ring-primary/50",
+                "focus:outline-hidden focus:ring-1 focus:ring-primary/50",
                 PRIORITY_STYLES[idea.priority]
               )}
             >

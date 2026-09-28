@@ -75,8 +75,8 @@ export function releasedAgo(iso: string): string {
 }
 
 const CELL =
-  "group flex min-w-0 flex-col justify-center px-3 py-2.5 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:px-4";
-const LABEL = "flex items-center gap-1.5 truncate text-[10.5px] font-medium uppercase tracking-[0.1em] text-muted-foreground";
+  "group flex min-w-0 flex-col justify-center px-3 py-2.5 transition-colors hover:bg-muted/50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:px-4";
+const LABEL = "flex items-center gap-1.5 truncate text-[10.5px] font-medium uppercase tracking-widest text-muted-foreground";
 const VALUE = "mt-1 truncate font-jetbrains text-[13px] font-semibold tabular-nums text-foreground";
 const META = "mt-0.5 truncate text-[11.5px] text-muted-foreground transition-colors group-hover:text-foreground/80";
 
@@ -88,7 +88,7 @@ export function RepoBar({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "mx-auto w-full max-w-[760px] overflow-hidden rounded-2xl border border-border/70 bg-background/80 text-left shadow-[0_1px_0_0_hsl(var(--foreground)/0.03),0_12px_32px_-20px_hsl(var(--shadow-color)/0.4)] backdrop-blur dark:border-white/[0.09] dark:bg-[hsl(228_14%_9%/0.8)]",
+        "mx-auto w-full max-w-[760px] overflow-hidden rounded-2xl border border-border/70 bg-background/80 text-left shadow-[0_1px_0_0_hsl(var(--foreground)/0.03),0_12px_32px_-20px_hsl(var(--shadow-color)/0.4)] backdrop-blur-sm dark:border-white/9 dark:bg-[hsl(228_14%_9%/0.8)]",
         "sm:flex sm:items-stretch",
         className
       )}
@@ -97,7 +97,7 @@ export function RepoBar({ className }: { className?: string }) {
         href={openSource.github}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex min-w-0 items-center gap-3 border-b border-border/60 px-4 py-3 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring dark:border-white/[0.07] sm:border-b-0 sm:border-r"
+        className="flex min-w-0 items-center gap-3 border-b border-border/60 px-4 py-3 transition-colors hover:bg-muted/50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring dark:border-white/[0.07] sm:border-b-0 sm:border-r"
       >
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-foreground text-background">
           <Github className="h-4 w-4" />

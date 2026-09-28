@@ -198,7 +198,7 @@ export function DayColumn({
       ref={setNodeRef}
       data-board-day={dateString}
       className={cn(
-        "flex h-full flex-shrink-0 flex-col transition-colors duration-150",
+        "flex h-full shrink-0 flex-col transition-colors duration-150",
         fill
           ? "w-full"
           : "w-[calc(100vw-1rem)] sm:w-[280px] sm:min-w-[280px] sm:max-w-[280px] sm:px-1",

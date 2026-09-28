@@ -77,7 +77,7 @@ export default function FocusCompletePage() {
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background overflow-hidden">
       {/* Top bar - minimal, matching focus page */}
-      <div className="bg-background/80 backdrop-blur-sm border-b border-border/50">
+      <div className="bg-background/80 backdrop-blur-xs border-b border-border/50">
         <div className="mx-auto max-w-3xl px-6 h-12 flex items-center">
           <button
             onClick={handleClose}

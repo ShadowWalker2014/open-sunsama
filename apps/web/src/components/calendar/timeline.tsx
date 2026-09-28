@@ -270,7 +270,7 @@ export function Timeline({
     <div className={cn("flex-1 overflow-hidden flex flex-col", className)}>
       {/* All-day events banner */}
       {allDayEvents.length > 0 && (
-        <div className="flex-shrink-0 border-b bg-muted/30 px-2 py-1.5 space-y-1">
+        <div className="shrink-0 border-b bg-muted/30 px-2 py-1.5 space-y-1">
           <p className="text-xs font-medium text-muted-foreground mb-1">All day</p>
           <div className="flex flex-wrap gap-1">
             {allDayEvents.map((event) => (
@@ -294,7 +294,7 @@ export function Timeline({
           style={{ minHeight: hours.length * HOUR_HEIGHT }}
         >
           {/* Time Labels Column */}
-          <div className="w-12 sm:w-16 flex-shrink-0 border-r bg-muted/30">
+          <div className="w-12 sm:w-16 shrink-0 border-r bg-muted/30">
             {hours.map((hour) => (
               <div
                 key={hour}
@@ -349,8 +349,8 @@ export function Timeline({
                 className="absolute left-0 right-0 z-30 flex items-center pointer-events-none"
                 style={{ top: currentTimePosition }}
               >
-                <div className="h-3 w-3 rounded-full bg-red-500 -ml-1.5 shadow-sm" />
-                <div className="h-0.5 flex-1 bg-red-500 shadow-sm" />
+                <div className="h-3 w-3 rounded-full bg-red-500 -ml-1.5 shadow-xs" />
+                <div className="h-0.5 flex-1 bg-red-500 shadow-xs" />
               </div>
             )}
 

@@ -141,7 +141,7 @@ export function Header({ className }: HeaderProps) {
               className={cn(
                 "inline-flex h-6 w-6 items-center justify-center rounded transition-all",
                 themeMode === "system"
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
               )}
               title="System theme"
@@ -153,7 +153,7 @@ export function Header({ className }: HeaderProps) {
               className={cn(
                 "inline-flex h-6 w-6 items-center justify-center rounded transition-all",
                 themeMode === "light"
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
               )}
               title="Light theme"
@@ -165,7 +165,7 @@ export function Header({ className }: HeaderProps) {
               className={cn(
                 "inline-flex h-6 w-6 items-center justify-center rounded transition-all",
                 themeMode === "dark"
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
               )}
               title="Dark theme"

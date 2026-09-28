@@ -101,7 +101,7 @@ export function FocusHeader({
           onKeyDown={handleKeyDown}
           rows={1}
           className={cn(
-            "flex-1 resize-none overflow-hidden border-none bg-transparent text-xl font-medium leading-tight outline-none placeholder:text-muted-foreground/50",
+            "flex-1 resize-none overflow-hidden border-none bg-transparent text-xl font-medium leading-tight outline-hidden placeholder:text-muted-foreground/50",
             isCompleted && "line-through text-muted-foreground"
           )}
           placeholder="Task title..."

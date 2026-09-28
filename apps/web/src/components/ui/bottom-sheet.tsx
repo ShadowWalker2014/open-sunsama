@@ -67,7 +67,7 @@ export const BottomSheetContent = React.forwardRef<
         ref={ref}
         className={cn(
           "sheet-content fixed inset-x-0 z-50 flex flex-col overflow-hidden",
-          "rounded-t-[22px] border-t border-border/60 bg-background outline-none",
+          "rounded-t-[22px] border-t border-border/60 bg-background outline-hidden",
           "shadow-[0_-12px_48px_-12px_rgba(0,0,0,0.28)]",
           className
         )}

@@ -35,8 +35,8 @@ export function SelfHostSection({ section }: { section: CustomSection }) {
           <SectionHeading id={`${section.id}-heading`} eyebrow={section.eyebrow} heading={section.heading} lead={section.lead} align="left" />
 
           <Reveal delay={80} className="mt-8">
-            <p className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">What runs</p>
-            <ul className={cn(CARD, "mt-3 divide-y divide-border/60 dark:divide-white/[0.06]")}>
+            <p className="text-[11.5px] font-semibold uppercase tracking-widest text-muted-foreground">What runs</p>
+            <ul className={cn(CARD, "mt-3 divide-y divide-border/60 dark:divide-white/6")}>
               {services.map((service) => (
                 <li key={service.name} className="flex items-center gap-3 px-4 py-3">
                   <span className={cn("h-2 w-2 shrink-0 rounded-full", SERVICE_DOT[service.name])} aria-hidden />
@@ -49,7 +49,7 @@ export function SelfHostSection({ section }: { section: CustomSection }) {
             <p className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[13px] text-muted-foreground">
               <span>You need</span>
               {needs.map((need) => (
-                <span key={need} className="rounded-md border border-border/70 bg-background/70 px-2 py-0.5 font-medium text-foreground/80 dark:border-white/[0.08]">
+                <span key={need} className="rounded-md border border-border/70 bg-background/70 px-2 py-0.5 font-medium text-foreground/80 dark:border-white/8">
                   {need}
                 </span>
               ))}

@@ -79,7 +79,7 @@ export function TableOfContents({ headings, className }: TableOfContentsProps) {
         <List className="h-3.5 w-3.5" />
         On this page
       </p>
-      <ul className="border-l border-border/70 dark:border-white/[0.08]">
+      <ul className="border-l border-border/70 dark:border-white/8">
         {headings.map((heading) => (
           <li key={heading.id}>
             <a
@@ -87,7 +87,7 @@ export function TableOfContents({ headings, className }: TableOfContentsProps) {
               onClick={(e) => handleClick(e, heading.id)}
               aria-current={activeId === heading.id ? "location" : undefined}
               className={cn(
-                "-ml-px block border-l-2 py-1.5 pr-2 text-[13px] leading-snug transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                "-ml-px block border-l-2 py-1.5 pr-2 text-[13px] leading-snug transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                 heading.level === 3 ? "pl-6 text-[12.5px]" : "pl-3.5",
                 activeId === heading.id
                   ? "border-primary font-medium text-foreground"

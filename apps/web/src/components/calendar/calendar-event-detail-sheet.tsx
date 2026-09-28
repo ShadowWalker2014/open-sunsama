@@ -438,7 +438,7 @@ export function CalendarEventDetailSheet({
           <SheetHeader className="space-y-3">
             <div className="flex items-start gap-2">
               <div
-                className="mt-1 h-3 w-3 flex-shrink-0 rounded-full"
+                className="mt-1 h-3 w-3 shrink-0 rounded-full"
                 style={{ backgroundColor: color }}
                 aria-hidden
               />
@@ -495,7 +495,7 @@ export function CalendarEventDetailSheet({
                 (calendarProvider === "icloud" ? (
                   <div className="flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2">
                     <Repeat
-                      className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-amber-600 dark:text-amber-400"
+                      className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400"
                       aria-hidden
                     />
                     <div className="text-xs">
@@ -512,7 +512,7 @@ export function CalendarEventDetailSheet({
                 ) : (
                   <div className="flex items-start gap-2 rounded-md border border-dashed border-border/60 bg-muted/30 px-3 py-2">
                     <Repeat
-                      className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-muted-foreground"
+                      className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground"
                       aria-hidden
                     />
                     <div className="text-xs">
@@ -647,27 +647,27 @@ function ViewBody({ event }: { event: CalendarEvent }) {
   return (
     <>
       <div className="flex items-start gap-3 text-sm">
-        <Clock className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground" />
+        <Clock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
         <div className="text-foreground/90">{formatEventTime(event)}</div>
       </div>
       {event.location && (
         <div className="flex items-start gap-3 text-sm">
-          <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground" />
-          <div className="text-foreground/90 break-words">
+          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+          <div className="text-foreground/90 wrap-break-word">
             {event.location}
           </div>
         </div>
       )}
       {event.description && (
         <div className="flex items-start gap-3 text-sm">
-          <AlignLeft className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground" />
+          <AlignLeft className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
           {/* Provider descriptions are rich HTML for Google/Outlook
               and plain text for iCloud/manual; `descriptionToHtml`
               normalises both shapes, then `HtmlContent` sanitises
               with DOMPurify before rendering. */}
           <HtmlContent
             html={descriptionToHtml(event.description)}
-            className="text-foreground/90 break-words"
+            className="text-foreground/90 wrap-break-word"
           />
         </div>
       )}

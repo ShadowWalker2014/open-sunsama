@@ -51,8 +51,8 @@ export const ShimmerButton = React.forwardRef<
         {/* spark container */}
         <div
           className={cn(
-            "-z-10 [radial-gradient(circle_at_50%_0%,_var(--shimmer-color)_0%,_transparent_50%)] [inset:0_calc(-1*var(--cut))]",
-            "absolute inset-0 h-full w-full animate-shimmer [background:radial-gradient(circle_at_50%_0%,var(--shimmer-color)_0%,transparent_50%)] [background-size:100%_100%]",
+            "-z-10 [radial-gradient(circle_at_50%_0%,_var(--shimmer-color)_0%,_transparent_50%)] inset-[0_calc(-1*var(--cut))]",
+            "absolute inset-0 h-full w-full animate-shimmer [background:radial-gradient(circle_at_50%_0%,var(--shimmer-color)_0%,transparent_50%)] bg-size-[100%_100%]",
           )}
         />
 
@@ -62,7 +62,7 @@ export const ShimmerButton = React.forwardRef<
         {/* backdrop */}
         <div
           className={cn(
-            "absolute inset-[1px] -z-20 [background:var(--bg)] [border-radius:var(--radius)]",
+            "absolute inset-px -z-20 [background:var(--bg)] [border-radius:var(--radius)]",
           )}
         />
       </button>

@@ -199,7 +199,7 @@ export function TaskCardContent({
         {/* Title - wraps to multiple lines, clamps at 3 lines max */}
         <p
           className={cn(
-            "min-w-0 flex-1 text-sm leading-snug text-foreground break-words line-clamp-3",
+            "min-w-0 flex-1 text-sm leading-snug text-foreground wrap-break-word line-clamp-3",
             isCompleted && "line-through text-muted-foreground"
           )}
         >
@@ -287,7 +287,7 @@ export function TaskCardContent({
                 "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium",
                 "transition-all duration-150",
                 "hover:ring-1 hover:ring-primary/30",
-                "focus:outline-none focus:ring-1 focus:ring-primary/50",
+                "focus:outline-hidden focus:ring-1 focus:ring-primary/50",
                 PRIORITY_STYLES[task.priority]
               )}
             >
@@ -362,7 +362,7 @@ export function TaskCardContent({
                 </div>
                 <span
                   className={cn(
-                    "text-xs text-muted-foreground leading-tight break-words min-w-0",
+                    "text-xs text-muted-foreground leading-tight wrap-break-word min-w-0",
                     subtask.completed && "line-through opacity-60"
                   )}
                 >

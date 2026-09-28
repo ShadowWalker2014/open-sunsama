@@ -105,7 +105,7 @@ function CopyButton({ text, field, copied, onCopy, label = "Copy" }: {
     <Button
       variant="ghost"
       size="sm"
-      className="h-7 gap-1.5 bg-background/80 text-xs backdrop-blur-sm"
+      className="h-7 gap-1.5 bg-background/80 text-xs backdrop-blur-xs"
       onClick={() => onCopy(text, field)}
     >
       {copied === field ? (
@@ -358,7 +358,7 @@ function ConnectorCard() {
                 className={cn(
                   "flex-1 whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
                   client === tab.id
-                    ? "bg-background text-foreground shadow-sm"
+                    ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -596,7 +596,7 @@ function ApiKeyCard() {
                   className={cn(
                     "flex-1 whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
                     client === tab.id
-                      ? "bg-background text-foreground shadow-sm"
+                      ? "bg-background text-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >

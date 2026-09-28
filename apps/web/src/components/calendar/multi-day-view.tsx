@@ -205,7 +205,7 @@ function MultiDayEvent({
     <div
       data-external-event
       className={cn(
-        "absolute z-[5] my-0.5 rounded border-l-[2px] hover:brightness-90 hover:z-[15] transition-all overflow-hidden px-1 py-0.5",
+        "absolute z-5 my-0.5 rounded border-l-2 hover:brightness-90 hover:z-15 transition-all overflow-hidden px-1 py-0.5",
         cursor,
         isDragging && "opacity-50"
       )}
@@ -529,9 +529,9 @@ export function MultiDayView({
   return (
     <div className={cn("flex h-full w-full min-w-0 flex-1 flex-col", className)}>
       {/* Day-of-week headers */}
-      <div className="flex flex-shrink-0 border-b bg-background">
+      <div className="flex shrink-0 border-b bg-background">
         {/* Empty gutter to align with hour axis */}
-        <div className="w-12 sm:w-14 flex-shrink-0 border-r" />
+        <div className="w-12 sm:w-14 shrink-0 border-r" />
         {days.map((day) => {
           const today = isToday(day);
           const weekend = isWeekend(day);
@@ -584,8 +584,8 @@ export function MultiDayView({
           Layered: a faint gridline of empty day cells underneath, the
           spanning bars positioned absolutely on top. */}
       {hasAnyAllDay && (
-        <div className="flex flex-shrink-0 border-b bg-muted/30">
-          <div className="w-12 sm:w-14 flex-shrink-0 border-r flex items-start justify-end px-2 py-1">
+        <div className="flex shrink-0 border-b bg-muted/30">
+          <div className="w-12 sm:w-14 shrink-0 border-r flex items-start justify-end px-2 py-1">
             <span className="text-[10px] font-medium text-muted-foreground">
               All day
             </span>
@@ -659,7 +659,7 @@ export function MultiDayView({
           <div className="flex relative">
             {/* Hour axis gutter */}
             <div
-              className="w-12 sm:w-14 flex-shrink-0 border-r relative"
+              className="w-12 sm:w-14 shrink-0 border-r relative"
               style={{
                 height: `${(TIMELINE_END_HOUR - TIMELINE_START_HOUR + 1) * HOUR_HEIGHT}px`,
               }}
@@ -696,7 +696,7 @@ export function MultiDayView({
                   data-day={day.toISOString()}
                   className={cn(
                     "flex-1 relative border-r last:border-r-0 min-w-0",
-                    today && "bg-primary/[0.02]",
+                    today && "bg-primary/2",
                     weekend && !today && "bg-muted/20"
                   )}
                   style={{
@@ -732,8 +732,8 @@ export function MultiDayView({
                       className="absolute left-0 right-0 z-30 flex items-center pointer-events-none"
                       style={{ top: calculateYFromTime(now) }}
                     >
-                      <div className="h-2 w-2 rounded-full bg-red-500 -ml-1 shadow-sm" />
-                      <div className="h-0.5 flex-1 bg-red-500 shadow-sm" />
+                      <div className="h-2 w-2 rounded-full bg-red-500 -ml-1 shadow-xs" />
+                      <div className="h-0.5 flex-1 bg-red-500 shadow-xs" />
                     </div>
                   )}
 

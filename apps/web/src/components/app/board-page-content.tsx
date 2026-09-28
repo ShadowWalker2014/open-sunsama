@@ -86,7 +86,7 @@ export function BoardPageContent() {
           {activeDate && (
             <KanbanCalendarPanel
               date={activeDate}
-              className="hidden w-[280px] flex-shrink-0 xl:flex"
+              className="hidden w-[280px] shrink-0 xl:flex"
               onBlockClick={handleBlockClick}
               onEditBlock={handleEditBlock}
               onTimeSlotClick={(date, startTime, endTime) => {

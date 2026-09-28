@@ -16,7 +16,7 @@ type SectionCopy = Pick<Extract<MarketingSection, { kind: "custom" }>, "id" | "e
 
 function CardLink({ link, tone }: { link: TextLink; tone: "primary" | "muted" }) {
   const className = cn(
-    "group mt-6 inline-flex items-center gap-1.5 rounded-sm text-[14px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+    "group mt-6 inline-flex items-center gap-1.5 rounded-sm text-[14px] font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
     tone === "primary" ? "text-primary hover:text-primary/80" : "text-foreground/75 hover:text-foreground"
   );
   const body = (
@@ -45,13 +45,13 @@ export function VerdictSection({ section, verdict }: { section: SectionCopy; ver
       <div className={cn(CONTAINER, "max-w-5xl")}>
         <SectionHeading id={headingId} eyebrow={section.eyebrow} heading={section.heading} lead={section.lead} />
         <div className="mt-12 grid gap-4 md:grid-cols-2 md:gap-5">
-          <Reveal className="relative flex min-w-0 flex-col overflow-hidden rounded-2xl border border-primary/35 bg-gradient-to-b from-primary/[0.07] to-primary/[0.02] p-6 shadow-[0_24px_60px_-40px_hsl(var(--primary)/0.6)] md:p-7">
+          <Reveal className="relative flex min-w-0 flex-col overflow-hidden rounded-2xl border border-primary/35 bg-linear-to-b from-primary/[0.07] to-primary/2 p-6 shadow-[0_24px_60px_-40px_hsl(var(--primary)/0.6)] md:p-7">
             <div
               className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-[radial-gradient(closest-side,rgb(249_115_22/0.18),transparent)] blur-xl"
               aria-hidden
             />
             <h3 className="relative flex items-center gap-2.5 text-[17px] font-semibold tracking-[-0.01em]">
-              <img src="/open-sunsama-logo.png" alt="" width={24} height={24} className="h-6 w-6 rounded-md shadow-sm" />
+              <img src="/open-sunsama-logo.png" alt="" width={24} height={24} className="h-6 w-6 rounded-md shadow-xs" />
               Switch to Open Sunsama if…
             </h3>
             <ul className="relative mt-5 space-y-3.5">
@@ -108,7 +108,7 @@ export function GiveUpSection({ section, items, rival }: { section: SectionCopy;
         <SectionHeading id={headingId} eyebrow={section.eyebrow} heading={section.heading} lead={section.lead} />
         <Reveal delay={100} className="mt-12">
           <ul
-            className="divide-y divide-border/60 overflow-hidden rounded-2xl border border-border/70 bg-card dark:border-white/[0.08]"
+            className="divide-y divide-border/60 overflow-hidden rounded-2xl border border-border/70 bg-card dark:border-white/8"
             aria-label={`What ${rival} does that Open Sunsama doesn't`}
           >
             {items.map((item) => (
@@ -126,7 +126,7 @@ export function GiveUpSection({ section, items, rival }: { section: SectionCopy;
                   {item.link && (
                     <SmartLink
                       href={item.link.href}
-                      className="mt-2 inline-flex items-center gap-1.5 rounded-sm text-[13.5px] font-medium text-foreground/80 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-sm text-[13.5px] font-medium text-foreground/80 transition-colors hover:text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {item.link.label}
                       <ArrowRight className="h-3.5 w-3.5" />
@@ -141,7 +141,7 @@ export function GiveUpSection({ section, items, rival }: { section: SectionCopy;
           Need one of these?{" "}
           <SmartLink
             href="https://github.com/ShadowWalker2014/open-sunsama/issues"
-            className="rounded-sm font-medium text-foreground underline decoration-border underline-offset-4 hover:text-primary hover:decoration-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="rounded-sm font-medium text-foreground underline decoration-border underline-offset-4 hover:text-primary hover:decoration-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           >
             Ask for it on GitHub
           </SmartLink>

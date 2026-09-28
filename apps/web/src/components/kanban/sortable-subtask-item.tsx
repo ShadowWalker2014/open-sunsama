@@ -85,7 +85,7 @@ export function SortableSubtaskItem({
         "group relative -mx-2 flex min-h-8 items-start gap-2.5 rounded-md px-2 py-1.5 transition-colors",
         "hover:bg-muted/40",
         isEditing && "bg-muted/40",
-        isDragging && "z-10 bg-muted/60 shadow-sm"
+        isDragging && "z-10 bg-muted/60 shadow-xs"
       )}
       onMouseEnter={() => setHoveredSubtaskId(subtask.id)}
       onMouseLeave={() => setHoveredSubtaskId(null)}
@@ -133,13 +133,13 @@ export function SortableSubtaskItem({
           onKeyDown={handleKeyDown}
           data-escape-local="true"
           aria-label="Edit subtask"
-          className="min-w-0 flex-1 border-none bg-transparent p-0 text-sm leading-5 outline-none focus:ring-0"
+          className="min-w-0 flex-1 border-none bg-transparent p-0 text-sm leading-5 outline-hidden focus:ring-0"
         />
       ) : (
         <span
           onClick={() => onUpdate && setIsEditing(true)}
           className={cn(
-            "min-w-0 flex-1 break-words text-sm leading-5 transition-colors",
+            "min-w-0 flex-1 wrap-break-word text-sm leading-5 transition-colors",
             onUpdate && "cursor-text",
             subtask.completed &&
               "text-muted-foreground line-through decoration-muted-foreground/50"

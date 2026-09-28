@@ -70,7 +70,7 @@ const MENU_FEATURES: Array<[string, string]> = [
 ];
 
 const NAV_LINK =
-  "whitespace-nowrap rounded-md px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "whitespace-nowrap rounded-md px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring";
 
 /** Internal links render as router links; hash links to the home page stay plain anchors. */
 function NavLink({
@@ -181,7 +181,7 @@ export function SiteHeader({
       className={cn(
         "sticky top-0 z-50 w-full border-b transition-[background-color,border-color,box-shadow] duration-300",
         scrolled
-          ? "border-border/60 bg-background/80 shadow-[0_1px_12px_-6px_rgb(0_0_0/0.12)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/65"
+          ? "border-border/60 bg-background/80 shadow-[0_1px_12px_-6px_rgb(0_0_0/0.12)] backdrop-blur-xl supports-backdrop-filter:bg-background/65"
           : "border-transparent bg-transparent"
       )}
     >
@@ -190,7 +190,7 @@ export function SiteHeader({
           {leading}
           <Link
             to="/"
-            className="flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex items-center gap-2 rounded-md focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           >
             <img src="/open-sunsama-logo.png" alt="Open Sunsama" className="h-7 w-7 rounded-lg object-cover" />
             <span className={cn("whitespace-nowrap text-[14px] font-semibold tracking-tight", section && "hidden sm:inline")}>
@@ -204,7 +204,7 @@ export function SiteHeader({
               </span>
               <Link
                 to={section.href}
-                className="rounded-md text-[14px] font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="rounded-md text-[14px] font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {section.label}
               </Link>
@@ -225,7 +225,7 @@ export function SiteHeader({
             href={GITHUB_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden h-8 items-center gap-1.5 rounded-md border border-border/70 bg-background/60 px-2.5 text-[12px] font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex"
+            className="hidden h-8 items-center gap-1.5 rounded-md border border-border/70 bg-background/60 px-2.5 text-[12px] font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring sm:flex"
           >
             <Github className="h-3.5 w-3.5" />
             Star
@@ -251,7 +251,7 @@ export function SkipLink({ target = "main" }: { target?: string }) {
   return (
     <a
       href={`#${target}`}
-      className="sr-only z-[60] rounded-md bg-primary px-3 py-2 text-[13px] font-medium text-primary-foreground focus:not-sr-only focus:fixed focus:left-4 focus:top-3"
+      className="sr-only z-60 rounded-md bg-primary px-3 py-2 text-[13px] font-medium text-primary-foreground focus:not-sr-only focus:fixed focus:left-4 focus:top-3"
     >
       Skip to content
     </a>

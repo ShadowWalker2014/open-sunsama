@@ -63,13 +63,13 @@ export function BrowserFrame({
         className
       )}
     >
-      <div className="flex h-9 items-center gap-3 border-b border-border/60 bg-muted/40 px-3.5 dark:border-white/[0.06]">
+      <div className="flex h-9 items-center gap-3 border-b border-border/60 bg-muted/40 px-3.5 dark:border-white/6">
         <div className="flex gap-1.5" aria-hidden>
           <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
           <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
           <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
         </div>
-        <div className="mx-auto flex h-5 min-w-0 max-w-[240px] flex-1 items-center justify-center gap-1.5 rounded-md bg-background/80 px-2 text-[10.5px] text-muted-foreground ring-1 ring-border/60 dark:bg-white/[0.04] dark:ring-white/[0.06]">
+        <div className="mx-auto flex h-5 min-w-0 max-w-[240px] flex-1 items-center justify-center gap-1.5 rounded-md bg-background/80 px-2 text-[10.5px] text-muted-foreground ring-1 ring-border/60 dark:bg-white/4 dark:ring-white/6">
           <svg viewBox="0 0 16 16" className="h-2.5 w-2.5 shrink-0 opacity-60" aria-hidden>
             <path
               fill="currentColor"
@@ -91,7 +91,7 @@ export function BrowserFrame({
  */
 export function FeatureShot({ name, alt }: { name: ShotName; alt: string }) {
   return (
-    <div className="relative mx-auto max-w-5xl [perspective:2000px]">
+    <div className="relative mx-auto max-w-5xl perspective-[2000px]">
       <div className="pointer-events-none absolute -inset-x-8 -top-8 bottom-0 -z-10 rounded-[36px] bg-[radial-gradient(60%_60%_at_50%_30%,hsl(var(--primary)/0.18),transparent_70%)] blur-2xl" />
       <div className="landing-settle origin-top">
         <BrowserFrame>

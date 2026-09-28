@@ -45,7 +45,7 @@ const PLATFORMS: Record<PlatformKey, PlatformInfo> = {
     name: "macOS (Apple Silicon)",
     shortName: "macOS",
     icon: Apple,
-    description: "M1/M2/M3/M4",
+    description: "macOS 11+ · Safari 16.4+",
     fileType: ".dmg",
   },
   "macos-x64": {
@@ -53,7 +53,7 @@ const PLATFORMS: Record<PlatformKey, PlatformInfo> = {
     name: "macOS (Intel)",
     shortName: "macOS",
     icon: Apple,
-    description: "Intel Macs",
+    description: "macOS 11+ · Safari 16.4+",
     fileType: ".dmg",
   },
   linux: {

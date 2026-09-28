@@ -68,7 +68,7 @@
     "react-hook-form": "^7.88.0",
     "react-intersection-observer": "^10.1.0",
     "remark-gfm": "^4.0.1",
-    "tailwind-merge": "^2.6.1"
+    "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {
     "@mdx-js/rollup": "^3.1.1",

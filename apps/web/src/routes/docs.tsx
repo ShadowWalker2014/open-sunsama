@@ -35,12 +35,12 @@ export default function DocsPage() {
 
       {/* Subtle background */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[400px] bg-primary/[0.03] blur-[100px] rounded-full" />
+        <div className="absolute top-0 right-1/4 w-[500px] h-[400px] bg-primary/3 blur-[100px] rounded-full" />
       </div>
 
       <DocsLayoutHeader sections={sections} />
 
-      <main id="main" tabIndex={-1} className="flex-1 relative focus:outline-none">
+      <main id="main" tabIndex={-1} className="flex-1 relative focus:outline-hidden">
         {/* Hero section */}
         <section className="py-16 md:py-24">
           <div className="container px-4 mx-auto max-w-4xl text-center">

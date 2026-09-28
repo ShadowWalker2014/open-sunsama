@@ -138,7 +138,7 @@ export function TaskRow({
 
       {/* Compact Subtasks List (Linear-style) */}
       {showSubtasks && hasSubtasks && (
-        <div className="ml-[3.25rem] pb-1">
+        <div className="ml-13 pb-1">
           {sortedSubtasks.map((subtask) => (
             <div
               key={subtask.id}

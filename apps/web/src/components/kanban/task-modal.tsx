@@ -1005,7 +1005,7 @@ export function TaskModal({
         enterKeyHint={isCompose ? "send" : "done"}
         rows={1}
         className={cn(
-          "flex-1 min-w-0 resize-none border-none p-0 font-semibold shadow-none focus:outline-none focus:ring-0 bg-transparent leading-snug placeholder:text-muted-foreground/45",
+          "flex-1 min-w-0 resize-none border-none p-0 font-semibold shadow-none focus:outline-hidden focus:ring-0 bg-transparent leading-snug placeholder:text-muted-foreground/45",
           isMobile ? "text-[19px]" : "text-base sm:text-lg",
           isCompleted && "line-through text-muted-foreground"
         )}
@@ -1126,7 +1126,7 @@ export function TaskModal({
     <div
       className={cn(
         isMobile
-          ? "flex items-center gap-2 overflow-x-auto px-5 pb-3.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          ? "flex items-center gap-2 overflow-x-auto px-5 pb-3.5 scrollbar-none [&::-webkit-scrollbar]:hidden"
           : "flex flex-wrap items-center gap-x-1 gap-y-2 px-4 pb-3 sm:px-6 sm:pb-4"
       )}
     >
@@ -1305,7 +1305,7 @@ export function TaskModal({
         className={cn(
           "flex h-10 items-center gap-2 rounded-full px-5 text-sm font-semibold transition-all active:scale-[0.97]",
           canCreate
-            ? "bg-primary text-primary-foreground shadow-sm shadow-primary/30"
+            ? "bg-primary text-primary-foreground shadow-xs shadow-primary/30"
             : "bg-muted text-muted-foreground"
         )}
       >
@@ -1376,7 +1376,7 @@ export function TaskModal({
       {showDeleteConfirm &&
         createPortal(
           <div
-            className="pointer-events-auto fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
+            className="pointer-events-auto fixed inset-0 z-100 flex items-center justify-center bg-black/50"
             onPointerDown={() => setShowDeleteConfirm(false)}
           >
             <div
