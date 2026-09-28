@@ -13,7 +13,7 @@ export type BoardMode = "board" | "day";
 const MODE_KEY = "open-sunsama-board-mode";
 
 /** Board (several days side by side) or Today (one day), remembered here. */
-function useBoardMode(): [BoardMode, (mode: BoardMode) => void] {
+export function useBoardMode(): [BoardMode, (mode: BoardMode) => void] {
   const [mode, setMode] = React.useState<BoardMode>(() => {
     try {
       return localStorage.getItem(MODE_KEY) === "day" ? "day" : "board";
@@ -46,13 +46,27 @@ interface KanbanBoardProps {
    * Callback to navigate to a specific date
    */
   onDateSelect?: (date: Date) => void;
+  /** Board or Today, owned by the page so it can lay out the calendar. */
+  mode?: BoardMode;
+  onModeChange?: (mode: BoardMode) => void;
+  /**
+   * The Today view's calendar, drawn beside the day column so the two sit
+   * together in the middle of the page, as in Sunsama.
+   */
+  dayAside?: React.ReactNode;
 }
 
 /**
  * Linear-style infinite horizontal kanban board with day columns.
  * DnD is handled by the parent TasksDndProvider context.
  */
-export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardProps) {
+export function KanbanBoard({
+  children,
+  onFirstVisibleDateChange,
+  mode: modeProp,
+  onModeChange,
+  dayAside,
+}: KanbanBoardProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [sortBy, onSortChange] = useSortPreference();
@@ -85,7 +99,9 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
 
   // Today view: one day at a time. Navigation steps that day instead of
   // scrolling the board.
-  const [mode, setMode] = useBoardMode();
+  const [ownMode, setOwnMode] = useBoardMode();
+  const mode = modeProp ?? ownMode;
+  const setMode = onModeChange ?? setOwnMode;
   const isDay = mode === "day";
   const [day, setDay] = React.useState(() => startOfDay(new Date()));
   const nav = React.useMemo(
@@ -156,8 +172,9 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
         />
 
         {isDay ? (
-          // The day sits beside the side calendar, as in Sunsama's Today.
-          <div className="flex min-h-0 flex-1 justify-end overflow-hidden pr-4">
+          // The day and its calendar sit together in the middle of the page,
+          // as in Sunsama's Today.
+          <div className="flex min-h-0 flex-1 justify-center gap-5 overflow-hidden px-4">
             <DayColumn
               key={format(day, "yyyy-MM-dd")}
               date={day}
@@ -167,6 +184,9 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
               searchQuery={searchQuery}
               wide
             />
+            {dayAside && (
+              <div className="hidden h-full w-[320px] shrink-0 lg:block">{dayAside}</div>
+            )}
           </div>
         ) : (
         /* Kanban Board - DndContext is provided by TasksDndProvider */
