@@ -18,6 +18,16 @@ import {
 export const taskPriorityCollision: CollisionDetection = (args) => {
   const { droppableContainers } = args;
 
+  // The board's calendar panel sits over the columns scrolled behind it, so
+  // it wins whenever the pointer is inside it.
+  const calendarCollisions = pointerWithin({
+    ...args,
+    droppableContainers: droppableContainers.filter(
+      (c) => c.data.current?.type === "calendar"
+    ),
+  });
+  if (calendarCollisions.length > 0) return calendarCollisions;
+
   // Separate columns and tasks
   const columns = droppableContainers.filter(
     (c) => c.data.current?.type === "column"

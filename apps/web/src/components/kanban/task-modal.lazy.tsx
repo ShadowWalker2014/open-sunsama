@@ -24,6 +24,8 @@ type TaskModalProps = {
   task: Task | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Opens the modal as a new-task composer; see task-modal.tsx. */
+  createDefaults?: { scheduledDate?: string | null };
 };
 
 type TaskModalModule = typeof TaskModalModuleNS;

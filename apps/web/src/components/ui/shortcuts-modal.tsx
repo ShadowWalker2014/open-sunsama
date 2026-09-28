@@ -7,6 +7,7 @@ import {
   type ShortcutDefinition,
 } from "@/hooks/useKeyboardShortcuts";
 import { Kbd } from "@/components/ui/kbd";
+import { isDesktop } from "@/lib/desktop";
 
 // Re-export for backwards compatibility — Kbd lives in its own file now.
 export { Kbd };
@@ -34,9 +35,10 @@ const categoryLabels: Record<string, string> = {
   task: "Task Actions",
   calendar: "Calendar",
   focus: "Focus Mode",
+  desktop: "Desktop App",
 };
 
-const categoryOrder = ["general", "navigation", "task", "calendar", "focus"];
+const categoryOrder = ["general", "desktop", "navigation", "task", "calendar", "focus"];
 
 export function ShortcutsModal({ open, onOpenChange }: ShortcutsModalProps) {
   return (
@@ -51,6 +53,8 @@ export function ShortcutsModal({ open, onOpenChange }: ShortcutsModalProps) {
         {/* Shortcuts List */}
         <div className="px-4 py-3 max-h-[60vh] overflow-y-auto">
           {categoryOrder.map((category) => {
+            // Desktop shortcuts are wired by the Tauri shell; they do nothing in a browser.
+            if (category === "desktop" && !isDesktop()) return null;
             const shortcuts = groupedShortcuts[category];
             if (!shortcuts?.length) return null;
 

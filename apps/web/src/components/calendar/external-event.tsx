@@ -206,8 +206,8 @@ export function ExternalEvent({
               // between sub-columns to keep them visually distinct.
               left: `calc(${(100 / layout.columnCount) * layout.lane}% + ${layout.lane === 0 ? "4px" : "1px"})`,
               width: `calc(${100 / layout.columnCount - COLUMN_GAP_PCT}% - ${layout.lane === 0 ? "4px" : "1px"})`,
-              backgroundColor: hexToRgba(color, 0.1),
-              borderColor: hexToRgba(color, 0.5),
+              backgroundColor: hexToRgba(color, 0.2),
+              borderColor: color,
               // Suppress iOS Safari's text-selection callout on
               // long-press — it would otherwise race with our 400ms
               // long-press-to-drag timer and sometimes win, blocking
@@ -263,7 +263,7 @@ export function ExternalEvent({
                   <CalendarDays className="h-3 w-3 flex-shrink-0 text-muted-foreground" />
                 )}
                 <p className={cn(
-                  "truncate font-medium text-foreground/80",
+                  "truncate font-medium text-foreground",
                   isCompact ? "text-xs" : "text-sm"
                 )}>
                   {event.title}
@@ -276,7 +276,7 @@ export function ExternalEvent({
 
               {/* Time range - muted text, hide if too compact */}
               {!isCompact && (
-                <p className="truncate text-xs text-muted-foreground/70">
+                <p className="truncate text-xs text-foreground/70">
                   {format(startTime, "h:mm")} - {format(endTime, "h:mm a")}
                 </p>
               )}

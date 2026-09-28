@@ -26,15 +26,15 @@
     },
     "consent-chatgpt": {
       "width": 1146,
-      "height": 1658,
-      "light": "/blog-media/consent-chatgpt-light.cc5848a5.webp",
-      "dark": "/blog-media/consent-chatgpt-dark.07f09a68.webp"
+      "height": 1733,
+      "light": "/blog-media/consent-chatgpt-light.8e9de04c.webp",
+      "dark": "/blog-media/consent-chatgpt-dark.11463189.webp"
     },
     "consent-claude": {
       "width": 1146,
-      "height": 1658,
-      "light": "/blog-media/consent-claude-light.5e3f65b3.webp",
-      "dark": "/blog-media/consent-claude-dark.e04cbff9.webp"
+      "height": 1733,
+      "light": "/blog-media/consent-claude-light.6b7da3bc.webp",
+      "dark": "/blog-media/consent-claude-dark.a9f9009c.webp"
     },
     "focus": {
       "width": 1600,

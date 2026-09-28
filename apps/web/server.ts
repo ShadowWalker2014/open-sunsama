@@ -8,9 +8,13 @@
  *
  * Uncompressed files answer Range requests (Safari won't play <video> without
  * them). /blog-media/ names are content-hashed, so they cache for a year.
+ *
+ * Requests from AI assistants and search crawlers are reported to DataFast's
+ * Bot traffic card, since those bots skip the browser script in index.html.
  */
 
 import path from "node:path";
+import { trackAICrawlerResponse } from "@datafast/ai-crawl";
 
 const DIST_DIR = path.resolve(import.meta.dir, "dist");
 const PORT = 3000;
@@ -114,5 +118,23 @@ async function respond(req: Request) {
   return new Response(file, { headers });
 }
 
-Bun.serve({ port: PORT, fetch: respond });
+// Only the hosted site reports bots, so self-hosted copies send nothing
+const PUBLIC_HOST = "opensunsama.com";
+const BOT_TRACKING = {
+  websiteId: "dfid_jPL5UjXncdpECKfScGiHQ",
+  // Railway reaches this server over http; the public site is https
+  publicOrigin: `https://${PUBLIC_HOST}`,
+};
+
+Bun.serve({
+  port: PORT,
+  async fetch(req) {
+    const res = await respond(req);
+    if (new URL(req.url).hostname === PUBLIC_HOST) {
+      // Sends in the background; never awaited, so pages don't wait on DataFast
+      trackAICrawlerResponse(req, res, BOT_TRACKING);
+    }
+    return res;
+  },
+});
 console.log(`Serving ${DIST_DIR} on port ${PORT}`);

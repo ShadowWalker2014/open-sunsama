@@ -286,7 +286,10 @@ async function main() {
   check("connected after auth", client.getServerVersion()?.name === "open-sunsama", client.getServerVersion());
 
   const { tools } = await client.listTools();
-  check("lists all 24 tools", tools.length === 24, tools.length);
+  check("lists all 45 tools", tools.length === 45, tools.length);
+  check("OAuth grant includes ideas scopes", ["ideas:read", "ideas:write"].every((s) => provider.savedTokens?.scope?.split(" ").includes(s)), provider.savedTokens?.scope);
+  check("every Ideas tool declares its OAuth scope", tools.filter((t) => t.name.includes("idea")).length === 21 && tools.filter((t) => t.name.includes("idea")).every((t) => JSON.stringify(t._meta?.securitySchemes).includes("ideas:")));
+  check("delete_idea_board is destructive", tools.find((t) => t.name === "delete_idea_board")?.annotations?.destructiveHint === true);
   const calendarTool = tools.find((t) => t.name === "list_calendar_events");
   check("list_calendar_events is read-only", calendarTool?.annotations?.readOnlyHint === true, calendarTool?.annotations);
   check(
@@ -329,6 +332,70 @@ async function main() {
   check("complete_task works", !done.isError, done.content);
   const profile = await client.callTool({ name: "get_user_profile", arguments: {} });
   check("get_user_profile works", JSON.stringify(profile.content).includes("mcp-e2e-"), profile.content);
+
+  console.log("\nIdeas through the authenticated MCP client");
+  async function ideaTool<T>(name: string, args: Record<string, unknown> = {}): Promise<T> {
+    const response = await client.callTool({ name, arguments: args });
+    if (response.isError) throw new Error(`${name}: ${toolText(response)}`);
+    return JSON.parse(toolText(response)) as T;
+  }
+  type Board = { id: string; name: string; columns?: Array<{ id: string }> };
+  type Column = { id: string; name: string; boardId: string };
+  type Idea = { id: string; boardId: string; columnId: string; title: string; completedAt: string | null; promotedTaskId: string | null; subtaskCount?: number; subtaskDoneCount?: number };
+  type Subtask = { id: string; title: string; completed: boolean };
+  const board = await ideaTool<Board>("create_idea_board", { name: "MCP ideas E2E" });
+  const board2 = await ideaTool<Board>("create_idea_board", { name: "MCP ideas second board" });
+  check("create_idea_board seeds a column", !!board.id && board.columns?.length === 1, board);
+  check("list_idea_boards returns both boards", (await ideaTool<Board[]>("list_idea_boards")).some((b) => b.id === board2.id));
+  check("update_idea_board edits name and color", (await ideaTool<Board>("update_idea_board", { id: board.id, name: "MCP edited board", color: "#123ABC" })).name === "MCP edited board");
+  check("reorder_idea_boards changes order", (await ideaTool<Board[]>("reorder_idea_boards", { boardIds: [board2.id, board.id] }))[0]?.id === board2.id);
+  const firstColumn = board.columns![0]!.id;
+  const column = await ideaTool<Column>("create_idea_column", { boardId: board.id, name: "Next" });
+  check("create_idea_column places column on board", column.boardId === board.id);
+  check("list_idea_columns returns both columns", (await ideaTool<Column[]>("list_idea_columns", { boardId: board.id })).length === 2);
+  check("update_idea_column renames column", (await ideaTool<Column>("update_idea_column", { id: column.id, name: "Later" })).name === "Later");
+  check("reorder_idea_columns changes order", (await ideaTool<Column[]>("reorder_idea_columns", { boardId: board.id, columnIds: [column.id, firstColumn] }))[0]?.id === column.id);
+  const wrongColumnOrder = await client.callTool({ name: "reorder_idea_columns", arguments: { boardId: board.id, columnIds: [board2.columns![0]!.id, firstColumn] } });
+  check("reorder_idea_columns rejects another board's column", wrongColumnOrder.isError === true && (await ideaTool<Column[]>("list_idea_columns", { boardId: board.id }))[0]?.id === column.id);
+  const duplicateBoardOrder = await client.callTool({ name: "reorder_idea_boards", arguments: { boardIds: [board.id, board.id] } });
+  check("reorder_idea_boards rejects duplicate IDs", duplicateBoardOrder.isError === true);
+  const idea = await ideaTool<Idea>("create_idea", { boardId: board.id, columnId: firstColumn, title: "MCP card", notes: "Try the full flow", priority: "P1" });
+  const idea2 = await ideaTool<Idea>("create_idea", { boardId: board.id, columnId: column.id, title: "Second card" });
+  check("create_idea returns board and column", idea.boardId === board.id && idea.columnId === firstColumn);
+  const otherSession = await createSession();
+  const otherBoards = await mcpCall(otherSession, "tools/call", { name: "list_idea_boards", arguments: {} });
+  check("another account cannot see the board", !JSON.stringify(otherBoards.body).includes(board.id), otherBoards.body);
+  const otherEdit = await mcpCall(otherSession, "tools/call", { name: "update_idea_board", arguments: { id: board.id, name: "Unauthorized" } });
+  check("another account cannot edit the board", otherEdit.body.result?.isError === true, otherEdit.body);
+  const wrongBoard = await client.callTool({ name: "create_idea", arguments: { boardId: board2.id, columnId: firstColumn, title: "Wrong board" } });
+  check("create_idea rejects a column from another board", wrongBoard.isError === true);
+  check("list_ideas filters by column", (await ideaTool<Idea[]>("list_ideas", { columnId: firstColumn })).some((i) => i.id === idea.id));
+  check("update_idea moves and edits card", (await ideaTool<Idea>("update_idea", { id: idea.id, title: "Edited MCP card", columnId: column.id })).columnId === column.id);
+  check("reorder_ideas sets destination order", (await ideaTool<Idea[]>("reorder_ideas", { columnId: column.id, ideaIds: [idea2.id, idea.id] })).slice(0, 2).map((i) => i.id).join() === [idea2.id, idea.id].join());
+  const missingIdea = await client.callTool({ name: "reorder_ideas", arguments: { columnId: column.id, ideaIds: [idea.id] } });
+  check("reorder_ideas rejects an incomplete destination order", missingIdea.isError === true);
+  check("update_idea completes card", !!(await ideaTool<Idea>("update_idea", { id: idea.id, completedAt: new Date().toISOString() })).completedAt);
+  check("list_ideas filters completed cards", (await ideaTool<Idea[]>("list_ideas", { boardId: board.id, completed: true })).some((i) => i.id === idea.id));
+  check("update_idea reopens card", (await ideaTool<Idea>("update_idea", { id: idea.id, completedAt: null })).completedAt === null);
+  const subtask = await ideaTool<Subtask>("create_idea_subtask", { ideaId: idea.id, title: "First step" });
+  const subtask2 = await ideaTool<Subtask>("create_idea_subtask", { ideaId: idea.id, title: "Second step" });
+  check("create_idea_subtask returns ID", !!subtask.id);
+  check("list_idea_subtasks returns both items", (await ideaTool<Subtask[]>("list_idea_subtasks", { ideaId: idea.id })).length === 2);
+  check("update_idea_subtask completes item", (await ideaTool<Subtask>("update_idea_subtask", { ideaId: idea.id, id: subtask.id, completed: true })).completed);
+  check("reorder_idea_subtasks changes order", (await ideaTool<Subtask[]>("reorder_idea_subtasks", { ideaId: idea.id, subtaskIds: [subtask2.id, subtask.id] }))[0]?.id === subtask2.id);
+  const missingSubtask = await client.callTool({ name: "reorder_idea_subtasks", arguments: { ideaId: idea.id, subtaskIds: [subtask.id] } });
+  check("reorder_idea_subtasks rejects an incomplete order", missingSubtask.isError === true);
+  check("list_ideas includes checklist counts", (await ideaTool<Idea[]>("list_ideas", { boardId: board.id })).find((i) => i.id === idea.id)?.subtaskDoneCount === 1);
+  const promoted = await ideaTool<{ idea: Idea; task: { id: string; title: string } }>("promote_idea", { id: idea.id });
+  check("promote_idea creates a task and links it", promoted.idea.promotedTaskId === promoted.task.id && promoted.task.title === "Edited MCP card");
+  check("delete_idea_subtask removes item", (await ideaTool<string>("delete_idea_subtask", { ideaId: idea.id, id: subtask.id })) === "Subtask deleted successfully");
+  check("delete_idea removes card", (await ideaTool<string>("delete_idea", { id: idea2.id })) === "Idea deleted successfully");
+  check("delete_idea_column removes column and its card", (await ideaTool<string>("delete_idea_column", { id: column.id })) === "Column deleted successfully" && !(await ideaTool<Idea[]>("list_ideas", { boardId: board.id })).some((i) => i.id === idea.id));
+  check("delete_idea_board removes board", (await ideaTool<string>("delete_idea_board", { id: board.id })) === "Board deleted successfully");
+  await ideaTool<string>("delete_idea_board", { id: board2.id });
+  const promotedTask = await client.callTool({ name: "get_task", arguments: { id: promoted.task.id } });
+  check("deleting the idea keeps its promoted task", !promotedTask.isError);
+  await client.callTool({ name: "delete_task", arguments: { id: promoted.task.id } });
 
   console.log("\nCalendar events");
   const seeded = await seedCalendar(session);
@@ -414,10 +481,12 @@ async function main() {
     body: JSON.stringify({ request: "x", decision: "allow" }),
   });
   check("OAuth token cannot approve new grants", approveWithOauth.status === 401, approveWithOauth.status);
-  for (const path of ["/notifications/preferences", "/calendar/accounts", "/attachments", "/ideas/boards"]) {
+  for (const path of ["/notifications/preferences", "/calendar/accounts", "/attachments"]) {
     const res = await fetch(`${API}${path}`, { headers: { Authorization: `Bearer ${newAccess}` } });
     check(`OAuth token refused on ${path}`, res.status === 403, res.status);
   }
+  const ideasRest = await fetch(`${API}/ideas/boards`, { headers: { Authorization: `Bearer ${newAccess}` } });
+  check("OAuth token can read Ideas through REST", ideasRest.status === 200, ideasRest.status);
   const profilePatch = await fetch(`${API}/auth/me`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${newAccess}` },
@@ -488,6 +557,34 @@ async function main() {
   check("code reuse → invalid_grant", reused.body.error === "invalid_grant", reused.body);
   check("code reuse revokes tokens it minted", (await mcpCall(good.body.access_token, "tools/list")).status === 401);
 
+  console.log("\nIdeas scope isolation");
+  async function scopedToken(scope: string): Promise<string> {
+    const p = pkce();
+    const url = new URL(`${API}/oauth/authorize`);
+    Object.entries({ response_type: "code", client_id: manualId, redirect_uri: REDIRECT, code_challenge: p.challenge, code_challenge_method: "S256", state: "ideas", resource: MCP_URL.toString(), scope }).forEach(([k, v]) => url.searchParams.set(k, v));
+    const callback = await consent(url, session);
+    const token = await tokenRequest({ grant_type: "authorization_code", code: callback.searchParams.get("code")!, client_id: manualId, redirect_uri: REDIRECT, code_verifier: p.verifier, resource: MCP_URL.toString() });
+    if (token.status !== 200) throw new Error(`scoped token failed: ${JSON.stringify(token.body)}`);
+    return token.body.access_token as string;
+  }
+  const ideasRead = await scopedToken("ideas:read");
+  const scopedList = await mcpCall(ideasRead, "tools/call", { name: "list_idea_boards", arguments: {} });
+  check("ideas:read token can list boards", scopedList.body.result?.isError !== true && scopedList.status === 200, scopedList.body);
+  const scopedCreate = await mcpCall(ideasRead, "tools/call", { name: "create_idea_board", arguments: { name: "Should fail" } });
+  check("ideas:read token cannot create boards", scopedCreate.body.result?.isError === true, scopedCreate.body);
+  const ideasWrite = await scopedToken("ideas:write");
+  const writeCreate = await mcpCall(ideasWrite, "tools/call", { name: "create_idea_board", arguments: { name: "Ideas write scope" } });
+  const writeBoard = JSON.parse(writeCreate.body.result?.content?.[0]?.text ?? "null") as Board | null;
+  check("ideas:write token can create boards", !!writeBoard?.id, writeCreate.body);
+  const writeList = await mcpCall(ideasWrite, "tools/call", { name: "list_idea_boards", arguments: {} });
+  check("ideas:write token cannot list boards", writeList.body.result?.isError === true, writeList.body);
+  const writeIdea = await mcpCall(ideasWrite, "tools/call", { name: "create_idea", arguments: { boardId: writeBoard!.id, columnId: writeBoard!.columns![0]!.id, title: "Promotion scope" } });
+  const promoteIdeaId = JSON.parse(writeIdea.body.result?.content?.[0]?.text ?? "null")?.id as string;
+  const forbiddenPromotion = await mcpCall(ideasWrite, "tools/call", { name: "promote_idea", arguments: { id: promoteIdeaId } });
+  check("promote_idea requires tasks:write as well", forbiddenPromotion.body.result?.isError === true && !JSON.stringify(forbiddenPromotion.body).includes("taskId"), forbiddenPromotion.body);
+  const removeScopedBoard = await mcpCall(ideasWrite, "tools/call", { name: "delete_idea_board", arguments: { id: writeBoard!.id } });
+  check("ideas:write token can delete boards", removeScopedBoard.body.result?.isError !== true, removeScopedBoard.body);
+
   console.log("\nConfidential DCR client (client_secret_basic)");
   const conf = await json(
     await fetch(`${API}/oauth/register`, {
@@ -537,6 +634,8 @@ async function main() {
       check(`${cimd.name}: REST write outside scope → 403`, restWrite.status === 403, restWrite.status);
       const noCalendar = await mcpCall(t.body.access_token, "tools/call", { name: "list_calendar_events", arguments: { date: today } });
       check(`${cimd.name}: calendar tool without calendar:read explains how to reconnect`, noCalendar.body.result?.isError === true && JSON.stringify(noCalendar.body).includes("connect it again"), noCalendar.body);
+      const noIdeas = await mcpCall(t.body.access_token, "tools/call", { name: "list_idea_boards", arguments: {} });
+      check(`${cimd.name}: Ideas tool outside granted scope is refused`, noIdeas.body.result?.isError === true && JSON.stringify(noIdeas.body).includes("Insufficient permissions"), noIdeas.body);
     } catch (error) {
       check(`${cimd.name}: flow`, false, error);
     }
@@ -555,7 +654,7 @@ async function main() {
     await fetch(`${API}/api-keys`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${session}` },
-      body: JSON.stringify({ name: "MCP e2e", scopes: ["tasks:read", "tasks:write", "time-blocks:read", "time-blocks:write", "user:read", "user:write"] }),
+      body: JSON.stringify({ name: "MCP e2e", scopes: ["tasks:read", "tasks:write", "time-blocks:read", "time-blocks:write", "ideas:read", "ideas:write", "user:read", "user:write"] }),
     })
   );
   const apiKey = keyRes.data?.key as string;
@@ -567,6 +666,13 @@ async function main() {
   });
   check("X-API-Key works on /mcp", viaHeader.status === 200 && !(await json(viaHeader)).result?.isError);
   check("Bearer os_ API key works on /mcp", (await mcpCall(apiKey, "tools/list")).status === 200);
+  const keyBoardResult = await mcpCall(apiKey, "tools/call", { name: "create_idea_board", arguments: { name: "API key board" } });
+  const keyBoard = JSON.parse(keyBoardResult.body.result?.content?.[0]?.text ?? "null") as { id: string } | null;
+  check("API key can create Ideas board", !!keyBoard?.id, keyBoardResult.body);
+  const keyBoardList = await mcpCall(apiKey, "tools/call", { name: "list_idea_boards", arguments: {} });
+  check("API key can list Ideas boards", JSON.stringify(keyBoardList.body).includes(keyBoard!.id), keyBoardList.body);
+  const keyBoardDelete = await mcpCall(apiKey, "tools/call", { name: "delete_idea_board", arguments: { id: keyBoard!.id } });
+  check("API key can delete Ideas board", keyBoardDelete.body.result?.isError !== true, keyBoardDelete.body);
   check("bad bearer → 401", (await mcpCall("osat_bogus", "tools/list")).status === 401);
 
   console.log("\nGrants from before calendar:read existed");

@@ -12,6 +12,10 @@ const QUERY_KEYS_NEVER_PERSIST = new Set<string>([
 function shouldPersistQuery(queryKey: readonly unknown[]): boolean {
   const head = typeof queryKey[0] === "string" ? queryKey[0] : "";
   if (QUERY_KEYS_NEVER_PERSIST.has(head)) return false;
+  // The kanban range prefetch holds a Map, which JSON turns into `{}`; a
+  // restored copy crashes the board. It only seeds the per-day caches, which
+  // are persisted on their own, so there's nothing to gain from storing it.
+  if (head === "tasks" && queryKey[1] === "range") return false;
   return true;
 }
 

@@ -29,7 +29,7 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+>(({ className, children, onEscapeKeyDown, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -38,6 +38,16 @@ const DialogContent = React.forwardRef<
         "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-3 border border-border/60 bg-background p-4 shadow-lg sm:rounded-md",
         className
       )}
+      onEscapeKeyDown={(e) => {
+        // A focused field marked data-escape-local uses Escape itself (cancel
+        // an edit, clear a draft), so it must not also close the dialog.
+        const el = document.activeElement;
+        if (el instanceof HTMLElement && el.dataset.escapeLocal === "true") {
+          e.preventDefault();
+          return;
+        }
+        onEscapeKeyDown?.(e);
+      }}
       {...props}
     >
       {children}

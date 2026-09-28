@@ -1,5 +1,6 @@
 mod commands;
 mod menu;
+mod recovery;
 mod tray;
 
 use tauri::{Emitter, Manager};
@@ -39,8 +40,9 @@ pub fn run() {
             // Set up menu
             menu::create_menu(app)?;
 
-            // Register global shortcuts
-            register_global_shortcuts(app)?;
+            // Register global shortcuts. Another app may already own a key
+            // combination; that must not stop the app from starting.
+            register_global_shortcuts(app);
 
             Ok(())
         })
@@ -56,16 +58,18 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
-fn register_global_shortcuts(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
-    let shortcut_toggle = Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyO);
-    let shortcut_new_task = Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyT);
-    let shortcut_focus = Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyF);
+fn register_global_shortcuts(app: &tauri::App) {
+    let shortcuts = [
+        Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyO),
+        Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyT),
+        Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyF),
+    ];
 
-    app.global_shortcut().register(shortcut_toggle)?;
-    app.global_shortcut().register(shortcut_new_task)?;
-    app.global_shortcut().register(shortcut_focus)?;
-
-    Ok(())
+    for shortcut in shortcuts {
+        if let Err(error) = app.global_shortcut().register(shortcut) {
+            eprintln!("Failed to register global shortcut {shortcut:?}: {error}");
+        }
+    }
 }
 
 fn handle_global_shortcut(app: &tauri::AppHandle, shortcut: &Shortcut) {
@@ -84,16 +88,22 @@ fn handle_global_shortcut(app: &tauri::AppHandle, shortcut: &Shortcut) {
             }
         }
     } else if shortcut == &new_task_shortcut {
-        // Show window and emit event to create new task
+        // Bring the window forward, then let the web app open the add-task input
         if let Some(window) = app.get_webview_window("main") {
-            let _ = window.show();
-            let _ = window.set_focus();
+            bring_to_front(&window);
             let _ = window.emit("quick-add-task", ());
         }
     } else if shortcut == &focus_shortcut {
-        // Emit focus mode event
+        // Bring the window forward, then let the web app open focus mode
         if let Some(window) = app.get_webview_window("main") {
+            bring_to_front(&window);
             let _ = window.emit("start-focus-mode", ());
         }
     }
+}
+
+fn bring_to_front(window: &tauri::WebviewWindow) {
+    let _ = window.unminimize();
+    let _ = window.show();
+    let _ = window.set_focus();
 }

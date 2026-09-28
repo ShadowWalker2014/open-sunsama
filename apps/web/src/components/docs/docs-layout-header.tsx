@@ -1,7 +1,7 @@
-import { Link } from "@tanstack/react-router";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Github, Menu } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { SiteHeader, SkipLink } from "@/components/marketing/site-header";
 import { DocsSidebar } from "./docs-sidebar";
 import type { DocSection } from "@/types/docs";
 
@@ -11,101 +11,30 @@ interface DocsLayoutHeaderProps {
 }
 
 /**
- * Header component for the docs layout
- * Contains logo, navigation, and mobile menu
+ * The site header (same as every public page) with "/ Docs" after the logo
+ * and, below `lg`, a button that opens the docs sidebar.
  */
-export function DocsLayoutHeader({
-  sections,
-  currentSlug,
-}: DocsLayoutHeaderProps) {
+export function DocsLayoutHeader({ sections, currentSlug }: DocsLayoutHeaderProps) {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-12 items-center justify-between px-4 mx-auto max-w-6xl">
-        <div className="flex items-center gap-4">
-          {/* Mobile menu */}
+    <>
+      <SkipLink />
+      <SiteHeader
+        section={{ label: "Docs", href: "/docs" }}
+        leading={
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden h-8 w-8">
+              <Button variant="ghost" size="icon" className="-ml-1.5 h-8 w-8 lg:hidden">
                 <Menu className="h-4 w-4" />
-                <span className="sr-only">Toggle menu</span>
+                <span className="sr-only">Open docs navigation</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-72 p-0">
-              <div className="p-4 border-b border-border/40">
-                <Link to="/" className="flex items-center gap-2">
-                  <img
-                    src="/open-sunsama-logo.png"
-                    alt="Open Sunsama"
-                    loading="lazy"
-                    decoding="async"
-                    className="h-7 w-7 rounded-lg object-cover"
-                  />
-                  <span className="text-[13px] font-semibold">
-                    Open Sunsama
-                  </span>
-                </Link>
-              </div>
+              <SheetTitle className="border-b border-border/60 px-4 py-4 text-[14px] font-semibold">Documentation</SheetTitle>
               <DocsSidebar sections={sections} currentSlug={currentSlug} />
             </SheetContent>
           </Sheet>
-
-          <Link to="/" className="flex items-center gap-2">
-            <img
-              src="/open-sunsama-logo.png"
-              alt="Open Sunsama"
-              loading="lazy"
-              decoding="async"
-              className="h-7 w-7 rounded-lg object-cover"
-            />
-            <span className="text-[13px] font-semibold hidden sm:block">
-              Open Sunsama
-            </span>
-          </Link>
-
-          <span className="text-muted-foreground/50">/</span>
-
-          <Link
-            to="/docs"
-            className="text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Docs
-          </Link>
-        </div>
-
-        <nav className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 px-3 text-xs hidden md:flex"
-            asChild
-          >
-            <Link to="/blog" search={{}}>
-              Blog
-            </Link>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 px-3 text-xs hidden md:flex"
-            asChild
-          >
-            <Link to="/download">Download</Link>
-          </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-            <a
-              href="https://github.com/ShadowWalker2014/open-sunsama"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Github className="h-4 w-4" />
-              <span className="sr-only">GitHub</span>
-            </a>
-          </Button>
-          <Button size="sm" className="h-8 px-3 text-xs" asChild>
-            <Link to="/register">Get Started</Link>
-          </Button>
-        </nav>
-      </div>
-    </header>
+        }
+      />
+    </>
   );
 }

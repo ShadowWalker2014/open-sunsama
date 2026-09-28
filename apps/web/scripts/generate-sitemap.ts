@@ -10,6 +10,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import matter from "gray-matter";
 import { lastUpdated, readBlogPosts } from "./blog-content";
+import { loadMarketingPages } from "./prerender-marketing";
 
 const SITE_URL = "https://opensunsama.com";
 const __filename = fileURLToPath(import.meta.url);
@@ -206,7 +207,7 @@ ${urls.join("\n")}
 /**
  * Main function to generate sitemap
  */
-function main() {
+async function main() {
   const srcDir = path.join(ROOT_DIR, "src");
   const distDir = path.join(ROOT_DIR, "dist");
 
@@ -216,7 +217,16 @@ function main() {
     fs.mkdirSync(distDir, { recursive: true });
   }
 
-  const entries: SitemapEntry[] = [...STATIC_PAGES];
+  const entries: SitemapEntry[] = STATIC_PAGES.map((entry) => ({ ...entry }));
+
+  // Marketing pages with a content module (src/content/marketing): add any
+  // that are missing and date them by their last content change
+  const marketingPages = await loadMarketingPages();
+  for (const { page } of marketingPages) {
+    const existing = entries.find((entry) => entry.loc === page.path);
+    if (existing) existing.lastmod = page.updated;
+    else entries.push({ loc: page.path, lastmod: page.updated, changefreq: "weekly", priority: 0.8 });
+  }
 
   // Add docs pages (priority 0.6)
   const docsDir = path.join(srcDir, "content/docs");
@@ -272,9 +282,10 @@ function main() {
 
   console.log(`Generated sitemap.xml with ${entries.length} URLs`);
   console.log(`  - Static pages: ${STATIC_PAGES.length}`);
+  console.log(`  - Marketing pages with content modules: ${marketingPages.length}`);
   console.log(`  - Docs: ${docFiles.length}`);
   console.log(`  - Blog posts: ${blogPosts.length}`);
   console.log(`\nSitemap written to: ${sitemapPath}`);
 }
 
-main();
+await main();

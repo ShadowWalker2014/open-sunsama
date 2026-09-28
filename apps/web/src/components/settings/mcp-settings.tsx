@@ -38,6 +38,8 @@ const MCP_KEY_SCOPES: ApiKeyScope[] = [
   "time-blocks:read",
   "time-blocks:write",
   "calendar:read",
+  "ideas:read",
+  "ideas:write",
   "user:read",
   "user:write",
 ];

@@ -150,3 +150,72 @@ export function CountUp({ value, duration = 1200 }: { value: string; duration?: 
 
   return <span ref={ref}>{match ? `${match[1]}${current}${match[3]}` : value}</span>;
 }
+
+/** Staggered intro: an item transitions from its "before" state once `ready`. */
+export function introStyle(ready: boolean, delay: number, reduced: boolean): React.CSSProperties {
+  if (reduced) return {};
+  return {
+    transition:
+      "opacity 700ms cubic-bezier(0.2,0.8,0.2,1), transform 800ms cubic-bezier(0.2,0.8,0.2,1), filter 700ms ease",
+    transitionDelay: `${delay}ms`,
+    opacity: ready ? 1 : 0,
+    transform: ready ? "none" : "translateY(14px)",
+    filter: ready ? "none" : "blur(6px)",
+  };
+}
+
+const ACCENT_TEXT =
+  "bg-gradient-to-br from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent";
+
+/**
+ * The home page's headline intro: each word rises out of its own mask, one
+ * after another. Each line is a block; accent lines use the brand gradient.
+ * Render inside the <h1>.
+ */
+export function HeadlineReveal({
+  lines,
+  ready,
+  reduced,
+  startDelay = 90,
+}: {
+  lines: Array<{ text: string; accent?: boolean }>;
+  ready: boolean;
+  reduced: boolean;
+  startDelay?: number;
+}) {
+  let wordIndex = 0;
+  return (
+    <>
+      {lines.map((line) => (
+        <span key={line.text} className="block">
+          {line.text.split(" ").map((word, i) => {
+            const delay = startDelay + wordIndex++ * 55;
+            // The space sits between the masks: trailing spaces inside an inline-block collapse
+            return (
+              <React.Fragment key={`${word}-${i}`}>
+              {i > 0 && " "}
+              <span className="inline-block overflow-hidden pb-[0.08em] align-bottom">
+                <span
+                  className={cn("inline-block", line.accent && ACCENT_TEXT)}
+                  style={
+                    reduced
+                      ? undefined
+                      : {
+                          transition: "transform 900ms cubic-bezier(0.2,0.8,0.2,1), opacity 700ms ease",
+                          transitionDelay: `${delay}ms`,
+                          transform: ready ? "none" : "translateY(105%)",
+                          opacity: ready ? 1 : 0,
+                        }
+                  }
+                >
+                  {word}
+                </span>
+              </span>
+              </React.Fragment>
+            );
+          })}
+        </span>
+      ))}
+    </>
+  );
+}
