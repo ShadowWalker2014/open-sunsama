@@ -503,6 +503,10 @@ export interface CalendarEvent {
   isAllDay: boolean;
   status: "confirmed" | "tentative" | "cancelled" | null;
   responseStatus: "accepted" | "declined" | "tentative" | "needsAction" | null;
+  /** Guests; null when there are none or the provider doesn't report them. */
+  attendees?: Array<{ email: string; name: string | null }> | null;
+  /** Video call join URL (Google Meet, Teams, Zoom). */
+  conferenceUrl?: string | null;
   calendar: { id: string; name: string; color: string | null } | null;
 }
 
