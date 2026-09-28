@@ -1,6 +1,7 @@
 import * as React from "react";
 import type { Task, TimeBlock } from "@open-sunsama/types";
 import { KanbanBoard, useKanbanNavigation } from "@/components/kanban";
+import { useBoardMode } from "@/components/kanban/kanban-board";
 import { KanbanCalendarPanel } from "@/components/kanban/kanban-calendar-panel";
 import { BacklogPanel } from "@/components/layout/backlog-panel";
 import { RightPanel } from "./right-panel";
@@ -20,6 +21,7 @@ import { useTask, useIsMobile } from "@/hooks";
 export function BoardPageContent() {
   const isMobile = useIsMobile();
   const [activeDate, setActiveDate] = React.useState<Date | null>(null);
+  const [mode, setMode] = useBoardMode();
 
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [selectedTaskId, setSelectedTaskId] = React.useState<string | null>(null);
@@ -71,6 +73,22 @@ export function BoardPageContent() {
     setTimeBlockSheetOpen(true);
   };
 
+  const calendarPanel = activeDate && (
+    <KanbanCalendarPanel
+      date={activeDate}
+      className="w-full border-l-0"
+      onBlockClick={handleBlockClick}
+      onEditBlock={handleEditBlock}
+      onTimeSlotClick={(date, startTime, endTime) => {
+        setCreateDialogDate(date);
+        setCreateDialogStartTime(startTime);
+        setCreateDialogEndTime(endTime);
+        setCreateDialogOpen(true);
+      }}
+      onViewTask={handleViewTask}
+    />
+  );
+
   return (
     <TasksDndProvider>
       <div className="flex h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-3.5rem)]">
@@ -78,30 +96,20 @@ export function BoardPageContent() {
 
         <div className="flex flex-1 overflow-hidden">
           <div className="flex flex-1 flex-col overflow-hidden">
-            <KanbanBoard onFirstVisibleDateChange={setActiveDate}>
+            <KanbanBoard
+              onFirstVisibleDateChange={setActiveDate}
+              mode={mode}
+              onModeChange={setMode}
+              // Today puts the calendar beside the day, in the middle.
+              dayAside={mode === "day" ? calendarPanel : undefined}
+            >
               <TasksKeyboardShortcuts />
             </KanbanBoard>
           </div>
 
           <div className="hidden lg:flex">
             <RightPanel
-              calendar={
-                activeDate && (
-                  <KanbanCalendarPanel
-                    date={activeDate}
-                    className="w-full border-l-0"
-                    onBlockClick={handleBlockClick}
-                    onEditBlock={handleEditBlock}
-                    onTimeSlotClick={(date, startTime, endTime) => {
-                      setCreateDialogDate(date);
-                      setCreateDialogStartTime(startTime);
-                      setCreateDialogEndTime(endTime);
-                      setCreateDialogOpen(true);
-                    }}
-                    onViewTask={handleViewTask}
-                  />
-                )
-              }
+              calendar={mode === "day" ? undefined : calendarPanel}
               backlog={<BacklogPanel />}
             />
           </div>

@@ -42,10 +42,16 @@ export function RightPanel({
   calendar,
   backlog,
 }: {
-  calendar: React.ReactNode;
+  /** Left out when the page already shows the calendar (Today view). */
+  calendar?: React.ReactNode;
   backlog: React.ReactNode;
 }) {
-  const [state, setState] = React.useState(readState);
+  const [saved, setState] = React.useState(readState);
+  // Without a calendar here, only the backlog can open.
+  const state =
+    calendar === undefined && saved.tab === "calendar"
+      ? { open: false, tab: "backlog" as RightPanelTab }
+      : saved;
 
   const update = React.useCallback(
     (next: { open: boolean; tab: RightPanelTab }) => {
@@ -109,13 +115,15 @@ export function RightPanel({
               <ChevronsLeft className="h-4 w-4" />
             )}
           </RailButton>
-          <RailButton
-            label="Calendar"
-            active={state.open && state.tab === "calendar"}
-            onClick={() => selectTab("calendar")}
-          >
-            <CalendarDays className="h-4 w-4" />
-          </RailButton>
+          {calendar !== undefined && (
+            <RailButton
+              label="Calendar"
+              active={state.open && state.tab === "calendar"}
+              onClick={() => selectTab("calendar")}
+            >
+              <CalendarDays className="h-4 w-4" />
+            </RailButton>
+          )}
           <RailButton
             label="Backlog"
             active={state.open && state.tab === "backlog"}
