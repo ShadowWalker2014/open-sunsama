@@ -268,7 +268,7 @@ export function IdeasBoardView({
 
         {/* Add column */}
         {addingColumn ? (
-          <div className="w-[272px] shrink-0 snap-start rounded-xl border border-border/60 bg-muted/40 p-2.5">
+          <div className="w-[272px] shrink-0 snap-start rounded-xl border border-border bg-muted/40 p-2.5">
             <Input
               autoFocus
               value={columnDraft}
@@ -290,7 +290,7 @@ export function IdeasBoardView({
           <button
             onClick={() => setAddingColumn(true)}
             className={cn(
-              "flex w-[272px] shrink-0 snap-start items-center gap-2 rounded-xl border border-dashed border-border/60 bg-transparent p-3 text-[13px] text-muted-foreground transition-colors",
+              "flex w-[272px] shrink-0 snap-start items-center gap-2 rounded-xl border border-dashed border-border bg-muted/20 p-3 text-[13px] text-muted-foreground transition-colors",
               "hover:border-muted-foreground/50 hover:bg-muted/50 hover:text-foreground"
             )}
           >
