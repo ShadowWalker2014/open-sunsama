@@ -196,6 +196,7 @@ export function DayColumn({
   return (
     <div
       ref={setNodeRef}
+      data-board-day={dateString}
       className={cn(
         "flex h-full flex-shrink-0 flex-col transition-colors duration-150",
         fill
