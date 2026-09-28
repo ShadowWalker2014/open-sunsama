@@ -8,7 +8,7 @@
  */
 
 import { Hono } from "hono";
-import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/server";
 import { createOpenSunsamaMcpServer } from "@open-sunsama/mcp/server";
 import { authenticateRequest } from "../middleware/auth.js";
 import { RESOURCE_SCOPES, getProtectedResourceMetadataUrl } from "../lib/oauth/config.js";
