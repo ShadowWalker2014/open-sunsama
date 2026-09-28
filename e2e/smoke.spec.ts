@@ -98,8 +98,11 @@ test("creates a task, adds a subtask and completes it", async ({ page }) => {
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
 
+  // The card is ticked at once; wait for the save before reading it back.
+  const completed = page.waitForResponse((r) => /\/complete$/.test(r.url()));
   await card.getByRole("checkbox", { name: "Complete task" }).click();
   await expect(page.getByText(/^Completed \(1\)/)).toBeVisible();
+  expect((await completed).ok()).toBe(true);
 
   const tasks = await api<Array<{ title: string; completedAt: string | null; id: string }>>(
     "GET",
@@ -119,6 +122,37 @@ test("shows a time block on the calendar", async ({ page }) => {
   await signInWithToken(page, session);
   await page.goto(`/app/calendar?date=${today}`);
   await expect(page.getByRole("button", { name: /^Time block: Deep work from 9:00 AM to 10:30 AM/ })).toBeVisible();
+});
+
+test("a subtask timer also times its task", async ({ page }) => {
+  const session = await register();
+  const task = await api<{ id: string }>("POST", "/tasks", { title: "Ship the release", scheduledDate: today }, session.token);
+  const subtask = await api<{ id: string }>("POST", `/tasks/${task.id}/subtasks`, { title: "Write the changelog" }, session.token);
+  await signInWithToken(page, session);
+  await page.goto(`/app/focus/${task.id}`);
+
+  const row = page.locator(`[data-subtask-id="${subtask.id}"]`);
+  await row.hover();
+  const started = page.waitForResponse((r) => /\/timer\/start$/.test(r.url()));
+  await row.getByRole("button", { name: "Start subtask timer" }).click();
+  expect((await started).ok()).toBe(true);
+  await expect(row.getByRole("button", { name: "Stop subtask timer" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Stop timer" })).toBeVisible();
+
+  const stopped = page.waitForResponse((r) => /\/timer\/stop$/.test(r.url()));
+  await row.getByRole("button", { name: "Stop subtask timer" }).click();
+  await expect(page.getByRole("button", { name: "Start timer" })).toBeVisible();
+  expect((await stopped).ok()).toBe(true);
+
+  const saved = await api<{ timerStartedAt: string | null }>("GET", `/tasks/${task.id}`, undefined, session.token);
+  expect(saved.timerStartedAt, "stopping the subtask stops the task").toBeNull();
+  const subtasks = await api<Array<{ timerStartedAt: string | null; timerAccumulatedSeconds: number }>>(
+    "GET",
+    `/tasks/${task.id}/subtasks`,
+    undefined,
+    session.token
+  );
+  expect(subtasks[0]?.timerStartedAt).toBeNull();
 });
 
 test("an idea with subtasks becomes a task for today", async ({ page }) => {

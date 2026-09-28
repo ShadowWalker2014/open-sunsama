@@ -151,6 +151,7 @@ export default function FocusPage() {
       // Space to toggle timer
       if (
         (e.key === " " || e.code === "Space") &&
+        !e.repeat &&
         !e.shiftKey &&
         !e.ctrlKey &&
         !e.metaKey &&

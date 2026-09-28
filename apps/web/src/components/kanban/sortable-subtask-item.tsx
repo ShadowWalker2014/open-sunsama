@@ -5,7 +5,8 @@ import { X, GripVertical, Check } from "lucide-react";
 import type { Subtask } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { useHoveredTask } from "@/hooks/useKeyboardShortcuts";
-import { useSubtaskStyles, subtaskCheckState } from "./subtask-size";
+import { useSubtaskSize, useSubtaskStyles, subtaskCheckState } from "./subtask-size";
+import { SubtaskTiming } from "./subtask-timing";
 
 // Re-export for convenience
 export type { Subtask };
@@ -29,6 +30,9 @@ export function SortableSubtaskItem({
 }: SortableSubtaskItemProps) {
   const { setHoveredSubtaskId } = useHoveredTask();
   const size = useSubtaskStyles();
+  // The large rows (task modal, focus mode) carry times and a timer.
+  const showTiming =
+    useSubtaskSize() === "lg" && !subtask.id.startsWith("optimistic-");
   const [isEditing, setIsEditing] = React.useState(false);
   const [editValue, setEditValue] = React.useState(subtask.title);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -154,6 +158,8 @@ export function SortableSubtaskItem({
           {subtask.title}
         </span>
       )}
+
+      {showTiming && <SubtaskTiming subtask={subtask} />}
 
       <button
         type="button"
