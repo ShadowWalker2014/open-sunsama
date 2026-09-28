@@ -90,7 +90,7 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
 
   return (
     <KanbanNavigationProvider value={navigationContextValue}>
-      <div className="flex h-full flex-col bg-background">
+      <div className="flex h-full flex-col bg-canvas">
         {/* Toolbar */}
         <KanbanBoardToolbar
           onNavigatePrevious={navigatePrevious}

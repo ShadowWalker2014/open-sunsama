@@ -21,6 +21,7 @@ import {
   useCalendarEvents,
   useCalendars,
   useCalendarAccounts,
+  useUpdateCalendarEvent,
 } from "@/hooks/useCalendars";
 import { TimeBlock, TimeBlockPreview } from "@/components/calendar/time-block";
 import { ExternalEvent } from "@/components/calendar/external-event";
@@ -132,6 +133,32 @@ export function KanbanCalendarPanel({
   // Mutations
   const moveTimeBlock = useMoveTimeBlock();
   const cascadeResizeTimeBlock = useCascadeResizeTimeBlock();
+  const updateCalendarEvent = useUpdateCalendarEvent();
+
+  // Synced events move and resize on the board's calendar the same way
+  // they do on the Calendar page: the new times are written to Google,
+  // Outlook or iCloud.
+  const writeEventTimes = React.useCallback(
+    (eventId: string, startTime: Date, endTime: Date) => {
+      updateCalendarEvent.mutate({
+        id: eventId,
+        rangeFrom: fromDate,
+        rangeTo: toDate,
+        patch: {
+          startTime,
+          endTime,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
+      });
+    },
+    [updateCalendarEvent, fromDate, toDate]
+  );
+
+  const eventCanEdit = React.useCallback(
+    (event: CalendarEvent) =>
+      !event.isAllDay && !(calendarReadOnlyById.get(event.calendarId) ?? true),
+    [calendarReadOnlyById]
+  );
 
   // Calendar DnD hook
   const {
@@ -142,6 +169,8 @@ export function KanbanCalendarPanel({
     timelineRef,
     startBlockDrag,
     startBlockResize,
+    startEventDrag,
+    startEventResize,
     updateDrag,
     endDrag,
     cancelDrag,
@@ -152,6 +181,8 @@ export function KanbanCalendarPanel({
     onBlockResize: (blockId, startTime, endTime) => {
       cascadeResizeTimeBlock.mutate({ id: blockId, startTime, endTime });
     },
+    onEventMove: writeEventTimes,
+    onEventResize: writeEventTimes,
   });
 
   const hours = React.useMemo(
@@ -469,15 +500,37 @@ export function KanbanCalendarPanel({
 
             {/* External calendar events — drawn behind time blocks so
                 user-created blocks always layer on top. */}
-            {timedEvents.map((event) => (
-              <ExternalEvent
-                key={event.id}
-                event={event}
-                displayDate={date}
-                layout={itemLayouts.get(`event:${event.id}`) ?? DEFAULT_LAYOUT}
-                onClick={() => handleExternalEventClick(event)}
-              />
-            ))}
+            {timedEvents.map((event) => {
+              const canEdit = eventCanEdit(event);
+              return (
+                <ExternalEvent
+                  key={event.id}
+                  event={event}
+                  displayDate={date}
+                  layout={
+                    itemLayouts.get(`event:${event.id}`) ?? DEFAULT_LAYOUT
+                  }
+                  onClick={() => handleExternalEventClick(event)}
+                  {...(canEdit
+                    ? {
+                        onDragStart: (e: React.MouseEvent) => {
+                          e.preventDefault();
+                          startEventDrag(event, e.clientY);
+                        },
+                        onResizeStart: (
+                          e: React.MouseEvent,
+                          edge: "top" | "bottom"
+                        ) => {
+                          e.preventDefault();
+                          startEventResize(event, edge, e.clientY);
+                        },
+                      }
+                    : {})}
+                  isDragging={dragState?.eventId === event.id}
+                  justEndedDrag={justEndedDrag}
+                />
+              );
+            })}
 
             {/* Time blocks */}
             {dayBlocks.map((block) => (
@@ -502,6 +555,7 @@ export function KanbanCalendarPanel({
                 title={
                   dragState.task?.title ||
                   dragState.block?.title ||
+                  dragState.event?.title ||
                   "New Time Block"
                 }
                 startTime={dropPreview.startTime}
@@ -510,7 +564,9 @@ export function KanbanCalendarPanel({
                 height={dropPreview.height}
                 {...(dragState.block?.color
                   ? { color: dragState.block.color }
-                  : {})}
+                  : dragState.event?.calendar?.color
+                    ? { color: dragState.event.calendar.color }
+                    : {})}
               />
             )}
           </div>

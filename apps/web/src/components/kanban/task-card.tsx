@@ -13,6 +13,8 @@ interface TaskCardProps {
   task: Task;
   onSelect: (task: Task) => void;
   isDragging?: boolean;
+  /** Start of the task's earliest time block that day, shown on the card. */
+  scheduledTime?: Date | string | null;
 }
 
 /**
@@ -23,6 +25,7 @@ export function SortableTaskCard({
   task,
   onSelect,
   isDragging: externalDragging,
+  scheduledTime,
 }: TaskCardProps) {
   const [isHovered, setIsHovered] = React.useState(false);
   const completeTask = useCompleteTask();
@@ -155,6 +158,7 @@ export function SortableTaskCard({
           onToggleSubtask={handleToggleSubtask}
           subtasksHidden={task.subtasksHidden}
           onUpdateTask={handleUpdateTask}
+          scheduledTime={scheduledTime ?? null}
         />
 
         {/* Drop indicator line - below */}
@@ -173,6 +177,7 @@ export function TaskCard({
   task,
   onSelect,
   isDragging: externalDragging,
+  scheduledTime,
 }: TaskCardProps) {
   const [isHovered, setIsHovered] = React.useState(false);
   const completeTask = useCompleteTask();
@@ -234,6 +239,7 @@ export function TaskCard({
       onToggleSubtask={handleToggleSubtask}
       subtasksHidden={task.subtasksHidden}
       onUpdateTask={handleUpdateTask}
+      scheduledTime={scheduledTime ?? null}
     />
   );
 }
