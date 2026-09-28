@@ -1,3 +1,4 @@
+import type { CalendarCreateAnchor } from "@/hooks/useDragToCreate";
 import * as React from "react";
 import type { Task, TimeBlock } from "@open-sunsama/types";
 import { KanbanBoard, useKanbanNavigation } from "@/components/kanban";
@@ -32,6 +33,7 @@ export function BoardPageContent() {
   );
   const [timeBlockSheetOpen, setTimeBlockSheetOpen] = React.useState(false);
 
+  const [createAnchor, setCreateAnchor] = React.useState<CalendarCreateAnchor>();
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [createDialogDate, setCreateDialogDate] = React.useState<Date>(new Date());
   const [createDialogStartTime, setCreateDialogStartTime] = React.useState<Date>(
@@ -79,7 +81,8 @@ export function BoardPageContent() {
       className="w-full border-l-0"
       onBlockClick={handleBlockClick}
       onEditBlock={handleEditBlock}
-      onTimeSlotClick={(date, startTime, endTime) => {
+      onTimeSlotClick={(date, startTime, endTime, anchor) => {
+        setCreateAnchor(anchor);
         setCreateDialogDate(date);
         setCreateDialogStartTime(startTime);
         setCreateDialogEndTime(endTime);
@@ -135,6 +138,7 @@ export function BoardPageContent() {
       />
 
       <CreateTimeBlockDialog
+        anchor={createAnchor}
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
         date={createDialogDate}

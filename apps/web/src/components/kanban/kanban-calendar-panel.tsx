@@ -1,3 +1,4 @@
+import type { CalendarCreateAnchor } from "@/hooks/useDragToCreate";
 import * as React from "react";
 import { useDndMonitor, useDroppable, type DragMoveEvent } from "@dnd-kit/core";
 import {
@@ -84,7 +85,7 @@ interface KanbanCalendarPanelProps {
   className?: string;
   onBlockClick?: (block: TimeBlockType) => void;
   onEditBlock?: (block: TimeBlockType) => void;
-  onTimeSlotClick?: (date: Date, startTime: Date, endTime: Date) => void;
+  onTimeSlotClick?: (date: Date, startTime: Date, endTime: Date, anchor?: CalendarCreateAnchor) => void;
   onViewTask?: (taskId: string) => void;
 }
 
@@ -461,7 +462,7 @@ export function KanbanCalendarPanel({
   // Press and drag on empty space to sweep out a new block.
   const createDrag = useDragToCreate(
     onTimeSlotClick
-      ? ({ day, start, end }) => onTimeSlotClick(day, start, end)
+      ? ({ day, start, end, anchor }) => onTimeSlotClick(day, start, end, anchor)
       : undefined
   );
 
@@ -507,7 +508,7 @@ export function KanbanCalendarPanel({
     const snappedStartTime = snapToInterval(clickedTime, SNAP_INTERVAL);
     const snappedEndTime = addMinutes(snappedStartTime, 60);
 
-    onTimeSlotClick(date, snappedStartTime, snappedEndTime);
+    onTimeSlotClick(date, snappedStartTime, snappedEndTime, { x: e.clientX, y: e.clientY });
   };
 
   return (

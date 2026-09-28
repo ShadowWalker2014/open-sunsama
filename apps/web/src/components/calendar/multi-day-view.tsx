@@ -1,3 +1,4 @@
+import type { CalendarCreateAnchor } from "@/hooks/useDragToCreate";
 import * as React from "react";
 import {
   format,
@@ -69,7 +70,7 @@ interface MultiDayViewProps {
   /** Whether time blocks can be moved and resized on the grid. */
   blocksEditable?: boolean;
   /** Clicking an empty slot starts a one-hour block there. */
-  onTimeSlotClick?: (day: Date, startTime: Date, endTime: Date) => void;
+  onTimeSlotClick?: (day: Date, startTime: Date, endTime: Date, anchor?: CalendarCreateAnchor) => void;
   className?: string;
 }
 
@@ -408,7 +409,7 @@ export function MultiDayView({
   // Press and drag on empty space to sweep out a new block.
   const createDrag = useDragToCreate(
     onTimeSlotClick
-      ? ({ day, start, end }) => onTimeSlotClick(day, start, end)
+      ? ({ day, start, end, anchor }) => onTimeSlotClick(day, start, end, anchor)
       : undefined
   );
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
@@ -731,7 +732,7 @@ export function MultiDayView({
                     const start = snapToInterval(
                       calculateTimeFromY(Math.max(0, y), day)
                     );
-                    onTimeSlotClick(day, start, addMinutes(start, 60));
+                    onTimeSlotClick(day, start, addMinutes(start, 60), { x: e.clientX, y: e.clientY });
                   }}
                   onMouseDown={(e) => createDrag.startCreate(e, day)}
                   className={cn(

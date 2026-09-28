@@ -1,3 +1,4 @@
+import type { CalendarCreateAnchor } from "@/hooks/useDragToCreate";
 import * as React from "react";
 import {
   format,
@@ -137,7 +138,7 @@ interface CalendarViewProps {
   onBlockClick?: (block: TimeBlock) => void;
   onEditBlock?: (block: TimeBlock) => void;
   onViewTask?: (taskId: string) => void;
-  onTimeSlotClick?: (date: Date, startTime: Date, endTime: Date) => void;
+  onTimeSlotClick?: (date: Date, startTime: Date, endTime: Date, anchor?: CalendarCreateAnchor) => void;
   className?: string;
 }
 
@@ -776,8 +777,8 @@ export function CalendarView({
               {...(onViewTask ? { onViewTask } : {})}
               {...(onTimeSlotClick
                 ? {
-                    onTimeSlotClick: (startTime: Date, endTime: Date) =>
-                      onTimeSlotClick(selectedDate, startTime, endTime),
+                    onTimeSlotClick: (startTime: Date, endTime: Date, anchor?: CalendarCreateAnchor) =>
+                      onTimeSlotClick(selectedDate, startTime, endTime, anchor),
                   }
                 : {})}
             />

@@ -1,3 +1,4 @@
+import type { CalendarCreateAnchor } from "@/hooks/useDragToCreate";
 import * as React from "react";
 import {
   format,
@@ -60,7 +61,7 @@ interface TimelineProps {
   onTimelineMouseMove?: (e: React.MouseEvent) => void;
   onTimelineMouseUp?: () => void;
   onTimelineMouseLeave?: () => void;
-  onTimeSlotClick?: (startTime: Date, endTime: Date) => void;
+  onTimeSlotClick?: (startTime: Date, endTime: Date, anchor?: CalendarCreateAnchor) => void;
   className?: string;
 }
 
@@ -222,7 +223,7 @@ export function Timeline({
 
   // Press and drag on empty space to sweep out a new block.
   const createDrag = useDragToCreate(
-    onTimeSlotClick ? ({ start, end }) => onTimeSlotClick(start, end) : undefined
+    onTimeSlotClick ? ({ start, end, anchor }) => onTimeSlotClick(start, end, anchor) : undefined
   );
 
   // Handle click on empty time slot
@@ -269,7 +270,7 @@ export function Timeline({
     const snappedStartTime = snapToInterval(clickedTime, SNAP_INTERVAL);
     const snappedEndTime = addMinutes(snappedStartTime, 60);
 
-    onTimeSlotClick(snappedStartTime, snappedEndTime);
+    onTimeSlotClick(snappedStartTime, snappedEndTime, { x: e.clientX, y: e.clientY });
   };
 
   return (

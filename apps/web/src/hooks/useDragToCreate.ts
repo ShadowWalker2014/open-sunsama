@@ -8,7 +8,10 @@ import {
 /** Pixels the pointer must travel before a press becomes a drag. */
 const DRAG_THRESHOLD_PX = 4;
 
+export interface CalendarCreateAnchor { x: number; y: number }
+
 export interface CreateRange {
+  anchor: CalendarCreateAnchor;
   day: Date;
   start: Date;
   end: Date;
@@ -49,7 +52,7 @@ export function useDragToCreate(
     if (end.getTime() - start.getTime() < SNAP_INTERVAL * 60_000) {
       end = new Date(Math.min(addMinutes(start, SNAP_INTERVAL).getTime(), lastMinute.getTime()));
     }
-    return { day: press.day, start, end };
+    return { day: press.day, start, end, anchor: { x: press.column.getBoundingClientRect().right, y: Math.min(press.startY, clientY) } };
   }, []);
 
   React.useEffect(() => {
