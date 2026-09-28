@@ -30,6 +30,7 @@ import {
   reorderTasksSchema,
 } from "../validation/tasks.js";
 import { publishEvent } from "../lib/websocket/index.js";
+import { stopTimerFields, timerSeconds } from "../lib/timer.js";
 import { format, subDays } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { getPgBoss, JOBS } from "../lib/pgboss.js";
@@ -238,53 +239,62 @@ tasksRouter.post(
       .limit(1);
     if (!task) throw new NotFoundError("Task", id);
 
+    // Starting a timer that already runs is a no-op: restarting it would
+    // throw away the time since it started.
+    if (task.timerStartedAt) {
+      return c.json({ success: true, data: task, stoppedTask: null });
+    }
+
     let stoppedTask = null;
 
-    // Check if any other task has an active timer — auto-stop it
-    const [runningTask] = await db
+    // One timer at a time: stop every other running timer and log its time.
+    const running = await db
       .select()
       .from(tasks)
-      .where(and(eq(tasks.userId, userId), isNotNull(tasks.timerStartedAt)))
-      .limit(1);
+      .where(and(eq(tasks.userId, userId), isNotNull(tasks.timerStartedAt)));
 
-    if (runningTask && runningTask.id !== id) {
-      const elapsed = Math.floor(
-        (Date.now() - runningTask.timerStartedAt!.getTime()) / 1000
-      );
-      const totalSeconds = runningTask.timerAccumulatedSeconds + elapsed;
-      const actualMins = Math.ceil(totalSeconds / 60);
-
+    for (const other of running) {
+      if (other.id === id) continue;
+      const fields = stopTimerFields(other);
       const [stopped] = await db
         .update(tasks)
-        .set({
-          actualMins,
-          timerStartedAt: null,
-          timerAccumulatedSeconds: 0,
-          updatedAt: new Date(),
-        })
-        .where(eq(tasks.id, runningTask.id))
+        .set({ ...fields, updatedAt: new Date() })
+        .where(and(eq(tasks.id, other.id), isNotNull(tasks.timerStartedAt)))
         .returning();
-
+      if (!stopped) continue;
       stoppedTask = stopped;
-
-      // Broadcast timer:stopped for the auto-stopped task
       publishEvent(userId, "timer:stopped", {
-        taskId: runningTask.id,
-        actualMins,
+        taskId: other.id,
+        actualMins: fields.actualMins,
       });
     }
 
-    // Start timer on target task
-    // Initialize accumulatedSeconds from existing actualMins so timer continues from previous total
+    // Resume from the exact seconds logged so far. The isNull guard makes a
+    // second start that raced this one leave the first start alone.
     const [updatedTask] = await db
       .update(tasks)
       .set({
         timerStartedAt: new Date(),
-        timerAccumulatedSeconds: (task.actualMins ?? 0) * 60,
+        timerAccumulatedSeconds: timerSeconds(task),
         updatedAt: new Date(),
       })
-      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+      .where(
+        and(
+          eq(tasks.id, id),
+          eq(tasks.userId, userId),
+          isNull(tasks.timerStartedAt)
+        )
+      )
       .returning();
+
+    if (!updatedTask) {
+      const [current] = await db
+        .select()
+        .from(tasks)
+        .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+        .limit(1);
+      return c.json({ success: true, data: current ?? task, stoppedTask });
+    }
 
     // Broadcast timer:started event
     if (updatedTask) {
@@ -317,46 +327,39 @@ tasksRouter.post(
       .limit(1);
     if (!task) throw new NotFoundError("Task", id);
 
+    // Stopping a timer that isn't running is a no-op, so a double click or
+    // a stop from a second device can't fail.
     if (!task.timerStartedAt) {
-      return c.json(
-        {
-          success: false,
-          error: {
-            code: "BAD_REQUEST",
-            message: "Timer is not running for this task",
-            statusCode: 400,
-          },
-        },
-        400
-      );
+      return c.json({ success: true, data: task });
     }
 
-    // Calculate elapsed time
-    const elapsed = Math.floor(
-      (Date.now() - task.timerStartedAt.getTime()) / 1000
-    );
-    const totalSeconds = task.timerAccumulatedSeconds + elapsed;
-    const actualMins = Math.ceil(totalSeconds / 60);
-
-    // Update task: save actualMins, clear timer fields
+    const fields = stopTimerFields(task);
+    const actualMins = fields.actualMins;
     const [updatedTask] = await db
       .update(tasks)
-      .set({
-        actualMins,
-        timerStartedAt: null,
-        timerAccumulatedSeconds: 0,
-        updatedAt: new Date(),
-      })
-      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+      .set({ ...fields, updatedAt: new Date() })
+      .where(
+        and(
+          eq(tasks.id, id),
+          eq(tasks.userId, userId),
+          isNotNull(tasks.timerStartedAt)
+        )
+      )
       .returning();
 
-    // Broadcast timer:stopped event
-    if (updatedTask) {
-      publishEvent(userId, "timer:stopped", {
-        taskId: updatedTask.id,
-        actualMins,
-      });
+    if (!updatedTask) {
+      const [current] = await db
+        .select()
+        .from(tasks)
+        .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+        .limit(1);
+      return c.json({ success: true, data: current ?? task });
     }
+
+    publishEvent(userId, "timer:stopped", {
+      taskId: updatedTask.id,
+      actualMins,
+    });
 
     return c.json({ success: true, data: updatedTask });
   }
@@ -417,8 +420,19 @@ tasksRouter.patch(
     if (updates.position !== undefined) updateData.position = updates.position;
     if (updates.subtasksHidden !== undefined)
       updateData.subtasksHidden = updates.subtasksHidden;
-    if (updates.actualMins !== undefined)
+    let timerStopped: number | null = null;
+    if (updates.actualMins !== undefined) {
+      // A typed actual time replaces what the timer logged; a running timer
+      // carries on from it.
       updateData.actualMins = updates.actualMins;
+      updateData.timerAccumulatedSeconds = (updates.actualMins ?? 0) * 60;
+      if (existing.timerStartedAt) updateData.timerStartedAt = new Date();
+    } else if (updates.completedAt && existing.timerStartedAt) {
+      // Completing a task stops its timer, as POST /complete does.
+      const fields = stopTimerFields(existing);
+      Object.assign(updateData, fields);
+      timerStopped = fields.actualMins;
+    }
 
     const [updatedTask] = await db
       .update(tasks)
@@ -428,6 +442,12 @@ tasksRouter.patch(
 
     // Publish realtime event (fire and forget)
     // Use 'task:completed' if completedAt changed to a truthy value, otherwise 'task:updated'
+    if (updatedTask && timerStopped !== null) {
+      publishEvent(userId, "timer:stopped", {
+        taskId: updatedTask.id,
+        actualMins: timerStopped,
+      });
+    }
     if (updatedTask) {
       const eventType = updates.completedAt ? "task:completed" : "task:updated";
       publishEvent(userId, eventType, {
@@ -546,20 +566,13 @@ tasksRouter.post(
     };
 
     if (existing.timerStartedAt) {
-      const elapsed = Math.floor(
-        (Date.now() - existing.timerStartedAt.getTime()) / 1000
-      );
-      const totalSeconds = existing.timerAccumulatedSeconds + elapsed;
-      const actualMins = Math.ceil(totalSeconds / 60);
-
-      updateData.actualMins = actualMins;
-      updateData.timerStartedAt = null;
-      updateData.timerAccumulatedSeconds = 0;
+      const fields = stopTimerFields(existing);
+      Object.assign(updateData, fields);
 
       // Broadcast timer:stopped before task:completed
       publishEvent(userId, "timer:stopped", {
         taskId: id,
-        actualMins,
+        actualMins: fields.actualMins,
       });
     }
 

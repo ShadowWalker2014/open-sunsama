@@ -7,6 +7,7 @@ import {
   isToday,
   isWeekend,
   differenceInMinutes,
+  addMinutes,
 } from "date-fns";
 import type { CalendarEvent, TimeBlock } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,8 @@ import {
   TIMELINE_START_HOUR,
   TIMELINE_END_HOUR,
   calculateYFromTime,
+  calculateTimeFromY,
+  snapToInterval,
 } from "@/hooks/useCalendarDnd";
 import { layoutOverlappingItems, type LayoutResult } from "./event-layout";
 import type {
@@ -64,6 +67,8 @@ interface MultiDayViewProps {
   drag: MultiDayDrag;
   /** Whether time blocks can be moved and resized on the grid. */
   blocksEditable?: boolean;
+  /** Clicking an empty slot starts a one-hour block there. */
+  onTimeSlotClick?: (day: Date, startTime: Date, endTime: Date) => void;
   className?: string;
 }
 
@@ -395,6 +400,7 @@ export function MultiDayView({
   externalEventCanEdit,
   drag,
   blocksEditable = false,
+  onTimeSlotClick,
   className,
 }: MultiDayViewProps) {
   const hours = React.useMemo(() => generateHours(), []);
@@ -694,6 +700,26 @@ export function MultiDayView({
                   // out of the column where the event was grabbed.
                   data-day-column
                   data-day={day.toISOString()}
+                  onClick={(e) => {
+                    if (!onTimeSlotClick || drag.justEndedDrag) return;
+                    // Clicks on blocks and events, and clicks bubbling up
+                    // from portals such as a block's menu, aren't slot
+                    // clicks.
+                    const target = e.target as HTMLElement;
+                    if (
+                      !e.currentTarget.contains(target) ||
+                      target.closest("[data-time-block]") ||
+                      target.closest("[data-external-event]")
+                    ) {
+                      return;
+                    }
+                    const y =
+                      e.clientY - e.currentTarget.getBoundingClientRect().top;
+                    const start = snapToInterval(
+                      calculateTimeFromY(Math.max(0, y), day)
+                    );
+                    onTimeSlotClick(day, start, addMinutes(start, 60));
+                  }}
                   className={cn(
                     "flex-1 relative border-r last:border-r-0 min-w-0",
                     today && "bg-primary/[0.02]",

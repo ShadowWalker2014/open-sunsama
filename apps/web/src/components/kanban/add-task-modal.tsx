@@ -1,41 +1,17 @@
-import * as React from "react";
-import { ChevronDown, Clock, ArrowUp, ArrowDown } from "lucide-react";
-import type { TaskPriority } from "@open-sunsama/types";
-import { cn, TIME_PRESETS, formatTimeDisplayCompact } from "@/lib/utils";
-import { useCreateTask } from "@/hooks/useTasks";
-import { useCreateSubtask } from "@/hooks/useSubtaskMutations";
-import { useAddTaskPosition, usePlaceNewTask } from "@/hooks/useAddTaskPosition";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogTitle,
-  Button,
-  Input,
-  Label,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from "@/components/ui";
-import { RichTextEditor } from "@/components/ui/rich-text-editor.lazy";
-import { PriorityIcon, PRIORITY_LABELS } from "@/components/ui/priority-badge";
-import { SubtaskList, type Subtask } from "./subtask-list";
-
-const PRIORITIES: TaskPriority[] = ["P0", "P1", "P2", "P3"];
+import { format } from "date-fns";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui";
+import { AddTaskComposer } from "./add-task-composer";
 
 export type AddPosition = "top" | "bottom";
 
 interface AddTaskModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Defaults to today; null adds to the backlog. */
   scheduledDate?: string | null;
+  /** @deprecated The composer reads the stored preference itself. */
   addPosition?: AddPosition;
+  /** @deprecated */
   onAddPositionChange?: (position: AddPosition) => void;
   /**
    * Pre-populate the title field on open. Used by the calendar event
@@ -44,322 +20,35 @@ interface AddTaskModalProps {
   initialTitle?: string;
 }
 
+/**
+ * Quick add from anywhere (the A shortcut, the command palette, the
+ * backlog): the same one-line composer as a column's add bar, shown near
+ * the top of the screen.
+ */
 export function AddTaskModal({
   open,
   onOpenChange,
   scheduledDate,
-  addPosition: addPositionProp,
-  onAddPositionChange: onAddPositionChangeProp,
   initialTitle,
 }: AddTaskModalProps) {
-  // The insert-position choice is a global, DB-backed preference. Callers may
-  // pass controlled state, but by default we fall back to the shared
-  // preference so the toggle works universally wherever the modal is opened.
-  const { addPosition: storedPosition, setAddPosition } = useAddTaskPosition();
-  const addPosition = addPositionProp ?? storedPosition;
-  const onAddPositionChange = onAddPositionChangeProp ?? setAddPosition;
-
-  const [title, setTitle] = React.useState(initialTitle ?? "");
-  const [description, setDescription] = React.useState("");
-  const [estimatedMins, setEstimatedMins] = React.useState<string>("");
-  const [priority, setPriority] = React.useState<TaskPriority>("P2");
-  const [subtasks, setSubtasks] = React.useState<Subtask[]>([]);
-
-  // When opening with a pre-filled title (e.g. "Create task from event"),
-  // sync the title state every time the modal opens.
-  React.useEffect(() => {
-    if (open && initialTitle !== undefined) {
-      setTitle(initialTitle);
-    }
-  }, [open, initialTitle]);
-
-  const createTask = useCreateTask();
-  const createSubtask = useCreateSubtask();
-  const placeNewTask = usePlaceNewTask(scheduledDate);
-  const titleInputRef = React.useRef<HTMLInputElement>(null);
-  const formRef = React.useRef<HTMLFormElement>(null);
-
-  // Focus title input when modal opens
-  React.useEffect(() => {
-    if (open) {
-      setTimeout(() => titleInputRef.current?.focus(), 100);
-    }
-  }, [open]);
-
-  // Reset form when modal closes
-  React.useEffect(() => {
-    if (!open) {
-      setTitle("");
-      setDescription("");
-      setEstimatedMins("");
-      setPriority("P2");
-      setSubtasks([]);
-    }
-  }, [open]);
-
-  // Keyboard shortcuts when modal is open
-  React.useEffect(() => {
-    if (!open) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd+Enter / Ctrl+Enter to submit
-      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-        e.preventDefault();
-        formRef.current?.requestSubmit();
-        return;
-      }
-      // Alt+ArrowUp → add to top
-      if (e.altKey && e.key === "ArrowUp") {
-        e.preventDefault();
-        onAddPositionChange?.("top");
-        return;
-      }
-      // Alt+ArrowDown → add to bottom
-      if (e.altKey && e.key === "ArrowDown") {
-        e.preventDefault();
-        onAddPositionChange?.("bottom");
-        return;
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, onAddPositionChange]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) return;
-
-    const newTask = await createTask.mutateAsync({
-      title: title.trim(),
-      notes: description || undefined,
-      scheduledDate: scheduledDate || undefined,
-      estimatedMins: estimatedMins ? parseInt(estimatedMins, 10) : undefined,
-      priority,
-    });
-
-    // Create subtasks after task is created
-    if (subtasks.length > 0) {
-      await Promise.all(
-        // Explicit positions keep the typed order; the requests run in parallel.
-        subtasks.map((st, position) =>
-          createSubtask.mutateAsync({
-            taskId: newTask.id,
-            data: { title: st.title, position },
-          })
-        )
-      );
-    }
-
-    await placeNewTask(newTask.id, addPosition);
-
-    onOpenChange(false);
-  };
-
-  const handleTimeSelect = (value: string) => {
-    setEstimatedMins(value);
-  };
-
-  const isAddingToTop = addPosition === "top";
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-0 gap-0 overflow-hidden" aria-describedby={undefined}>
+      <DialogContent
+        className="top-[18vh] max-w-xl translate-y-0 gap-0 overflow-visible rounded-xl border-border/40 bg-popover p-0 shadow-2xl [&>button]:hidden"
+        aria-describedby={undefined}
+      >
         <DialogTitle className="sr-only">Add task</DialogTitle>
-        <form ref={formRef} onSubmit={handleSubmit}>
-          {/* Header - Title input */}
-          <div className="px-4 pt-4 pb-3 border-b">
-            <Input
-              ref={titleInputRef}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Task title..."
-              required
-              className="border-none p-0 text-base font-medium shadow-none focus-visible:ring-0 h-auto pr-6"
-            />
-          </div>
-
-          {/* Main Content */}
-          <div className="px-4 py-4 space-y-4 max-h-[50vh] overflow-y-auto">
-            {/* Priority */}
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium text-muted-foreground">Priority</Label>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-8 px-2.5 gap-1.5 text-sm font-normal"
-                  >
-                    <PriorityIcon priority={priority} />
-                    <span>{PRIORITY_LABELS[priority]}</span>
-                    <ChevronDown className="h-3 w-3 opacity-50" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-32">
-                  {PRIORITIES.map((p) => (
-                    <DropdownMenuItem
-                      key={p}
-                      onClick={() => setPriority(p)}
-                      className={cn("gap-2 text-sm", priority === p && "bg-accent")}
-                    >
-                      <PriorityIcon priority={p} />
-                      <span>{PRIORITY_LABELS[p]}</span>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            {/* Subtasks */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-muted-foreground">Subtasks</Label>
-              <SubtaskList
-                subtasks={subtasks}
-                onSubtasksChange={setSubtasks}
-              />
-            </div>
-
-            {/* Notes */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-muted-foreground">Notes</Label>
-              <RichTextEditor
-                value={description}
-                onChange={setDescription}
-                placeholder="Add details..."
-                minHeight="60px"
-              />
-            </div>
-
-            {/* Estimated time */}
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium text-muted-foreground">Duration</Label>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className={cn(
-                      "h-8 px-2.5 gap-1.5 text-sm font-normal",
-                      !estimatedMins && "text-muted-foreground"
-                    )}
-                  >
-                    <Clock className="h-3.5 w-3.5" />
-                    <span>{formatTimeDisplayCompact(estimatedMins) || "Time"}</span>
-                    <ChevronDown className="h-3 w-3 opacity-50" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-32">
-                  {TIME_PRESETS.map((preset) => (
-                    <DropdownMenuItem
-                      key={preset.value}
-                      onClick={() => handleTimeSelect(preset.value)}
-                      className={cn("text-sm", estimatedMins === preset.value && "bg-accent")}
-                    >
-                      {preset.label}
-                    </DropdownMenuItem>
-                  ))}
-                  {estimatedMins && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => setEstimatedMins("")}
-                        className="text-sm text-muted-foreground"
-                      >
-                        Clear
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <DialogFooter className="px-4 py-3 border-t bg-muted/20 flex-row justify-between items-center gap-2">
-            {/* Left: keyboard hints */}
-            <div className="hidden sm:flex items-center gap-2.5">
-              <span className="text-xs text-muted-foreground/50 inline-flex items-center gap-1">
-                <kbd className="inline-flex h-5 select-none items-center rounded border bg-muted px-1 font-mono text-[10px] font-medium">⌘</kbd>
-                <kbd className="inline-flex h-5 select-none items-center rounded border bg-muted px-1 font-mono text-[10px] font-medium">↵</kbd>
-                <span className="ml-0.5">create</span>
-              </span>
-              <span className="text-xs text-muted-foreground/40 inline-flex items-center gap-1">
-                <kbd className="inline-flex h-5 select-none items-center rounded border bg-muted px-1 font-mono text-[10px] font-medium">⌥</kbd>
-                <kbd className="inline-flex h-5 select-none items-center rounded border bg-muted px-1 font-mono text-[10px] font-medium">↑↓</kbd>
-                <span className="ml-0.5">position</span>
-              </span>
-            </div>
-
-            {/* Right: position toggle + actions */}
-            <div className="flex items-center gap-2">
-              {/* Position toggle button */}
-              <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      aria-label={isAddingToTop ? "Adding to top" : "Adding to bottom"}
-                      className={cn(
-                        "h-8 w-8 p-0",
-                        isAddingToTop && "border-primary/60 bg-primary/5 text-primary"
-                      )}
-                      onClick={() =>
-                        onAddPositionChange(isAddingToTop ? "bottom" : "top")
-                      }
-                    >
-                      {isAddingToTop ? (
-                        <ArrowUp className="h-3.5 w-3.5" />
-                      ) : (
-                        <ArrowDown className="h-3.5 w-3.5" />
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="flex flex-col items-start gap-0.5 text-xs">
-                    <span className="font-medium">
-                      {isAddingToTop ? "Adding to top" : "Adding to bottom"}
-                    </span>
-                    <span className="text-muted-foreground">
-                      Click or <kbd className="font-mono">⌥↑</kbd>/<kbd className="font-mono">⌥↓</kbd> to toggle
-                    </span>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-8"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancel
-              </Button>
-              <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="submit"
-                      size="sm"
-                      className="h-8"
-                      disabled={!title.trim() || createTask.isPending || createSubtask.isPending}
-                    >
-                      {createTask.isPending || createSubtask.isPending ? "Creating..." : "Create"}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="flex items-center gap-1.5">
-                    <span>Create task</span>
-                    <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded border border-zinc-700 bg-zinc-800 px-1.5 font-mono text-[10px] font-medium text-zinc-300 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
-                      ⌘↵
-                    </kbd>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          </DialogFooter>
-        </form>
+        {open && (
+          <AddTaskComposer
+            scheduledDate={
+              scheduledDate === undefined
+                ? format(new Date(), "yyyy-MM-dd")
+                : scheduledDate
+            }
+            initialTitle={initialTitle}
+            onDone={() => onOpenChange(false)}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

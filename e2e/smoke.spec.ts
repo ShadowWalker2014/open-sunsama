@@ -46,7 +46,7 @@ test.afterEach(() => {
 });
 
 const todayColumn = (page: Page) =>
-  page.locator("[data-board-day]").filter({ has: page.getByRole("button", { name: /^Today/ }) });
+  page.locator(`[data-board-day="${today}"]`);
 
 test("signs in with email and password", async ({ page }) => {
   const { email } = await register();
@@ -65,8 +65,20 @@ test("creates a task, adds a subtask and completes it", async ({ page }) => {
 
   const title = `Write the launch notes ${Date.now()}`;
   await todayColumn(page).getByRole("button", { name: "Add task" }).click();
-  await page.getByPlaceholder("Task title...").fill(title);
-  await page.getByRole("button", { name: "Create", exact: true }).click();
+  const composer = page.getByRole("dialog", { name: "Add task" });
+  await composer.getByRole("textbox", { name: "Task title" }).fill(title);
+  // Tab starts a subtask line; Enter on the empty line after it adds the task.
+  await page.keyboard.press("Tab");
+  await composer.getByRole("textbox", { name: "Subtask 1" }).fill("Collect feedback");
+  // The card shows before the save lands; wait for the subtask save, which
+  // runs after the task's, so the reload below proves both were stored.
+  const subtaskSaved = page.waitForResponse(
+    (r) => r.request().method() === "POST" && /\/subtasks$/.test(r.url())
+  );
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");
+  await expect(composer).toBeHidden();
+  expect((await subtaskSaved).ok()).toBe(true);
 
   const card = page.locator("[data-task-id]").filter({ hasText: title });
   await expect(card).toBeVisible();
@@ -81,11 +93,12 @@ test("creates a task, adds a subtask and completes it", async ({ page }) => {
   const subtaskInput = dialog.getByRole("textbox", { name: "Add a subtask" });
   await subtaskInput.fill("Draft the outline");
   await subtaskInput.press("Enter");
+  await expect(dialog.getByText("Collect feedback")).toBeVisible();
   await expect(dialog.getByText("Draft the outline")).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
 
-  await card.getByRole("checkbox").first().click();
+  await card.getByRole("checkbox", { name: "Complete task" }).click();
   await expect(page.getByText(/^Completed \(1\)/)).toBeVisible();
 
   const tasks = await api<Array<{ title: string; completedAt: string | null; id: string }>>(
@@ -97,7 +110,7 @@ test("creates a task, adds a subtask and completes it", async ({ page }) => {
   const saved = tasks.find((t) => t.title === title);
   expect(saved?.completedAt, "task is completed in the database").toBeTruthy();
   const subtasks = await api<Array<{ title: string }>>("GET", `/tasks/${saved!.id}/subtasks`, undefined, session.token);
-  expect(subtasks.map((s) => s.title)).toEqual(["Draft the outline"]);
+  expect(subtasks.map((s) => s.title)).toEqual(["Collect feedback", "Draft the outline"]);
 });
 
 test("shows a time block on the calendar", async ({ page }) => {
