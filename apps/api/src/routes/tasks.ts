@@ -698,7 +698,7 @@ tasksRouter.get("/rollover/debug", requireScopes("tasks:read"), async (c) => {
     .limit(10);
 
   // Get PG Boss schedule and job info
-  let pgBossInfo: Record<string, unknown> = {};
+  let pgBossInfo: Record<string, unknown>;
   try {
     const boss = await getPgBoss();
 

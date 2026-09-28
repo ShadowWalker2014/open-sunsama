@@ -166,8 +166,8 @@ export class OutlookCalendarProvider implements CalendarProvider {
   ): Promise<SyncResult> {
     const events: ExternalEvent[] = [];
     const deleted: string[] = [];
-    let nextLink: string | null = null;
-    let deltaLink: string | null = null;
+    let nextLink: string | null;
+    let deltaLink: string | null;
 
     let url: string;
     if (options.syncToken) {
