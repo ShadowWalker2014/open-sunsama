@@ -21,7 +21,7 @@ import {
   ideaSubtasks,
   tasks,
 } from "@open-sunsama/database";
-import { NotFoundError, uuidSchema } from "@open-sunsama/utils";
+import { NotFoundError, ValidationError, uuidSchema } from "@open-sunsama/utils";
 import { auth, requireScopes, type AuthVariables } from "../middleware/auth.js";
 import {
   createIdeaBoardSchema,
@@ -66,6 +66,12 @@ async function assertColumnOwned(userId: string, columnId: string) {
     .limit(1);
   if (!column) throw new NotFoundError("Column", columnId);
   return column;
+}
+
+function assertCompleteOrder(requested: string[], existing: string[], label: string) {
+  if (requested.length !== existing.length || existing.some((id) => !requested.includes(id))) {
+    throw new ValidationError(`Supply every ${label} ID exactly once`);
+  }
 }
 
 // ═══════════════════════════ BOARDS ═══════════════════════════
@@ -134,6 +140,9 @@ ideasRouter.post(
     const userId = c.get("userId");
     const { boardIds } = c.req.valid("json");
     const db = getDb();
+
+    const owned = await db.select({ id: ideaBoards.id }).from(ideaBoards).where(eq(ideaBoards.userId, userId));
+    assertCompleteOrder(boardIds, owned.map((board) => board.id), "board");
 
     await Promise.all(
       boardIds.map((id, index) =>
@@ -273,6 +282,10 @@ ideasRouter.post(
     const { boardId, columnIds } = c.req.valid("json");
     await assertBoardOwned(userId, boardId);
     const db = getDb();
+
+    const owned = await db.select({ id: ideaColumns.id }).from(ideaColumns)
+      .where(and(eq(ideaColumns.userId, userId), eq(ideaColumns.boardId, boardId)));
+    assertCompleteOrder(columnIds, owned.map((column) => column.id), "column on this board");
 
     await Promise.all(
       columnIds.map((id, index) =>
@@ -467,6 +480,15 @@ ideasRouter.post(
     const targetColumn = await assertColumnOwned(userId, columnId);
     const db = getDb();
 
+    const owned = await db.select({ id: ideas.id }).from(ideas)
+      .where(and(eq(ideas.userId, userId), inArray(ideas.id, ideaIds)));
+    if (owned.length !== ideaIds.length) throw new ValidationError("Every idea must belong to you");
+    const destination = await db.select({ id: ideas.id }).from(ideas)
+      .where(and(eq(ideas.userId, userId), eq(ideas.columnId, columnId)));
+    if (destination.some((idea) => !ideaIds.includes(idea.id))) {
+      throw new ValidationError("Supply every idea already in the destination column");
+    }
+
     await Promise.all(
       ideaIds.map((id, index) =>
         db
@@ -496,6 +518,7 @@ ideasRouter.post(
 ideasRouter.post(
   "/:id/promote",
   WRITE,
+  requireScopes("tasks:write"),
   zValidator("param", z.object({ id: uuidSchema })),
   zValidator("json", promoteIdeaSchema),
   async (c) => {

@@ -456,7 +456,9 @@ export function useShortcutsModal() {
 
 // Hook to check if we should ignore shortcuts (when in input/textarea)
 export function shouldIgnoreShortcut(event: KeyboardEvent): boolean {
-  const target = event.target as HTMLElement;
+  // Key events can target the document or window, which have no tag.
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) return false;
   const tagName = target.tagName.toLowerCase();
 
   // Ignore if in input, textarea, or contenteditable
