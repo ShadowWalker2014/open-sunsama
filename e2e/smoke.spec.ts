@@ -116,12 +116,21 @@ test("creates a task, adds a subtask and completes it", async ({ page }) => {
   expect(subtasks.map((s) => s.title)).toEqual(["Collect feedback", "Draft the outline"]);
 });
 
-test("shows a time block on the calendar", async ({ page }) => {
+test("shows and resizes a time block on the full calendar", async ({ page }) => {
+  await page.clock.setFixedTime(new Date(`${today}T09:00:00Z`));
   const session = await register();
-  await api("POST", "/time-blocks", { title: "Deep work", date: today, startTime: "09:00", endTime: "10:30" }, session.token);
+  const block = await api<{id: string}>("POST", "/time-blocks", { title: "Deep work", date: today, startTime: "09:00", endTime: "10:30" }, session.token);
   await signInWithToken(page, session);
   await page.goto(`/app/calendar?date=${today}`);
   await expect(page.getByRole("button", { name: /^Time block: Deep work from 9:00 AM to 10:30 AM/ })).toBeVisible();
+  await page.locator('[data-time-block]').filter({ hasText: 'Deep work' }).scrollIntoViewIfNeeded();
+  const handle = (await page.locator('[data-time-block]').filter({ hasText: 'Deep work' }).locator('[data-resize="bottom"]').boundingBox())!;
+  await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2 + 32, { steps: 8 });
+  await page.mouse.up();
+  await expect.poll(async () => (await api<{durationMins:number}>('GET', `/time-blocks/${block.id}`, undefined, session.token)).durationMins).toBe(120);
+  await expect(page.getByRole('dialog')).toBeHidden();
 });
 
 test("a subtask timer also times its task", async ({ page }) => {
@@ -382,7 +391,7 @@ test("mobile new task immediately focuses its title", async ({ page }) => {
   await expect(page.getByText("Type immediately on mobile", { exact: true })).toBeVisible();
 });
 
-test("mobile Ideas can jump to distant columns and swipe over cards", async ({ browser }) => {
+test("mobile Ideas swipes over cards without an extra navigation row", async ({ browser }) => {
   const session = await register();
   const board = await api<{id: string}>("POST", "/ideas/boards", { name: "Mobile navigation" }, session.token);
   const columns = await api<Array<{id: string}>>("GET", `/ideas/columns?boardId=${board.id}`, undefined, session.token);
@@ -393,16 +402,10 @@ test("mobile Ideas can jump to distant columns and swipe over cards", async ({ b
   try {
     await signInWithToken(page, session);
     await page.goto("/app/ideas");
-    const picker = page.getByRole("combobox", { name: "Current column" });
-    await picker.selectOption(columns[3]!.id);
-    const last = page.locator(`[data-idea-column-id="${columns[3]!.id}"]`);
-    await expect.poll(async () => (await last.boundingBox())!.x).toBeCloseTo(16, 0);
-    await expect(page.getByRole("button", { name: "Next column", exact: true })).toBeDisabled();
-    await page.getByRole("button", { name: "Previous column", exact: true }).click();
-    await expect(picker).toHaveValue(columns[2]!.id);
-    await picker.selectOption(columns[0]!.id);
+    await expect(page.getByRole("navigation", { name: "Ideas columns" })).toHaveCount(0);
     const first = page.locator(`[data-idea-column-id="${columns[0]!.id}"]`);
-    await expect.poll(async () => (await first.boundingBox())!.x).toBeCloseTo(16, 0);
+    await expect(first).toBeVisible();
+    const initialX = (await first.boundingBox())!.x;
     const card = page.getByText("Swipe across this card", { exact: true });
     const box = (await card.boundingBox())!;
     const cdp = await context.newCDPSession(page);
@@ -414,9 +417,102 @@ test("mobile Ideas can jump to distant columns and swipe over cards", async ({ b
       await page.waitForTimeout(16);
     }
     await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
-    await expect(picker).not.toHaveValue(columns[0]!.id);
+    await expect.poll(async () => (await first.boundingBox())!.x).toBeLessThan(initialX - 100);
     await expect(page.getByRole("dialog")).toBeHidden();
     const unchanged = await api<{columnId: string}>("GET", `/ideas/${idea.id}`, undefined, session.token);
     expect(unchanged.columnId).toBe(columns[0]!.id);
   } finally { await context.close(); }
+});
+
+test("view shortcuts and priority shortcuts work without changing typed text", async ({ page }) => {
+  const session = await register();
+  await signInWithToken(page, session);
+  await page.goto("/app");
+  await expect(page.getByRole("radio", { name: "Today", exact: true })).toBeVisible();
+  await page.keyboard.press("Shift+T");
+  await expect(page.getByRole("radio", { name: "Today", exact: true })).toHaveAttribute("aria-checked", "true");
+  await page.keyboard.press("Shift+B");
+  await expect(page.getByRole("radio", { name: "Board", exact: true, includeHidden: true })).toHaveAttribute("aria-checked", "true");
+  await todayColumn(page).getByRole("button", { name: "Add task" }).click();
+  const title = page.getByRole("textbox", { name: "Task title", exact: true });
+  await title.fill("Priority keyboard test");
+  await title.press("Alt+Shift+1");
+  await expect(page.getByRole("button", { name: "Priority: P1 High", exact: true })).toBeVisible();
+  await expect(title).toHaveValue("Priority keyboard test");
+  await title.press("Enter");
+  await expect(page.getByRole("dialog")).toBeHidden();
+  await todayColumn(page).getByText("Priority keyboard test", { exact: true }).click();
+  await title.press("Alt+Shift+0");
+  await expect(page.getByRole("button", { name: "Priority: P0 Urgent", exact: true })).toBeVisible();
+  await expect(title).toHaveValue("Priority keyboard test");
+  await title.press("Shift+T");
+  await expect(page.getByRole("radio", { name: "Board", exact: true, includeHidden: true })).toHaveAttribute("aria-checked", "true");
+  await expect(title).toHaveValue(/T/);
+  await title.fill("Priority keyboard edited");
+  const saved = page.waitForResponse(r => r.request().method() === "PATCH" && r.request().postDataJSON()?.title === "Priority keyboard edited");
+  await page.keyboard.press("Escape");
+  expect((await saved).ok()).toBe(true);
+  await page.reload();
+  await todayColumn(page).getByText("Priority keyboard edited", { exact: true }).click();
+  await expect(page.getByRole("button", { name: "Priority: P0 Urgent", exact: true })).toBeVisible();
+});
+
+test("calendar resizes a projected task into one saved block and resizes it again", async ({ page }) => {
+  await page.clock.setFixedTime(new Date(`${today}T09:00:00Z`));
+  const session = await register();
+  const task = await api<{id: string}>("POST", "/tasks", { title: "Resize the plan", scheduledDate: today, estimatedMins: 30 }, session.token);
+  await signInWithToken(page, session);
+  await page.goto("/app");
+  const preview = page.locator(`[data-projected-task="${task.id}"]`);
+  await preview.scrollIntoViewIfNeeded();
+  const handle = await preview.locator('[data-resize="bottom"]').boundingBox();
+  await page.mouse.move(handle!.x + handle!.width / 2, handle!.y + handle!.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(handle!.x + handle!.width / 2, handle!.y + handle!.height / 2 + 32, { steps: 8 });
+  const created = page.waitForResponse(r => r.url().endsWith('/time-blocks') && r.request().method() === 'POST');
+  await page.mouse.up();
+  const block = (await (await created).json()).data;
+  expect(block.taskId).toBe(task.id);
+  expect(block.durationMins).toBe(60);
+  const saved = page.locator('[data-time-block]').filter({ hasText: 'Resize the plan' });
+  await expect(saved).toBeVisible();
+  const bottom = await saved.locator('[data-resize="bottom"]').boundingBox();
+  await page.mouse.move(bottom!.x + bottom!.width / 2, bottom!.y + bottom!.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(bottom!.x + bottom!.width / 2, bottom!.y + bottom!.height / 2 + 32, { steps: 8 });
+  await page.mouse.up();
+  await expect.poll(async () => (await api<{durationMins:number}>('GET', `/time-blocks/${block.id}`, undefined, session.token)).durationMins).toBe(90);
+  await expect(page.getByRole('dialog')).toBeHidden();
+  const all = await api<Array<{id:string}>>('GET', `/time-blocks?date=${today}`, undefined, session.token);
+  expect(all).toHaveLength(1);
+});
+
+test("editable calendar events resize from either edge in the sidebar", async ({ page }) => {
+  const session = await register();
+  let event = { id: "event-resize", calendarId: "calendar-resize", title: "Provider event", startTime: `${today}T14:00:00.000Z`, endTime: `${today}T15:00:00.000Z`, isAllDay: false, color: "#4285f4", responseStatus: "accepted" };
+  const updates: unknown[] = [];
+  await page.route(`${API}/calendar/accounts`, r => r.fulfill({ json: { success: true, data: [{ id: 'account-resize', provider: 'google', isActive: true }] } }));
+  await page.route(`${API}/calendars`, r => r.fulfill({ json: { success: true, data: [{ id: 'account-resize', provider: 'google', calendars: [{ id: 'calendar-resize', name: 'Test calendar', isReadOnly: false, isVisible: true }] }] } }));
+  await page.route(`${API}/calendar-events?**`, r => r.fulfill({ json: { success: true, data: [event] } }));
+  await page.route(`${API}/calendar-events/event-resize`, async r => {
+    const patch = r.request().postDataJSON();
+    updates.push(patch);
+    event = { ...event, ...patch };
+    await r.fulfill({ json: { success: true, data: event } });
+  });
+  await signInWithToken(page, session);
+  await page.goto('/app');
+  const block = page.locator('[data-external-event]').filter({ hasText: 'Provider event' });
+  for (const [edge, dy, expectedStart, expectedEnd] of [['bottom', 32, 14, 15.5], ['top', -32, 13.5, 15.5]] as const) {
+    await block.scrollIntoViewIfNeeded();
+    const handle = (await block.locator(`[data-resize="${edge}"]`).boundingBox())!;
+    await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2 + dy, { steps: 8 });
+    await page.mouse.up();
+    await expect.poll(() => new Date(event.startTime).getUTCHours() + new Date(event.startTime).getUTCMinutes() / 60).toBe(expectedStart);
+    await expect.poll(() => new Date(event.endTime).getUTCHours() + new Date(event.endTime).getUTCMinutes() / 60).toBe(expectedEnd);
+  }
+  expect(updates).toHaveLength(2);
+  await expect(page.getByRole('dialog')).toBeHidden();
 });
