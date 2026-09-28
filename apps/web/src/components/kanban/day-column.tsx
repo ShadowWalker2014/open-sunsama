@@ -256,30 +256,33 @@ export function DayColumn({
       {/* Day header, as in Sunsama: weekday and date, a progress bar on
           today, then a solid "Add task" bar that anchors the column. */}
       <div className="px-2 pt-4 pb-2">
-        <button
-          onClick={() => onDateClick?.(date)}
-          className="block px-1 text-left transition-opacity hover:opacity-70"
-        >
-          <div className="flex items-center gap-2 text-xl font-semibold tracking-tight text-foreground">
-            {today ? "Today" : isTomorrow(date) ? "Tomorrow" : format(date, "EEEE")}
-            {pendingTasks.length > 0 && (
-              <span
-                className={cn(
-                  "rounded px-1.5 py-px text-xs font-semibold tabular-nums",
-                  today
-                    ? "bg-primary/15 text-primary"
-                    : "bg-muted text-muted-foreground"
-                )}
-                aria-label={`${pendingTasks.length} open tasks`}
-              >
-                {pendingTasks.length}
-              </span>
-            )}
-          </div>
-          <div className="text-sm text-muted-foreground">
-            {getFormattedDate()}
-          </div>
-        </button>
+        {/* The phone board shows the day in its week strip instead. */}
+        {!fill && (
+          <button
+            onClick={() => onDateClick?.(date)}
+            className="block px-1 text-left transition-opacity hover:opacity-70"
+          >
+            <div className="flex items-center gap-2 text-xl font-semibold tracking-tight text-foreground">
+              {today ? "Today" : isTomorrow(date) ? "Tomorrow" : format(date, "EEEE")}
+              {pendingTasks.length > 0 && (
+                <span
+                  className={cn(
+                    "rounded px-1.5 py-px text-xs font-semibold tabular-nums",
+                    today
+                      ? "bg-primary/15 text-primary"
+                      : "bg-muted text-muted-foreground"
+                  )}
+                  aria-label={`${pendingTasks.length} open tasks`}
+                >
+                  {pendingTasks.length}
+                </span>
+              )}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {getFormattedDate()}
+            </div>
+          </button>
+        )}
 
         {/* Reserved on every day so the add bars line up across columns */}
         <div className="mx-1 mt-2.5 h-1.5 overflow-hidden rounded-full">
