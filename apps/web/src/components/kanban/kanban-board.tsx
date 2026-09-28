@@ -106,7 +106,7 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
         {/* Kanban Board - DndContext is provided by TasksDndProvider */}
         <div
           ref={containerRef}
-          className="flex-1 overflow-x-auto overflow-y-hidden snap-x snap-mandatory sm:snap-none"
+          className="scrollbar-thin flex-1 overflow-x-auto overflow-y-hidden snap-x snap-mandatory sm:snap-none"
           onScroll={handleScroll}
         >
           <div

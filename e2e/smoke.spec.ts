@@ -46,7 +46,7 @@ test.afterEach(() => {
 });
 
 const todayColumn = (page: Page) =>
-  page.locator("[data-board-day]").filter({ has: page.getByRole("button", { name: /^Today/ }) });
+  page.locator(`[data-board-day="${today}"]`);
 
 test("signs in with email and password", async ({ page }) => {
   const { email } = await register();
@@ -85,7 +85,7 @@ test("creates a task, adds a subtask and completes it", async ({ page }) => {
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
 
-  await card.getByRole("checkbox").first().click();
+  await card.getByRole("checkbox", { name: "Complete task" }).click();
   await expect(page.getByText(/^Completed \(1\)/)).toBeVisible();
 
   const tasks = await api<Array<{ title: string; completedAt: string | null; id: string }>>(

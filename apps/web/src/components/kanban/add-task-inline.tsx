@@ -17,6 +17,12 @@ interface AddTaskInlineProps {
   className?: string;
   /** Compact mode for header display - Sunsama style */
   compact?: boolean;
+  /**
+   * "bar": fills a Sunsama-style add bar at the top of a day column. The
+   * "Add task" label shows when `showLabel` is set, otherwise on hover.
+   */
+  variant?: "bar";
+  showLabel?: boolean;
 }
 
 /**
@@ -25,7 +31,14 @@ interface AddTaskInlineProps {
  * Includes a position toggle (top/bottom) backed by a global, DB-persisted
  * user preference, so the choice is remembered across accounts and logins.
  */
-export function AddTaskInline({ scheduledDate, className, compact }: AddTaskInlineProps) {
+export function AddTaskInline({
+  scheduledDate,
+  className,
+  compact,
+  variant,
+  showLabel = true,
+}: AddTaskInlineProps) {
+  const isBar = variant === "bar";
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const { addPosition, setAddPosition } = useAddTaskPosition();
   // Phones get the same bottom sheet used to edit tasks.
@@ -45,13 +58,23 @@ export function AddTaskInline({ scheduledDate, className, compact }: AddTaskInli
 
   return (
     <>
-      <div className={cn("flex items-center gap-1", className)}>
+      <div
+        className={cn(
+          "group/add flex items-center gap-1",
+          isBar && "h-full min-w-0 flex-1",
+          className
+        )}
+      >
         <Button
           variant="ghost"
           size={compact ? "sm" : "default"}
           className={cn(
             "justify-start gap-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50 group",
-            compact ? "h-7 px-2 text-xs" : "flex-1 h-9 gap-2"
+            isBar
+              ? "h-full flex-1 gap-2 rounded-md px-3 text-sm hover:bg-transparent"
+              : compact
+                ? "h-7 px-2 text-xs"
+                : "flex-1 h-9 gap-2"
           )}
           onClick={() => {
             if (isMobile) void prefetchTaskModal();
@@ -64,7 +87,15 @@ export function AddTaskInline({ scheduledDate, className, compact }: AddTaskInli
           }}
         >
           <Plus className={compact ? "h-3.5 w-3.5" : "h-4 w-4"} />
-          <span>Add task</span>
+          <span
+            className={cn(
+              isBar &&
+                !showLabel &&
+                "opacity-0 transition-opacity group-hover/add:opacity-100"
+            )}
+          >
+            Add task
+          </span>
           {!compact && <ShortcutHint shortcutKey="quickAdd" className="ml-auto" showOnHover />}
         </Button>
 
@@ -78,8 +109,11 @@ export function AddTaskInline({ scheduledDate, className, compact }: AddTaskInli
                 size="sm"
                 className={cn(
                   "shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted/50 p-0",
-                  compact ? "h-7 w-7" : "h-9 w-9",
-                  isTop && "text-primary hover:text-primary"
+                  compact || isBar ? "h-7 w-7" : "h-9 w-9",
+                  // In the bar the toggle stays quiet until the bar is hovered.
+                  isBar
+                    ? "opacity-0 transition-opacity group-hover/add:opacity-100"
+                    : isTop && "text-primary hover:text-primary"
                 )}
                 onClick={togglePosition}
               >
