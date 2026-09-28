@@ -234,6 +234,12 @@ export function Timeline({
       return;
     }
 
+    // React bubbles clicks from portals (a block's right-click menu) up
+    // the component tree to here; only real clicks on the grid count.
+    if (!e.currentTarget.contains(e.target as Node)) {
+      return;
+    }
+
     // Don't trigger during drag operations
     if (dragState) {
       return;
