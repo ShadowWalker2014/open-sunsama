@@ -48,7 +48,7 @@
     --canvas: 220 14% 97.5%;
     --surface: 0 0% 100%;
     --surface-hover: 220 14% 99%;
-    --shadow-card: 0 1px 2px 0 rgb(16 24 40 / 0.06), 0 1px 3px 0 rgb(16 24 40 / 0.08);
+    --shadow-card: 0 0 0 1px rgb(16 24 40 / 0.05), 0 1px 3px 0 rgb(16 24 40 / 0.1);
     --shadow-card-hover: 0 2px 4px 0 rgb(16 24 40 / 0.08), 0 4px 10px -2px rgb(16 24 40 / 0.1);
 
     /* Transitions */
@@ -66,7 +66,7 @@
     --foreground: 220 13% 93%;
     --card: 228 14% 9%;
     --card-foreground: 220 13% 93%;
-    --popover: 228 14% 11%;
+    --popover: 240 3% 14.5%;
     --popover-foreground: 220 13% 93%;
     --primary: 24 95% 60%;
     --primary-foreground: 0 0% 100%;
@@ -95,12 +95,14 @@
       0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
     --shadow-glow: 0 0 60px hsl(var(--primary-glow) / 0.2);
 
-    --chrome: 228 10% 4%;
-    --canvas: 228 7% 7.5%;
-    --surface: 228 6% 13%;
-    --surface-hover: 228 6% 15%;
-    --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.55), 0 2px 4px 0 rgb(0 0 0 / 0.3);
-    --shadow-card-hover: 0 2px 4px 0 rgb(0 0 0 / 0.6), 0 6px 12px -2px rgb(0 0 0 / 0.4);
+    /* Sunsama's dark greys, measured: chrome rgb(8,9,10), page
+       rgb(19,19,20), cards rgb(33,33,35) with a hard black drop shadow. */
+    --chrome: 210 11% 3.5%;
+    --canvas: 240 3% 7.6%;
+    --surface: 240 3% 13.3%;
+    --surface-hover: 240 3% 15.5%;
+    --shadow-card: 1px 2px 4px 0 rgb(0 0 0 / 0.6);
+    --shadow-card-hover: 1px 3px 8px 0 rgb(0 0 0 / 0.7);
   }
 
   /* Font Variables */
@@ -256,12 +258,12 @@ html.font-jetbrains body {
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
   }
 
   .scrollbar-thin::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
 
   .scrollbar-thin::-webkit-scrollbar-track {
@@ -269,7 +271,7 @@ html.font-jetbrains body {
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--muted-foreground) / 0.3);
+    background-color: hsl(var(--muted-foreground) / 0.2);
     border-radius: 4px;
   }
 

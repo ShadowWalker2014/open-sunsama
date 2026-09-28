@@ -1,12 +1,10 @@
 import * as React from "react";
-import { format } from "date-fns";
 import type { Task } from "@open-sunsama/types";
 import { useKanbanDates } from "@/hooks/useKanbanDates";
 import { useKanbanRangePrefetch } from "@/hooks/useKanbanRangePrefetch";
 import { useTasksDnd } from "@/lib/dnd/tasks-dnd-context";
 import { DayColumn } from "./day-column";
 import { TaskModal } from "./task-modal.lazy";
-import { AddTaskModal } from "./add-task-modal.lazy";
 import { KanbanBoardToolbar, useSortPreference } from "./kanban-board-toolbar";
 import { KanbanNavigationProvider } from "./kanban-navigation-context";
 
@@ -33,7 +31,6 @@ interface KanbanBoardProps {
 export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
-  const [isAddTaskOpen, setIsAddTaskOpen] = React.useState(false);
   const [sortBy, onSortChange] = useSortPreference();
   const [searchQuery, setSearchQuery] = React.useState("");
   const { isDragging } = useTasksDnd();
@@ -46,6 +43,7 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
     navigatePrevious,
     navigateNext,
     navigateToToday,
+    navigateToDate,
     handleScroll,
     firstVisibleDate,
   } = useKanbanDates({ containerRef, isDragging });
@@ -62,19 +60,6 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
   React.useEffect(() => {
     onFirstVisibleDateChange?.(firstVisibleDate);
   }, [firstVisibleDate, onFirstVisibleDateChange]);
-
-  // Navigate to a specific date
-  const navigateToDate = React.useCallback((targetDate: Date) => {
-    const targetIndex = dates.findIndex((d) => 
-      d.dateString === targetDate.toISOString().split('T')[0]
-    );
-    if (targetIndex >= 0) {
-      virtualizer.scrollToIndex(targetIndex, {
-        align: "start",
-        behavior: "smooth",
-      });
-    }
-  }, [dates, virtualizer]);
 
   // Memoize navigation context value
   const navigationContextValue = React.useMemo(
@@ -96,7 +81,8 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
           onNavigatePrevious={navigatePrevious}
           onNavigateNext={navigateNext}
           onNavigateToday={navigateToToday}
-          onAddTask={() => setIsAddTaskOpen(true)}
+          onNavigateToDate={navigateToDate}
+          firstVisibleDate={firstVisibleDate}
           sortBy={sortBy}
           onSortChange={onSortChange}
           searchQuery={searchQuery}
@@ -106,7 +92,7 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
         {/* Kanban Board - DndContext is provided by TasksDndProvider */}
         <div
           ref={containerRef}
-          className="flex-1 overflow-x-auto overflow-y-hidden snap-x snap-mandatory sm:snap-none"
+          className="scrollbar-thin flex-1 overflow-x-auto overflow-y-hidden snap-x snap-mandatory sm:snap-none"
           onScroll={handleScroll}
         >
           <div
@@ -151,12 +137,6 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
           }}
         />
 
-        {/* Add Task Modal — scoped to the day currently in view */}
-        <AddTaskModal
-          open={isAddTaskOpen}
-          onOpenChange={setIsAddTaskOpen}
-          scheduledDate={format(firstVisibleDate ?? new Date(), "yyyy-MM-dd")}
-        />
       </div>
 
       {/* Render children inside the navigation provider scope */}
