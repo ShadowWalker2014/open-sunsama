@@ -42,10 +42,11 @@ export function UnscheduledTaskItem({
   return (
     <div
       className={cn(
-        "group relative rounded-lg border bg-card transition-all",
+        "group relative rounded-md bg-surface transition-[background-color,box-shadow,opacity]",
         // Larger padding on mobile for touch targets
         isMobile ? "p-4 min-h-[60px]" : "p-3",
-        "hover:shadow-md hover:border-primary/30",
+        "hover:bg-surface-hover",
+        !isDragging && "shadow-card hover:shadow-card-hover",
         "active:bg-accent/30", // Touch feedback
         isDragging && "opacity-50 cursor-grabbing shadow-lg",
         !isDragging && "cursor-grab"
@@ -102,7 +103,7 @@ export function UnscheduledTaskItem({
  */
 export function TaskItemSkeleton() {
   return (
-    <div className="rounded-lg border bg-card p-3">
+    <div className="rounded-md bg-surface p-3 shadow-card">
       <div className="h-4 w-3/4 mb-2 bg-muted animate-pulse rounded" />
       <div className="h-3 w-1/4 bg-muted animate-pulse rounded" />
     </div>

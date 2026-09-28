@@ -50,7 +50,7 @@ run(`git switch --quiet -c ${releaseBranch}`);
 run("git add package.json AGENTS.md apps/*/package.json apps/*/src-tauri/tauri.conf.json");
 run(`git commit --quiet -m "release: v${next}"`);
 run(`git push --quiet -u origin ${releaseBranch}`);
-run(`gh pr create --head ${releaseBranch} --title "release: v${next}" --body "Version bump for v${next}. \`bun run release\` tags the merge commit once CI passes."`);
+run(`gh pr create --head ${releaseBranch} --title "release: v${next}" --body 'Version bump for v${next}. \`bun run release\` tags the merge commit once CI passes.'`);
 
 // Wait for the checks to register, then for them to finish.
 for (let i = 0; i < 60 && sh(`gh pr view ${releaseBranch} --json statusCheckRollup --jq '.statusCheckRollup | length'`) === "0"; i++) {

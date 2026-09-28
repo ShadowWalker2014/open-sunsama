@@ -14,6 +14,8 @@ type ToolScope =
   | "time-blocks:read"
   | "time-blocks:write"
   | "calendar:read"
+  | "ideas:read"
+  | "ideas:write"
   | "user:read"
   | "user:write";
 
@@ -76,6 +78,29 @@ const TOOL_METADATA: Record<string, ToolMetadata> = {
 
   // Calendar events (synced from Google, Outlook, iCloud)
   list_calendar_events: { title: "List calendar events", scopes: ["calendar:read"], readOnly: true },
+
+  // Ideas
+  list_idea_boards: { title: "List idea boards", scopes: ["ideas:read"], readOnly: true },
+  create_idea_board: { title: "Create idea board", scopes: ["ideas:write"] },
+  update_idea_board: { title: "Update idea board", scopes: ["ideas:write"], idempotent: true },
+  delete_idea_board: { title: "Delete idea board", scopes: ["ideas:write"], destructive: true, idempotent: true },
+  reorder_idea_boards: { title: "Reorder idea boards", scopes: ["ideas:write"], idempotent: true },
+  list_idea_columns: { title: "List idea columns", scopes: ["ideas:read"], readOnly: true },
+  create_idea_column: { title: "Create idea column", scopes: ["ideas:write"] },
+  update_idea_column: { title: "Update idea column", scopes: ["ideas:write"], idempotent: true },
+  delete_idea_column: { title: "Delete idea column", scopes: ["ideas:write"], destructive: true, idempotent: true },
+  reorder_idea_columns: { title: "Reorder idea columns", scopes: ["ideas:write"], idempotent: true },
+  list_ideas: { title: "List ideas", scopes: ["ideas:read"], readOnly: true },
+  create_idea: { title: "Create idea", scopes: ["ideas:write"] },
+  update_idea: { title: "Update idea", scopes: ["ideas:write"], idempotent: true },
+  delete_idea: { title: "Delete idea", scopes: ["ideas:write"], destructive: true, idempotent: true },
+  reorder_ideas: { title: "Reorder ideas", scopes: ["ideas:write"], idempotent: true },
+  promote_idea: { title: "Promote idea to task", scopes: ["ideas:write", "tasks:write"] },
+  list_idea_subtasks: { title: "List idea subtasks", scopes: ["ideas:read"], readOnly: true },
+  create_idea_subtask: { title: "Create idea subtask", scopes: ["ideas:write"] },
+  update_idea_subtask: { title: "Update idea subtask", scopes: ["ideas:write"], idempotent: true },
+  delete_idea_subtask: { title: "Delete idea subtask", scopes: ["ideas:write"], destructive: true, idempotent: true },
+  reorder_idea_subtasks: { title: "Reorder idea subtasks", scopes: ["ideas:write"], idempotent: true },
 
   // User
   get_user_profile: { title: "Get profile", scopes: ["user:read"], readOnly: true },

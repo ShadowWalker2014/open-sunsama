@@ -14,7 +14,7 @@ import {
   ideas,
   ideaSubtasks,
 } from "@open-sunsama/database";
-import { NotFoundError } from "@open-sunsama/utils";
+import { NotFoundError, ValidationError } from "@open-sunsama/utils";
 import { auth, requireScopes, type AuthVariables } from "../middleware/auth.js";
 import {
   createIdeaSubtaskSchema,
@@ -172,6 +172,12 @@ ideaSubtasksRouter.post(
     const { subtaskIds } = c.req.valid("json");
     const idea = await getOwnedIdea(userId, ideaId);
     const db = getDb();
+
+    const existing = await db.select({ id: ideaSubtasks.id }).from(ideaSubtasks)
+      .where(eq(ideaSubtasks.ideaId, ideaId));
+    if (existing.length !== subtaskIds.length || existing.some((subtask) => !subtaskIds.includes(subtask.id))) {
+      throw new ValidationError("Supply every subtask on this idea exactly once");
+    }
 
     await Promise.all(
       subtaskIds.map((id, index) =>
