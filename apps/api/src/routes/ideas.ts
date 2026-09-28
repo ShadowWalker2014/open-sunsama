@@ -419,6 +419,90 @@ ideasRouter.get(
   }
 );
 
+/** Save a task as a linked idea without removing its schedule or timer. */
+ideasRouter.post(
+  "/from-task",
+  WRITE,
+  requireScopes("tasks:read"),
+  zValidator(
+    "json",
+    z.object({ taskId: uuidSchema, boardId: uuidSchema, columnId: uuidSchema })
+  ),
+  async (c) => {
+    const userId = c.get("userId");
+    const { taskId, boardId, columnId } = c.req.valid("json");
+    await assertBoardOwned(userId, boardId);
+    const column = await assertColumnOwned(userId, columnId);
+    if (column.boardId !== boardId) throw new NotFoundError("Column", columnId);
+    const idea = await getDb().transaction(async (tx) => {
+      // Lock the task so repeated drops cannot create duplicate linked ideas.
+      const [task] = await tx
+        .select()
+        .from(tasks)
+        .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
+        .limit(1)
+        .for("update");
+      if (!task) throw new NotFoundError("Task", taskId);
+      const [existing] = await tx
+        .select()
+        .from(ideas)
+        .where(and(eq(ideas.promotedTaskId, taskId), eq(ideas.userId, userId)))
+        .limit(1);
+      const [maxPos] = await tx
+        .select({ max: sql<number>`COALESCE(MAX(${ideas.position}), -1)` })
+        .from(ideas)
+        .where(eq(ideas.columnId, columnId));
+      if (existing) {
+        const [moved] = await tx
+          .update(ideas)
+          .set({
+            boardId,
+            columnId,
+            position: (maxPos?.max ?? -1) + 1,
+            updatedAt: new Date(),
+          })
+          .where(eq(ideas.id, existing.id))
+          .returning();
+        return moved!;
+      }
+      const [created] = await tx
+        .insert(ideas)
+        .values({
+          userId,
+          boardId,
+          columnId,
+          title: task.title,
+          notes: task.notes,
+          priority: task.priority,
+          estimatedMins: task.estimatedMins,
+          promotedTaskId: taskId,
+          position: (maxPos?.max ?? -1) + 1,
+        })
+        .returning();
+      if (!created) throw new Error("Failed to save linked idea");
+      const checklist = await tx
+        .select()
+        .from(subtasks)
+        .where(eq(subtasks.taskId, taskId))
+        .orderBy(asc(subtasks.position));
+      if (checklist.length)
+        await tx
+          .insert(ideaSubtasks)
+          .values(
+            checklist.map((item, position) => ({
+              ideaId: created.id,
+              title: item.title,
+              completed: item.completed,
+              position,
+            }))
+          );
+      return created;
+    });
+    publishEvent(userId, "idea:updated", { ideaId: idea.id });
+    return c.json({ success: true, data: idea }, 201);
+  }
+);
+
 /** POST /ideas - create an idea card in a column */
 ideasRouter.post(
   "/",

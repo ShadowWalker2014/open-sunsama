@@ -13,7 +13,7 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { snapCenterToCursor } from "@dnd-kit/modifiers";
-import type { Task } from "@open-sunsama/types";
+import type { Task, Idea } from "@open-sunsama/types";
 import { addMinutes } from "date-fns";
 import { useMoveTask, useReorderTasks, taskKeys } from "@/hooks/useTasks";
 import { useCreateTimeBlock } from "@/hooks/useTimeBlocks";
@@ -22,6 +22,12 @@ import {
   dragPointerY,
   type CalendarDropData,
 } from "@/components/kanban/kanban-calendar-panel";
+import {
+  usePromoteIdea,
+  useReorderIdeas,
+  useSaveTaskAsIdea,
+  ideaKeys,
+} from "@/hooks/useIdeas";
 import { TaskCard } from "@/components/kanban/task-card";
 import { taskPriorityCollision } from "./collision-detection";
 
@@ -59,6 +65,10 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
     null
   );
 
+  const [activeIdea, setActiveIdea] = React.useState<Idea | null>(null);
+  const promoteIdea = usePromoteIdea(activeIdea?.boardId);
+  const reorderIdeas = useReorderIdeas(activeIdea?.boardId);
+  const saveTaskAsIdea = useSaveTaskAsIdea();
   const moveTask = useMoveTask();
   const reorderTasks = useReorderTasks();
   const createTimeBlock = useCreateTimeBlock();
@@ -122,6 +132,7 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
   // DnD Event Handlers
   const handleDragStart = React.useCallback((event: DragStartEvent) => {
     const { active } = event;
+    setActiveIdea(active.data.current?.idea ?? null);
     const task = active.data.current?.task as Task | undefined;
     if (task) {
       setActiveTask(task);
@@ -156,6 +167,7 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
       const { active, over } = event;
 
       setActiveTask(null);
+      setActiveIdea(null);
       setActiveOverColumn(null);
 
       if (!over) return;
@@ -163,7 +175,70 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
       const taskId = String(active.id);
       const task = active.data.current?.task as Task | undefined;
 
+      const idea =
+        (active.data.current?.idea as Idea | undefined) ?? activeIdea;
+      if (idea) {
+        const target = over.data.current;
+        const targetIdea = target?.idea as Idea | undefined;
+        if (target?.type === "idea-tray" || targetIdea) {
+          const columnId = targetIdea?.columnId ?? target?.columnId;
+          const list = queryClient.getQueryData<Idea[]>(
+            ideaKeys.byBoard(idea.boardId)
+          );
+          const ordered = (list ?? [])
+            .filter((i) => i.columnId === columnId && i.id !== idea.id)
+            .sort((a, b) => a.position - b.position);
+          const index = targetIdea
+            ? ordered.findIndex((i) => i.id === targetIdea.id)
+            : ordered.length;
+          ordered.splice(index < 0 ? ordered.length : index, 0, idea);
+          reorderIdeas.mutate({ columnId, ideaIds: ordered.map((i) => i.id) });
+          return;
+        }
+        const calendar = target as CalendarDropData | undefined;
+        const date =
+          calendar?.type === "calendar"
+            ? calendar.date
+            : (findTargetColumnDate(over.id) ?? target?.columnId);
+        if (!date) return;
+        const scheduledDate = date === "backlog" ? null : String(date);
+        void promoteIdea
+          .mutateAsync({ id: idea.id, input: { scheduledDate } })
+          .then(async (result) => {
+            if (result.task.scheduledDate !== scheduledDate)
+              await moveTask.mutateAsync({
+                id: result.task.id,
+                targetDate: scheduledDate,
+              });
+            if (calendar?.type === "calendar") {
+              const y = dragPointerY(event);
+              if (y !== null) {
+                const startTime = calendar.timeAt(y);
+                createTimeBlock.mutate({
+                  taskId: result.task.id,
+                  title: result.task.title,
+                  startTime,
+                  endTime: addMinutes(
+                    startTime,
+                    result.task.estimatedMins ?? DEFAULT_DROP_MINS
+                  ),
+                });
+              }
+            }
+          })
+          .catch(() => {});
+        return;
+      }
       if (!task) return;
+      const target = over.data.current;
+      if (target?.type === "idea-tray" || target?.type === "idea") {
+        saveTaskAsIdea.mutate({
+          taskId: task.id,
+          boardId: target.idea?.boardId ?? target.boardId,
+          columnId: target.idea?.columnId ?? target.columnId,
+        });
+        return;
+      }
 
       const overId = String(over.id);
 
@@ -181,7 +256,10 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
           taskId: task.id,
           title: task.title,
           startTime,
-          endTime: addMinutes(startTime, task.estimatedMins ?? DEFAULT_DROP_MINS),
+          endTime: addMinutes(
+            startTime,
+            task.estimatedMins ?? DEFAULT_DROP_MINS
+          ),
         });
         return;
       }
@@ -201,8 +279,7 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
         for (const [key, data] of entries) {
           if (!data) continue;
           const filters = (key as unknown[])[2] as
-            | { scheduledDate?: string | null; backlog?: boolean }
-            | undefined;
+            { scheduledDate?: string | null; backlog?: boolean } | undefined;
           if (!filters) continue;
           const match = isBacklogCol
             ? filters.backlog === true
@@ -338,19 +415,28 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
       moveTask,
       reorderTasks,
       createTimeBlock,
+      activeIdea,
+      promoteIdea,
+      reorderIdeas,
+      saveTaskAsIdea,
       isTaskId,
       queryClient,
     ]
   );
 
   const handleDragCancel = React.useCallback(() => {
+    setActiveIdea(null);
     setActiveTask(null);
     setActiveOverColumn(null);
   }, []);
 
   const contextValue = React.useMemo(
-    () => ({ activeTask, activeOverColumn, isDragging: !!activeTask }),
-    [activeTask, activeOverColumn]
+    () => ({
+      activeTask,
+      activeOverColumn,
+      isDragging: !!activeTask || !!activeIdea,
+    }),
+    [activeTask, activeIdea, activeOverColumn]
   );
 
   return (
@@ -372,6 +458,11 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
 
         {/* Drag Overlay - follows cursor with fixed width matching column */}
         <DragOverlay modifiers={[snapCenterToCursor]} dropAnimation={null}>
+          {activeIdea && (
+            <div className="pointer-events-none w-[264px] rounded-lg bg-card p-3 text-sm shadow-lg">
+              {activeIdea.title}
+            </div>
+          )}
           {activeTask && (
             <div className="w-[264px] pointer-events-none">
               <TaskCard task={activeTask} onSelect={() => {}} isDragging />
