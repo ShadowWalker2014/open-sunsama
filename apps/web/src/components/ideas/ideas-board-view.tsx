@@ -15,7 +15,7 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { snapCenterToCursor } from "@dnd-kit/modifiers";
-import { Plus, Loader2, GripVertical, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Loader2, GripVertical } from "lucide-react";
 import type { Idea, IdeaColumn } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui";
@@ -61,7 +61,6 @@ export function IdeasBoardView({
   const [addingColumn, setAddingColumn] = React.useState(false);
   const [columnDraft, setColumnDraft] = React.useState("");
   const columnsRef = React.useRef<HTMLDivElement>(null);
-  const [visibleColumnId, setVisibleColumnId] = React.useState<string | null>(null);
 
   // Mouse: instant distance-based drag; Touch: press-and-hold so swipes scroll.
   // No KeyboardSensor — Space/Enter on a focused card would start an accidental
@@ -113,32 +112,7 @@ export function IdeasBoardView({
     [sortedColumns]
   );
 
-  const visibleColumnIndex = Math.max(0, sortedColumns.findIndex((column) => column.id === visibleColumnId));
-  const visibleColumn = sortedColumns[visibleColumnIndex];
-
-  const navigateColumn = (id: string) => {
-    const container = columnsRef.current;
-    const column = container?.querySelector<HTMLElement>(`[data-idea-column-id="${id}"]`);
-    if (!container || !column) return;
-    container.scrollTo({
-      left: container.scrollLeft + column.getBoundingClientRect().left - container.getBoundingClientRect().left - 16,
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
-    });
-    setVisibleColumnId(id);
-  };
-
-  const syncVisibleColumn = () => {
-    const container = columnsRef.current;
-    if (!container) return;
-    const start = container.getBoundingClientRect().left + 16;
-    const columns = Array.from(container.querySelectorAll<HTMLElement>("[data-idea-column-id]"));
-    const nearest = columns.reduce<HTMLElement | undefined>((best, column) =>
-      !best || Math.abs(column.getBoundingClientRect().left - start) < Math.abs(best.getBoundingClientRect().left - start) ? column : best, undefined);
-    if (nearest) setVisibleColumnId(nearest.dataset.ideaColumnId ?? null);
-  };
-
   React.useEffect(() => {
-    setVisibleColumnId(null);
     columnsRef.current?.scrollTo({ left: 0, behavior: "instant" });
   }, [boardId, columnsLoading]);
 
@@ -270,25 +244,6 @@ export function IdeasBoardView({
         setActiveColumn(null);
       }}
     >
-      {sortedColumns.length > 1 && visibleColumn && (
-        <nav aria-label="Ideas columns" className="flex shrink-0 items-center gap-2 border-b border-border bg-surface px-3 py-2 lg:hidden">
-          <button type="button" aria-label="Previous column" disabled={visibleColumnIndex === 0}
-            onClick={() => navigateColumn(sortedColumns[visibleColumnIndex - 1]!.id)}
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-muted disabled:opacity-30">
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <select aria-label="Current column" value={visibleColumn.id} onChange={(event) => navigateColumn(event.target.value)}
-            className="h-10 min-w-0 flex-1 rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-            {sortedColumns.map((column, index) => <option key={column.id} value={column.id}>{index + 1}. {column.name} ({ideasByColumn.get(column.id)?.length ?? 0})</option>)}
-          </select>
-          <button type="button" aria-label="Next column" disabled={visibleColumnIndex === sortedColumns.length - 1}
-            onClick={() => navigateColumn(sortedColumns[visibleColumnIndex + 1]!.id)}
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-muted disabled:opacity-30">
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </nav>
-      )}
-
       {isFiltering && matchCount === 0 && (
         <p className="px-4 pt-4 text-sm text-muted-foreground">
           No ideas match “{searchQuery.trim()}”.
@@ -297,7 +252,7 @@ export function IdeasBoardView({
 
       {/* On mobile, snap each column into view while scrolling (Trello/Notion
           style); free horizontal scroll from sm up. Matches the kanban board. */}
-      <div ref={columnsRef} onScroll={syncVisibleColumn} className="flex min-h-0 flex-1 items-start gap-3.5 overflow-x-auto overflow-y-hidden p-4 snap-x snap-mandatory scroll-pl-4 sm:snap-none">
+      <div ref={columnsRef} className="flex min-h-0 flex-1 items-start gap-3.5 overflow-x-auto overflow-y-hidden p-3 sm:p-4 snap-x snap-mandatory scroll-pl-3 sm:scroll-pl-4 sm:snap-none">
         <SortableContext
           items={columnIds}
           strategy={horizontalListSortingStrategy}

@@ -200,26 +200,28 @@ export function KanbanBoardToolbar({
         >
           {(
             [
-              { value: "day", label: "Today", icon: Square },
-              { value: "board", label: "Board", icon: Columns3 },
+              { value: "day", label: "Today", icon: Square, shortcut: "todayView" },
+              { value: "board", label: "Board", icon: Columns3, shortcut: "boardView" },
             ] as const
-          ).map(({ value, label, icon: Icon }) => (
-            <button
-              key={value}
-              type="button"
-              role="radio"
-              aria-checked={mode === value}
-              onClick={() => onModeChange(value)}
-              className={cn(
-                "flex h-6 items-center gap-1.5 rounded px-2 text-xs transition-colors",
-                mode === value
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {label}
-            </button>
+          ).map(({ value, label, icon: Icon, shortcut }) => (
+            <WithShortcut key={value} label={label} shortcut={shortcut} side="bottom">
+              <button
+                aria-keyshortcuts={value === "day" ? "Shift+T" : "Shift+B"}
+                type="button"
+                role="radio"
+                aria-checked={mode === value}
+                onClick={() => onModeChange(value)}
+                className={cn(
+                  "flex h-6 items-center gap-1.5 rounded px-2 text-xs transition-colors",
+                  mode === value
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+              </button>
+            </WithShortcut>
           ))}
         </div>
 
