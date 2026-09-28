@@ -36,6 +36,7 @@ import {
   stopTaskTimer,
   stopSubtaskTimers,
 } from "../lib/timer-service.js";
+import { moveBlocksWithTasks } from "../services/task-blocks.js";
 import { format, subDays } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { getPgBoss, JOBS } from "../lib/pgboss.js";
@@ -358,6 +359,19 @@ tasksRouter.patch(
       .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
       .returning();
 
+    if (
+      updatedTask &&
+      updates.scheduledDate !== undefined &&
+      updates.scheduledDate !== existing.scheduledDate
+    ) {
+      const moved = await moveBlocksWithTasks(
+        userId,
+        [{ taskId: id, from: existing.scheduledDate }],
+        updatedTask.scheduledDate
+      );
+      if (moved > 0) publishEvent(userId, "timeblock:updated", { taskId: id });
+    }
+
     // Publish realtime event (fire and forget)
     // Use 'task:completed' if completedAt changed to a truthy value, otherwise 'task:updated'
     if (updatedTask && timerStopped !== null) {
@@ -561,6 +575,12 @@ tasksRouter.post(
     const isBacklog = date === "backlog";
     const targetDate = isBacklog ? null : date;
 
+    // Tasks arriving from another day bring their time blocks along.
+    const previousDays = await db
+      .select({ taskId: tasks.id, from: tasks.scheduledDate })
+      .from(tasks)
+      .where(and(inArray(tasks.id, taskIds), eq(tasks.userId, userId)));
+
     // Update each task with new position and scheduled date
     // This handles both reordering within a date AND moving tasks between dates
     await Promise.all(
@@ -575,6 +595,9 @@ tasksRouter.post(
           .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
       )
     );
+
+    const movedBlocks = await moveBlocksWithTasks(userId, previousDays, targetDate);
+    if (movedBlocks > 0) publishEvent(userId, "timeblock:updated", { date });
 
     // Fetch all tasks for the target date
     const dateCondition = isBacklog
