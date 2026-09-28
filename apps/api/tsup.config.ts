@@ -13,5 +13,8 @@ export default defineConfig({
     '@open-sunsama/types',
     '@open-sunsama/utils',
     '@open-sunsama/mcp',
+    // MCP SDK v2 needs its Zod 4 schemas; externalizing zod would resolve the
+    // API's Zod 3 at runtime from dist/index.js instead of mcp/node_modules.
+    'zod',
   ],
 });
