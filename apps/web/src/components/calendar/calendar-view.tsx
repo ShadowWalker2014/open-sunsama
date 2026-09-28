@@ -557,12 +557,6 @@ export function CalendarView({
     }
   };
 
-  const handleTimelineMouseUp = () => {
-    if (isDragging) {
-      endDrag();
-    }
-  };
-
   const handleTimelineMouseLeave = () => {
     // Don't cancel drag on mouse leave - let it continue
   };
@@ -766,7 +760,6 @@ export function CalendarView({
               onBlockDragStart={handleBlockDragStart}
               onBlockResizeStart={handleBlockResizeStart}
               onTimelineMouseMove={handleTimelineMouseMove}
-              onTimelineMouseUp={handleTimelineMouseUp}
               onTimelineMouseLeave={handleTimelineMouseLeave}
               onExternalEventClick={handleExternalEventClick}
               onExternalEventDragStart={handleExternalEventDragStart}

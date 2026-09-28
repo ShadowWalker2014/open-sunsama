@@ -1,5 +1,6 @@
 import * as React from "react";
 import type { Task } from "@open-sunsama/types";
+import { SHORTCUTS, matchesShortcut, shouldIgnoreShortcut } from "@/hooks/useKeyboardShortcuts";
 import { useKanbanDates } from "@/hooks/useKanbanDates";
 import { useKanbanRangePrefetch } from "@/hooks/useKanbanRangePrefetch";
 import { useTasksDnd } from "@/lib/dnd/tasks-dnd-context";
@@ -126,6 +127,22 @@ export function KanbanBoard({
     else boardDateRef.current = day;
     setMode(next);
   };
+  React.useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.repeat || shouldIgnoreShortcut(event) ||
+        document.querySelector('[role="dialog"], [role="menu"], [role="listbox"]')) return;
+      if (matchesShortcut(event, SHORTCUTS.todayView!)) {
+        event.preventDefault();
+        switchMode("day");
+        setDay(startOfDay(new Date()));
+      } else if (matchesShortcut(event, SHORTCUTS.boardView!)) {
+        event.preventDefault();
+        switchMode("board");
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  });
   React.useEffect(() => {
     if (isDay || !boardDateRef.current) return;
     // After the virtualizer has placed its initial scroll. Cleared only when

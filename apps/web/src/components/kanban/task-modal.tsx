@@ -1,4 +1,4 @@
-import { TIME_EDIT_KEYS, matchesTimeEditShortcut } from "@/hooks/useKeyboardShortcuts";
+import { TIME_EDIT_KEYS, matchesTimeEditShortcut, usePriorityShortcut } from "@/hooks/useKeyboardShortcuts";
 import * as React from "react";
 import { createPortal } from "react-dom";
 import {
@@ -224,6 +224,11 @@ export function TaskModal({
       data: { priority: newPriority },
     });
   };
+
+  usePriorityShortcut(open, (priority) => {
+    void handlePriorityChange(priority);
+    setPriorityOpen(false);
+  });
 
   // Handle keyboard shortcuts: F for focus, E for planned time, W for actual time, D/Z/Shift+Z for date, @ for date input
   React.useEffect(() => {
@@ -520,7 +525,7 @@ export function TaskModal({
 
   // Use the live task for rendering, falling back to lastTaskRef during close animation
   const renderTask: Task | null =
-    task ??
+    liveTask ??
     lastTaskRef.current ??
     (isCompose
       ? ({
@@ -604,7 +609,7 @@ export function TaskModal({
         </WithShortcut>
         <Popover open={priorityOpen} onOpenChange={setPriorityOpen}>
           <PopoverTrigger asChild>
-            <WithShortcut label="Priority" keys={["0", "1", "2", "3"]} side="bottom">
+            <WithShortcut label="Priority" shortcut="editPriority" side="bottom">
               <button
                 type="button"
                 className={fieldButton}

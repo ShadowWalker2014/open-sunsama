@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import type { Task } from "@open-sunsama/types";
+import type { Task, TaskPriority } from "@open-sunsama/types";
 import { taskKeys } from "@/lib/query-keys";
 
 export interface ShortcutDefinition {
@@ -22,6 +22,25 @@ export function matchesTimeEditShortcut(event: KeyboardEvent, field: keyof typeo
     && event.key.toLowerCase() === TIME_EDIT_KEYS[field];
 }
 
+export function usePriorityShortcut(enabled: boolean, onChange: (priority: TaskPriority) => void) {
+  const changeRef = React.useRef(onChange);
+  changeRef.current = onChange;
+  React.useEffect(() => {
+    if (!enabled) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.repeat || event.isComposing || event.metaKey || event.ctrlKey || !event.altKey || !event.shiftKey) return;
+      // Option produces symbols on macOS; the physical digit stays stable.
+      const digit = /^(?:Digit|Numpad)([0-3])$/.exec(event.code)?.[1];
+      if (!digit) return;
+      event.preventDefault();
+      event.stopPropagation();
+      changeRef.current(`P${digit}` as TaskPriority);
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [enabled]);
+}
+
 // Define all shortcuts
 export const SHORTCUTS: Record<string, ShortcutDefinition> = {
   addTask: {
@@ -32,8 +51,20 @@ export const SHORTCUTS: Record<string, ShortcutDefinition> = {
   focusToday: {
     key: " ", // Space
     modifiers: { shift: true },
-    description: "Focus on Today",
+    description: "Go to today’s date",
     category: "navigation",
+  },
+  todayView: {
+    key: "T", modifiers: { shift: true },
+    description: "Switch to Today view", category: "navigation",
+  },
+  boardView: {
+    key: "B", modifiers: { shift: true },
+    description: "Switch to Board view", category: "navigation",
+  },
+  editPriority: {
+    key: "0–3", modifiers: { alt: true, shift: true },
+    description: "Set priority while creating or editing a task", category: "task",
   },
   completeTask: {
     key: "c",

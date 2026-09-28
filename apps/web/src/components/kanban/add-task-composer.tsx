@@ -1,3 +1,4 @@
+import { usePriorityShortcut } from "@/hooks/useKeyboardShortcuts";
 import * as React from "react";
 import { format, isToday, isTomorrow, parse } from "date-fns";
 import { ArrowDown, ArrowUp, Calendar, Clock, ListPlus } from "lucide-react";
@@ -84,6 +85,10 @@ export function AddTaskComposer({
   const [priority, setPriority] = React.useState<TaskPriority>("P2");
   const [plannedOpen, setPlannedOpen] = React.useState(false);
   const [priorityOpen, setPriorityOpen] = React.useState(false);
+  usePriorityShortcut(true, (value) => {
+    setPriority(value);
+    setPriorityOpen(false);
+  });
   const [lines, setLines] = React.useState<DraftLine[]>([]);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const lineRefs = React.useRef(new Map<number, HTMLInputElement>());
@@ -363,6 +368,7 @@ export function AddTaskComposer({
             <PopoverTrigger asChild>
               <WithShortcut
                 label={`${priority} · ${PRIORITY_META[priority].description}`}
+                shortcut="editPriority"
                 side="bottom"
               >
                 <button
