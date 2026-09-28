@@ -144,8 +144,6 @@ export function TaskModal({
     setDraftPriority("P2");
     setDraftDate(createDefaults?.scheduledDate ?? null);
     setDraftSubtasks([]);
-    // Focus inside the opening gesture's task so iOS raises the keyboard.
-    requestAnimationFrame(() => titleRef.current?.focus());
   }, [open, isCompose]);
 
   // Keep a ref to the last non-null task so the Dialog can still render content
@@ -809,6 +807,7 @@ export function TaskModal({
 
       <textarea
         ref={titleRef}
+        autoFocus={isCompose}
         value={title}
         // Titles are one line; pasted line breaks become spaces.
         onChange={(e) => setTitle(e.target.value.replace(/[\r\n]+/g, " "))}
@@ -949,7 +948,10 @@ export function TaskModal({
           <BottomSheetContent
             onDismiss={() => handleOpenChange(false)}
             aria-describedby={undefined}
-            onOpenAutoFocus={(e) => e.preventDefault()}
+            onOpenAutoFocus={(e) => {
+              e.preventDefault();
+              if (isCompose) titleRef.current?.focus({ preventScroll: true });
+            }}
           >
             <DialogTitle className="sr-only">
               {isCompose ? "New task" : renderTask.title || "Task"}
@@ -963,7 +965,10 @@ export function TaskModal({
             aria-describedby={undefined}
             // Don't land focus on the first control (it would show a focus
             // ring and its tooltip); the composer focuses its title itself.
-            onOpenAutoFocus={(e) => e.preventDefault()}
+            onOpenAutoFocus={(e) => {
+              e.preventDefault();
+              if (isCompose) titleRef.current?.focus({ preventScroll: true });
+            }}
           >
             {/* The visible title is an editable field; screen readers get it here. */}
             <DialogTitle className="sr-only">

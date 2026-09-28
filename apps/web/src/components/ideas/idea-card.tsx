@@ -301,7 +301,7 @@ export function IdeaCard({
         "bg-surface hover:bg-surface-hover",
         !overlay && !isCompleted && "shadow-card hover:shadow-card-hover",
         dragDisabled ? "cursor-pointer" : "cursor-grab active:cursor-grabbing",
-        "touch-none select-none",
+        "touch-auto select-none",
         overlay &&
           "shadow-xl ring-2 ring-primary/20 rotate-[0.5deg] cursor-grabbing",
         !overlay && sortable.isDragging && "opacity-30 z-50",

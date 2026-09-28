@@ -83,6 +83,7 @@ export function IdeaColumnView({
   return (
     <section
       ref={setNodeRef}
+      data-idea-column-id={column.id}
       style={style}
       className={cn(
         "flex h-full min-h-0 w-[272px] shrink-0 snap-start snap-always flex-col gap-2 rounded-xl border border-border bg-muted/40 p-2 transition-colors",
