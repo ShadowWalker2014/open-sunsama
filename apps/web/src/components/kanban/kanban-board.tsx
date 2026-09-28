@@ -156,7 +156,8 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
         />
 
         {isDay ? (
-          <div className="flex min-h-0 flex-1 justify-center overflow-hidden">
+          // The day sits beside the side calendar, as in Sunsama's Today.
+          <div className="flex min-h-0 flex-1 justify-end overflow-hidden pr-4">
             <DayColumn
               key={format(day, "yyyy-MM-dd")}
               date={day}

@@ -19,6 +19,7 @@ import {
   ideaColumns,
   ideas,
   ideaSubtasks,
+  subtasks,
   tasks,
 } from "@open-sunsama/database";
 import { NotFoundError, ValidationError, uuidSchema } from "@open-sunsama/utils";
@@ -563,6 +564,23 @@ ideasRouter.post(
       })
       .returning();
     if (!task) throw new Error("Failed to create task from idea");
+
+    // The idea's checklist comes along, in order and with its ticks.
+    const checklist = await db
+      .select()
+      .from(ideaSubtasks)
+      .where(eq(ideaSubtasks.ideaId, id))
+      .orderBy(asc(ideaSubtasks.position), asc(ideaSubtasks.createdAt));
+    if (checklist.length > 0) {
+      await db.insert(subtasks).values(
+        checklist.map((item, position) => ({
+          taskId: task.id,
+          title: item.title,
+          completed: item.completed,
+          position,
+        }))
+      );
+    }
 
     const [updatedIdea] = await db
       .update(ideas)

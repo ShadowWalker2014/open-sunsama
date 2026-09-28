@@ -26,12 +26,30 @@ const IS_MAC =
 const MOD_KEY = IS_MAC ? "⌘" : "Ctrl";
 const ALT_KEY = IS_MAC ? "Option" : "Alt";
 
+export interface ComposerValues {
+  title: string;
+  subtasks: string[];
+  estimatedMins: number | null;
+  priority: TaskPriority;
+}
+
 interface AddTaskComposerProps {
   /** The day the task starts on; null adds it to the backlog. */
   scheduledDate: string | null;
   initialTitle?: string;
   /** Called after the task is added, or to dismiss. */
   onDone: () => void;
+  /**
+   * Saves something other than a task (an idea, say) from the same
+   * composer. Without it the composer creates a task.
+   */
+  onSubmit?: (values: ComposerValues) => void;
+  /** Hide the start-date and top/bottom chips when they don't apply. */
+  showDate?: boolean;
+  showPosition?: boolean;
+  placeholder?: string;
+  /** A quiet note on where it goes, e.g. "Adding to Ideas". */
+  context?: string;
 }
 
 function dateLabel(date: string | null): string {
@@ -54,6 +72,11 @@ export function AddTaskComposer({
   scheduledDate,
   initialTitle = "",
   onDone,
+  onSubmit,
+  showDate = true,
+  showPosition = true,
+  placeholder = "Task description…",
+  context,
 }: AddTaskComposerProps) {
   const [title, setTitle] = React.useState(initialTitle);
   const [date, setDate] = React.useState<string | null>(scheduledDate);
@@ -91,8 +114,12 @@ export function AddTaskComposer({
     const trimmed = title.trim();
     if (!trimmed) return;
     onDone();
-    // The create is optimistic: the card shows at once, so nothing waits here.
     const subtaskTitles = lines.map((l) => l.title.trim()).filter(Boolean);
+    if (onSubmit) {
+      onSubmit({ title: trimmed, subtasks: subtaskTitles, estimatedMins: planned, priority });
+      return;
+    }
+    // The create is optimistic: the card shows at once, so nothing waits here.
     void createTask
       .mutateAsync({
         title: trimmed,
@@ -214,7 +241,7 @@ export function AddTaskComposer({
           }
         }}
         onPaste={(e) => pasteLines(e, null, setTitle)}
-        placeholder="Task description…"
+        placeholder={placeholder}
         aria-label="Task title"
         maxLength={500}
         className="w-full bg-transparent px-4 pb-2 pt-3.5 text-[15px] outline-none placeholder:text-muted-foreground/60"
@@ -256,7 +283,9 @@ export function AddTaskComposer({
       )}
       <div className="flex items-center gap-0.5 px-2 pb-2">
         <span className="hidden flex-1 items-center gap-1 pl-2 text-[11px] text-muted-foreground/80 sm:flex">
-          {lines.length ? (
+          {!title.trim() && !lines.length && context ? (
+            context
+          ) : lines.length ? (
             <>
               <Key>Enter</Key> next subtask · <Key>Enter</Key> twice or{" "}
               <Key>{MOD_KEY}</Key>
@@ -282,6 +311,7 @@ export function AddTaskComposer({
               )}
             </button>
           </WithShortcut>
+          {showDate && (
           <WithShortcut label="Start date" side="bottom">
             <span>
               <DatePickerPopover
@@ -297,6 +327,7 @@ export function AddTaskComposer({
               </DatePickerPopover>
             </span>
           </WithShortcut>
+          )}
 
           <Popover open={plannedOpen} onOpenChange={setPlannedOpen}>
             <PopoverTrigger asChild>
@@ -364,6 +395,7 @@ export function AddTaskComposer({
             </PopoverContent>
           </Popover>
 
+          {showPosition && (
           <WithShortcut
             label={isTop ? "Adds to the top" : "Adds to the bottom"}
             keys={[ALT_KEY, isTop ? "↓" : "↑"]}
@@ -385,6 +417,7 @@ export function AddTaskComposer({
               )}
             </button>
           </WithShortcut>
+          )}
         </div>
       </div>
     </div>

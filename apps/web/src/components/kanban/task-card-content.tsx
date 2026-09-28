@@ -202,7 +202,7 @@ export function TaskCardContent({
   return (
     <div
       className={cn(
-        "group relative flex flex-col gap-1.5 rounded-lg px-3 py-2.5 transition-[background-color,box-shadow,opacity] duration-150",
+        "group relative flex flex-col gap-1 rounded-lg px-3 py-2 transition-[background-color,box-shadow,opacity] duration-150",
         "bg-surface hover:bg-surface-hover",
         !isDragging && !isCompleted && "shadow-card",
         "cursor-grab active:cursor-grabbing touch-none select-none",
@@ -230,7 +230,7 @@ export function TaskCardContent({
           <button
             type="button"
             className={cn(
-              "mt-px flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-[1.5px] transition-colors duration-150",
+              "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-colors duration-150",
               isCompleted
                 ? "border-emerald-500 bg-emerald-500 text-white"
                 : "border-muted-foreground/40 text-transparent hover:border-emerald-500 hover:text-emerald-500"
@@ -240,12 +240,12 @@ export function TaskCardContent({
             aria-checked={isCompleted}
             aria-label={isCompleted ? "Mark incomplete" : "Complete task"}
           >
-            <Check className="h-3 w-3" strokeWidth={3} />
+            <Check className="h-2.5 w-2.5" strokeWidth={3} />
           </button>
         </WithShortcut>
         <p
           className={cn(
-            "min-w-0 flex-1 break-words text-[15px] font-medium leading-5 text-foreground line-clamp-3",
+            "min-w-0 flex-1 break-words text-sm leading-5 text-foreground line-clamp-3",
             isCompleted && "text-muted-foreground line-through"
           )}
         >
@@ -256,7 +256,7 @@ export function TaskCardContent({
 
       {/* When it starts, how urgent it is, and its channel. */}
       {showMeta && (
-        <div className="flex h-5 items-center gap-2 pl-7">
+        <div className="flex h-4 items-center gap-2 pl-6">
           {formattedTime && (
             <span
               className={cn(
@@ -287,7 +287,7 @@ export function TaskCardContent({
       )}
 
       {hasSubtasks && (
-        <div className="pl-7">
+        <div className="pl-6">
           <SubtaskChecklistPreview
             subtasks={subtasks!}
             onToggleSubtask={onToggleSubtask}
@@ -312,11 +312,11 @@ const SUBTASK_PREVIEW = 4;
  * The subtasks, right on the card: each can be ticked without opening the
  * task. Long lists fold after a few rows.
  */
-function SubtaskChecklistPreview({
+export function SubtaskChecklistPreview({
   subtasks,
   onToggleSubtask,
 }: {
-  subtasks: Subtask[];
+  subtasks: Pick<Subtask, "id" | "title" | "completed">[];
   onToggleSubtask?: (subtaskId: string) => void;
 }) {
   const [showAll, setShowAll] = React.useState(false);

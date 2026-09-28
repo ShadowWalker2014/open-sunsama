@@ -85,8 +85,9 @@ export function IdeaColumnView({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex h-full w-[272px] shrink-0 snap-start snap-always flex-col gap-2 rounded-xl border border-border/60 bg-muted/40 p-2.5 transition-colors",
-        isOver && "border-primary/40 bg-primary/5"
+        // Borderless on the page, like the task board's day columns.
+        "flex h-full w-[272px] shrink-0 snap-start snap-always flex-col gap-2 rounded-lg p-1.5 transition-colors",
+        isOver && "bg-primary/5 ring-1 ring-inset ring-primary/20"
       )}
     >
       {/* Column header. No flex `gap` here — the grip handle manages its own
@@ -124,7 +125,7 @@ export function IdeaColumnView({
               <GripVertical className="h-4 w-4 shrink-0" />
             </button>
             <span className="text-[13px] font-semibold">{column.name}</span>
-            <span className="ml-2 grid h-[18px] min-w-[20px] place-items-center rounded-full border border-border/60 bg-background px-1.5 text-[11px] font-medium tabular-nums text-muted-foreground">
+            <span className="ml-2 grid h-[18px] min-w-[20px] place-items-center rounded bg-muted px-1.5 text-[11px] font-semibold tabular-nums text-muted-foreground">
               {ideas.length}
             </span>
             <DropdownMenu>
@@ -194,7 +195,7 @@ export function IdeaColumnView({
       {/* Add idea — opens the modal (same chrome as Add Task) */}
       <button
         onClick={() => setAddOpen(true)}
-        className="flex shrink-0 items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+        className="flex shrink-0 items-center gap-2 rounded-md px-2 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
       >
         <Plus className="h-4 w-4" />
         Add idea
