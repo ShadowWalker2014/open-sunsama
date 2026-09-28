@@ -13,16 +13,25 @@ const VIEW_MODE_KEY = "open-sunsama-mobile-tasks-view";
  * selected day, so switching views keeps you on the same date.
  */
 export function MobileTasksView() {
+  // The board, like desktop, unless this device chose the list.
   const [viewMode, setViewMode] = React.useState<MobileTasksViewMode>(() => {
-    if (typeof window === "undefined") return "list";
-    return localStorage.getItem(VIEW_MODE_KEY) === "board" ? "board" : "list";
+    if (typeof window === "undefined") return "board";
+    try {
+      return localStorage.getItem(VIEW_MODE_KEY) === "list" ? "list" : "board";
+    } catch {
+      return "board";
+    }
   });
   const [sortBy, setSortBy] = useSortPreference();
   const [selectedDate, setSelectedDate] = React.useState(() => startOfDay(new Date()));
 
   const changeViewMode = React.useCallback((mode: MobileTasksViewMode) => {
     setViewMode(mode);
-    localStorage.setItem(VIEW_MODE_KEY, mode);
+    try {
+      localStorage.setItem(VIEW_MODE_KEY, mode);
+    } catch {
+      // Private mode: the choice lasts for this visit.
+    }
   }, []);
 
   // Load the task sheet up front: iOS only raises the keyboard for a focus

@@ -51,7 +51,7 @@ export function MobileBoardView({
 
   return (
     <TasksDndProvider>
-      <div className={cn("flex h-full flex-col bg-background", className)}>
+      <div className={cn("flex h-full flex-col bg-canvas", className)}>
         <MobileDateHeader
           selectedDate={selectedDate}
           onSelectDate={onSelectDate}

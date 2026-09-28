@@ -211,42 +211,43 @@ export function DayColumn({
       )}
     >
       {/* Day Header - Sunsama style */}
-      <div
-        className={cn(
-          "sticky top-0 z-10 bg-canvas px-3 pt-3 pb-2"
-        )}
-      >
-        {/* Top row: Day name and task count - clickable */}
-        <button
-          onClick={() => onDateClick?.(date)}
-          className="flex items-center gap-2 hover:opacity-70 transition-opacity cursor-pointer text-left"
-        >
-          <span
-            className={cn(
-              "text-base font-semibold",
-              today ? "text-foreground" : "text-foreground"
-            )}
+      <div className={cn("sticky top-0 z-10 bg-canvas px-3 pt-3 pb-2")}>
+        {/* Top row: Day name and task count - clickable. The phone board
+            shows the day in its week strip instead. */}
+        {!fill && (
+          <button
+            onClick={() => onDateClick?.(date)}
+            className="flex items-center gap-2 hover:opacity-70 transition-opacity cursor-pointer text-left"
           >
-            {getDayLabel()}
-          </span>
-          {totalTasks > 0 && (
             <span
               className={cn(
-                "text-xs px-1.5 py-0.5 rounded",
-                today
-                  ? "bg-primary/20 text-primary"
-                  : "bg-muted text-muted-foreground"
+                "text-base font-semibold",
+                today ? "text-foreground" : "text-foreground"
               )}
             >
-              {totalTasks}
+              {getDayLabel()}
             </span>
-          )}
-        </button>
+            {totalTasks > 0 && (
+              <span
+                className={cn(
+                  "text-xs px-1.5 py-0.5 rounded",
+                  today
+                    ? "bg-primary/20 text-primary"
+                    : "bg-muted text-muted-foreground"
+                )}
+              >
+                {totalTasks}
+              </span>
+            )}
+          </button>
+        )}
 
         {/* Date - smaller text below */}
-        <div className="text-sm text-muted-foreground mt-0.5">
-          {getFormattedDate()}
-        </div>
+        {!fill && (
+          <div className="text-sm text-muted-foreground mt-0.5">
+            {getFormattedDate()}
+          </div>
+        )}
 
         {/* Progress bar - only show on Today column when there are tasks */}
         {today && totalTasks > 0 && (
@@ -259,7 +260,12 @@ export function DayColumn({
         )}
 
         {/* Add task row with total time - Sunsama style */}
-        <div className="flex items-center justify-between mt-3">
+        <div
+          className={cn(
+            "flex items-center justify-between",
+            fill ? "mt-1" : "mt-3"
+          )}
+        >
           {/* Add task button */}
           <AddTaskInline scheduledDate={dateString} compact />
 
