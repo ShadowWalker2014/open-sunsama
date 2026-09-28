@@ -353,3 +353,16 @@ test("E edits planned time and W edits actual time consistently", async ({ page 
     if (view === "focus") await expect(page).toHaveURL(new RegExp(`/app/focus/${task.id}`));
   }
 });
+
+
+test("task list buttons activate with the keyboard without dragging", async ({ page }) => {
+  const session = await register();
+  await api("POST", "/tasks", { title: "Keyboard task", scheduledDate: today }, session.token);
+  await signInWithToken(page, session);
+  await page.goto("/app/tasks");
+  await page.getByRole("button", { name: "Keyboard task", exact: true }).press("Enter");
+  await expect(page.getByRole("button", { name: "Open in focus mode" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Edit planned time", exact: true }).press("Space");
+  await expect(page.getByRole("textbox", { name: "Planned", exact: true })).toBeVisible();
+});
