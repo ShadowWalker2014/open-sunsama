@@ -366,3 +366,51 @@ test("task list buttons activate with the keyboard without dragging", async ({ p
   await page.getByRole("button", { name: "Edit planned time", exact: true }).press("Space");
   await expect(page.getByRole("textbox", { name: "Planned", exact: true })).toBeVisible();
 });
+
+test("mobile new task immediately focuses its title", async ({ page }) => {
+  const session = await register();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await signInWithToken(page, session);
+  await page.goto("/app");
+  await page.getByRole("button", { name: "Add task A", exact: true }).click();
+  const title = page.getByRole("textbox", { name: "Task title", exact: true });
+  await expect(title).toBeFocused();
+  await page.keyboard.type("Type immediately on mobile");
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("dialog")).toBeHidden();
+  await page.reload();
+  await expect(page.getByText("Type immediately on mobile", { exact: true })).toBeVisible();
+});
+
+test("mobile Ideas can jump to distant columns and swipe over cards", async ({ browser }) => {
+  const session = await register();
+  const board = await api<{id: string}>("POST", "/ideas/boards", { name: "Mobile navigation" }, session.token);
+  const columns = await api<Array<{id: string}>>("GET", `/ideas/columns?boardId=${board.id}`, undefined, session.token);
+  for (const name of ["Exploring", "Ready", "Later"]) columns.push(await api<{id: string}>("POST", "/ideas/columns", { boardId: board.id, name }, session.token));
+  const idea = await api<{id: string}>("POST", "/ideas", { boardId: board.id, columnId: columns[0]!.id, title: "Swipe across this card" }, session.token);
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const page = await context.newPage();
+  try {
+    await signInWithToken(page, session);
+    await page.goto("/app/ideas");
+    const picker = page.getByRole("combobox", { name: "Current column" });
+    await picker.selectOption(columns[3]!.id);
+    const last = page.locator(`[data-idea-column-id="${columns[3]!.id}"]`);
+    await expect.poll(async () => (await last.boundingBox())!.x).toBeCloseTo(16, 0);
+    await expect(page.getByRole("button", { name: "Next column", exact: true })).toBeDisabled();
+    await page.getByRole("button", { name: "Previous column", exact: true }).click();
+    await expect(picker).toHaveValue(columns[2]!.id);
+    await picker.selectOption(columns[0]!.id);
+    const first = page.locator(`[data-idea-column-id="${columns[0]!.id}"]`);
+    await expect.poll(async () => (await first.boundingBox())!.x).toBeCloseTo(16, 0);
+    const card = page.getByText("Swipe across this card", { exact: true });
+    const box = (await card.boundingBox())!;
+    const cdp = await context.newCDPSession(page);
+    const x = box.x + box.width / 2, y = box.y + box.height / 2;
+    await cdp.send("Input.synthesizeScrollGesture", { x, y, xDistance: -150, yDistance: 0, speed: 700, gestureSourceType: "touch" });
+    await expect(picker).not.toHaveValue(columns[0]!.id);
+    await expect(page.getByRole("dialog")).toBeHidden();
+    const unchanged = await api<{columnId: string}>("GET", `/ideas/${idea.id}`, undefined, session.token);
+    expect(unchanged.columnId).toBe(columns[0]!.id);
+  } finally { await context.close(); }
+});
