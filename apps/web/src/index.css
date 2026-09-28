@@ -46,7 +46,7 @@
        holds a rounded canvas panel, and cards sit on the canvas. */
     --chrome: 220 13% 94%;
     --canvas: 220 14% 97.5%;
-    --tray: 35 55% 95%;
+    --tray: 220 40% 97%;
     --surface: 0 0% 100%;
     --surface-hover: 220 14% 99%;
     --shadow-card: 0 0 0 1px rgb(16 24 40 / 0.05), 0 1px 3px 0 rgb(16 24 40 / 0.1);
@@ -101,7 +101,7 @@
        faint hairline so their edges stay crisp without a heavy shadow. */
     --chrome: 240 6% 2.5%;
     --canvas: 240 5% 5%;
-    --tray: 30 12% 12%;
+    --tray: 225 10% 12%;
     --surface: 240 4% 8%;
     --surface-hover: 240 4% 9.5%;
     --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.06), 0 1px 2px 0 rgb(0 0 0 / 0.6);
