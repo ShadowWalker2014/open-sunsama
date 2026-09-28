@@ -448,12 +448,15 @@ test("view shortcuts and priority shortcuts work without changing typed text", a
   await title.press("Shift+T");
   await expect(page.getByRole("radio", { name: "Board", exact: true, includeHidden: true })).toHaveAttribute("aria-checked", "true");
   await expect(title).toHaveValue(/T/);
-  await title.fill("Priority keyboard edited");
-  const saved = page.waitForResponse(r => r.request().method() === "PATCH" && r.request().postDataJSON()?.title === "Priority keyboard edited");
-  await page.keyboard.press("Escape");
-  expect((await saved).ok()).toBe(true);
+  await title.fill("Priority keyboard test");
+  await expect.poll(async () => {
+    const tasks = await api<Array<{title: string; priority: string}>>("GET", `/tasks?scheduledDate=${today}`, undefined, session.token);
+    return tasks.find(task => task.title === "Priority keyboard test")?.priority;
+  }).toBe("P0");
+  await title.press("Enter");
+  await expect(page.getByRole("dialog")).toBeHidden();
   await page.reload();
-  await todayColumn(page).getByText("Priority keyboard edited", { exact: true }).click();
+  await todayColumn(page).getByText("Priority keyboard test", { exact: true }).click();
   await expect(page.getByRole("button", { name: "Priority: P0 Urgent", exact: true })).toBeVisible();
 });
 
