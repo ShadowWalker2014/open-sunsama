@@ -14,7 +14,14 @@ import {
 import { arrayMove } from "@dnd-kit/sortable";
 import { snapCenterToCursor } from "@dnd-kit/modifiers";
 import type { Task } from "@open-sunsama/types";
+import { addMinutes } from "date-fns";
 import { useMoveTask, useReorderTasks, taskKeys } from "@/hooks/useTasks";
+import { useCreateTimeBlock } from "@/hooks/useTimeBlocks";
+import {
+  DEFAULT_DROP_MINS,
+  dragPointerY,
+  type CalendarDropData,
+} from "@/components/kanban/kanban-calendar-panel";
 import { TaskCard } from "@/components/kanban/task-card";
 import { taskPriorityCollision } from "./collision-detection";
 
@@ -54,6 +61,7 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
 
   const moveTask = useMoveTask();
   const reorderTasks = useReorderTasks();
+  const createTimeBlock = useCreateTimeBlock();
 
   // Drag and drop sensors with keyboard support for accessibility
   // Mouse: distance-based so a drag starts the instant the pointer moves a
@@ -158,6 +166,25 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
       if (!task) return;
 
       const overId = String(over.id);
+
+      // Dropped on the board's calendar: block the task at that time, on
+      // that day.
+      const calendar = over.data.current as CalendarDropData | undefined;
+      if (calendar?.type === "calendar") {
+        const y = dragPointerY(event);
+        if (y === null) return;
+        const startTime = calendar.timeAt(y);
+        if (task.scheduledDate !== calendar.date) {
+          moveTask.mutate({ id: task.id, targetDate: calendar.date });
+        }
+        createTimeBlock.mutate({
+          taskId: task.id,
+          title: task.title,
+          startTime,
+          endTime: addMinutes(startTime, task.estimatedMins ?? DEFAULT_DROP_MINS),
+        });
+        return;
+      }
 
       // Read a column's tasks from the cache regardless of which `limit` /
       // filter the query was made with. Day columns cache under
@@ -306,7 +333,14 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
         }
       }
     },
-    [findTargetColumnDate, moveTask, reorderTasks, isTaskId, queryClient]
+    [
+      findTargetColumnDate,
+      moveTask,
+      reorderTasks,
+      createTimeBlock,
+      isTaskId,
+      queryClient,
+    ]
   );
 
   const handleDragCancel = React.useCallback(() => {

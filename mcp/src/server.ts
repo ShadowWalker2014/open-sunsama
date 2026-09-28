@@ -13,6 +13,7 @@ import { registerTimeBlockTools } from "./tools/time-blocks.js";
 import { registerSubtaskTools } from "./tools/subtasks.js";
 import { registerUserTools } from "./tools/user.js";
 import { registerCalendarEventTools } from "./tools/calendar-events.js";
+import { registerIdeaTools } from "./tools/ideas.js";
 
 export { ApiClient, type ApiClientConfig } from "./lib/api-client.js";
 export { MCP_TOOL_SCOPES } from "./lib/define-tool.js";
@@ -20,14 +21,15 @@ export { MCP_TOOL_SCOPES } from "./lib/define-tool.js";
 export const MCP_SERVER_INFO = {
   name: "open-sunsama",
   title: "Open Sunsama",
-  version: "1.2.0",
+  version: "1.3.0",
   websiteUrl: "https://opensunsama.com",
 } as const;
 
-const INSTRUCTIONS = `Open Sunsama is the user's daily planner: tasks scheduled on dates (or in the backlog), subtasks, time blocks on a calendar, and read-only events from their connected Google, Outlook and iCloud calendars.
+const INSTRUCTIONS = `Open Sunsama is the user's daily planner: tasks scheduled on dates (or in the backlog), subtasks, time blocks on a calendar, Ideas boards with columns, cards and checklists, and read-only events from their connected Google, Outlook and iCloud calendars.
 - Dates are YYYY-MM-DD in the user's timezone; call get_user_profile if you need the timezone.
 - Use get_schedule_for_day to see a whole day at once (meetings and time blocks) before planning it, and plan time blocks around the meetings.
-- Prefer schedule_task to move work between days and link_task_to_time_block to put a task on the calendar.`;
+- Prefer schedule_task to move work between days and link_task_to_time_block to put a task on the calendar.
+- Use Ideas boards for possibilities the user is not planning as tasks yet; promote_idea creates a task when they are ready to plan one.`;
 
 export function createOpenSunsamaMcpServer(
   client: ApiClient | ApiClientConfig
@@ -39,6 +41,7 @@ export function createOpenSunsamaMcpServer(
   registerTimeBlockTools(server, apiClient);
   registerSubtaskTools(server, apiClient);
   registerCalendarEventTools(server, apiClient);
+  registerIdeaTools(server, apiClient);
   registerUserTools(server, apiClient);
 
   return server;

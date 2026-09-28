@@ -57,8 +57,6 @@ export default tseslint.config(
   },
   {
     rules: {
-      // Added to ESLint's recommended preset in v10; retain the existing lint baseline.
-      "no-useless-assignment": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",
         {

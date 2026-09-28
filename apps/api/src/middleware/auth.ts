@@ -209,6 +209,7 @@ export async function authenticateRequest(
 const OAUTH_ROUTE_SCOPES: Array<{ path: RegExp; read: string; write: string | null }> = [
   { path: /^\/tasks(\/|$)/, read: 'tasks:read', write: 'tasks:write' },
   { path: /^\/time-blocks(\/|$)/, read: 'time-blocks:read', write: 'time-blocks:write' },
+  { path: /^\/ideas(\/|$)/, read: 'ideas:read', write: 'ideas:write' },
   { path: /^\/auth\/me$/, read: 'user:read', write: 'user:write' },
   // Synced calendar events are read-only over MCP: no write scope exists.
   { path: /^\/calendar-events\/?$/, read: 'calendar:read', write: null },

@@ -72,6 +72,10 @@ export type ApiKeyScope =
   | 'time-blocks:write'
   /** Read-only access to events synced from Google, Outlook and iCloud calendars */
   | 'calendar:read'
+  /** Read access to idea boards, columns, cards and checklists */
+  | 'ideas:read'
+  /** Create, update and delete idea boards, columns, cards and checklists */
+  | 'ideas:write'
   /** Read-only access to user profile */
   | 'user:read'
   /** Full access to user profile (update) */
