@@ -388,13 +388,13 @@ export function KanbanCalendarPanel({
   return (
     <div
       className={cn(
-        "flex flex-col h-full w-[280px] bg-background border-l",
+        "flex flex-col h-full w-[280px] bg-canvas border-l border-border/40",
         className
       )}
     >
       {/* Header — height matched to the board toolbar (h-14) so the two
           top rows line up as one uniform band. */}
-      <div className="flex h-14 flex-shrink-0 flex-col justify-center border-b px-3 leading-tight">
+      <div className="flex h-14 flex-shrink-0 flex-col justify-center px-3 leading-tight">
         <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
           {format(date, "EEE")}
         </div>
@@ -438,7 +438,7 @@ export function KanbanCalendarPanel({
       >
         <div className="flex" style={{ minHeight: hours.length * HOUR_HEIGHT }}>
           {/* Time Labels Column */}
-          <div className="w-10 flex-shrink-0 sticky left-0 bg-background z-10">
+          <div className="w-10 flex-shrink-0 sticky left-0 bg-canvas z-10">
             {hours.map((hour) => (
               <div
                 key={hour}

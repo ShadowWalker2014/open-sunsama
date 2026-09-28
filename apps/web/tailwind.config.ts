@@ -59,6 +59,7 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        chrome: "hsl(var(--chrome))",
         canvas: "hsl(var(--canvas))",
         surface: {
           DEFAULT: "hsl(var(--surface))",
