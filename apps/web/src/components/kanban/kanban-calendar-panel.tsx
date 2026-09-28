@@ -255,7 +255,10 @@ export function KanbanCalendarPanel({
     start: Date;
     end: Date;
   } | null>(null);
+  const cardDragActive = React.useRef(false);
+  const cardDropEndedAt = React.useRef(0);
   useDndMonitor({
+    onDragStart: () => { cardDragActive.current = true; },
     onDragMove(event: DragMoveEvent) {
       const task = event.active.data.current?.task as Task | undefined;
       const y = dragPointerY(event);
@@ -270,8 +273,8 @@ export function KanbanCalendarPanel({
         end: addMinutes(start, task.estimatedMins ?? DEFAULT_DROP_MINS),
       });
     },
-    onDragEnd: () => setCardPreview(null),
-    onDragCancel: () => setCardPreview(null),
+    onDragEnd: () => { cardDragActive.current = false; cardDropEndedAt.current = Date.now(); setCardPreview(null); },
+    onDragCancel: () => { cardDragActive.current = false; cardDropEndedAt.current = Date.now(); setCardPreview(null); },
   });
 
   const hours = React.useMemo(
@@ -505,7 +508,7 @@ export function KanbanCalendarPanel({
     }
 
     // Don't trigger during drag operations
-    if (dragState) {
+    if (dragState || cardDragActive.current || Date.now() - cardDropEndedAt.current < 350) {
       return;
     }
 
@@ -610,7 +613,7 @@ export function KanbanCalendarPanel({
             onMouseLeave={handleTimelineMouseLeave}
             onClick={handleTimeSlotClick}
             data-calendar-create-column
-            onMouseDown={(e) => createDrag.startCreate(e, date)}
+            onMouseDown={(e) => { if (!cardDragActive.current) createDrag.startCreate(e, date); }}
           >
             {/* Hour grid lines */}
             {hours.map((hour) => (

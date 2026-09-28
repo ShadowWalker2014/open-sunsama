@@ -99,6 +99,10 @@ export interface IdeaSubtasksApi {
 
 /** Full Ideas API */
 export interface IdeasApi {
+  fromTask(
+    input: { taskId: string; boardId: string; columnId: string },
+    options?: RequestOptions
+  ): Promise<Idea>;
   boards: IdeaBoardsApi;
   columns: IdeaColumnsApi;
   subtasks: IdeaSubtasksApi;
@@ -287,6 +291,15 @@ export function createIdeasApi(client: OpenSunsamaClient): IdeasApi {
         options
       );
       return res.data ?? [];
+    },
+
+    async fromTask(input, options) {
+      const response = await client.post<ApiResponseWrapper<Idea>>(
+        "ideas/from-task",
+        input,
+        options
+      );
+      return response.data;
     },
 
     async promote(
