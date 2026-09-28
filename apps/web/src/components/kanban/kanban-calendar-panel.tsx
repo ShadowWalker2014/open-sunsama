@@ -590,6 +590,7 @@ export function KanbanCalendarPanel({
             onMouseUp={handleTimelineMouseUp}
             onMouseLeave={handleTimelineMouseLeave}
             onClick={handleTimeSlotClick}
+            data-calendar-create-column
             onMouseDown={(e) => createDrag.startCreate(e, date)}
           >
             {/* Hour grid lines */}

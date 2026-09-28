@@ -216,6 +216,10 @@ export class ApiClient {
     return this.request<Idea[]>("GET", "/ideas", undefined, filters);
   }
 
+  async getIdea(id: string) {
+    return this.request<Idea & { subtasks: IdeaSubtask[] }>("GET", `/ideas/${id}`);
+  }
+
   async createIdea(data: CreateIdeaInput) {
     return this.request<Idea>("POST", "/ideas", data);
   }

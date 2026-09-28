@@ -1,8 +1,7 @@
 import * as React from "react";
-import { addMinutes } from "date-fns";
+import { addMinutes, startOfDay } from "date-fns";
 import {
-  calculateTimeFromY,
-  snapToInterval,
+  HOUR_HEIGHT,
   SNAP_INTERVAL,
 } from "@/hooks/useCalendarDnd";
 
@@ -41,11 +40,14 @@ export function useDragToCreate(
     const press = pressRef.current;
     if (!press) return null;
     const y = clientY - press.column.getBoundingClientRect().top;
-    const here = snapToInterval(calculateTimeFromY(Math.max(0, y), press.day));
+    const lastMinute = addMinutes(startOfDay(press.day), 1439);
+    const minutes = Math.round(Math.max(0, Math.min(24 * HOUR_HEIGHT, y)) / HOUR_HEIGHT * 60 / SNAP_INTERVAL) * SNAP_INTERVAL;
+    const snapped = addMinutes(startOfDay(press.day), minutes);
+    const here = snapped > lastMinute ? lastMinute : snapped;
     const start = here < press.anchor ? here : press.anchor;
     let end = here < press.anchor ? press.anchor : here;
     if (end.getTime() - start.getTime() < SNAP_INTERVAL * 60_000) {
-      end = addMinutes(start, SNAP_INTERVAL);
+      end = new Date(Math.min(addMinutes(start, SNAP_INTERVAL).getTime(), lastMinute.getTime()));
     }
     return { day: press.day, start, end };
   }, []);
@@ -75,6 +77,7 @@ export function useDragToCreate(
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape" && pressRef.current) {
+        suppressClickRef.current = true;
         pressRef.current = null;
         setRange(null);
       }
@@ -99,19 +102,20 @@ export function useDragToCreate(
       const target = e.target as HTMLElement;
       if (
         !e.currentTarget.contains(target) ||
-        target.closest("[data-time-block]") ||
+        target.closest("button, a, input, textarea, select, [role=button], [data-time-block]") ||
         target.closest("[data-external-event]") ||
         target.closest("[data-all-day-event]")
       ) {
         return;
       }
+      suppressClickRef.current = false;
       const column = e.currentTarget;
       const y = e.clientY - column.getBoundingClientRect().top;
       pressRef.current = {
         day,
         column,
         startY: e.clientY,
-        anchor: snapToInterval(calculateTimeFromY(Math.max(0, y), day)),
+        anchor: addMinutes(startOfDay(day), Math.min(1424, Math.round(Math.max(0, y) / HOUR_HEIGHT * 60 / SNAP_INTERVAL) * SNAP_INTERVAL)),
         dragging: false,
       };
     },

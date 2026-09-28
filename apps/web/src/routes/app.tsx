@@ -155,13 +155,13 @@ function AppLayoutInner() {
 
   return (
     <>
-      <div className="flex min-h-screen flex-col lg:bg-chrome">
+      <div className="flex h-dvh flex-col overflow-hidden bg-canvas lg:bg-chrome">
         <AppUpdateBanner />
         <Header />
         {/* On desktop the page sits in a rounded panel inset from the
             chrome, so regions are separated by tone instead of lines. */}
-        <main className="flex-1 pb-16 lg:px-1.5 lg:pb-1.5">
-          <div className="h-full lg:overflow-hidden lg:rounded-lg lg:bg-canvas">
+        <main className="min-h-0 flex-1 pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] lg:px-1.5 lg:pb-1.5">
+          <div className="h-full overflow-y-auto bg-canvas lg:overflow-hidden lg:rounded-lg">
             <Outlet />
           </div>
         </main>

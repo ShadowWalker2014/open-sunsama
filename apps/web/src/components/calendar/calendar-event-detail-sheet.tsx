@@ -310,7 +310,7 @@ export function CalendarEventDetailSheet({
   const handleRsvp = (response: CalendarRsvpResponse) => {
     const previous = rsvpStatus;
     setRsvpStatus(response);
-    if (event) {
+    if (event && !rsvpMutation.isPending) {
       rsvpMutation.mutate(
         { id: event.id, response },
         { onError: () => setRsvpStatus(previous) }
@@ -567,6 +567,7 @@ export function CalendarEventDetailSheet({
                     canAnswerInvitation(event)
                   }
                   onRsvp={handleRsvp}
+                  rsvpPending={rsvpMutation.isPending}
                 />
               )}
 
@@ -682,7 +683,7 @@ const MEETING_URL =
   /https:\/\/(?:meet\.google\.com|[\w.-]*zoom\.us|teams\.microsoft\.com|teams\.live\.com)\/[^\s"'<>]+/i;
 
 function meetingUrlFor(event: CalendarEvent): string | null {
-  if (event.conferenceUrl) return event.conferenceUrl;
+  if (event.conferenceUrl && /^https?:\/\//i.test(event.conferenceUrl)) return event.conferenceUrl;
   const text = `${event.location ?? ""} ${event.description ?? ""}`;
   return text.match(MEETING_URL)?.[0] ?? null;
 }
@@ -713,11 +714,13 @@ function ViewBody({
   rsvpStatus,
   canRsvp,
   onRsvp,
+  rsvpPending,
 }: {
   event: CalendarEvent;
   rsvpStatus: CalendarEvent["responseStatus"];
   canRsvp: boolean;
   onRsvp: (response: CalendarRsvpResponse) => void;
+  rsvpPending: boolean;
 }) {
   const meetingUrl = meetingUrlFor(event);
   return (
@@ -746,6 +749,7 @@ function ViewBody({
                   type="button"
                   role="radio"
                   aria-checked={selected}
+                  disabled={rsvpPending}
                   onClick={() => !selected && onRsvp(option.value)}
                   className={cn(
                     "flex-1 rounded px-2 py-1 text-xs font-medium transition-colors",

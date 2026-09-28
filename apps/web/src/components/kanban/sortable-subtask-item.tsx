@@ -90,6 +90,7 @@ export function SortableSubtaskItem({
       className={cn(
         "group relative -mx-2 flex items-start rounded-md px-2 transition-colors",
         size.row,
+        showTiming && "max-sm:grid max-sm:grid-cols-[auto_minmax(0,1fr)_auto]",
         "hover:bg-muted/40",
         isEditing && "bg-muted/40",
         isDragging && "z-10 bg-muted/60 shadow-sm"
@@ -159,7 +160,7 @@ export function SortableSubtaskItem({
         </span>
       )}
 
-      {showTiming && <SubtaskTiming subtask={subtask} />}
+      {showTiming && <div className="max-sm:col-start-2 max-sm:col-span-2 max-sm:row-start-2"><SubtaskTiming subtask={subtask} /></div>}
 
       <button
         type="button"

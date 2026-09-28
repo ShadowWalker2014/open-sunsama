@@ -13,6 +13,7 @@ import type {
 } from './index';
 import {
   ProviderAuthError,
+  ProviderReadOnlyError,
   ProviderEventNotFoundError,
 } from './index';
 import {
@@ -420,6 +421,10 @@ export class OutlookCalendarProvider implements CalendarProvider {
       tentative: 'tentativelyAccept',
     }[response];
     const eventUrl = `${GRAPH_API}/me/events/${encodeURIComponent(eventId)}`;
+    const before = await fetch(eventUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
+    if (!before.ok) throw await mapOutlookError('respondToEvent', before);
+    const original = (await before.json()) as OutlookEvent;
+    if (original.isOrganizer) throw new ProviderReadOnlyError('outlook');
     const answered = await fetch(`${eventUrl}/${action}`, {
       method: 'POST',
       headers: {
@@ -436,14 +441,15 @@ export class OutlookCalendarProvider implements CalendarProvider {
     const current = await fetch(eventUrl, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
-    if (!current.ok) {
-      throw await mapOutlookError('respondToEvent', current);
-    }
-    const parsed = parseOutlookEvent((await current.json()) as OutlookEvent);
+    // Declining can remove the event from this calendar. The accepted
+    // response is still successful even when the follow-up read is gone.
+    const removed = response === 'declined' && (current.status === 404 || current.status === 410);
+    if (!current.ok && !removed) throw await mapOutlookError('respondToEvent', current);
+    const parsed = parseOutlookEvent(removed ? original : (await current.json()) as OutlookEvent);
     if (!parsed) {
       throw new Error('Outlook returned an event that could not be parsed');
     }
-    return parsed;
+    return { ...parsed, responseStatus: response };
   }
 }
 

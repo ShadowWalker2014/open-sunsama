@@ -91,7 +91,7 @@ export function useTaskTimerToggle() {
 
       const wasRunning = !!task.timerStartedAt;
       // Task lists, details and the active timer all live under "tasks".
-      const snapshots = qc.getQueriesData({ queryKey: taskKeys.all });
+      const snapshots = [...qc.getQueriesData({ queryKey: taskKeys.all }), ...qc.getQueriesData({ queryKey: subtaskKeys.all })];
 
       if (wasRunning) {
         writeTask(qc, stopped(task));
@@ -131,6 +131,7 @@ export function useTaskTimerToggle() {
         });
       } finally {
         void qc.invalidateQueries({ queryKey: timerKeys.active() });
+        void qc.invalidateQueries({ queryKey: subtaskKeys.all });
       }
     }),
     [qc]
@@ -232,6 +233,7 @@ export function useSubtaskTimerToggle() {
         });
       } finally {
         void qc.invalidateQueries({ queryKey: timerKeys.active() });
+        void qc.invalidateQueries({ queryKey: subtaskKeys.all });
       }
     }),
     [qc]

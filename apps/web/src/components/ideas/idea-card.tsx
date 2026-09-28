@@ -1,3 +1,6 @@
+import { Link } from "@tanstack/react-router";
+import { DurationPicker } from "@/components/ui/duration-picker";
+import { PriorityMenu } from "@/components/kanban/priority-menu";
 import * as React from "react";
 import { SubtaskChecklistPreview } from "@/components/kanban/task-card-content";
 import { useIdeaSubtasks, useUpdateIdeaSubtask } from "@/hooks/useIdeaSubtasks";
@@ -51,19 +54,10 @@ const PRIORITY_STYLES: Record<TaskPriority, string> = {
   P3: "bg-slate-400/10 text-slate-400 dark:text-slate-500",
 };
 
-const PRIORITY_OPTIONS: TaskPriority[] = ["P0", "P1", "P2", "P3"];
+
 
 /** Duration presets in minutes — same grid as the kanban task card. */
-const DURATION_PRESETS = [
-  { value: 5, label: "5m" },
-  { value: 10, label: "10m" },
-  { value: 15, label: "15m" },
-  { value: 30, label: "30m" },
-  { value: 45, label: "45m" },
-  { value: 60, label: "1h" },
-  { value: 90, label: "1.5h" },
-  { value: 120, label: "2h" },
-];
+
 
 interface IdeaCardProps {
   idea: Idea;
@@ -389,38 +383,7 @@ export function IdeaCard({
               align="start"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="grid grid-cols-4 gap-0.5">
-                {DURATION_PRESETS.map((preset) => (
-                  <button
-                    key={preset.value}
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEstimate(preset.value);
-                    }}
-                    className={cn(
-                      "rounded px-2 py-1 text-xs transition-colors",
-                      "hover:bg-accent hover:text-accent-foreground",
-                      idea.estimatedMins === preset.value &&
-                        "bg-accent font-medium text-accent-foreground"
-                    )}
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-              </div>
-              {idea.estimatedMins != null && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setEstimate(null);
-                  }}
-                  className="mt-1 w-full rounded px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                >
-                  Clear
-                </button>
-              )}
+              <DurationPicker value={idea.estimatedMins} onChange={setEstimate} onClose={() => setDurationOpen(false)} />
             </PopoverContent>
           </Popover>
         )}
@@ -450,40 +413,15 @@ export function IdeaCard({
             align="start"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex flex-col gap-0.5">
-              {PRIORITY_OPTIONS.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setPriority(option);
-                  }}
-                  className={cn(
-                    "flex items-center gap-2 rounded px-2 py-1 text-xs transition-colors",
-                    "hover:bg-accent hover:text-accent-foreground",
-                    idea.priority === option && "bg-accent"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "rounded px-1.5 py-0.5 text-[10px] font-medium",
-                      PRIORITY_STYLES[option]
-                    )}
-                  >
-                    {option}
-                  </span>
-                </button>
-              ))}
-            </div>
+            <PriorityMenu value={idea.priority} onChange={setPriority} />
           </PopoverContent>
         </Popover>
 
         {inPlanner && (
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+          <Link to="/app/focus/$taskId" params={{ taskId: idea.promotedTaskId! }} onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 hover:underline dark:text-emerald-400">
             <Check className="h-3 w-3" strokeWidth={2.5} />
-            In planner
-          </span>
+            Open task
+          </Link>
         )}
       </div>
 

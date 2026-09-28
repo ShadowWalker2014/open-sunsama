@@ -107,3 +107,22 @@ describe('GoogleCalendarProvider.respondToEvent', () => {
     ).rejects.toBeInstanceOf(ProviderReadOnlyError);
   });
 });
+
+describe('OutlookCalendarProvider.respondToEvent', () => {
+  it('keeps a successful decline when Outlook removes the event', async () => {
+    const { OutlookCalendarProvider } = await import('./outlook.js');
+    const event = {
+      id: 'o1', subject: 'Planning', isOrganizer: false,
+      start: { dateTime: '2026-09-28T17:00:00', timeZone: 'UTC' },
+      end: { dateTime: '2026-09-28T18:00:00', timeZone: 'UTC' },
+    };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify(event)))
+      .mockResolvedValueOnce(new Response(null, { status: 202 }))
+      .mockResolvedValueOnce(new Response(null, { status: 404 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const result = await new OutlookCalendarProvider().respondToEvent('token', 'calendar', 'o1', 'declined');
+    expect(result.responseStatus).toBe('declined');
+    expect(fetchMock.mock.calls[1]![0]).toContain('/o1/decline');
+  });
+});

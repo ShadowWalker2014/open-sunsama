@@ -75,7 +75,7 @@ export function SubtaskTiming({ subtask }: { subtask: Subtask }) {
     update.mutate({ taskId: subtask.taskId, subtaskId: subtask.id, data });
 
   return (
-    <div className="ml-auto flex shrink-0 items-center gap-2 pl-3">
+    <div className="ml-auto flex shrink-0 items-center gap-2 pl-3 max-sm:justify-start max-sm:pl-0 max-sm:pb-1">
       {running ? (
         <span className="w-14 text-right text-sm tabular-nums text-emerald-500">
           {formatClock(seconds)}
@@ -104,7 +104,7 @@ export function SubtaskTiming({ subtask }: { subtask: Subtask }) {
             ? "border-emerald-500 text-emerald-500 hover:bg-emerald-500/10"
             : subtask.completed
               ? "invisible"
-              : "border-emerald-500 bg-emerald-500 text-white opacity-0 hover:bg-emerald-600 focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
+              : "border-emerald-500 bg-emerald-500 text-white opacity-0 hover:bg-emerald-600 focus-visible:opacity-100 group-hover:opacity-100 max-sm:opacity-100 [@media(hover:none)]:opacity-100"
         )}
       >
         {running ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}

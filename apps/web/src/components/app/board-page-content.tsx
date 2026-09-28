@@ -91,7 +91,7 @@ export function BoardPageContent() {
 
   return (
     <TasksDndProvider>
-      <div className="flex h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-3.5rem)]">
+      <div className="flex h-full min-h-0">
         <MobileBacklogSheet />
 
         <div className="flex flex-1 overflow-hidden">
@@ -101,18 +101,18 @@ export function BoardPageContent() {
               mode={mode}
               onModeChange={setMode}
               // Today puts the calendar beside the day, in the middle.
-              dayAside={mode === "day" ? calendarPanel : undefined}
+              dayAside={mode === "day" ? <RightPanel calendar={calendarPanel} backlog={<BacklogPanel />} /> : undefined}
             >
               <TasksKeyboardShortcuts />
             </KanbanBoard>
           </div>
 
-          <div className="hidden lg:flex">
+          {mode !== "day" && <div className="hidden lg:flex">
             <RightPanel
-              calendar={mode === "day" ? undefined : calendarPanel}
+              calendar={calendarPanel}
               backlog={<BacklogPanel />}
             />
-          </div>
+          </div>}
         </div>
       </div>
 
