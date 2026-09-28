@@ -30,7 +30,13 @@ import {
   reorderTasksSchema,
 } from "../validation/tasks.js";
 import { publishEvent } from "../lib/websocket/index.js";
-import { stopTimerFields, timerSeconds } from "../lib/timer.js";
+import { stopTimerFields } from "../lib/timer.js";
+import {
+  startTaskTimer,
+  stopTaskTimer,
+  stopSubtaskTimers,
+} from "../lib/timer-service.js";
+import { moveBlocksWithTasks } from "../services/task-blocks.js";
 import { format, subDays } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { getPgBoss, JOBS } from "../lib/pgboss.js";
@@ -239,72 +245,7 @@ tasksRouter.post(
       .limit(1);
     if (!task) throw new NotFoundError("Task", id);
 
-    // Starting a timer that already runs is a no-op: restarting it would
-    // throw away the time since it started.
-    if (task.timerStartedAt) {
-      return c.json({ success: true, data: task, stoppedTask: null });
-    }
-
-    let stoppedTask = null;
-
-    // One timer at a time: stop every other running timer and log its time.
-    const running = await db
-      .select()
-      .from(tasks)
-      .where(and(eq(tasks.userId, userId), isNotNull(tasks.timerStartedAt)));
-
-    for (const other of running) {
-      if (other.id === id) continue;
-      const fields = stopTimerFields(other);
-      const [stopped] = await db
-        .update(tasks)
-        .set({ ...fields, updatedAt: new Date() })
-        .where(and(eq(tasks.id, other.id), isNotNull(tasks.timerStartedAt)))
-        .returning();
-      if (!stopped) continue;
-      stoppedTask = stopped;
-      publishEvent(userId, "timer:stopped", {
-        taskId: other.id,
-        actualMins: fields.actualMins,
-      });
-    }
-
-    // Resume from the exact seconds logged so far. The isNull guard makes a
-    // second start that raced this one leave the first start alone.
-    const [updatedTask] = await db
-      .update(tasks)
-      .set({
-        timerStartedAt: new Date(),
-        timerAccumulatedSeconds: timerSeconds(task),
-        updatedAt: new Date(),
-      })
-      .where(
-        and(
-          eq(tasks.id, id),
-          eq(tasks.userId, userId),
-          isNull(tasks.timerStartedAt)
-        )
-      )
-      .returning();
-
-    if (!updatedTask) {
-      const [current] = await db
-        .select()
-        .from(tasks)
-        .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
-        .limit(1);
-      return c.json({ success: true, data: current ?? task, stoppedTask });
-    }
-
-    // Broadcast timer:started event
-    if (updatedTask) {
-      publishEvent(userId, "timer:started", {
-        taskId: updatedTask.id,
-        startedAt: updatedTask.timerStartedAt!.toISOString(),
-        accumulatedSeconds: updatedTask.timerAccumulatedSeconds,
-      });
-    }
-
+    const { task: updatedTask, stoppedTask } = await startTaskTimer(db, userId, task);
     return c.json({ success: true, data: updatedTask, stoppedTask });
   }
 );
@@ -327,40 +268,9 @@ tasksRouter.post(
       .limit(1);
     if (!task) throw new NotFoundError("Task", id);
 
-    // Stopping a timer that isn't running is a no-op, so a double click or
-    // a stop from a second device can't fail.
-    if (!task.timerStartedAt) {
-      return c.json({ success: true, data: task });
-    }
-
-    const fields = stopTimerFields(task);
-    const actualMins = fields.actualMins;
-    const [updatedTask] = await db
-      .update(tasks)
-      .set({ ...fields, updatedAt: new Date() })
-      .where(
-        and(
-          eq(tasks.id, id),
-          eq(tasks.userId, userId),
-          isNotNull(tasks.timerStartedAt)
-        )
-      )
-      .returning();
-
-    if (!updatedTask) {
-      const [current] = await db
-        .select()
-        .from(tasks)
-        .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
-        .limit(1);
-      return c.json({ success: true, data: current ?? task });
-    }
-
-    publishEvent(userId, "timer:stopped", {
-      taskId: updatedTask.id,
-      actualMins,
-    });
-
+    // Stopping a timer that isn't running changes nothing, so a double
+    // click or a stop from a second device can't fail.
+    const updatedTask = await stopTaskTimer(db, userId, task);
     return c.json({ success: true, data: updatedTask });
   }
 );
@@ -427,11 +337,20 @@ tasksRouter.patch(
       updateData.actualMins = updates.actualMins;
       updateData.timerAccumulatedSeconds = (updates.actualMins ?? 0) * 60;
       if (existing.timerStartedAt) updateData.timerStartedAt = new Date();
-    } else if (updates.completedAt && existing.timerStartedAt) {
-      // Completing a task stops its timer, as POST /complete does.
-      const fields = stopTimerFields(existing);
-      Object.assign(updateData, fields);
-      timerStopped = fields.actualMins;
+    }
+    if (updates.completedAt) {
+      // Completing a task stops its timers, as POST /complete does.
+      await stopSubtaskTimers(db, userId, { taskId: id });
+      if (existing.timerStartedAt) {
+        if (updates.actualMins !== undefined) {
+          updateData.timerStartedAt = null;
+          timerStopped = updates.actualMins ?? 0;
+        } else {
+          const fields = stopTimerFields(existing);
+          Object.assign(updateData, fields);
+          timerStopped = fields.actualMins;
+        }
+      }
     }
 
     const [updatedTask] = await db
@@ -439,6 +358,19 @@ tasksRouter.patch(
       .set(updateData)
       .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
       .returning();
+
+    if (
+      updatedTask &&
+      updates.scheduledDate !== undefined &&
+      updates.scheduledDate !== existing.scheduledDate
+    ) {
+      const moved = await moveBlocksWithTasks(
+        userId,
+        [{ taskId: id, from: existing.scheduledDate }],
+        updatedTask.scheduledDate
+      );
+      if (moved > 0) publishEvent(userId, "timeblock:updated", { taskId: id });
+    }
 
     // Publish realtime event (fire and forget)
     // Use 'task:completed' if completedAt changed to a truthy value, otherwise 'task:updated'
@@ -565,6 +497,7 @@ tasksRouter.post(
       updatedAt: new Date(),
     };
 
+    await stopSubtaskTimers(db, userId, { taskId: id });
     if (existing.timerStartedAt) {
       const fields = stopTimerFields(existing);
       Object.assign(updateData, fields);
@@ -642,6 +575,12 @@ tasksRouter.post(
     const isBacklog = date === "backlog";
     const targetDate = isBacklog ? null : date;
 
+    // Tasks arriving from another day bring their time blocks along.
+    const previousDays = await db
+      .select({ taskId: tasks.id, from: tasks.scheduledDate })
+      .from(tasks)
+      .where(and(inArray(tasks.id, taskIds), eq(tasks.userId, userId)));
+
     // Update each task with new position and scheduled date
     // This handles both reordering within a date AND moving tasks between dates
     await Promise.all(
@@ -656,6 +595,9 @@ tasksRouter.post(
           .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
       )
     );
+
+    const movedBlocks = await moveBlocksWithTasks(userId, previousDays, targetDate);
+    if (movedBlocks > 0) publishEvent(userId, "timeblock:updated", { date });
 
     // Fetch all tasks for the target date
     const dateCondition = isBacklog

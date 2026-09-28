@@ -94,7 +94,7 @@ export function RightPanel({
     <TooltipProvider delayDuration={300}>
       <div className="flex h-full flex-shrink-0">
         {state.open && (
-          <div className="h-full w-[300px] border-l border-border/40">
+          <div className="h-full w-[320px] border-l border-border/40">
             {state.tab === "calendar" ? calendar : backlog}
           </div>
         )}

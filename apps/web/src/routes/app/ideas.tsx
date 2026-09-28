@@ -106,7 +106,7 @@ export default function IdeasPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-[calc(100dvh-4.75rem-env(safe-area-inset-bottom))] items-center justify-center lg:h-[calc(100vh-2.75rem)]">
+      <div className="flex h-full items-center justify-center lg:h-full">
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
@@ -116,7 +116,7 @@ export default function IdeasPage() {
   if (!boards || boards.length === 0) {
     return (
       <>
-        <div className="flex h-[calc(100dvh-4.75rem-env(safe-area-inset-bottom))] flex-col items-center justify-center gap-3 px-6 text-center lg:h-[calc(100vh-2.75rem)]">
+        <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center lg:h-full">
           <div className="grid h-12 w-12 place-items-center rounded-xl bg-muted text-muted-foreground">
             <LayoutGrid className="h-6 w-6" />
           </div>
@@ -140,7 +140,7 @@ export default function IdeasPage() {
   }
 
   return (
-    <div className="flex h-[calc(100dvh-4.75rem-env(safe-area-inset-bottom))] flex-col lg:h-[calc(100vh-2.75rem)] lg:flex-row">
+    <div className="flex h-full flex-col lg:h-full lg:flex-row">
       {/* Desktop rail */}
       <BoardRail
         boards={boards}

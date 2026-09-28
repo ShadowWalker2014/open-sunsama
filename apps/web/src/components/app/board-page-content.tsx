@@ -1,3 +1,4 @@
+import type { CalendarCreateAnchor } from "@/hooks/useDragToCreate";
 import * as React from "react";
 import type { Task, TimeBlock } from "@open-sunsama/types";
 import { KanbanBoard, useKanbanNavigation } from "@/components/kanban";
@@ -32,6 +33,7 @@ export function BoardPageContent() {
   );
   const [timeBlockSheetOpen, setTimeBlockSheetOpen] = React.useState(false);
 
+  const [createAnchor, setCreateAnchor] = React.useState<CalendarCreateAnchor>();
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [createDialogDate, setCreateDialogDate] = React.useState<Date>(new Date());
   const [createDialogStartTime, setCreateDialogStartTime] = React.useState<Date>(
@@ -79,7 +81,8 @@ export function BoardPageContent() {
       className="w-full border-l-0"
       onBlockClick={handleBlockClick}
       onEditBlock={handleEditBlock}
-      onTimeSlotClick={(date, startTime, endTime) => {
+      onTimeSlotClick={(date, startTime, endTime, anchor) => {
+        setCreateAnchor(anchor);
         setCreateDialogDate(date);
         setCreateDialogStartTime(startTime);
         setCreateDialogEndTime(endTime);
@@ -91,7 +94,7 @@ export function BoardPageContent() {
 
   return (
     <TasksDndProvider>
-      <div className="flex h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-3.5rem)]">
+      <div className="flex h-full min-h-0">
         <MobileBacklogSheet />
 
         <div className="flex flex-1 overflow-hidden">
@@ -101,18 +104,18 @@ export function BoardPageContent() {
               mode={mode}
               onModeChange={setMode}
               // Today puts the calendar beside the day, in the middle.
-              dayAside={mode === "day" ? calendarPanel : undefined}
+              dayAside={mode === "day" ? <RightPanel calendar={calendarPanel} backlog={<BacklogPanel />} /> : undefined}
             >
               <TasksKeyboardShortcuts />
             </KanbanBoard>
           </div>
 
-          <div className="hidden lg:flex">
+          {mode !== "day" && <div className="hidden lg:flex">
             <RightPanel
-              calendar={mode === "day" ? undefined : calendarPanel}
+              calendar={calendarPanel}
               backlog={<BacklogPanel />}
             />
-          </div>
+          </div>}
         </div>
       </div>
 
@@ -135,6 +138,7 @@ export function BoardPageContent() {
       />
 
       <CreateTimeBlockDialog
+        anchor={createAnchor}
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
         date={createDialogDate}
