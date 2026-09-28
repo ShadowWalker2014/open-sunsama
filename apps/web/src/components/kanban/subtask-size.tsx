@@ -24,6 +24,10 @@ export const SUBTASK_STYLES = {
   },
 } as const;
 
+export function useSubtaskSize() {
+  return React.useContext(SubtaskSizeContext);
+}
+
 export function useSubtaskStyles() {
   return SUBTASK_STYLES[React.useContext(SubtaskSizeContext)];
 }

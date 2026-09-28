@@ -436,6 +436,9 @@ export interface Subtask {
   title: string;
   completed: boolean;
   position: number;
+  estimatedMins?: number | null;
+  actualMins?: number | null;
+  timerStartedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -449,6 +452,8 @@ export interface UpdateSubtaskInput {
   title?: string;
   completed?: boolean;
   position?: number;
+  estimatedMins?: number | null;
+  actualMins?: number | null;
 }
 
 export interface TimeBlock {
