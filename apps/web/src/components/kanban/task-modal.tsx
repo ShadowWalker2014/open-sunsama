@@ -76,7 +76,11 @@ import { PriorityMenu } from "./priority-menu";
 import { PriorityIcon, PRIORITY_META } from "@/components/ui/priority-badge";
 import { WithShortcut } from "@/components/ui/with-shortcut";
 import { useCreateTaskSeries } from "@/hooks/useTaskSeries";
-import { formatClock, useTaskTimerToggle } from "@/hooks/useTaskTimerToggle";
+import {
+  formatClock,
+  isSingleClick,
+  useTaskTimerToggle,
+} from "@/hooks/useTaskTimerToggle";
 import { useTaskTimerDisplay } from "./task-time-badge";
 
 // ============================================
@@ -239,6 +243,7 @@ export function TaskModal({
       // Space to toggle timer (same as focus mode)
       if (
         (e.key === " " || e.code === "Space") &&
+        !e.repeat &&
         !e.shiftKey &&
         !e.ctrlKey &&
         !e.metaKey &&
@@ -701,7 +706,7 @@ export function TaskModal({
     >
       <button
         type="button"
-        onClick={handleTimerToggle}
+        onClick={(e) => isSingleClick(e) && handleTimerToggle()}
         aria-label={isTimerRunning ? "Stop timer" : "Start timer"}
         className={cn(
           "flex h-9 shrink-0 items-center gap-2 rounded-md border px-3 text-xs font-medium uppercase tracking-wider transition-colors",
@@ -765,9 +770,9 @@ export function TaskModal({
   );
   const times = (
     <div className="flex shrink-0 items-center gap-4">
-      {timerButton}
       {actualColumn}
       {plannedColumn}
+      {timerButton}
     </div>
   );
 

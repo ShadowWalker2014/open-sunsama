@@ -148,6 +148,8 @@ calendarEventsRouter.get(
         status: calendarEvents.status,
         responseStatus: calendarEvents.responseStatus,
         htmlLink: calendarEvents.htmlLink,
+        attendees: calendarEvents.attendees,
+        conferenceUrl: calendarEvents.conferenceUrl,
         createdAt: calendarEvents.createdAt,
         updatedAt: calendarEvents.updatedAt,
       })
@@ -456,6 +458,8 @@ calendarEventsRouter.post(
         responseStatus: externalEvent.responseStatus,
         htmlLink: externalEvent.htmlLink,
         etag: externalEvent.etag,
+        attendees: externalEvent.attendees,
+        conferenceUrl: externalEvent.conferenceUrl,
       })
       .returning();
 
@@ -673,6 +677,8 @@ calendarEventsRouter.patch(
         responseStatus: updatedExternal.responseStatus,
         htmlLink: updatedExternal.htmlLink,
         etag: updatedExternal.etag,
+        attendees: updatedExternal.attendees,
+        conferenceUrl: updatedExternal.conferenceUrl,
         updatedAt: new Date(),
       })
       .where(eq(calendarEvents.id, eventId))
@@ -681,6 +687,141 @@ calendarEventsRouter.patch(
     if (updated) {
       // Notify other tabs / devices via the realtime channel; the client
       // invalidates the calendar-events query on receipt.
+      await publishEvent(userId, 'calendar-event:updated', {
+        id: updated.id,
+        calendarId: updated.calendarId,
+      });
+    }
+
+    return c.json({
+      success: true,
+      data: {
+        ...updated,
+        calendar: {
+          id: row.calendar.id,
+          name: row.calendar.name,
+          color: row.calendar.color,
+        },
+      },
+    });
+  }
+);
+
+const rsvpBodySchema = z.object({
+  response: z.enum(['accepted', 'declined', 'tentative']),
+});
+
+/**
+ * POST /calendar-events/:id/rsvp
+ * Answer an invitation (going, maybe, not going) as the connected
+ * account. The provider notifies the organizer, as its own app would.
+ */
+calendarEventsRouter.post(
+  '/:id/rsvp',
+  requireScopes('user:write'),
+  zValidator('json', rsvpBodySchema),
+  async (c) => {
+    const userId = c.get('userId');
+    const eventId = c.req.param('id');
+    const { response } = c.req.valid('json');
+    const db = getDb();
+
+    const row = await loadEventForWrite(eventId, userId);
+    if (!row) {
+      return c.json(
+        { success: false, error: { code: 'NOT_FOUND', message: 'Event not found' } },
+        404
+      );
+    }
+
+    const provider = getProvider(row.account.provider);
+    if (!provider || !provider.respondToEvent) {
+      return c.json(
+        {
+          success: false,
+          error: {
+            code: 'PROVIDER_READ_ONLY',
+            message: `Answering ${row.account.provider} invitations is not supported yet.`,
+          },
+        },
+        409
+      );
+    }
+
+    const tokenResult = await resolveAccessTokenOrAuthFail(
+      row.account,
+      provider
+    );
+    if (!tokenResult.ok) return c.json(tokenResult.body, tokenResult.status);
+
+    let answered;
+    try {
+      answered = await provider.respondToEvent(
+        tokenResult.accessToken,
+        row.calendar.externalId,
+        row.event.externalId,
+        response
+      );
+    } catch (err) {
+      if (err instanceof ProviderReadOnlyError) {
+        return c.json(
+          {
+            success: false,
+            error: {
+              code: 'NOT_INVITED',
+              message: 'Only guests can answer an invitation.',
+            },
+          },
+          409
+        );
+      }
+      if (err instanceof ProviderEventNotFoundError) {
+        return c.json(
+          {
+            success: false,
+            error: {
+              code: 'EVENT_OUT_OF_SYNC',
+              message:
+                'This event is out of sync with your calendar. Refresh or run "Reset & re-sync" in Settings.',
+            },
+          },
+          410
+        );
+      }
+      if (err instanceof ProviderAuthError) {
+        return c.json(
+          {
+            success: false,
+            error: {
+              code: 'PROVIDER_AUTH_FAILED',
+              message:
+                'Your calendar connection needs to be re-authorized. Reconnect the account in Settings.',
+            },
+          },
+          401
+        );
+      }
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      return c.json(
+        { success: false, error: { code: 'PROVIDER_ERROR', message } },
+        502
+      );
+    }
+
+    // Outlook doesn't mark our own attendee entry, so the answer we just
+    // sent is the authoritative response status.
+    const [updated] = await db
+      .update(calendarEvents)
+      .set({
+        responseStatus: response,
+        attendees: answered.attendees,
+        etag: answered.etag,
+        updatedAt: new Date(),
+      })
+      .where(eq(calendarEvents.id, eventId))
+      .returning();
+
+    if (updated) {
       await publishEvent(userId, 'calendar-event:updated', {
         id: updated.id,
         calendarId: updated.calendarId,

@@ -8,7 +8,11 @@ import {
 } from "@/components/ui/time-dropdown";
 import { WithShortcut } from "@/components/ui/with-shortcut";
 import { useTaskTimerDisplay } from "@/components/kanban/task-time-badge";
-import { formatClock, useTaskTimerToggle } from "@/hooks/useTaskTimerToggle";
+import {
+  formatClock,
+  isSingleClick,
+  useTaskTimerToggle,
+} from "@/hooks/useTaskTimerToggle";
 
 interface FocusTimerProps {
   task: Task;
@@ -104,7 +108,7 @@ export function FocusTimer({
       >
         <button
           type="button"
-          onClick={toggle}
+          onClick={(e) => isSingleClick(e) && toggle()}
           aria-label={isTimerRunning ? "Stop timer" : "Start timer"}
           className={cn(
             "mb-0.5 flex h-10 items-center gap-2 rounded-md border px-4 text-xs font-semibold uppercase tracking-wider transition-colors",

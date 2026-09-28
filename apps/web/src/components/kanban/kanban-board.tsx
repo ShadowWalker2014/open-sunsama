@@ -185,7 +185,7 @@ export function KanbanBoard({
               wide
             />
             {dayAside && (
-              <div className="hidden h-full w-[320px] shrink-0 lg:block">{dayAside}</div>
+              <div className="hidden h-full shrink-0 lg:block">{dayAside}</div>
             )}
           </div>
         ) : (

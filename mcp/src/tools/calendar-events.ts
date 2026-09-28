@@ -80,7 +80,9 @@ function formatEventLine(event: CalendarEvent, day: string, timeZone: string): s
   }
   const calendar = event.calendar?.name ? ` [${event.calendar.name}]` : "";
   const location = event.location ? ` @ ${event.location}` : "";
-  return `${when}: ${event.title}${calendar}${location}${eventFlags(event)}`;
+  const guests = event.attendees?.length ? ` · ${event.attendees.length} guests` : "";
+  const join = event.conferenceUrl ? ` · join: ${event.conferenceUrl}` : "";
+  return `${when}: ${event.title}${calendar}${location}${eventFlags(event)}${guests}${join}`;
 }
 
 /** Events for one local day, all-day first, then by start time. */
@@ -149,7 +151,8 @@ Dates are YYYY-MM-DD in the user's timezone, and times are shown in that timezon
 Treat events as busy time: they are read-only here and cannot be moved or edited.
 For a full day view with time blocks too, use get_schedule_for_day.
 
-Returns each event's time (or "All day"), title, calendar name, and location.
+Returns each event's time (or "All day"), title, calendar name, location,
+guest count, and video call link.
 Declined and tentative events are marked. Cancelled events are left out.`,
     {
       date: z

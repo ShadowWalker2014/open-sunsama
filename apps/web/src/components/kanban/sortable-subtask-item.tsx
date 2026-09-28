@@ -5,7 +5,8 @@ import { X, GripVertical, Check } from "lucide-react";
 import type { Subtask } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { useHoveredTask } from "@/hooks/useKeyboardShortcuts";
-import { useSubtaskStyles, subtaskCheckState } from "./subtask-size";
+import { useSubtaskSize, useSubtaskStyles, subtaskCheckState } from "./subtask-size";
+import { SubtaskTiming } from "./subtask-timing";
 
 // Re-export for convenience
 export type { Subtask };
@@ -29,6 +30,9 @@ export function SortableSubtaskItem({
 }: SortableSubtaskItemProps) {
   const { setHoveredSubtaskId } = useHoveredTask();
   const size = useSubtaskStyles();
+  // The large rows (task modal, focus mode) carry times and a timer.
+  const showTiming =
+    useSubtaskSize() === "lg" && !subtask.id.startsWith("optimistic-");
   const [isEditing, setIsEditing] = React.useState(false);
   const [editValue, setEditValue] = React.useState(subtask.title);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -86,6 +90,7 @@ export function SortableSubtaskItem({
       className={cn(
         "group relative -mx-2 flex items-start rounded-md px-2 transition-colors",
         size.row,
+        showTiming && "max-sm:grid max-sm:grid-cols-[auto_minmax(0,1fr)_auto]",
         "hover:bg-muted/40",
         isEditing && "bg-muted/40",
         isDragging && "z-10 bg-muted/60 shadow-sm"
@@ -154,6 +159,8 @@ export function SortableSubtaskItem({
           {subtask.title}
         </span>
       )}
+
+      {showTiming && <div className="max-sm:col-start-2 max-sm:col-span-2 max-sm:row-start-2"><SubtaskTiming subtask={subtask} /></div>}
 
       <button
         type="button"

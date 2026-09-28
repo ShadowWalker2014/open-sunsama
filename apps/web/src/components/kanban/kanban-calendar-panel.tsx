@@ -1,3 +1,4 @@
+import type { CalendarCreateAnchor } from "@/hooks/useDragToCreate";
 import * as React from "react";
 import { useDndMonitor, useDroppable, type DragMoveEvent } from "@dnd-kit/core";
 import {
@@ -37,6 +38,7 @@ import {
   type LayoutResult,
 } from "@/components/calendar/event-layout";
 import { isCalendarReadOnlyForUi } from "@/lib/calendar-providers";
+import { useDragToCreate } from "@/hooks/useDragToCreate";
 import {
   useCalendarDnd,
   HOUR_HEIGHT,
@@ -83,7 +85,7 @@ interface KanbanCalendarPanelProps {
   className?: string;
   onBlockClick?: (block: TimeBlockType) => void;
   onEditBlock?: (block: TimeBlockType) => void;
-  onTimeSlotClick?: (date: Date, startTime: Date, endTime: Date) => void;
+  onTimeSlotClick?: (date: Date, startTime: Date, endTime: Date, anchor?: CalendarCreateAnchor) => void;
   onViewTask?: (taskId: string) => void;
 }
 
@@ -457,6 +459,13 @@ export function KanbanCalendarPanel({
     startBlockResize(block, edge, e.clientY);
   };
 
+  // Press and drag on empty space to sweep out a new block.
+  const createDrag = useDragToCreate(
+    onTimeSlotClick
+      ? ({ day, start, end, anchor }) => onTimeSlotClick(day, start, end, anchor)
+      : undefined
+  );
+
   // Handle click on empty time slot
   const handleTimeSlotClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // Don't trigger if clicking on a time block, an external calendar
@@ -482,7 +491,7 @@ export function KanbanCalendarPanel({
     }
 
     // Don't trigger if we just ended a drag/resize operation
-    if (justEndedDrag) {
+    if (justEndedDrag || createDrag.shouldIgnoreClick()) {
       return;
     }
 
@@ -499,7 +508,7 @@ export function KanbanCalendarPanel({
     const snappedStartTime = snapToInterval(clickedTime, SNAP_INTERVAL);
     const snappedEndTime = addMinutes(snappedStartTime, 60);
 
-    onTimeSlotClick(date, snappedStartTime, snappedEndTime);
+    onTimeSlotClick(date, snappedStartTime, snappedEndTime, { x: e.clientX, y: e.clientY });
   };
 
   return (
@@ -582,6 +591,8 @@ export function KanbanCalendarPanel({
             onMouseUp={handleTimelineMouseUp}
             onMouseLeave={handleTimelineMouseLeave}
             onClick={handleTimeSlotClick}
+            data-calendar-create-column
+            onMouseDown={(e) => createDrag.startCreate(e, date)}
           >
             {/* Hour grid lines */}
             {hours.map((hour) => (
@@ -713,6 +724,22 @@ export function KanbanCalendarPanel({
                 height={
                   (differenceInMinutes(cardPreview.end, cardPreview.start) /
                     60) *
+                  HOUR_HEIGHT
+                }
+              />
+            )}
+
+            {/* Block being swept out by a drag on empty space */}
+            {createDrag.range && (
+              <TimeBlockPreview
+                title="New block"
+                startTime={createDrag.range.start}
+                endTime={createDrag.range.end}
+                top={calculateYFromTime(createDrag.range.start)}
+                height={
+                  ((createDrag.range.end.getTime() -
+                    createDrag.range.start.getTime()) /
+                    3_600_000) *
                   HOUR_HEIGHT
                 }
               />

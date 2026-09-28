@@ -13,7 +13,14 @@ import { defineTool } from "../lib/define-tool.js";
  */
 function formatSubtask(subtask: Subtask): string {
   const checkbox = subtask.completed ? "[x]" : "[ ]";
-  return `${checkbox} ${subtask.title} (id: ${subtask.id}, position: ${subtask.position})`;
+  const times = [
+    subtask.estimatedMins ? `planned ${subtask.estimatedMins}m` : null,
+    subtask.actualMins ? `logged ${subtask.actualMins}m` : null,
+    subtask.timerStartedAt ? "timer running" : null,
+  ].filter(Boolean);
+  return `${checkbox} ${subtask.title} (id: ${subtask.id}, position: ${subtask.position}${
+    times.length ? `, ${times.join(", ")}` : ""
+  })`;
 }
 
 /**
@@ -199,7 +206,7 @@ export function registerSubtaskTools(
   // Update a subtask
   defineTool(server,
     "update_subtask",
-    "Update a subtask's title, completion status, or position. Use this to rename a subtask, manually set its completion status, or reorder it within the task's subtask list. At least one field (title, completed, or position) must be provided.",
+    "Update a subtask's title, completion status, position, planned minutes or logged minutes. Use this to rename a subtask, set its completion status, reorder it, or plan and log time on it. At least one field must be provided.",
     {
       taskId: z
         .string()
@@ -227,6 +234,22 @@ export function registerSubtaskTools(
         .describe(
           "New position in the subtask list (0-indexed). Lower numbers appear first"
         ),
+      estimatedMins: z
+        .number()
+        .int()
+        .min(1)
+        .max(1440)
+        .nullable()
+        .optional()
+        .describe("Planned minutes for the subtask (1–1440); null clears it"),
+      actualMins: z
+        .number()
+        .int()
+        .min(0)
+        .max(1440)
+        .nullable()
+        .optional()
+        .describe("Minutes already spent on the subtask (0–1440); null clears it"),
     },
     async (input) => {
       try {
@@ -235,6 +258,8 @@ export function registerSubtaskTools(
           title?: string;
           completed?: boolean;
           position?: number;
+          estimatedMins?: number | null;
+          actualMins?: number | null;
         } = {};
 
         if (input.title !== undefined) {
@@ -246,11 +271,17 @@ export function registerSubtaskTools(
         if (input.position !== undefined) {
           updateData.position = input.position;
         }
+        if (input.estimatedMins !== undefined) {
+          updateData.estimatedMins = input.estimatedMins;
+        }
+        if (input.actualMins !== undefined) {
+          updateData.actualMins = input.actualMins;
+        }
 
         // Check if at least one field is provided
         if (Object.keys(updateData).length === 0) {
           return errorResponse(
-            "At least one field (title, completed, or position) must be provided to update"
+            "At least one field (title, completed, position, estimatedMins or actualMins) must be provided to update"
           );
         }
 
