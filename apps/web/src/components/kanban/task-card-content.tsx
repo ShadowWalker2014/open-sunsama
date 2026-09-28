@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Check, Clock, Flag } from "lucide-react";
+import { Check, Clock } from "lucide-react";
 import type {
   Task,
   Subtask,
@@ -14,6 +14,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { TaskTimeBadge } from "./task-time-badge";
+import { PriorityIcon, PRIORITY_META } from "@/components/ui/priority-badge";
 
 interface TaskCardContentProps {
   task: Task;
@@ -26,6 +27,8 @@ interface TaskCardContentProps {
   className?: string;
   /** Optional scheduled time to display (Date object or ISO string) */
   scheduledTime?: Date | string | null;
+  /** The time is projected from the day's order, not a calendar block. */
+  timeIsProjected?: boolean;
   /** Optional tag/project name to display */
   tag?: string | null;
   /** Optional tag color (hex or CSS color) */
@@ -40,33 +43,7 @@ interface TaskCardContentProps {
   onUpdateTask?: (data: UpdateTaskInput) => void;
 }
 
-// Priority options for inline editing
-const PRIORITY_OPTIONS: {
-  value: TaskPriority;
-  label: string;
-  color: string;
-}[] = [
-  {
-    value: "P0",
-    label: "P0",
-    color: "bg-red-500/15 text-red-600 dark:text-red-400",
-  },
-  {
-    value: "P1",
-    label: "P1",
-    color: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-  },
-  {
-    value: "P2",
-    label: "P2",
-    color: "bg-blue-500/10 text-blue-500 dark:text-blue-400",
-  },
-  {
-    value: "P3",
-    label: "P3",
-    color: "bg-slate-500/10 text-slate-500 dark:text-slate-400",
-  },
-];
+const PRIORITIES: TaskPriority[] = ["P0", "P1", "P2", "P3"];
 
 // Duration presets in minutes
 const DURATION_PRESETS = [
@@ -80,13 +57,6 @@ const DURATION_PRESETS = [
   { value: 120, label: "2h" },
 ];
 
-// Priority reads like Sunsama's channel tag: a small colored label.
-const PRIORITY_TEXT: Record<TaskPriority, string> = {
-  P0: "text-red-500",
-  P1: "text-orange-500",
-  P2: "text-sky-500",
-  P3: "text-muted-foreground/70",
-};
 
 /**
  * Shared content component for task cards.
@@ -102,6 +72,7 @@ export function TaskCardContent({
   onHoverChange,
   className,
   scheduledTime,
+  timeIsProjected = false,
   tag,
   tagColor,
   subtasks,
@@ -218,7 +189,13 @@ export function TaskCardContent({
       {/* Top line: scheduled time on the left, planned / actual on the right */}
       {(formattedTime || hasTimeInfo) && (
         <div className="flex h-5 items-center justify-between gap-2">
-          <span className="text-[11px] font-semibold tabular-nums text-muted-foreground">
+          <span
+            className={cn(
+              "text-[11px] font-semibold tabular-nums",
+              timeIsProjected ? "text-muted-foreground/60" : "text-muted-foreground"
+            )}
+            title={timeIsProjected ? "Projected start, from the order of today's list" : undefined}
+          >
             {formattedTime}
           </span>
           <TaskTimeBadge
@@ -337,44 +314,61 @@ export function TaskCardContent({
             <button
               type="button"
               onClick={(e) => e.stopPropagation()}
-              aria-label={`Priority ${task.priority}`}
+              aria-label={`${task.priority} · ${PRIORITY_META[task.priority].description}`}
+              title={`${task.priority} · ${PRIORITY_META[task.priority].description}`}
               className={cn(
-                "flex h-6 items-center gap-1 rounded px-1 text-[11px] font-semibold transition-colors hover:bg-muted focus:outline-none",
+                "flex h-6 w-6 items-center justify-center rounded transition-colors hover:bg-muted focus:outline-none",
                 !tag && "ml-auto",
-                PRIORITY_TEXT[task.priority]
+                // Normal is the default and stays hidden until hover.
+                task.priority === "P2" &&
+                  "opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100"
               )}
             >
-              <Flag className="h-3 w-3" fill="currentColor" strokeWidth={0} />
-              {task.priority}
+              <PriorityIcon priority={task.priority} />
             </button>
           </PopoverTrigger>
           <PopoverContent
-            className="w-auto p-1"
+            className="w-52 p-1"
             align="end"
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              const picked = PRIORITIES.find((p) => PRIORITY_META[p].key === e.key);
+              if (picked) {
+                e.preventDefault();
+                handlePriorityChange(picked);
+              }
+            }}
           >
-            <div className="flex flex-col gap-0.5">
-              {PRIORITY_OPTIONS.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handlePriorityChange(option.value);
-                  }}
-                  className={cn(
-                    "flex items-center gap-2 px-2 py-1 text-xs rounded transition-colors",
-                    "hover:bg-accent hover:text-accent-foreground",
-                    task.priority === option.value && "bg-accent"
-                  )}
-                >
-                  <span className={cn("flex items-center gap-1 font-semibold", PRIORITY_TEXT[option.value])}>
-                    <Flag className="h-3 w-3" fill="currentColor" strokeWidth={0} />
-                    {option.label}
+            <p className="px-2 pb-1 pt-1.5 text-xs text-muted-foreground">
+              Priority
+            </p>
+            {PRIORITIES.map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePriorityChange(p);
+                }}
+                className={cn(
+                  "flex w-full items-center gap-2.5 rounded px-2 py-1.5 text-sm transition-colors hover:bg-accent",
+                  task.priority === p && "bg-accent"
+                )}
+              >
+                <PriorityIcon priority={p} />
+                <span className="w-6 text-left font-semibold">{p}</span>
+                <span className="flex-1 text-left text-muted-foreground">
+                  {PRIORITY_META[p].description}
+                </span>
+                {task.priority === p ? (
+                  <Check className="h-3.5 w-3.5" />
+                ) : (
+                  <span className="text-xs text-muted-foreground">
+                    {PRIORITY_META[p].key}
                   </span>
-                </button>
-              ))}
-            </div>
+                )}
+              </button>
+            ))}
           </PopoverContent>
         </Popover>
       </div>

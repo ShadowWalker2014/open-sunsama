@@ -1,5 +1,5 @@
 import * as React from "react";
-import { format, isToday, isPast, isYesterday } from "date-fns";
+import { format, isToday, isPast, isYesterday, startOfDay, endOfDay } from "date-fns";
 import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -8,6 +8,9 @@ import {
 import type { Task } from "@open-sunsama/types";
 import { useTasks } from "@/hooks/useTasks";
 import { useTimeBlocks } from "@/hooks/useTimeBlocks";
+import { useCalendarEvents } from "@/hooks/useCalendars";
+import { useAuth } from "@/hooks/useAuth";
+import { projectTaskStarts } from "@/lib/task-projection";
 import { cn, formatDuration } from "@/lib/utils";
 import { ScrollArea, Skeleton } from "@/components/ui";
 import { SortableTaskCard, TaskCard, TaskCardPlaceholder } from "./task-card";
@@ -174,6 +177,34 @@ export function DayColumn({
   );
 
   // Calculate progress for today column
+  // Open tasks without a block get Sunsama-style projected start times:
+  // laid end to end from the workday start around blocks and meetings.
+  const { user } = useAuth();
+  const workStartHour = user?.preferences?.workStartHour ?? 9;
+  const { data: dayEvents } = useCalendarEvents(
+    startOfDay(date).toISOString(),
+    endOfDay(date).toISOString()
+  );
+  const projectedStartByTaskId = React.useMemo(
+    () =>
+      projectTaskStarts({
+        day: date,
+        tasks: pendingTasks,
+        blockedTaskIds: new Set(blockStartByTaskId.keys()),
+        busy: [
+          ...(timeBlocks ?? []).map((b) => ({
+            start: new Date(b.startTime),
+            end: new Date(b.endTime),
+          })),
+          ...(dayEvents ?? [])
+            .filter((e) => !e.isAllDay && e.responseStatus !== "declined")
+            .map((e) => ({ start: new Date(e.startTime), end: new Date(e.endTime) })),
+        ],
+        workStartHour,
+      }),
+    [date, pendingTasks, blockStartByTaskId, timeBlocks, dayEvents, workStartHour]
+  );
+
   const totalTasks = pendingTasks.length + completedTasks.length;
   const progressPercent =
     totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 0;
@@ -271,7 +302,12 @@ export function DayColumn({
                     task={task}
                     onSelect={onSelectTask}
                     isDragging={activeTaskId === task.id}
-                    scheduledTime={blockStartByTaskId.get(task.id) ?? null}
+                    scheduledTime={
+                      blockStartByTaskId.get(task.id) ??
+                      projectedStartByTaskId.get(task.id) ??
+                      null
+                    }
+                    timeIsProjected={!blockStartByTaskId.has(task.id)}
                   />
                 ))}
               </SortableContext>

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ChevronLeft, ChevronRight, CalendarDays, ArrowUpDown, Check, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowUpDown, Check } from "lucide-react";
 import type { TaskSortBy } from "@open-sunsama/types";
 import {
   Button,
@@ -10,7 +10,6 @@ import {
   ShortcutHint,
   ViewSearch,
 } from "@/components/ui";
-import { prefetchAddTaskModal } from "./add-task-modal.lazy";
 
 // Extended sort option that includes direction
 export type SortOption = "position" | "priority-desc" | "priority-asc" | "createdAt-desc" | "createdAt-asc";
@@ -47,7 +46,6 @@ interface KanbanBoardToolbarProps {
   onNavigatePrevious: () => void;
   onNavigateNext: () => void;
   onNavigateToday: () => void;
-  onAddTask: () => void;
   sortBy: SortOption;
   onSortChange: (sort: SortOption) => void;
   /** Substring filter applied to task titles/notes across the day columns. */
@@ -82,7 +80,6 @@ export function KanbanBoardToolbar({
   onNavigatePrevious,
   onNavigateNext,
   onNavigateToday,
-  onAddTask,
   sortBy,
   onSortChange,
   searchQuery,
@@ -91,12 +88,12 @@ export function KanbanBoardToolbar({
   const currentSortLabel = SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? "Manual";
 
   return (
-    <div className="flex h-14 flex-shrink-0 items-center justify-between px-3 sm:px-4">
+    <div className="flex h-12 flex-shrink-0 items-center justify-between px-3 sm:px-4">
       <div className="flex items-center gap-2 sm:gap-3">
         {/* Navigation Arrows */}
         <div className="flex items-center gap-0.5 sm:gap-1">
           <Button
-            variant="outline"
+            variant="ghost"
             size="icon"
             onClick={onNavigatePrevious}
             title="Previous day"
@@ -105,16 +102,15 @@ export function KanbanBoardToolbar({
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={onNavigateToday}
             className="group h-8 px-2.5"
           >
-            <CalendarDays className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Today</span>
+            <span>Today</span>
             <ShortcutHint shortcutKey="goToToday" className="ml-2 hidden sm:flex" showOnHover />
           </Button>
           <Button
-            variant="outline"
+            variant="ghost"
             size="icon"
             onClick={onNavigateNext}
             title="Next day"
@@ -135,32 +131,20 @@ export function KanbanBoardToolbar({
           placeholder="Search tasks…"
         />
 
-        {/* Primary Add Task action */}
-        <Button
-          onClick={onAddTask}
-          onMouseEnter={() => {
-            void prefetchAddTaskModal();
-          }}
-          onFocus={() => {
-            void prefetchAddTaskModal();
-          }}
-          size="sm"
-          className="gap-1.5 h-8 pl-2.5 pr-1.5"
-        >
-          <Plus className="h-4 w-4" />
-          <span className="hidden sm:inline">Add task</span>
-          <kbd className="hidden sm:inline-flex h-4 min-w-[16px] items-center justify-center rounded border border-primary-foreground/25 bg-primary-foreground/15 px-1 text-[9px] font-semibold leading-none">
-            A
-          </kbd>
-        </Button>
-
         {/* Sort Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1.5 h-8 px-2.5">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1.5 px-2 text-muted-foreground hover:text-foreground"
+              title={`Sort: ${currentSortLabel}`}
+            >
               <ArrowUpDown className="h-4 w-4" />
-              <span className="hidden sm:inline">Sort:</span>
-              <span className="text-xs sm:text-sm">{currentSortLabel}</span>
+              {/* Name the order only when it isn't the default */}
+              {sortBy !== "position" && (
+                <span className="text-sm">{currentSortLabel}</span>
+              )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">

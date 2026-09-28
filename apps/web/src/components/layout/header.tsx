@@ -13,11 +13,14 @@ import {
   User,
   Download,
   BookOpen,
+  Check,
+  Keyboard,
 } from "lucide-react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
 import { useSearch } from "@/hooks/useSearch";
 import { useTheme } from "@/hooks/useTheme";
+import { useShortcutsModal } from "@/hooks/useKeyboardShortcuts";
 import { prefetchCommandPalette } from "@/components/command-palette/command-palette.lazy";
 import { DesktopUpdateMenuItem } from "@/components/desktop-update-menu-item";
 import { cn, getAvatarUrl } from "@/lib/utils";
@@ -48,6 +51,7 @@ export function Header({ className }: HeaderProps) {
   const { user, logout } = useAuth();
   const { openSearch } = useSearch();
   const { themeMode, setThemeMode } = useTheme();
+  const { setShowShortcutsModal } = useShortcutsModal();
   const isDesktopApp = React.useMemo(() => isTauriApp(), []);
 
   const userInitials = React.useMemo(() => {
@@ -116,64 +120,15 @@ export function Header({ className }: HeaderProps) {
           onFocus={() => {
             void prefetchCommandPalette();
           }}
-          className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded border border-border/40 bg-muted/30 hover:bg-muted transition-colors text-xs text-muted-foreground mr-2"
+          className="mr-1 hidden lg:flex h-7 items-center gap-1.5 rounded-md px-2 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
           <Search className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Search...</span>
+          <span className="hidden sm:inline">Search</span>
           <ShortcutHint shortcutKey="search" />
         </button>
 
-        {/* Global Shortcut Hint - Hidden on mobile */}
-        <div className="hidden lg:flex items-center mr-3 text-[10px] text-muted-foreground/50">
-          Press{" "}
-          <kbd className="mx-1 rounded border border-border/40 bg-muted/50 px-1 py-0.5 text-[9px] font-medium">
-            ?
-          </kbd>{" "}
-          for shortcuts
-        </div>
-
         {/* Actions */}
         <div className="flex items-center gap-1">
-          {/* Theme Toggle - Icon-only segmented control (hidden on mobile) */}
-          <div className="hidden lg:inline-flex items-center rounded border border-border/40 bg-muted/30 p-0.5">
-            <button
-              onClick={() => setThemeMode("system")}
-              className={cn(
-                "inline-flex h-6 w-6 items-center justify-center rounded transition-all",
-                themeMode === "system"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-              title="System theme"
-            >
-              <Monitor className="h-3 w-3" />
-            </button>
-            <button
-              onClick={() => setThemeMode("light")}
-              className={cn(
-                "inline-flex h-6 w-6 items-center justify-center rounded transition-all",
-                themeMode === "light"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-              title="Light theme"
-            >
-              <Sun className="h-3 w-3" />
-            </button>
-            <button
-              onClick={() => setThemeMode("dark")}
-              className={cn(
-                "inline-flex h-6 w-6 items-center justify-center rounded transition-all",
-                themeMode === "dark"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-              title="Dark theme"
-            >
-              <Moon className="h-3 w-3" />
-            </button>
-          </div>
-
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -216,6 +171,39 @@ export function Header({ className }: HeaderProps) {
                   Settings
                 </Link>
               </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-[13px] py-1.5 cursor-pointer"
+                onClick={() => setShowShortcutsModal(true)}
+              >
+                <Keyboard className="mr-2 h-3.5 w-3.5" />
+                Keyboard shortcuts
+                <span className="ml-auto text-[11px] text-muted-foreground">?</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="py-1 text-[11px] font-normal text-muted-foreground">
+                Theme
+              </DropdownMenuLabel>
+              {(
+                [
+                  ["system", "System", Monitor],
+                  ["light", "Light", Sun],
+                  ["dark", "Dark", Moon],
+                ] as const
+              ).map(([mode, label, Icon]) => (
+                <DropdownMenuItem
+                  key={mode}
+                  className="text-[13px] py-1.5 cursor-pointer"
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    setThemeMode(mode);
+                  }}
+                >
+                  <Icon className="mr-2 h-3.5 w-3.5" />
+                  {label}
+                  {themeMode === mode && <Check className="ml-auto h-3.5 w-3.5" />}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
               <DropdownMenuItem asChild className="text-[13px] py-1.5">
                 <a
                   href="/docs"
