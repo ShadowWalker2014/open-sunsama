@@ -82,11 +82,25 @@ export interface EventDragOptions {
  * can use the detail sheet to change the date.
  */
 export function useMultiDayEventDrag(options: EventDragOptions) {
-  const [dragState, setDragState] = React.useState<EventDragState | null>(null);
+  const [dragState, setDragStateRaw] = React.useState<EventDragState | null>(
+    null
+  );
+  // The document listeners read the ref, so it must change in the same
+  // tick as the mouse. Syncing it from an effect lagged a render behind,
+  // and a quick drag dropped where the cursor had been, not where it was
+  // released.
   const dragStateRef = React.useRef<EventDragState | null>(null);
-  React.useEffect(() => {
-    dragStateRef.current = dragState;
-  }, [dragState]);
+  const setDragState = React.useCallback((next: EventDragState | null) => {
+    dragStateRef.current = next;
+    setDragStateRaw(next);
+  }, []);
+  const patchDragState = React.useCallback(
+    (patch: Partial<EventDragState>) => {
+      const prev = dragStateRef.current;
+      if (prev) setDragState({ ...prev, ...patch });
+    },
+    [setDragState]
+  );
 
   // Stash latest options in a ref so the global listeners can call the
   // most recent onCommit without re-binding on every options change.
@@ -133,7 +147,7 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
         external: false,
       });
     },
-    []
+    [setDragState]
   );
 
   /**
@@ -164,7 +178,7 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
         external: true,
       });
     },
-    []
+    [setDragState]
   );
 
   // The mousemove handler reads the live state via `dragStateRef`, so
@@ -345,18 +359,13 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
         previewEnd = snappedEnd;
       }
 
-      setDragState((prev) =>
-        prev
-          ? {
-              ...prev,
-              previewStart,
-              previewEnd,
-              moved: movedEnough,
-              currentDayDate: nextDayDate,
-              currentColumnRect: nextColumnRect,
-            }
-          : prev
-      );
+      patchDragState({
+        previewStart,
+        previewEnd,
+        moved: movedEnough,
+        currentDayDate: nextDayDate,
+        currentColumnRect: nextColumnRect,
+      });
     };
 
     const handleExternalMove = (ds: EventDragState, e: MouseEvent) => {
@@ -366,9 +375,7 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
       const day = column?.dataset.day ? new Date(column.dataset.day) : null;
       if (!column || !day || Number.isNaN(day.getTime())) {
         // Off the grid: hide the preview and don't commit on release.
-        setDragState((prev) =>
-          prev ? { ...prev, moved: false, currentDayDate: new Date(0) } : prev
-        );
+        patchDragState({ moved: false, currentDayDate: new Date(0) });
         return;
       }
       // The column rect already reflects scrolling, so no scroll delta.
@@ -389,21 +396,20 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
         );
         start = addMinutes(dayStart, Math.max(0, maxStart));
       }
-      setDragState((prev) =>
-        prev
-          ? {
-              ...prev,
-              previewStart: start,
-              previewEnd: addMinutes(start, durationMins),
-              moved: true,
-              currentDayDate: day,
-              currentColumnRect: rect,
-            }
-          : prev
-      );
+      patchDragState({
+        previewStart: start,
+        previewEnd: addMinutes(start, durationMins),
+        moved: true,
+        currentDayDate: day,
+        currentColumnRect: rect,
+      });
     };
 
-    const handleUp = () => {
+    const handleUp = (e: MouseEvent) => {
+      if (!dragStateRef.current) return;
+      // Place the item where the mouse was released, even if no mousemove
+      // fired at that exact point.
+      handleMove(e);
       const ds = dragStateRef.current;
       if (!ds) return;
       // Only commit if the user actually moved past the click
@@ -432,7 +438,7 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
       document.removeEventListener("mouseup", handleUp);
       document.removeEventListener("keydown", handleEscape);
     };
-  }, [isDragging]);
+  }, [isDragging, patchDragState, setDragState]);
 
   return {
     dragState,
