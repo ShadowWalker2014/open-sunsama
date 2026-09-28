@@ -25,7 +25,8 @@ import { publishEvent } from "./websocket/index.js";
 import { stopTimerFields, timerSeconds } from "./timer.js";
 
 type Database = ReturnType<typeof getDb>;
-type Db = Pick<Database, "select" | "update" | "execute">;
+export type TimerDb = Pick<Database, "select" | "update" | "execute" | "delete">;
+type Db = TimerDb;
 type Task = typeof tasks.$inferSelect;
 type Subtask = typeof subtasks.$inferSelect;
 
@@ -200,7 +201,7 @@ async function reloadTask(db: Db, userId: string, id: string) {
 
 // Serialize timer transitions across tabs/devices, then reload after acquiring
 // the lock. A stale request must not start two timers or overwrite logged time.
-async function transition<T>(db: Database, userId: string, run: (tx: Db, emit: typeof publishEvent) => Promise<T>) {
+export async function withTimerTransition<T>(db: Database, userId: string, run: (tx: Db, emit: typeof publishEvent) => Promise<T>) {
   const events: Parameters<typeof publishEvent>[] = [];
   const result = await db.transaction(async (tx) => {
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}), 917)`);
@@ -210,19 +211,19 @@ async function transition<T>(db: Database, userId: string, run: (tx: Db, emit: t
   return result;
 }
 export async function startTaskTimer(db: Database, userId: string, task: Task) {
-  return transition(db, userId, async (tx, emit) => startTaskTimerUnlocked(tx, userId, (await reloadTask(tx, userId, task.id)) ?? task, emit));
+  return withTimerTransition(db, userId, async (tx, emit) => startTaskTimerUnlocked(tx, userId, (await reloadTask(tx, userId, task.id)) ?? task, emit));
 }
 export async function stopTaskTimer(db: Database, userId: string, task: Task) {
-  return transition(db, userId, async (tx, emit) => stopTaskTimerUnlocked(tx, userId, (await reloadTask(tx, userId, task.id)) ?? task, emit));
+  return withTimerTransition(db, userId, async (tx, emit) => stopTaskTimerUnlocked(tx, userId, (await reloadTask(tx, userId, task.id)) ?? task, emit));
 }
 export async function startSubtaskTimer(db: Database, userId: string, task: Task, subtask: Subtask) {
-  return transition(db, userId, async (tx, emit) => {
+  return withTimerTransition(db, userId, async (tx, emit) => {
     const [current] = await tx.select().from(subtasks).where(eq(subtasks.id, subtask.id));
     return startSubtaskTimerUnlocked(tx, userId, (await reloadTask(tx, userId, task.id)) ?? task, current ?? subtask, emit);
   });
 }
 export async function stopSubtaskTimer(db: Database, userId: string, task: Task, subtask: Subtask) {
-  return transition(db, userId, async (tx, emit) => {
+  return withTimerTransition(db, userId, async (tx, emit) => {
     const [current] = await tx.select().from(subtasks).where(eq(subtasks.id, subtask.id));
     if (!current?.timerStartedAt) return { subtask: current ?? subtask, task: (await reloadTask(tx, userId, task.id)) ?? task };
     return stopSubtaskTimerUnlocked(tx, userId, (await reloadTask(tx, userId, task.id)) ?? task, current, emit);

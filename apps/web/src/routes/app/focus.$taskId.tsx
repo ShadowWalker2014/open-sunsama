@@ -22,7 +22,7 @@ import { PriorityIcon, PRIORITY_META } from "@/components/ui/priority-badge";
 import { PriorityMenu } from "@/components/kanban/priority-menu";
 import { SubtaskSizeContext } from "@/components/kanban/subtask-size";
 import type { FocusTimerRef } from "@/components/focus/focus-timer";
-import { shouldIgnoreShortcut } from "@/hooks/useKeyboardShortcuts";
+import { shouldIgnoreShortcut, matchesTimeEditShortcut } from "@/hooks/useKeyboardShortcuts";
 import { cn } from "@/lib/utils";
 import { TaskSeriesBanner } from "@/components/kanban/task-series-banner";
 import { toast } from "@/hooks/use-toast";
@@ -162,8 +162,8 @@ export default function FocusPage() {
         return;
       }
 
-      // E to edit actual time (only when timer is not running)
-      if (e.key === "e" || e.key === "E") {
+      // W to edit actual time (only when timer is not running)
+      if (matchesTimeEditShortcut(e, "actual")) {
         if (!timerRef.current?.isRunning) {
           e.preventDefault();
           timerRef.current?.openActualTimeDropdown();
@@ -171,8 +171,8 @@ export default function FocusPage() {
         return;
       }
 
-      // W to edit planned time
-      if (e.key === "w" || e.key === "W") {
+      // E to edit planned time
+      if (matchesTimeEditShortcut(e, "planned")) {
         e.preventDefault();
         timerRef.current?.openPlannedTimeDropdown();
         return;

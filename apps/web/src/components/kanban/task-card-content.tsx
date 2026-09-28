@@ -7,7 +7,7 @@ import type {
   UpdateTaskInput,
 } from "@open-sunsama/types";
 import { cn, formatDuration } from "@/lib/utils";
-import { useHoveredTask } from "@/hooks/useKeyboardShortcuts";
+import { useHoveredTask, TIME_EDIT_KEYS } from "@/hooks/useKeyboardShortcuts";
 import {
   Popover,
   PopoverContent,
@@ -124,6 +124,7 @@ export function TaskCardContent({
       >
         <DurationPicker
           value={task.estimatedMins}
+          shortcut={TIME_EDIT_KEYS.planned.toUpperCase()}
           onChange={(mins) => {
             onUpdateTask?.({ estimatedMins: mins });
             setDurationOpen(false);
@@ -176,11 +177,14 @@ export function TaskCardContent({
       </WithShortcut>
     )
   ) : hasTimeInfo ? (
-    <TaskTimeBadge
-      task={task}
-      isCompleted={isCompleted}
-      className="shrink-0 bg-black/[0.06] dark:bg-black/30"
-    />
+    estimatePicker(
+      <WithShortcut label="Planned time" shortcut="editEstimate">
+        <button type="button" aria-label="Edit planned time" onClick={(e) => e.stopPropagation()}>
+          <TaskTimeBadge task={task} isCompleted={isCompleted}
+            className="pointer-events-none shrink-0 bg-black/[0.06] dark:bg-black/30" />
+        </button>
+      </WithShortcut>
+    )
   ) : (
     estimatePicker(
       <WithShortcut label="Planned time" shortcut="editEstimate">

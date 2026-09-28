@@ -15,6 +15,13 @@ export interface ShortcutDefinition {
   category: "navigation" | "task" | "general" | "focus" | "calendar" | "desktop";
 }
 
+export const TIME_EDIT_KEYS = { planned: "e", actual: "w" } as const;
+
+export function matchesTimeEditShortcut(event: KeyboardEvent, field: keyof typeof TIME_EDIT_KEYS) {
+  return !event.repeat && !event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey
+    && event.key.toLowerCase() === TIME_EDIT_KEYS[field];
+}
+
 // Define all shortcuts
 export const SHORTCUTS: Record<string, ShortcutDefinition> = {
   addTask: {
@@ -52,8 +59,8 @@ export const SHORTCUTS: Record<string, ShortcutDefinition> = {
     category: "task",
   },
   editEstimate: {
-    key: "e",
-    description: "Edit time estimate (while hovering)",
+    key: TIME_EDIT_KEYS.planned,
+    description: "Edit planned time (while hovering)",
     category: "task",
   },
   moveToTop: {
@@ -136,12 +143,12 @@ export const SHORTCUTS: Record<string, ShortcutDefinition> = {
     category: "focus",
   },
   editActualTime: {
-    key: "e",
+    key: TIME_EDIT_KEYS.actual,
     description: "Edit actual time",
     category: "focus",
   },
   editPlannedTime: {
-    key: "w",
+    key: TIME_EDIT_KEYS.planned,
     description: "Edit planned time",
     category: "focus",
   },

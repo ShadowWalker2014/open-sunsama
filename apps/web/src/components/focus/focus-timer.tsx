@@ -1,3 +1,4 @@
+import { TIME_EDIT_KEYS } from "@/hooks/useKeyboardShortcuts";
 import * as React from "react";
 import { Pause, Play } from "lucide-react";
 import type { Task } from "@open-sunsama/types";
@@ -87,7 +88,7 @@ export function FocusTimer({
           onChange={onActualMinsChange}
           label="Actual"
           dropdownHeader="Actual"
-          shortcutHint="E"
+          shortcutHint={TIME_EDIT_KEYS.actual.toUpperCase()}
           placeholder="0:00"
           className={cn(value, !task.actualMins && "text-muted-foreground/60")}
         />
@@ -98,7 +99,7 @@ export function FocusTimer({
         onChange={onPlannedMinsChange}
         label="Planned"
         dropdownHeader="Planned"
-        shortcutHint="W"
+        shortcutHint={TIME_EDIT_KEYS.planned.toUpperCase()}
         placeholder="--:--"
         className={cn(value, "text-muted-foreground")}
       />
