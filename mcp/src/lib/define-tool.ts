@@ -5,8 +5,8 @@
  * description, schema, and handler.
  */
 
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { z, ZodRawShape } from "zod";
+import type { McpServer } from "@modelcontextprotocol/server";
+import { z, type ZodRawShape } from "zod";
 
 type ToolScope =
   | "tasks:read"
@@ -133,7 +133,7 @@ export function defineTool<Shape extends ZodRawShape>(
     {
       title: meta.title,
       description,
-      inputSchema,
+      inputSchema: z.object(inputSchema),
       annotations: {
         title: meta.title,
         readOnlyHint: meta.readOnly ?? false,

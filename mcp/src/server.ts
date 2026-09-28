@@ -6,7 +6,7 @@
  * ApiClient authenticates and which transport to connect.
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { ApiClient, type ApiClientConfig } from "./lib/api-client.js";
 import { registerTaskTools } from "./tools/tasks.js";
 import { registerTimeBlockTools } from "./tools/time-blocks.js";

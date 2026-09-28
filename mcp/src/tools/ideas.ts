@@ -1,5 +1,5 @@
 /** MCP access to the Ideas boards, columns, cards, and card checklists. */
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import type { ApiClient, ApiResponse } from "../lib/api-client.js";
 import { defineTool } from "../lib/define-tool.js";

@@ -16,15 +16,13 @@
  */
 
 import { createHash, randomBytes } from "node:crypto";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { UnauthorizedError } from "@modelcontextprotocol/sdk/client/auth.js";
-import type { OAuthClientProvider } from "@modelcontextprotocol/sdk/client/auth.js";
+import { Client, StreamableHTTPClientTransport, UnauthorizedError } from "@modelcontextprotocol/client";
+import type { OAuthClientProvider } from "@modelcontextprotocol/client";
 import type {
   OAuthClientInformationMixed,
   OAuthClientMetadata,
   OAuthTokens,
-} from "@modelcontextprotocol/sdk/shared/auth.js";
+} from "@modelcontextprotocol/client";
 
 const API = (process.env.MCP_E2E_API_URL ?? "http://localhost:3101").replace(/\/$/, "");
 const MCP_URL = new URL(`${API}/mcp`);

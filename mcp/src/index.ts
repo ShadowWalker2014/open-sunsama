@@ -14,7 +14,7 @@
  *   OPENSUNSAMA_API_KEY=os_xxx OPENSUNSAMA_API_URL=http://localhost:3001 open-sunsama-mcp (for self-hosted/local)
  */
 
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import { createOpenSunsamaMcpServer } from "./server.js";
 
 // Configuration from environment variables
@@ -33,11 +33,6 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-const server = createOpenSunsamaMcpServer({
-  baseUrl: API_URL,
-  apiKey: API_KEY,
-});
-
 // Log to stderr (safe for stdio transport)
 console.error(`Open Sunsama MCP Server starting...`);
 console.error(`API URL: ${API_URL}`);
@@ -45,23 +40,26 @@ console.error(`API Key: ${API_KEY.substring(0, 10)}...`);
 
 // Start the server
 async function main() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
+  const handle = serveStdio(
+    () =>
+      createOpenSunsamaMcpServer({
+        baseUrl: API_URL,
+        apiKey: API_KEY,
+      }),
+    { onerror: (error) => console.error("MCP server error:", error) }
+  );
   console.error("Open Sunsama MCP Server running on stdio");
+
+  const shutdown = async () => {
+    console.error("Shutting down...");
+    await handle.close();
+    process.exit(0);
+  };
+  process.once("SIGINT", shutdown);
+  process.once("SIGTERM", shutdown);
 }
 
 main().catch((error) => {
   console.error("Fatal error:", error);
   process.exit(1);
-});
-
-// Handle graceful shutdown
-process.on("SIGINT", () => {
-  console.error("Shutting down...");
-  process.exit(0);
-});
-
-process.on("SIGTERM", () => {
-  console.error("Shutting down...");
-  process.exit(0);
 });
