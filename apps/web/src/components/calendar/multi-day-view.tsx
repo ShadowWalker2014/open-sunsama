@@ -21,6 +21,7 @@ import {
   snapToInterval,
 } from "@/hooks/useCalendarDnd";
 import { layoutOverlappingItems, type LayoutResult } from "./event-layout";
+import { useDragToCreate } from "@/hooks/useDragToCreate";
 import type {
   EventDragMode,
   useMultiDayEventDrag,
@@ -404,6 +405,12 @@ export function MultiDayView({
   className,
 }: MultiDayViewProps) {
   const hours = React.useMemo(() => generateHours(), []);
+  // Press and drag on empty space to sweep out a new block.
+  const createDrag = useDragToCreate(
+    onTimeSlotClick
+      ? ({ day, start, end }) => onTimeSlotClick(day, start, end)
+      : undefined
+  );
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
   // Tick the now-indicator once per minute so it advances. Without
   // this, `new Date()` was captured at render time and the red line
@@ -701,7 +708,13 @@ export function MultiDayView({
                   data-day-column
                   data-day={day.toISOString()}
                   onClick={(e) => {
-                    if (!onTimeSlotClick || drag.justEndedDrag) return;
+                    if (
+                      !onTimeSlotClick ||
+                      drag.justEndedDrag ||
+                      createDrag.shouldIgnoreClick()
+                    ) {
+                      return;
+                    }
                     // Clicks on blocks and events, and clicks bubbling up
                     // from portals such as a block's menu, aren't slot
                     // clicks.
@@ -720,6 +733,7 @@ export function MultiDayView({
                     );
                     onTimeSlotClick(day, start, addMinutes(start, 60));
                   }}
+                  onMouseDown={(e) => createDrag.startCreate(e, day)}
                   className={cn(
                     "flex-1 relative border-r last:border-r-0 min-w-0",
                     today && "bg-primary/[0.02]",
@@ -865,6 +879,29 @@ export function MultiDayView({
                       />
                     );
                   })}
+
+                  {/* Block being swept out by a drag on empty space */}
+                  {createDrag.range &&
+                    isSameDay(createDrag.range.day, day) && (
+                      <div
+                        className="absolute inset-x-1 z-30 rounded border-2 border-dashed border-primary bg-primary/10 pointer-events-none px-1.5 py-0.5"
+                        style={{
+                          top: `${calculateYFromTime(createDrag.range.start)}px`,
+                          height: `${Math.max(
+                            ((createDrag.range.end.getTime() -
+                              createDrag.range.start.getTime()) /
+                              3_600_000) *
+                              HOUR_HEIGHT,
+                            16
+                          )}px`,
+                        }}
+                      >
+                        <span className="text-[10px] font-semibold text-primary">
+                          {format(createDrag.range.start, "h:mm")} –{" "}
+                          {format(createDrag.range.end, "h:mm a")}
+                        </span>
+                      </div>
+                    )}
 
                   {/* Live drop preview while this column owns the
                       active drag — a dashed outline at the new

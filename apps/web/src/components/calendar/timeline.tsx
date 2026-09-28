@@ -11,6 +11,7 @@ import type { TimeBlock as TimeBlockType, CalendarEvent } from "@open-sunsama/ty
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui";
 import { TimeBlock, TimeBlockPreview } from "./time-block";
+import { useDragToCreate } from "@/hooks/useDragToCreate";
 import { ExternalEvent, AllDayEvent } from "./external-event";
 import { layoutOverlappingItems, type LayoutResult } from "./event-layout";
 
@@ -219,6 +220,11 @@ export function Timeline({
     return layoutOverlappingItems(items);
   }, [timedEvents, dayBlocks, date]);
 
+  // Press and drag on empty space to sweep out a new block.
+  const createDrag = useDragToCreate(
+    onTimeSlotClick ? ({ start, end }) => onTimeSlotClick(start, end) : undefined
+  );
+
   // Handle click on empty time slot
   const handleTimeSlotClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // Don't trigger if clicking on a time block, an external calendar
@@ -246,7 +252,7 @@ export function Timeline({
     }
 
     // Don't trigger if we just ended a drag/resize operation
-    if (justEndedDrag) {
+    if (justEndedDrag || createDrag.shouldIgnoreClick()) {
       return;
     }
 
@@ -321,6 +327,7 @@ export function Timeline({
             onMouseUp={onTimelineMouseUp}
             onMouseLeave={onTimelineMouseLeave}
             onClick={handleTimeSlotClick}
+            onMouseDown={(e) => createDrag.startCreate(e, date)}
           >
             {/* Hour grid lines */}
             {hours.map((hour) => (
@@ -419,6 +426,22 @@ export function Timeline({
                   isDragging={dragState?.blockId === block.id}
                 />
               ))}
+
+            {/* Block being swept out by a drag on empty space */}
+            {createDrag.range && (
+              <TimeBlockPreview
+                title="New block"
+                startTime={createDrag.range.start}
+                endTime={createDrag.range.end}
+                top={calculateYFromTime(createDrag.range.start)}
+                height={
+                  ((createDrag.range.end.getTime() -
+                    createDrag.range.start.getTime()) /
+                    3_600_000) *
+                  HOUR_HEIGHT
+                }
+              />
+            )}
 
             {/* Drop preview */}
             {dropPreview && dragState && (
