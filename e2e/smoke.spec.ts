@@ -120,3 +120,36 @@ test("shows a time block on the calendar", async ({ page }) => {
   await page.goto(`/app/calendar?date=${today}`);
   await expect(page.getByRole("button", { name: /^Time block: Deep work from 9:00 AM to 10:30 AM/ })).toBeVisible();
 });
+
+test("an idea with subtasks becomes a task for today", async ({ page }) => {
+  const session = await register();
+  await api("POST", "/ideas/boards", { name: "Startup ideas" }, session.token);
+  await signInWithToken(page, session);
+  await page.goto("/app/ideas");
+
+  await page.getByRole("button", { name: "Add idea" }).first().click();
+  const composer = page.getByRole("dialog", { name: /Add idea/ });
+  await composer.getByRole("textbox", { name: "Task title" }).fill("AI meal planner");
+  await page.keyboard.press("Tab");
+  await composer.getByRole("textbox", { name: "Subtask 1" }).fill("Interview parents");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");
+  await expect(composer).toBeHidden();
+  await expect(page.getByText("Interview parents")).toBeVisible();
+
+  await page.getByText("AI meal planner").click({ button: "right" });
+  const promoted = page.waitForResponse((r) => /\/promote$/.test(r.url()));
+  await page.getByRole("menuitem", { name: "Add to Today" }).click();
+  expect((await promoted).ok()).toBe(true);
+
+  const tasks = await api<Array<{ id: string; title: string }>>(
+    "GET",
+    `/tasks?date=${today}`,
+    undefined,
+    session.token
+  );
+  const task = tasks.find((t) => t.title === "AI meal planner");
+  expect(task, "the idea is on today's list").toBeTruthy();
+  const subtasks = await api<Array<{ title: string }>>("GET", `/tasks/${task!.id}/subtasks`, undefined, session.token);
+  expect(subtasks.map((s) => s.title)).toEqual(["Interview parents"]);
+});

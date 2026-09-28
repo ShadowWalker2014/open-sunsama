@@ -133,7 +133,7 @@ export function KanbanBoardToolbar({
               size="icon"
               onClick={onNavigatePrevious}
               aria-label="Previous day"
-              className="h-8 w-8"
+              className="h-7 w-7"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -142,7 +142,7 @@ export function KanbanBoardToolbar({
           <Popover open={goToOpen} onOpenChange={setGoToOpen}>
             <PopoverTrigger asChild>
               <WithShortcut label="Go to date" side="bottom">
-                <Button variant="ghost" className="h-8 gap-1.5 px-2.5">
+                <Button variant="ghost" className="h-7 gap-1.5 px-2 text-[13px]">
                   <CalendarDays className="h-4 w-4 text-muted-foreground" />
                   {/* One day at a time shows which day it is. */}
                   {mode === "day" && firstVisibleDate && !isToday(firstVisibleDate)
@@ -181,7 +181,7 @@ export function KanbanBoardToolbar({
               size="icon"
               onClick={onNavigateNext}
               aria-label="Next day"
-              className="h-8 w-8"
+              className="h-7 w-7"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -196,7 +196,7 @@ export function KanbanBoardToolbar({
         <div
           role="radiogroup"
           aria-label="View"
-          className="flex h-8 items-center rounded-md bg-muted/50 p-0.5"
+          className="flex h-7 items-center rounded-md bg-muted/50 p-0.5"
         >
           {(
             [
@@ -211,7 +211,7 @@ export function KanbanBoardToolbar({
               aria-checked={mode === value}
               onClick={() => onModeChange(value)}
               className={cn(
-                "flex h-7 items-center gap-1.5 rounded px-2 text-[13px] transition-colors",
+                "flex h-6 items-center gap-1.5 rounded px-2 text-xs transition-colors",
                 mode === value
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
@@ -236,7 +236,7 @@ export function KanbanBoardToolbar({
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 gap-1.5 px-2 text-muted-foreground hover:text-foreground"
+              className="h-7 gap-1.5 px-2 text-muted-foreground hover:text-foreground"
               title={`Sort: ${currentSortLabel}`}
             >
               <ArrowUpDown className="h-4 w-4" />

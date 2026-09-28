@@ -628,15 +628,13 @@ export function KanbanCalendarPanel({
                     onViewTask?.(task.id);
                   }}
                   title={`${task.title} · projected ${format(start, "h:mm a")}`}
-                  className="absolute left-1 right-2 z-10 overflow-hidden rounded-md border border-dashed border-primary/40 px-1.5 text-left text-[11px] font-medium leading-4 text-primary/90 transition-colors hover:border-primary/70"
+                  className="absolute left-1 right-2 z-10 overflow-hidden rounded border border-dotted border-primary/50 bg-primary/[0.04] px-1.5 text-left text-[11px] leading-4 text-primary transition-colors hover:bg-primary/[0.09]"
                   style={{
                     top: calculateYFromTime(start) + 1,
                     height: Math.max(
                       16,
                       (differenceInMinutes(end, start) / 60) * HOUR_HEIGHT - 2
                     ),
-                    backgroundImage:
-                      "repeating-linear-gradient(135deg, hsl(var(--primary) / 0.14) 0 5px, transparent 5px 10px)",
                   }}
                 >
                   <span className="line-clamp-2">{task.title}</span>
