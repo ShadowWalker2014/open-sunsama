@@ -80,12 +80,19 @@ const DURATION_PRESETS = [
   { value: 120, label: "2h" },
 ];
 
-// Priority style classes
-const PRIORITY_STYLES: Record<TaskPriority, string> = {
-  P0: "bg-red-500/15 text-red-600 dark:text-red-400",
-  P1: "bg-orange-500/15 text-orange-600 dark:text-orange-400",
-  P2: "bg-blue-500/10 text-blue-500 dark:text-blue-400",
-  P3: "bg-slate-400/10 text-slate-400 dark:text-slate-500",
+// Priority reads from the checkbox ring (Todoist-style); P3 stays neutral.
+const PRIORITY_RING: Record<TaskPriority, string> = {
+  P0: "border-red-500/80 hover:bg-red-500/15",
+  P1: "border-orange-500/80 hover:bg-orange-500/15",
+  P2: "border-sky-500/70 hover:bg-sky-500/15",
+  P3: "border-muted-foreground/35 hover:border-muted-foreground/60 hover:bg-muted",
+};
+
+const PRIORITY_TEXT: Record<TaskPriority, string> = {
+  P0: "text-red-500",
+  P1: "text-orange-500",
+  P2: "text-sky-500",
+  P3: "text-muted-foreground",
 };
 
 /**
@@ -146,7 +153,7 @@ export function TaskCardContent({
   return (
     <div
       className={cn(
-        "group relative flex flex-col gap-1.5 rounded-md px-3 py-2.5 transition-[background-color,box-shadow,opacity] duration-150",
+        "group relative flex flex-col gap-1 rounded-lg px-3 py-2.5 transition-[background-color,box-shadow,opacity] duration-150",
         // Borderless: the card is raised by its fill and shadow.
         "bg-surface hover:bg-surface-hover",
         !isDragging && !isCompleted && "shadow-card hover:shadow-card-hover",
@@ -171,27 +178,27 @@ export function TaskCardContent({
         setHoveredTask(null);
       }}
     >
-      {/* Time row (if scheduled) - above checkbox/title like Sunsama */}
+      {/* Scheduled time, aligned with the title */}
       {formattedTime && (
-        <span className="text-[11px] text-muted-foreground">
+        <span className="pl-[26px] text-[11px] font-medium tabular-nums text-muted-foreground">
           {formattedTime}
         </span>
       )}
 
-      {/* Main row: Checkbox + Title */}
-      <div className="flex items-start gap-2">
-        {/* Circle Checkbox */}
+      {/* Checkbox (ringed in the priority color), title, and time on the right */}
+      <div className="flex items-start gap-2.5">
         <div
           className={cn(
-            "relative mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-all duration-150",
+            "relative mt-[2px] flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-colors duration-150",
             "cursor-pointer",
             isCompleted
               ? "border-primary bg-primary text-primary-foreground"
-              : "border-muted-foreground/40 hover:border-primary hover:bg-primary/10"
+              : PRIORITY_RING[task.priority]
           )}
           onClick={onToggleComplete}
           role="checkbox"
           aria-checked={isCompleted}
+          aria-label={isCompleted ? "Mark incomplete" : "Complete task"}
         >
           {isCompleted && <Check className="h-2.5 w-2.5" strokeWidth={3} />}
         </div>
@@ -199,36 +206,33 @@ export function TaskCardContent({
         {/* Title - wraps to multiple lines, clamps at 3 lines max */}
         <p
           className={cn(
-            "min-w-0 flex-1 text-sm leading-snug text-foreground break-words line-clamp-3",
+            "min-w-0 flex-1 text-[13.5px] font-medium leading-[1.35] tracking-[-0.006em] text-foreground/95 break-words line-clamp-3",
             isCompleted && "line-through text-muted-foreground"
           )}
         >
           {task.title}
         </p>
-      </div>
 
-      {/* Metadata row: Duration + Priority badges */}
-      <div className="flex items-center gap-1.5 pl-6">
-        {/* Time display - live ticking when timer is active, static otherwise */}
-        <TaskTimeBadge task={task} isCompleted={isCompleted} />
-
-        {/* Estimated time badge - show when no actual time, no running timer, but has estimate */}
-        {(!task.actualMins || task.actualMins === 0) && !task.timerStartedAt && task.estimatedMins && (
-          <Popover open={durationOpen} onOpenChange={setDurationOpen}>
+        <div className="-mr-1 -mt-px flex shrink-0 items-center">
+        {/* Priority indicator - inline editable */}
+          <Popover open={priorityOpen} onOpenChange={setPriorityOpen}>
             <PopoverTrigger asChild>
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                 }}
+                aria-label={`Priority ${task.priority}`}
                 className={cn(
-                  "shrink-0 flex items-center gap-0.5 rounded px-1.5 py-0.5",
-                  "bg-muted/50",
-                  "text-[11px] tabular-nums text-muted-foreground",
-                  "hover:bg-muted transition-colors cursor-pointer"
+                  // Priority shows in the checkbox ring; this editor appears on hover.
+                  "shrink-0 rounded px-1 py-0.5 text-[10px] font-semibold",
+                  "opacity-0 group-hover:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100",
+                  "transition-opacity duration-150 hover:bg-muted",
+                  "focus:outline-none",
+                  PRIORITY_TEXT[task.priority]
                 )}
               >
-                {formatDuration(task.estimatedMins)}
+                {task.priority}
               </button>
             </PopoverTrigger>
             <PopoverContent
@@ -236,97 +240,105 @@ export function TaskCardContent({
               align="start"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="grid grid-cols-4 gap-0.5">
-                {DURATION_PRESETS.map((preset) => (
+              <div className="flex flex-col gap-0.5">
+                {PRIORITY_OPTIONS.map((option) => (
                   <button
-                    key={preset.value}
+                    key={option.value}
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDurationChange(preset.value);
+                      handlePriorityChange(option.value);
                     }}
                     className={cn(
-                      "px-2 py-1 text-xs rounded transition-colors",
+                      "flex items-center gap-2 px-2 py-1 text-xs rounded transition-colors",
                       "hover:bg-accent hover:text-accent-foreground",
-                      task.estimatedMins === preset.value &&
-                        "bg-accent text-accent-foreground font-medium"
+                      task.priority === option.value && "bg-accent"
                     )}
                   >
-                    {preset.label}
+                    <span
+                      className={cn(
+                        "rounded px-1.5 py-0.5 text-[10px] font-medium",
+                        option.color
+                      )}
+                    >
+                      {option.label}
+                    </span>
                   </button>
                 ))}
               </div>
-              {/* Clear button */}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onUpdateTask?.({ estimatedMins: null });
-                  setDurationOpen(false);
-                }}
-                className={cn(
-                  "w-full mt-1 px-2 py-1 text-xs rounded transition-colors",
-                  "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                )}
-              >
-                Clear
-              </button>
             </PopoverContent>
           </Popover>
-        )}
 
-        {/* Priority indicator - inline editable */}
-        <Popover open={priorityOpen} onOpenChange={setPriorityOpen}>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-              className={cn(
-                "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium",
-                "transition-all duration-150",
-                "hover:ring-1 hover:ring-primary/30",
-                "focus:outline-none focus:ring-1 focus:ring-primary/50",
-                PRIORITY_STYLES[task.priority]
-              )}
-            >
-              {task.priority}
-            </button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="w-auto p-1"
-            align="start"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex flex-col gap-0.5">
-              {PRIORITY_OPTIONS.map((option) => (
+          {/* Live timer, or actual / planned time */}
+          <TaskTimeBadge
+            task={task}
+            isCompleted={isCompleted}
+            className="bg-transparent px-1"
+          />
+
+        {/* Estimated time badge - show when no actual time, no running timer, but has estimate */}
+          {(!task.actualMins || task.actualMins === 0) && !task.timerStartedAt && task.estimatedMins && (
+            <Popover open={durationOpen} onOpenChange={setDurationOpen}>
+              <PopoverTrigger asChild>
                 <button
-                  key={option.value}
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handlePriorityChange(option.value);
                   }}
                   className={cn(
-                    "flex items-center gap-2 px-2 py-1 text-xs rounded transition-colors",
-                    "hover:bg-accent hover:text-accent-foreground",
-                    task.priority === option.value && "bg-accent"
+                    "shrink-0 rounded px-1 py-0.5",
+                    "text-[11px] font-medium tabular-nums text-muted-foreground",
+                    "hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
                   )}
                 >
-                  <span
-                    className={cn(
-                      "rounded px-1.5 py-0.5 text-[10px] font-medium",
-                      option.color
-                    )}
-                  >
-                    {option.label}
-                  </span>
+                  {formatDuration(task.estimatedMins)}
                 </button>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-auto p-1"
+                align="start"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="grid grid-cols-4 gap-0.5">
+                  {DURATION_PRESETS.map((preset) => (
+                    <button
+                      key={preset.value}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDurationChange(preset.value);
+                      }}
+                      className={cn(
+                        "px-2 py-1 text-xs rounded transition-colors",
+                        "hover:bg-accent hover:text-accent-foreground",
+                        task.estimatedMins === preset.value &&
+                          "bg-accent text-accent-foreground font-medium"
+                      )}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+                {/* Clear button */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onUpdateTask?.({ estimatedMins: null });
+                    setDurationOpen(false);
+                  }}
+                  className={cn(
+                    "w-full mt-1 px-2 py-1 text-xs rounded transition-colors",
+                    "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  )}
+                >
+                  Clear
+                </button>
+              </PopoverContent>
+            </Popover>
+          )}
+
+        </div>
       </div>
 
       {/* Subtasks preview - inline with small checkboxes */}

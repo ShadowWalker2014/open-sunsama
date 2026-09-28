@@ -48,8 +48,8 @@
     --canvas: 220 14% 97.5%;
     --surface: 0 0% 100%;
     --surface-hover: 220 14% 99%;
-    --shadow-card: 0 1px 2px 0 rgb(16 24 40 / 0.06), 0 1px 3px 0 rgb(16 24 40 / 0.08);
-    --shadow-card-hover: 0 2px 4px 0 rgb(16 24 40 / 0.08), 0 4px 10px -2px rgb(16 24 40 / 0.1);
+    --shadow-card: 0 0 0 1px rgb(16 24 40 / 0.05), 0 1px 2px 0 rgb(16 24 40 / 0.06);
+    --shadow-card-hover: 0 0 0 1px rgb(16 24 40 / 0.07), 0 4px 12px -4px rgb(16 24 40 / 0.14);
 
     /* Transitions */
     --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -99,8 +99,9 @@
     --canvas: 228 7% 7.5%;
     --surface: 228 6% 13%;
     --surface-hover: 228 6% 15%;
-    --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.55), 0 2px 4px 0 rgb(0 0 0 / 0.3);
-    --shadow-card-hover: 0 2px 4px 0 rgb(0 0 0 / 0.6), 0 6px 12px -2px rgb(0 0 0 / 0.4);
+    /* A faint top highlight gives dark cards an edge without a border. */
+    --shadow-card: inset 0 1px 0 0 rgb(255 255 255 / 0.045), 0 1px 2px 0 rgb(0 0 0 / 0.45), 0 2px 6px -2px rgb(0 0 0 / 0.35);
+    --shadow-card-hover: inset 0 1px 0 0 rgb(255 255 255 / 0.06), 0 2px 4px 0 rgb(0 0 0 / 0.5), 0 8px 16px -6px rgb(0 0 0 / 0.5);
   }
 
   /* Font Variables */
@@ -256,12 +257,12 @@ html.font-jetbrains body {
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
   }
 
   .scrollbar-thin::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
 
   .scrollbar-thin::-webkit-scrollbar-track {
@@ -269,12 +270,12 @@ html.font-jetbrains body {
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--muted-foreground) / 0.3);
+    background-color: hsl(var(--muted-foreground) / 0.2);
     border-radius: 4px;
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background-color: hsl(var(--muted-foreground) / 0.5);
+    background-color: hsl(var(--muted-foreground) / 0.4);
   }
 }
 
