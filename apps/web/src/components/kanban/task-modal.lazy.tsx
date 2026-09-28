@@ -1,6 +1,7 @@
 import * as React from "react";
 import type { Task } from "@open-sunsama/types";
 import type * as TaskModalModuleNS from "./task-modal";
+import { preloadableLazy } from "@/lib/preloadable-lazy";
 
 /**
  * Lazy entry point for the heavy task-modal module.
@@ -28,24 +29,12 @@ type TaskModalProps = {
   createDefaults?: { scheduledDate?: string | null };
 };
 
-type TaskModalModule = typeof TaskModalModuleNS;
-
-let preload: Promise<TaskModalModule> | null = null;
-
-function importTaskModal(): Promise<TaskModalModule> {
-  if (!preload) {
-    preload = import("./task-modal") as Promise<TaskModalModule>;
-  }
-  return preload;
-}
-
-const LazyTaskModal = React.lazy(async () => {
-  const mod = await importTaskModal();
-  return { default: mod.TaskModal };
-});
+const { Component: LoadedTaskModal, preload } = preloadableLazy<TaskModalProps>(() =>
+  (import("./task-modal") as Promise<typeof TaskModalModuleNS>).then((mod) => mod.TaskModal)
+);
 
 export function prefetchTaskModal(): Promise<unknown> {
-  return importTaskModal();
+  return preload();
 }
 
 /**
@@ -84,7 +73,7 @@ export function TaskModal(props: TaskModalProps) {
 
   return (
     <React.Suspense fallback={<TaskModalLoadingShell open={props.open} />}>
-      <LazyTaskModal {...props} />
+      <LoadedTaskModal {...props} />
     </React.Suspense>
   );
 }

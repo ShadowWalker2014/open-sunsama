@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { ViewSearch } from "@/components/ui";
 import { DayColumn } from "@/components/kanban/day-column";
 import { TaskModal } from "@/components/kanban/task-modal.lazy";
+import { raiseKeyboardForTap } from "@/lib/ios-keyboard";
 import { TasksDndProvider } from "@/lib/dnd/tasks-dnd-context";
 import type { SortOption } from "@/components/kanban/kanban-board-toolbar";
 import {
@@ -110,7 +111,10 @@ export function MobileBoardView({
 
         <button
           type="button"
-          onClick={() => setIsComposerOpen(true)}
+          onClick={() => {
+            raiseKeyboardForTap();
+            setIsComposerOpen(true);
+          }}
           className="fab-above-nav fixed right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform active:scale-95 lg:hidden"
           aria-label={`Add task on ${format(selectedDate, "EEEE, MMMM d")}`}
         >

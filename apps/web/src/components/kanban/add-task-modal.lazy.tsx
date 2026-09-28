@@ -1,6 +1,7 @@
 import * as React from "react";
 import type * as AddTaskModalModuleNS from "./add-task-modal";
 import type { AddPosition } from "./add-task-modal";
+import { preloadableLazy } from "@/lib/preloadable-lazy";
 
 export type { AddPosition };
 
@@ -19,24 +20,14 @@ type AddTaskModalProps = {
   initialTitle?: string;
 };
 
-type AddTaskModalModule = typeof AddTaskModalModuleNS;
-
-let preload: Promise<AddTaskModalModule> | null = null;
-
-function importAddTaskModal(): Promise<AddTaskModalModule> {
-  if (!preload) {
-    preload = import("./add-task-modal") as Promise<AddTaskModalModule>;
-  }
-  return preload;
-}
-
-const LazyAddTaskModal = React.lazy(async () => {
-  const mod = await importAddTaskModal();
-  return { default: mod.AddTaskModal };
-});
+const { Component: LoadedAddTaskModal, preload } = preloadableLazy<AddTaskModalProps>(() =>
+  (import("./add-task-modal") as Promise<typeof AddTaskModalModuleNS>).then(
+    (mod) => mod.AddTaskModal
+  )
+);
 
 export function prefetchAddTaskModal(): Promise<unknown> {
-  return importAddTaskModal();
+  return preload();
 }
 
 /**
@@ -68,7 +59,7 @@ export function AddTaskModal(props: AddTaskModalProps) {
 
   return (
     <React.Suspense fallback={<AddTaskModalLoadingShell open={props.open} />}>
-      <LazyAddTaskModal {...props} />
+      <LoadedAddTaskModal {...props} />
     </React.Suspense>
   );
 }
