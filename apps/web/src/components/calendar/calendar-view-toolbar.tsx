@@ -98,7 +98,7 @@ export function CalendarViewToolbar({
   const { primary, secondary } = describeRange(rangeStart, rangeEnd, viewMode);
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b px-3 sm:px-4 py-2 sm:py-3 bg-background gap-2 sm:gap-4">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-3 sm:px-4 py-2 sm:py-3 gap-2 sm:gap-4">
       <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-4">
         {/* Date Navigation */}
         <div className="flex items-center gap-1">

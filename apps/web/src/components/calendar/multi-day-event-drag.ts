@@ -43,6 +43,7 @@ export interface EventDragState {
   /** scrollTop at drag start, used to compensate for mid-drag scroll. */
   scrollTopAtStart: number;
   scrollEl: HTMLElement | null;
+  startX: number;
   startY: number;
   initialStart: Date;
   initialEnd: Date;
@@ -51,6 +52,12 @@ export interface EventDragState {
   previewEnd: Date;
   /** Tracks whether the mouse moved past the click threshold. */
   moved: boolean;
+  /**
+   * True when the drag started outside the grid (a task dragged in from
+   * the task list). There is no origin column: the item's top follows
+   * the cursor, and nothing commits unless the cursor is over a day.
+   */
+  external: boolean;
 }
 
 export interface EventDragOptions {
@@ -75,11 +82,25 @@ export interface EventDragOptions {
  * can use the detail sheet to change the date.
  */
 export function useMultiDayEventDrag(options: EventDragOptions) {
-  const [dragState, setDragState] = React.useState<EventDragState | null>(null);
+  const [dragState, setDragStateRaw] = React.useState<EventDragState | null>(
+    null
+  );
+  // The document listeners read the ref, so it must change in the same
+  // tick as the mouse. Syncing it from an effect lagged a render behind,
+  // and a quick drag dropped where the cursor had been, not where it was
+  // released.
   const dragStateRef = React.useRef<EventDragState | null>(null);
-  React.useEffect(() => {
-    dragStateRef.current = dragState;
-  }, [dragState]);
+  const setDragState = React.useCallback((next: EventDragState | null) => {
+    dragStateRef.current = next;
+    setDragStateRaw(next);
+  }, []);
+  const patchDragState = React.useCallback(
+    (patch: Partial<EventDragState>) => {
+      const prev = dragStateRef.current;
+      if (prev) setDragState({ ...prev, ...patch });
+    },
+    [setDragState]
+  );
 
   // Stash latest options in a ref so the global listeners can call the
   // most recent onCommit without re-binding on every options change.
@@ -115,6 +136,7 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
         currentColumnRect: columnRect,
         scrollTopAtStart,
         scrollEl,
+        startX: e.clientX,
         startY: e.clientY,
         initialStart: eventStart,
         initialEnd: eventEnd,
@@ -122,9 +144,41 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
         previewStart: eventStart,
         previewEnd: eventEnd,
         moved: false,
+        external: false,
       });
     },
-    []
+    [setDragState]
+  );
+
+  /**
+   * Start dragging something that isn't on the grid yet, such as a task
+   * from the task list. `id` is passed back to `onCommit` unchanged.
+   */
+  const startExternalDrag = React.useCallback(
+    (id: string, durationMins: number, e: React.MouseEvent) => {
+      e.preventDefault();
+      const outside = new Date(0);
+      const emptyRect = new DOMRect();
+      setDragState({
+        eventId: id,
+        originDayDate: outside,
+        currentDayDate: outside,
+        originColumnRect: emptyRect,
+        currentColumnRect: emptyRect,
+        scrollTopAtStart: 0,
+        scrollEl: null,
+        startX: e.clientX,
+        startY: e.clientY,
+        initialStart: outside,
+        initialEnd: addMinutes(outside, durationMins),
+        mode: "move",
+        previewStart: outside,
+        previewEnd: addMinutes(outside, durationMins),
+        moved: false,
+        external: true,
+      });
+    },
+    [setDragState]
   );
 
   // The mousemove handler reads the live state via `dragStateRef`, so
@@ -138,10 +192,18 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
     const handleMove = (e: MouseEvent) => {
       const ds = dragStateRef.current;
       if (!ds) return;
+      if (ds.external) {
+        handleExternalMove(ds, e);
+        return;
+      }
       const liveScroll = ds.scrollEl?.scrollTop ?? ds.scrollTopAtStart;
       const scrollDelta = liveScroll - ds.scrollTopAtStart;
+      // Either axis counts: a sideways drag moves the item to another day
+      // at the same time.
       const movedEnough =
-        ds.moved || Math.abs(e.clientY - ds.startY) >= DRAG_THRESHOLD_PX;
+        ds.moved ||
+        Math.abs(e.clientY - ds.startY) >= DRAG_THRESHOLD_PX ||
+        Math.abs(e.clientX - ds.startX) >= DRAG_THRESHOLD_PX;
 
       const originalDurationMins = differenceInMinutes(
         ds.initialEnd,
@@ -297,21 +359,57 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
         previewEnd = snappedEnd;
       }
 
-      setDragState((prev) =>
-        prev
-          ? {
-              ...prev,
-              previewStart,
-              previewEnd,
-              moved: movedEnough,
-              currentDayDate: nextDayDate,
-              currentColumnRect: nextColumnRect,
-            }
-          : prev
-      );
+      patchDragState({
+        previewStart,
+        previewEnd,
+        moved: movedEnough,
+        currentDayDate: nextDayDate,
+        currentColumnRect: nextColumnRect,
+      });
     };
 
-    const handleUp = () => {
+    const handleExternalMove = (ds: EventDragState, e: MouseEvent) => {
+      const durationMins = differenceInMinutes(ds.initialEnd, ds.initialStart);
+      const hit = document.elementFromPoint(e.clientX, e.clientY);
+      const column = hit?.closest<HTMLElement>("[data-day-column]") ?? null;
+      const day = column?.dataset.day ? new Date(column.dataset.day) : null;
+      if (!column || !day || Number.isNaN(day.getTime())) {
+        // Off the grid: hide the preview and don't commit on release.
+        patchDragState({ moved: false, currentDayDate: new Date(0) });
+        return;
+      }
+      // The column rect already reflects scrolling, so no scroll delta.
+      const rect = column.getBoundingClientRect();
+      const relativeY = e.clientY - rect.top;
+      let start = snapToInterval(
+        calculateTimeFromY(Math.max(0, relativeY), day)
+      );
+      const maxStart = TIMELINE_END_MINUTE - durationMins;
+      if (
+        start.getDate() !== day.getDate() ||
+        minutesFromMidnight(start) > maxStart
+      ) {
+        const dayStart = new Date(
+          day.getFullYear(),
+          day.getMonth(),
+          day.getDate()
+        );
+        start = addMinutes(dayStart, Math.max(0, maxStart));
+      }
+      patchDragState({
+        previewStart: start,
+        previewEnd: addMinutes(start, durationMins),
+        moved: true,
+        currentDayDate: day,
+        currentColumnRect: rect,
+      });
+    };
+
+    const handleUp = (e: MouseEvent) => {
+      if (!dragStateRef.current) return;
+      // Place the item where the mouse was released, even if no mousemove
+      // fired at that exact point.
+      handleMove(e);
       const ds = dragStateRef.current;
       if (!ds) return;
       // Only commit if the user actually moved past the click
@@ -340,11 +438,12 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
       document.removeEventListener("mouseup", handleUp);
       document.removeEventListener("keydown", handleEscape);
     };
-  }, [isDragging]);
+  }, [isDragging, patchDragState, setDragState]);
 
   return {
     dragState,
     startDrag,
+    startExternalDrag,
     /** True for the duration of any drag past the click threshold — used to suppress trailing click. */
     justEndedDrag: dragState?.moved ?? false,
   };
