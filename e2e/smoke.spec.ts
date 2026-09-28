@@ -551,6 +551,10 @@ test("dropping a task schedules it directly without a blank create dialog", asyn
   await page.mouse.move(grid.x+120,220,{steps:15});
   await page.mouse.up();
   await expect.poll(async()=> (await api<Array<{taskId:string}>>('GET',`/time-blocks?date=${today}`,undefined,session.token)).filter(b=>b.taskId===task.id).length).toBe(1);
+  const minutes = Math.round(((220 - grid.y) / 64 * 60) / 15) * 15;
+  const expectedTime = `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+  const blocks = await api<Array<{taskId:string;startTime:string}>>('GET',`/time-blocks?date=${today}`,undefined,session.token);
+  expect(blocks.find(b=>b.taskId===task.id)?.startTime).toBe(expectedTime);
   await expect(page.getByRole('dialog')).toBeHidden();
   await page.reload();
   await expect(page.locator('[data-time-block]').filter({hasText:'Drag this task'})).toBeVisible();
@@ -634,4 +638,33 @@ test("task drops save one linked idea with its checklist and reject another user
   const foreignTask = await api<{id:string}>('POST','/tasks',{title:'Private task'},other.token);
   const denied = await fetch(`${API}/ideas/from-task`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.token}`},body:JSON.stringify({...payload,taskId:foreignTask.id})});
   expect(denied.status).toBe(404);
+});
+
+test('Ideas surfaces follow appearance colors in light and dark mode', async ({ page }) => {
+  const session = await register();
+  const board = await api<{id:string}>('POST','/ideas/boards',{name:'Theme validation'},session.token);
+  await signInWithToken(page, session);
+  const colors: string[] = [];
+  for (const mode of ['Light', 'Dark']) {
+    for (const theme of ['Ocean', 'Rose']) {
+      await page.goto('/app/settings?tab=appearance');
+      await page.getByRole('button',{name:mode,exact:true}).click();
+      await page.getByRole('button',{name:theme,exact:true}).click();
+      await expect(page.locator('html')).toHaveClass(new RegExp(`theme-${theme.toLowerCase()}`));
+      await page.goto(`/app/ideas?board=${board.id}`);
+      const column = page.locator('[data-idea-column-id]').first();
+      await expect(column).toBeVisible();
+      const color = await column.evaluate(el => getComputedStyle(el).backgroundColor);
+      expect(color).not.toBe('rgba(0, 0, 0, 0)');
+      colors.push(color);
+      await page.goto('/app');
+      const tray = page.locator('[data-ideas-tray-drop]');
+      const toggle = page.getByRole('navigation',{name:'Right panel'}).getByRole('button',{name:'Ideas',exact:true});
+      await expect(toggle).toBeVisible();
+      if (await toggle.getAttribute('aria-pressed') !== 'true') await toggle.click();
+      await expect(tray).toBeVisible();
+      await expect.poll(() => tray.evaluate(el => getComputedStyle(el).backgroundColor)).toBe(color);
+    }
+  }
+  expect(new Set(colors).size).toBe(4);
 });
