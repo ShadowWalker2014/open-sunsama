@@ -146,11 +146,10 @@ export function TaskCardContent({
   return (
     <div
       className={cn(
-        // Base styles - Sunsama-inspired card
-        "group relative flex flex-col gap-1.5 rounded-lg px-3 py-2.5 transition-all duration-200",
-        // Background and border
-        "bg-card hover:bg-card/80",
-        "border border-border/40 hover:border-border/60",
+        "group relative flex flex-col gap-1.5 rounded-md px-3 py-2.5 transition-[background-color,box-shadow,opacity] duration-150",
+        // Borderless: the card is raised by its fill and shadow.
+        "bg-surface hover:bg-surface-hover",
+        !isDragging && !isCompleted && "shadow-card hover:shadow-card-hover",
         // Cursor
         "cursor-grab active:cursor-grabbing",
         // Touch support
@@ -159,7 +158,7 @@ export function TaskCardContent({
         isDragging &&
           "shadow-xl ring-2 ring-primary/20 rotate-[0.5deg] cursor-grabbing",
         // Completed state - muted styling with smooth transition
-        isCompleted && "opacity-50 hover:opacity-60 bg-card/50",
+        isCompleted && "opacity-50 hover:opacity-60",
         className
       )}
       onClick={onClick}
