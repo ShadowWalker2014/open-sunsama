@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { getDb, eq, and, asc, timeBlocks, tasks, users, sql } from '@open-sunsama/database';
 import { NotFoundError, uuidSchema } from '@open-sunsama/utils';
 import { auth, requireScopes, type AuthVariables } from '../middleware/auth.js';
+import { calculateCascadeShifts } from '../services/time-block-cascade.js';
 import {
   createTimeBlockSchema, updateTimeBlockSchema, timeBlockFilterSchema, calculateDuration,
   quickScheduleSchema, calculateEndTime, cascadeResizeSchema, autoScheduleSchema,
@@ -374,78 +375,28 @@ timeBlocksRouter.patch('/:id/cascade-resize', requireScopes('time-blocks:write')
   const [targetBlock] = await db.select().from(timeBlocks).where(and(eq(timeBlocks.id, id), eq(timeBlocks.userId, userId))).limit(1);
   if (!targetBlock) throw new NotFoundError('Time block', id);
 
-  const originalStartTime = targetBlock.startTime;
-  const targetDate = targetBlock.date;
-
-  // Fetch all blocks for the same date, ordered by start time
+  // Fetch all blocks for the same date
   const allBlocks = await db
     .select()
     .from(timeBlocks)
-    .where(and(eq(timeBlocks.userId, userId), eq(timeBlocks.date, targetDate)))
-    .orderBy(asc(timeBlocks.startTime));
+    .where(and(eq(timeBlocks.userId, userId), eq(timeBlocks.date, targetBlock.date)));
 
-  // Filter to blocks that start AFTER the resized block's original start time (excluding the target)
-  const subsequentBlocks = allBlocks.filter(
-    (block) => block.id !== id && block.startTime > originalStartTime
+  // Only blocks the resized one now overlaps get pushed later; blocks
+  // further down the day keep their times.
+  const { updatedBlocks: shifts } = calculateCascadeShifts(
+    {
+      id: targetBlock.id,
+      startTime: newStartTime,
+      endTime: newEndTime,
+      originalStartTime: targetBlock.startTime,
+      originalEndTime: targetBlock.endTime,
+    },
+    allBlocks.map((b) => ({ id: b.id, startTime: b.startTime, endTime: b.endTime }))
   );
-
-  // Calculate the updates needed
-  type BlockUpdate = { id: string; startTime: string; endTime: string; durationMins: number };
-  const updates: BlockUpdate[] = [];
-
-  // First, add the resized block's update
-  const newDuration = calculateDuration(newStartTime, newEndTime);
-  updates.push({
-    id: targetBlock.id,
-    startTime: newStartTime,
-    endTime: newEndTime,
-    durationMins: newDuration,
-  });
-
-  // Track the current "end boundary" - blocks need to shift if they start before this
-  let currentEndMinutes = timeToMinutes(newEndTime);
-
-  // Process subsequent blocks in order
-  for (let i = 0; i < subsequentBlocks.length; i++) {
-    const block = subsequentBlocks[i]!;
-    const blockStartMinutes = timeToMinutes(block.startTime);
-    const blockEndMinutes = timeToMinutes(block.endTime);
-    const blockDuration = blockEndMinutes - blockStartMinutes;
-
-    // Calculate the original gap between this block and the previous one
-    let originalGap = 0;
-    if (i === 0) {
-      // Gap from the target block's original end to this block's start
-      const targetOriginalEndMinutes = timeToMinutes(targetBlock.endTime);
-      originalGap = Math.max(0, blockStartMinutes - targetOriginalEndMinutes);
-    } else {
-      // Gap from the previous subsequent block's original end to this block's start
-      const prevBlock = subsequentBlocks[i - 1]!;
-      const prevEndMinutes = timeToMinutes(prevBlock.endTime);
-      originalGap = Math.max(0, blockStartMinutes - prevEndMinutes);
-    }
-
-    // Check if this block needs to shift
-    if (blockStartMinutes < currentEndMinutes + originalGap) {
-      // Shift this block: new start = current end boundary + original gap
-      const newBlockStartMinutes = currentEndMinutes + originalGap;
-      const newBlockEndMinutes = newBlockStartMinutes + blockDuration;
-
-      updates.push({
-        id: block.id,
-        startTime: minutesToTime(newBlockStartMinutes),
-        endTime: minutesToTime(newBlockEndMinutes),
-        durationMins: blockDuration,
-      });
-
-      // Update the end boundary for the next block
-      currentEndMinutes = newBlockEndMinutes;
-    } else {
-      // This block doesn't need to shift, but we still need to update the boundary
-      // for cascade detection of following blocks
-      currentEndMinutes = blockEndMinutes;
-    }
-  }
+  const updates = shifts.map((u) => ({
+    ...u,
+    durationMins: calculateDuration(u.startTime, u.endTime),
+  }));
 
   // Execute all updates in a single transaction
   const updatedBlocks = await db.transaction(async (tx) => {

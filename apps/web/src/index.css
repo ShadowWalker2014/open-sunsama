@@ -39,6 +39,17 @@
       0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.15);
 
+    /* Planner surfaces: the board sits on a tinted canvas and task cards are
+       raised by fill and shadow instead of outlined with borders. */
+    /* Layers, darkest to lightest in dark mode: chrome (header, rails)
+       holds a rounded canvas panel, and cards sit on the canvas. */
+    --chrome: 220 13% 94%;
+    --canvas: 220 14% 97.5%;
+    --surface: 0 0% 100%;
+    --surface-hover: 220 14% 99%;
+    --shadow-card: 0 1px 2px 0 rgb(16 24 40 / 0.06), 0 1px 3px 0 rgb(16 24 40 / 0.08);
+    --shadow-card-hover: 0 2px 4px 0 rgb(16 24 40 / 0.08), 0 4px 10px -2px rgb(16 24 40 / 0.1);
+
     /* Transitions */
     --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -82,6 +93,13 @@
     --shadow-lg:
       0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
     --shadow-glow: 0 0 60px hsl(var(--primary-glow) / 0.2);
+
+    --chrome: 228 10% 4%;
+    --canvas: 228 7% 7.5%;
+    --surface: 228 6% 13%;
+    --surface-hover: 228 6% 15%;
+    --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.55), 0 2px 4px 0 rgb(0 0 0 / 0.3);
+    --shadow-card-hover: 0 2px 4px 0 rgb(0 0 0 / 0.6), 0 6px 12px -2px rgb(0 0 0 / 0.4);
   }
 
   /* Font Variables */

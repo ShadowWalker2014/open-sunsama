@@ -1,6 +1,6 @@
 # Open Sunsama MCP Server
 
-An MCP (Model Context Protocol) server that enables AI agents like Claude, ChatGPT, Cursor, and other AI assistants to manage your tasks, time blocks, and calendar through the Open Sunsama API.
+An MCP (Model Context Protocol) server that enables AI agents like Claude, ChatGPT, Cursor, and other AI assistants to manage your tasks, time blocks, calendar, and Ideas through the Open Sunsama API.
 
 > **Most people don't need this package.** Open Sunsama hosts the same server at
 > **`https://api.opensunsama.com/mcp`** with OAuth sign-in. Add that URL to Claude
@@ -16,6 +16,7 @@ An MCP (Model Context Protocol) server that enables AI agents like Claude, ChatG
 - **Task Management**: Create, update, complete, delete, and schedule tasks
 - **Time Blocking**: Schedule focused work sessions on your calendar
 - **Subtasks**: Break down tasks into smaller actionable items
+- **Ideas**: Manage boards, columns, cards, and checklists, and promote ideas to tasks
 - **User Profile**: Access and update user preferences
 - **Full CRUD Operations**: Complete API coverage for AI-assisted productivity
 
@@ -73,6 +74,7 @@ Or create one with custom scopes:
    - `tasks:read` and `tasks:write` for task management
    - `time-blocks:read` and `time-blocks:write` for time blocks
    - `calendar:read` for events from connected Google, Outlook and iCloud calendars
+   - `ideas:read` and `ideas:write` for idea boards, columns, cards, and checklists
    - `user:read` and `user:write` for profile access
 5. Copy the key (it's only shown once!)
 
@@ -395,6 +397,8 @@ bun run dev      # Watch mode for development
 | `time-blocks:read` | List and view time blocks |
 | `time-blocks:write` | Create, update, delete time blocks |
 | `calendar:read` | List events from connected calendars |
+| `ideas:read` | List idea boards, columns, cards, and checklists |
+| `ideas:write` | Create, update, delete, and reorder ideas |
 | `user:read` | View user profile |
 | `user:write` | Update user profile |
 

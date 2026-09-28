@@ -155,11 +155,15 @@ function AppLayoutInner() {
 
   return (
     <>
-      <div className="flex min-h-screen flex-col">
+      <div className="flex min-h-screen flex-col lg:bg-chrome">
         <AppUpdateBanner />
         <Header />
-        <main className="flex-1 pb-16 lg:pb-0">
-          <Outlet />
+        {/* On desktop the page sits in a rounded panel inset from the
+            chrome, so regions are separated by tone instead of lines. */}
+        <main className="flex-1 pb-16 lg:px-1.5 lg:pb-1.5">
+          <div className="h-full lg:overflow-hidden lg:rounded-lg lg:bg-canvas">
+            <Outlet />
+          </div>
         </main>
         {/* Mobile bottom navigation - hidden on lg screens */}
         <MobileBottomNav />
