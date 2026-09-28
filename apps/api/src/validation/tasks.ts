@@ -19,7 +19,8 @@ export const sortBySchema = z.enum(['priority', 'position', 'createdAt']);
  * Schema for creating a task
  */
 export const createTaskSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(500),
+  title: z.string({ error: (issue) => issue.input === undefined ? 'Title is required' : undefined })
+    .min(1, { error: 'Title is required' }).max(500),
   notes: z.string().max(5000).optional().nullable(),
   scheduledDate: dateSchema.optional().nullable(),
   estimatedMins: z.number().int().positive().max(480).optional().nullable(),
@@ -37,7 +38,7 @@ export const updateTaskSchema = z.object({
   estimatedMins: z.number().int().positive().max(480).optional().nullable(),
   actualMins: z.number().int().nonnegative().optional().nullable(),
   priority: prioritySchema.optional(),
-  completedAt: z.string().datetime().optional().nullable(),
+  completedAt: z.iso.datetime().optional().nullable(),
   position: z.number().int().nonnegative().optional(),
   subtasksHidden: z.boolean().optional(),
 });

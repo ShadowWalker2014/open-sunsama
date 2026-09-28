@@ -19,7 +19,7 @@ export const registerSchema = z.object({
  */
 export const loginSchema = z.object({
   email: emailSchema,
-  password: z.string().min(1, 'Password is required'),
+  password: z.string().min(1, { error: 'Password is required' }),
 });
 
 /**
@@ -49,7 +49,7 @@ export const userPreferencesSchema = z.object({
  */
 export const updateProfileSchema = z.object({
   name: z.string().min(1).max(255).optional().nullable(),
-  avatarUrl: z.string().url().max(500).optional().nullable(),
+  avatarUrl: z.url().max(500).optional().nullable(),
   timezone: z.string().max(50).optional(),
   preferences: userPreferencesSchema.optional(),
 });
@@ -58,7 +58,7 @@ export const updateProfileSchema = z.object({
  * Schema for changing password
  */
 export const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, 'Current password is required'),
+  currentPassword: z.string().min(1, { error: 'Current password is required' }),
   newPassword: passwordSchema,
 });
 
@@ -73,6 +73,6 @@ export const requestPasswordResetSchema = z.object({
  * Schema for resetting password with token
  */
 export const resetPasswordSchema = z.object({
-  token: z.string().min(1, 'Reset token is required'),
+  token: z.string().min(1, { error: 'Reset token is required' }),
   newPassword: passwordSchema,
 });

@@ -285,17 +285,17 @@ async function loadEventForWrite(eventId: string, userId: string) {
  */
 const createEventBodySchema = z
   .object({
-    calendarId: z.string().uuid(),
+    calendarId: z.uuid(),
     title: z.string().min(1).max(500),
     description: z.string().max(50_000).nullable().optional(),
     location: z.string().max(1000).nullable().optional(),
-    startTime: z.string().datetime(),
-    endTime: z.string().datetime(),
+    startTime: z.iso.datetime(),
+    endTime: z.iso.datetime(),
     isAllDay: z.boolean().optional(),
     timezone: z.string().max(100).nullable().optional(),
   })
   .refine((b) => new Date(b.endTime) > new Date(b.startTime), {
-    message: 'endTime must be after startTime',
+    error: 'endTime must be after startTime',
     path: ['endTime'],
   });
 
@@ -492,8 +492,8 @@ const updateEventBodySchema = z
     title: z.string().min(1).max(500).optional(),
     description: z.string().max(50_000).nullable().optional(),
     location: z.string().max(1000).nullable().optional(),
-    startTime: z.string().datetime().optional(),
-    endTime: z.string().datetime().optional(),
+    startTime: z.iso.datetime().optional(),
+    endTime: z.iso.datetime().optional(),
     isAllDay: z.boolean().optional(),
     timezone: z.string().max(100).nullable().optional(),
   })
@@ -502,7 +502,7 @@ const updateEventBodySchema = z
       (b.startTime === undefined && b.endTime === undefined) ||
       (b.startTime !== undefined && b.endTime !== undefined),
     {
-      message: 'startTime and endTime must be provided together',
+      error: 'startTime and endTime must be provided together',
       path: ['endTime'],
     }
   )
@@ -512,7 +512,7 @@ const updateEventBodySchema = z
       b.endTime === undefined ||
       new Date(b.endTime) > new Date(b.startTime),
     {
-      message: 'endTime must be after startTime',
+      error: 'endTime must be after startTime',
       path: ['endTime'],
     }
   );

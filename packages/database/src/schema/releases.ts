@@ -23,16 +23,16 @@ export const releases = pgTable('releases', {
 
 // Zod schemas for validation
 export const insertReleaseSchema = createInsertSchema(releases, {
-  id: z.string().regex(/^rel_/, 'ID must start with rel_'),
+  id: z.string().regex(/^rel_/, { error: 'ID must start with rel_' }),
   version: z
     .string()
-    .min(1, 'Version is required')
-    .regex(/^\d+\.\d+\.\d+/, 'Version must be in semver format (e.g., 1.0.0)'),
+    .min(1, { error: 'Version is required' })
+    .regex(/^\d+\.\d+\.\d+/, { error: 'Version must be in semver format (e.g., 1.0.0)' }),
   platform: z.enum(RELEASE_PLATFORMS),
-  downloadUrl: z.string().url('Download URL must be a valid URL'),
-  fileSize: z.number().int().positive('File size must be a positive integer'),
-  fileName: z.string().min(1, 'File name is required'),
-  sha256: z.string().length(64, 'SHA256 must be 64 characters').optional(),
+  downloadUrl: z.url({ error: 'Download URL must be a valid URL' }),
+  fileSize: z.number().int().positive({ error: 'File size must be a positive integer' }),
+  fileName: z.string().min(1, { error: 'File name is required' }),
+  sha256: z.string().length(64, { error: 'SHA256 must be 64 characters' }).optional(),
   releaseNotes: z.string().optional(),
 });
 

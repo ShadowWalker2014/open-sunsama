@@ -50,7 +50,7 @@ async function verifyTaskOwnership(db: ReturnType<typeof getDb>, taskId: string,
  * so Hono's matcher resolves the static segment first.
  */
 const batchListSchema = z.object({
-  taskIds: z.array(z.string().uuid()).max(500),
+  taskIds: z.array(z.uuid()).max(500),
 });
 subtasksRouter.post(
   '/subtasks-batch',
