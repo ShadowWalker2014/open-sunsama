@@ -156,6 +156,10 @@ function App() {
           <PersistQueryClientProvider
             client={queryClient}
             persistOptions={persistOptions}
+            onSuccess={() => {
+              // Disk writes are throttled, so restored data may predate a saved edit.
+              void queryClient.invalidateQueries();
+            }}
           >
             {inner}
           </PersistQueryClientProvider>
