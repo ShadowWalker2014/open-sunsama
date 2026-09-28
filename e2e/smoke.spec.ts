@@ -107,3 +107,19 @@ test("shows a time block on the calendar", async ({ page }) => {
   await page.goto(`/app/calendar?date=${today}`);
   await expect(page.getByRole("button", { name: /^Time block: Deep work from 9:00 AM to 10:30 AM/ })).toBeVisible();
 });
+
+test("moves a task's time block with it to another day, and clears it for the backlog", async () => {
+  const session = await register();
+  const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+  const task = await api<{ id: string }>("POST", "/tasks", { title: "Plan the week", scheduledDate: today }, session.token);
+  await api("POST", "/time-blocks", { taskId: task.id, title: "Plan the week", date: today, startTime: "09:00", endTime: "10:00" }, session.token);
+
+  await api("PATCH", `/tasks/${task.id}`, { scheduledDate: tomorrow }, session.token);
+  type Block = { taskId: string | null; date: string; startTime: string };
+  const onTomorrow = await api<Block[]>("GET", `/time-blocks?date=${tomorrow}`, undefined, session.token);
+  expect(onTomorrow.map((b) => [b.taskId, b.date])).toEqual([[task.id, tomorrow]]);
+  expect(await api<Block[]>("GET", `/time-blocks?date=${today}`, undefined, session.token)).toEqual([]);
+
+  await api("POST", "/tasks/reorder", { date: "backlog", taskIds: [task.id] }, session.token);
+  expect(await api<Block[]>("GET", `/time-blocks?date=${tomorrow}`, undefined, session.token)).toEqual([]);
+});
