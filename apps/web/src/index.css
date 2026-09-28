@@ -65,9 +65,9 @@
        clean black with crisp cards instead of muddy grey. */
     --background: 240 5% 5%;
     --foreground: 0 0% 95%;
-    --card: 240 4% 10%;
+    --card: 240 4% 8%;
     --card-foreground: 0 0% 95%;
-    --popover: 240 4% 11.5%;
+    --popover: 240 4% 10%;
     --popover-foreground: 0 0% 95%;
     --primary: 24 95% 60%;
     --primary-foreground: 0 0% 100%;
@@ -99,11 +99,11 @@
     /* Layers: black chrome, a near-black page, cards a step up with a
        faint hairline so their edges stay crisp without a heavy shadow. */
     --chrome: 240 6% 2.5%;
-    --canvas: 240 5% 5.5%;
-    --surface: 240 4% 10%;
-    --surface-hover: 240 4% 12%;
-    --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.045), 0 1px 2px 0 rgb(0 0 0 / 0.5);
-    --shadow-card-hover: 0 0 0 1px rgb(255 255 255 / 0.07), 0 2px 6px 0 rgb(0 0 0 / 0.55);
+    --canvas: 240 5% 5%;
+    --surface: 240 4% 8%;
+    --surface-hover: 240 4% 9.5%;
+    --shadow-card: 0 0 0 1px rgb(255 255 255 / 0.06), 0 1px 2px 0 rgb(0 0 0 / 0.6);
+    --shadow-card-hover: 0 0 0 1px rgb(255 255 255 / 0.09), 0 2px 6px 0 rgb(0 0 0 / 0.6);
   }
 
   /* Font Variables */
