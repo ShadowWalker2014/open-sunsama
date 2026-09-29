@@ -226,7 +226,7 @@ export function MobileTaskListView({
   
   
   return (
-    <div className={cn("flex flex-col h-full bg-background", className)}>
+    <div className={cn("flex flex-col h-full bg-canvas", className)}>
       <MobileDateHeader
         selectedDate={currentDate}
         onSelectDate={onSelectDate}

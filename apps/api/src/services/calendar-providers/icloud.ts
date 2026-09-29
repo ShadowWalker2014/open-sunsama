@@ -256,6 +256,8 @@ export class ICloudCalendarProvider implements CalendarProvider {
       responseStatus: null,
       htmlLink: eventUrl,
       etag: response.headers.get('ETag'),
+      attendees: null,
+      conferenceUrl: null,
     };
   }
 
@@ -339,6 +341,8 @@ export class ICloudCalendarProvider implements CalendarProvider {
       responseStatus: existing.responseStatus,
       htmlLink: patch.eventUrl,
       etag: response.headers.get('ETag') ?? existing.etag,
+      attendees: existing.attendees,
+      conferenceUrl: existing.conferenceUrl,
     };
   }
 

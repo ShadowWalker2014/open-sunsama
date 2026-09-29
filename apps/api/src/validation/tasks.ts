@@ -22,7 +22,7 @@ export const createTaskSchema = z.object({
   title: z.string().min(1, 'Title is required').max(500),
   notes: z.string().max(5000).optional().nullable(),
   scheduledDate: dateSchema.optional().nullable(),
-  estimatedMins: z.number().int().positive().max(480).optional().nullable(),
+  estimatedMins: z.number().int().positive().max(1440).optional().nullable(),
   priority: prioritySchema.optional(),
   position: z.number().int().nonnegative().optional(),
 });
@@ -34,7 +34,7 @@ export const updateTaskSchema = z.object({
   title: z.string().min(1).max(500).optional(),
   notes: z.string().max(5000).optional().nullable(),
   scheduledDate: dateSchema.optional().nullable(),
-  estimatedMins: z.number().int().positive().max(480).optional().nullable(),
+  estimatedMins: z.number().int().positive().max(1440).optional().nullable(),
   actualMins: z.number().int().nonnegative().optional().nullable(),
   priority: prioritySchema.optional(),
   completedAt: z.string().datetime().optional().nullable(),

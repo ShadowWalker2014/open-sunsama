@@ -216,6 +216,10 @@ export class ApiClient {
     return this.request<Idea[]>("GET", "/ideas", undefined, filters);
   }
 
+  async getIdea(id: string) {
+    return this.request<Idea & { subtasks: IdeaSubtask[] }>("GET", `/ideas/${id}`);
+  }
+
   async createIdea(data: CreateIdeaInput) {
     return this.request<Idea>("POST", "/ideas", data);
   }
@@ -436,6 +440,9 @@ export interface Subtask {
   title: string;
   completed: boolean;
   position: number;
+  estimatedMins?: number | null;
+  actualMins?: number | null;
+  timerStartedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -449,6 +456,8 @@ export interface UpdateSubtaskInput {
   title?: string;
   completed?: boolean;
   position?: number;
+  estimatedMins?: number | null;
+  actualMins?: number | null;
 }
 
 export interface TimeBlock {
@@ -503,6 +512,10 @@ export interface CalendarEvent {
   isAllDay: boolean;
   status: "confirmed" | "tentative" | "cancelled" | null;
   responseStatus: "accepted" | "declined" | "tentative" | "needsAction" | null;
+  /** Guests; null when there are none or the provider doesn't report them. */
+  attendees?: Array<{ email: string; name: string | null }> | null;
+  /** Video call join URL (Google Meet, Teams, Zoom). */
+  conferenceUrl?: string | null;
   calendar: { id: string; name: string; color: string | null } | null;
 }
 

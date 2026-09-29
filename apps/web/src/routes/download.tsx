@@ -69,7 +69,7 @@ const PLATFORMS: Record<PlatformKey, PlatformInfo> = {
 interface Release {
   id: string;
   version: string;
-  platform: PlatformKey;
+  platform: PlatformKey | "linux-deb";
   downloadUrl: string;
   fileSize: number;
   fileName: string;
@@ -80,7 +80,7 @@ interface Release {
 
 type ReleasesResponse = {
   success: boolean;
-  data: Record<PlatformKey, Release | undefined>;
+  data: Record<PlatformKey | "linux-deb", Release | undefined>;
 };
 
 function detectPlatformSync(): PlatformKey {
@@ -157,12 +157,14 @@ function formatFileSize(bytes: number): string {
 function PlatformCard({
   platform,
   release,
+  debRelease,
   isDetected,
   isLoading,
   delay = 0,
 }: {
   platform: PlatformInfo;
   release?: Release;
+  debRelease?: Release;
   isDetected: boolean;
   isLoading: boolean;
   delay?: number;
@@ -249,6 +251,17 @@ function PlatformCard({
           </Button>
         )}
       </div>
+      {debRelease && release && debRelease.version === release.version && (
+        <a
+          href={debRelease.downloadUrl}
+          download
+          className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+          onClick={() => trackGoal("download_app", { platform: "linux-deb" })}
+        >
+          <Download className="h-3 w-3" />
+          .deb for Ubuntu/Debian • {formatFileSize(debRelease.fileSize)}
+        </a>
+      )}
     </div>
   );
 }
@@ -283,12 +296,13 @@ export default function DownloadPage() {
   const [detectedPlatform, setDetectedPlatform] =
     React.useState<PlatformKey>("macos-arm64");
   const [releases, setReleases] = React.useState<
-    Record<PlatformKey, Release | undefined>
+    Record<PlatformKey | "linux-deb", Release | undefined>
   >({
     windows: undefined,
     "macos-arm64": undefined,
     "macos-x64": undefined,
     linux: undefined,
+    "linux-deb": undefined,
   });
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -422,7 +436,10 @@ export default function DownloadPage() {
               <PlatformCard
                 key={platform.key}
                 platform={platform}
-                release={releases[platform.key]}
+                  release={releases[platform.key]}
+                  debRelease={
+                    platform.key === "linux" ? releases["linux-deb"] : undefined
+                  }
                 isDetected={platform.key === detectedPlatform}
                 isLoading={isLoading}
                 delay={i * 50}

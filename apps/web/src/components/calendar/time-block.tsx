@@ -150,8 +150,9 @@ export function TimeBlock({
         {/* Top resize handle - Larger touch target on mobile */}
         <div
           data-resize="top"
+          title="Drag to change start time"
           className={cn(
-            "absolute top-0 left-0 right-0 cursor-ns-resize hover:bg-black/10 rounded-t-sm",
+            "absolute top-0 left-0 right-0 z-20 cursor-ns-resize hover:bg-black/10 rounded-t-sm",
             "h-3 sm:h-2", // Larger on mobile for touch
             "-mt-1 sm:mt-0" // Extend beyond block for easier touch
           )}
@@ -184,8 +185,9 @@ export function TimeBlock({
         {/* Bottom resize handle - Larger touch target on mobile */}
         <div
           data-resize="bottom"
+          title="Drag to change end time"
           className={cn(
-            "absolute bottom-0 left-0 right-0 cursor-ns-resize hover:bg-black/10 rounded-b-sm",
+            "absolute bottom-0 left-0 right-0 z-20 cursor-ns-resize hover:bg-black/10 rounded-b-sm",
             "h-3 sm:h-2", // Larger on mobile for touch
             "-mb-1 sm:mb-0" // Extend beyond block for easier touch
           )}

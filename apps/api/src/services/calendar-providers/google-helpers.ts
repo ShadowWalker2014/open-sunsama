@@ -1,7 +1,7 @@
 /**
  * Google Calendar helper functions and types
  */
-import type { ExternalEvent } from './index';
+import type { ExternalAttendee, ExternalEvent } from './index';
 
 // Google API interfaces
 export interface GoogleCalendarListItem {
@@ -29,12 +29,22 @@ export interface GoogleEvent {
   recurrence?: string[];
   recurringEventId?: string;
   status?: string;
-  attendees?: Array<{
-    self?: boolean;
-    responseStatus?: string;
-  }>;
+  attendees?: GoogleAttendee[];
+  hangoutLink?: string;
+  conferenceData?: {
+    entryPoints?: Array<{ entryPointType?: string; uri?: string }>;
+  };
   htmlLink?: string;
   etag?: string;
+}
+
+export interface GoogleAttendee {
+  email?: string;
+  displayName?: string;
+  self?: boolean;
+  organizer?: boolean;
+  resource?: boolean;
+  responseStatus?: string;
 }
 
 export interface GoogleEventsResponse {
@@ -156,5 +166,27 @@ export function parseGoogleEvent(event: GoogleEvent): ExternalEvent | null {
     responseStatus,
     htmlLink: event.htmlLink ?? null,
     etag: event.etag ?? null,
+    attendees: parseGoogleAttendees(event.attendees),
+    conferenceUrl:
+      event.conferenceData?.entryPoints?.find(
+        (e) => e.entryPointType === 'video' && e.uri
+      )?.uri ??
+      event.hangoutLink ??
+      null,
   };
+}
+
+/** Guests other than meeting rooms; null when the event has none. */
+function parseGoogleAttendees(
+  attendees: GoogleAttendee[] | undefined
+): ExternalAttendee[] | null {
+  const people = (attendees ?? []).filter((a) => a.email && !a.resource);
+  if (people.length === 0) return null;
+  return people.map((a) => ({
+    email: a.email!,
+    name: a.displayName ?? null,
+    responseStatus: mapResponseStatus(a.responseStatus),
+    organizer: a.organizer ?? false,
+    self: a.self ?? false,
+  }));
 }
