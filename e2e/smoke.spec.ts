@@ -640,7 +640,7 @@ test("task drops save one linked idea with its checklist and reject another user
   expect(denied.status).toBe(404);
 });
 
-test('Ideas surfaces follow appearance colors in light and dark mode', async ({ page }) => {
+test('Ideas surfaces stay neutral across accent colors and adapt to light and dark mode', async ({ page }) => {
   const session = await register();
   const board = await api<{id:string}>('POST','/ideas/boards',{name:'Theme validation'},session.token);
   await signInWithToken(page, session);
@@ -666,5 +666,7 @@ test('Ideas surfaces follow appearance colors in light and dark mode', async ({ 
       await expect.poll(() => tray.evaluate(el => getComputedStyle(el).backgroundColor)).toBe(color);
     }
   }
-  expect(new Set(colors).size).toBe(4);
+  expect(colors[0]).toBe(colors[1]);
+  expect(colors[2]).toBe(colors[3]);
+  expect(colors[0]).not.toBe(colors[2]);
 });
