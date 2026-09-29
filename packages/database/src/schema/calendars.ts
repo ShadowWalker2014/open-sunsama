@@ -66,8 +66,8 @@ const hexColorRegex = /^#[0-9A-Fa-f]{6}$/;
 // Zod schemas for validation
 export const insertCalendarSchema = createInsertSchema(calendars, {
   externalId: z.string().min(1).max(500),
-  name: z.string().min(1, 'Calendar name is required').max(255),
-  color: z.string().regex(hexColorRegex, 'Invalid hex color').optional().nullable(),
+  name: z.string().min(1, { error: 'Calendar name is required' }).max(255),
+  color: z.string().regex(hexColorRegex, { error: 'Invalid hex color' }).optional().nullable(),
   isEnabled: z.boolean().optional(),
   isDefaultForEvents: z.boolean().optional(),
   isDefaultForTasks: z.boolean().optional(),

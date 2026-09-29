@@ -18,12 +18,12 @@ function parseTimeToMinutes(time: string): number {
  */
 export const createTimeBlockSchema = z.object({
   taskId: uuidSchema.optional().nullable(),
-  title: z.string().min(1, 'Title is required').max(255),
+  title: z.string().min(1, { error: 'Title is required' }).max(255),
   description: z.string().max(1000).optional().nullable(),
   date: dateSchema,
   startTime: timeSchema,
   endTime: timeSchema,
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color').optional().default('#3B82F6'),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, { error: 'Invalid hex color' }).optional().default('#3B82F6'),
   position: z.number().int().nonnegative().optional(),
 }).refine(
   (data) => {
@@ -31,7 +31,7 @@ export const createTimeBlockSchema = z.object({
     const endMinutes = parseTimeToMinutes(data.endTime);
     return endMinutes > startMinutes;
   },
-  { message: 'End time must be after start time', path: ['endTime'] }
+  { error: 'End time must be after start time', path: ['endTime'] }
 );
 
 /**
@@ -44,7 +44,7 @@ export const updateTimeBlockSchema = z.object({
   date: dateSchema.optional(),
   startTime: timeSchema.optional(),
   endTime: timeSchema.optional(),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color').optional().nullable(),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, { error: 'Invalid hex color' }).optional().nullable(),
   position: z.number().int().nonnegative().optional(),
 }).refine(
   (data) => {
@@ -56,7 +56,7 @@ export const updateTimeBlockSchema = z.object({
     }
     return true;
   },
-  { message: 'End time must be after start time', path: ['endTime'] }
+  { error: 'End time must be after start time', path: ['endTime'] }
 );
 
 /**
@@ -85,8 +85,8 @@ export const quickScheduleSchema = z.object({
   taskId: uuidSchema,
   date: dateSchema,
   startTime: timeSchema,
-  durationMins: z.number().int().min(5, 'Duration must be at least 5 minutes').max(480, 'Duration cannot exceed 8 hours').optional().default(30),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color').optional(),
+  durationMins: z.number().int().min(5, { error: 'Duration must be at least 5 minutes' }).max(480, { error: 'Duration cannot exceed 8 hours' }).optional().default(30),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, { error: 'Invalid hex color' }).optional(),
 });
 
 /**
@@ -112,7 +112,7 @@ export const cascadeResizeSchema = z.object({
     const endMinutes = parseTimeToMinutes(data.endTime);
     return endMinutes > startMinutes;
   },
-  { message: 'End time must be after start time', path: ['endTime'] }
+  { error: 'End time must be after start time', path: ['endTime'] }
 );
 
 /**
