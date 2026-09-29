@@ -42,9 +42,9 @@ export const pushSubscriptionsRelations = relations(pushSubscriptions, ({ one })
 
 // Zod schemas for validation
 export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions, {
-  endpoint: z.string().url('Invalid endpoint URL'),
-  p256dhKey: z.string().min(1, 'p256dh key is required'),
-  authKey: z.string().min(1, 'Auth key is required'),
+  endpoint: z.url({ error: 'Invalid endpoint URL' }),
+  p256dhKey: z.string().min(1, { error: 'p256dh key is required' }),
+  authKey: z.string().min(1, { error: 'Auth key is required' }),
 });
 
 export const selectPushSubscriptionSchema = createSelectSchema(pushSubscriptions);

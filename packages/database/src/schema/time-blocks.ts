@@ -50,15 +50,15 @@ const timeFormatRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
 // Zod schemas for validation
 export const insertTimeBlockSchema = createInsertSchema(timeBlocks, {
-  title: z.string().min(1, 'Title is required').max(255),
+  title: z.string().min(1, { error: 'Title is required' }).max(255),
   description: z.string().max(1000).optional(),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)'),
-  startTime: z.string().regex(timeFormatRegex, 'Invalid time format (HH:MM)'),
-  endTime: z.string().regex(timeFormatRegex, 'Invalid time format (HH:MM)'),
-  durationMins: z.number().int().positive('Duration must be positive'),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { error: 'Invalid date format (YYYY-MM-DD)' }),
+  startTime: z.string().regex(timeFormatRegex, { error: 'Invalid time format (HH:MM)' }),
+  endTime: z.string().regex(timeFormatRegex, { error: 'Invalid time format (HH:MM)' }),
+  durationMins: z.number().int().positive({ error: 'Duration must be positive' }),
   color: z
     .string()
-    .regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid hex color')
+    .regex(/^#[0-9A-Fa-f]{6}$/, { error: 'Invalid hex color' })
     .optional(),
   position: z.number().int().nonnegative().optional(),
 });

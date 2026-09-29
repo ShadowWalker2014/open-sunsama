@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { z as z3 } from 'zod/v3';
 import {
   emailSchema,
   passwordSchema,
@@ -45,6 +46,10 @@ describe('validation schemas', () => {
       const result = emailSchema.safeParse('');
       expect(result.success).toBe(false);
     });
+
+    it('accepts a plus-address after trimming and lowercasing', () => {
+      expect(emailSchema.parse('  PERSON+WORK@EXAMPLE.COM  ')).toBe('person+work@example.com');
+    });
   });
 
   describe('passwordSchema', () => {
@@ -83,6 +88,13 @@ describe('validation schemas', () => {
     it('should reject invalid UUID', () => {
       const result = uuidSchema.safeParse('invalid-uuid');
       expect(result.success).toBe(false);
+    });
+
+    it('accepts a generated-style UUID but rejects invalid variant bits', () => {
+      expect(uuidSchema.safeParse('123e4567-e89b-42d3-a456-426614174000').success).toBe(true);
+      const nonRfcUuid = '123e4567-e89b-12d3-0456-426614174000';
+      expect(z3.string().uuid().safeParse(nonRfcUuid).success).toBe(true);
+      expect(uuidSchema.safeParse(nonRfcUuid).success).toBe(false);
     });
   });
 

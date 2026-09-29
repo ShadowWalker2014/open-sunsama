@@ -42,7 +42,7 @@ export const subtasksRelations = relations(subtasks, ({ one }) => ({
 
 // Zod schemas for validation
 export const insertSubtaskSchema = createInsertSchema(subtasks, {
-  title: z.string().min(1, 'Title is required').max(500),
+  title: z.string().min(1, { error: 'Title is required' }).max(500),
   completed: z.boolean().optional(),
   position: z.number().int().nonnegative().optional(),
 });
