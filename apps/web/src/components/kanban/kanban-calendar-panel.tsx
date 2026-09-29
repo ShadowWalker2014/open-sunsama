@@ -1,3 +1,4 @@
+import { useTasksDnd } from "@/lib/dnd/tasks-dnd-context";
 import type { CalendarCreateAnchor } from "@/hooks/useDragToCreate";
 import * as React from "react";
 import { useDndMonitor, useDroppable, type DragMoveEvent } from "@dnd-kit/core";
@@ -62,30 +63,6 @@ export interface CalendarDropData {
   date: string;
   /** Snapped start time under the pointer's vertical position. */
   timeAt: (clientY: number) => Date;
-}
-
-/** The pointer's position during a dnd-kit drag. */
-export function dragPointerY(event: {
-  activatorEvent: Event | null;
-  delta: { y: number };
-  active: { rect: { current: {
-    initial: { top: number } | null;
-    translated: { top: number } | null;
-  } } };
-}): number | null {
-  const start = event.activatorEvent;
-  if (!start) return null;
-  const y =
-    "touches" in start
-      ? (start as TouchEvent).touches[0]?.clientY
-      : (start as MouseEvent).clientY;
-  const { initial, translated } = event.active.rect.current;
-  // dnd-kit's event delta includes scroll offsets from the current drop
-  // target. The translated rectangle retains viewport movement only.
-  const movement = initial && translated
-    ? translated.top - initial.top
-    : event.delta.y;
-  return y === undefined ? null : y + movement;
 }
 
 // Imported from the central source so adding a new provider is a
@@ -265,13 +242,14 @@ export function KanbanCalendarPanel({
     start: Date;
     end: Date;
   } | null>(null);
+  const { pointerY } = useTasksDnd();
   const cardDragActive = React.useRef(false);
   const cardDropEndedAt = React.useRef(0);
   useDndMonitor({
     onDragStart: () => { cardDragActive.current = true; },
     onDragMove(event: DragMoveEvent) {
       const task = event.active.data.current?.task as Task | undefined;
-      const y = dragPointerY(event);
+      const y = pointerY.current;
       if (event.over?.id !== `calendar-${dateString}` || !task || y === null) {
         setCardPreview(null);
         return;

@@ -1,6 +1,6 @@
 {
   "name": "@open-sunsama/desktop",
-  "version": "1.2.4",
+  "version": "1.2.3",
   "private": true,
   "type": "module",
   "scripts": {
