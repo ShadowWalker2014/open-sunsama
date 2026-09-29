@@ -19,6 +19,7 @@ import {
   ideaColumns,
   ideas,
   ideaSubtasks,
+  subtasks,
   tasks,
 } from "@open-sunsama/database";
 import { NotFoundError, ValidationError, uuidSchema } from "@open-sunsama/utils";
@@ -418,6 +419,90 @@ ideasRouter.get(
   }
 );
 
+/** Save a task as a linked idea without removing its schedule or timer. */
+ideasRouter.post(
+  "/from-task",
+  WRITE,
+  requireScopes("tasks:read"),
+  zValidator(
+    "json",
+    z.object({ taskId: uuidSchema, boardId: uuidSchema, columnId: uuidSchema })
+  ),
+  async (c) => {
+    const userId = c.get("userId");
+    const { taskId, boardId, columnId } = c.req.valid("json");
+    await assertBoardOwned(userId, boardId);
+    const column = await assertColumnOwned(userId, columnId);
+    if (column.boardId !== boardId) throw new NotFoundError("Column", columnId);
+    const idea = await getDb().transaction(async (tx) => {
+      // Lock the task so repeated drops cannot create duplicate linked ideas.
+      const [task] = await tx
+        .select()
+        .from(tasks)
+        .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
+        .limit(1)
+        .for("update");
+      if (!task) throw new NotFoundError("Task", taskId);
+      const [existing] = await tx
+        .select()
+        .from(ideas)
+        .where(and(eq(ideas.promotedTaskId, taskId), eq(ideas.userId, userId)))
+        .limit(1);
+      const [maxPos] = await tx
+        .select({ max: sql<number>`COALESCE(MAX(${ideas.position}), -1)` })
+        .from(ideas)
+        .where(eq(ideas.columnId, columnId));
+      if (existing) {
+        const [moved] = await tx
+          .update(ideas)
+          .set({
+            boardId,
+            columnId,
+            position: (maxPos?.max ?? -1) + 1,
+            updatedAt: new Date(),
+          })
+          .where(eq(ideas.id, existing.id))
+          .returning();
+        return moved!;
+      }
+      const [created] = await tx
+        .insert(ideas)
+        .values({
+          userId,
+          boardId,
+          columnId,
+          title: task.title,
+          notes: task.notes,
+          priority: task.priority,
+          estimatedMins: task.estimatedMins,
+          promotedTaskId: taskId,
+          position: (maxPos?.max ?? -1) + 1,
+        })
+        .returning();
+      if (!created) throw new Error("Failed to save linked idea");
+      const checklist = await tx
+        .select()
+        .from(subtasks)
+        .where(eq(subtasks.taskId, taskId))
+        .orderBy(asc(subtasks.position));
+      if (checklist.length)
+        await tx
+          .insert(ideaSubtasks)
+          .values(
+            checklist.map((item, position) => ({
+              ideaId: created.id,
+              title: item.title,
+              completed: item.completed,
+              position,
+            }))
+          );
+      return created;
+    });
+    publishEvent(userId, "idea:updated", { ideaId: idea.id });
+    return c.json({ success: true, data: idea }, 201);
+  }
+);
+
 /** POST /ideas - create an idea card in a column */
 ideasRouter.post(
   "/",
@@ -527,17 +612,23 @@ ideasRouter.post(
     const { scheduledDate } = c.req.valid("json");
     const db = getDb();
 
-    const [idea] = await db
+    const promotion = await db.transaction(async (tx) => {
+    const [idea] = await tx
       .select()
       .from(ideas)
       .where(and(eq(ideas.id, id), eq(ideas.userId, userId)))
-      .limit(1);
+      .limit(1).for("update");
     if (!idea) throw new NotFoundError("Idea", id);
+
+    if (idea.promotedTaskId) {
+      const [existing] = await tx.select().from(tasks).where(and(eq(tasks.id, idea.promotedTaskId), eq(tasks.userId, userId)));
+      if (existing) return { idea, task: existing, created: false };
+    }
 
     const targetDate = scheduledDate ?? null;
 
     // Append to the end of the destination (backlog or a given day).
-    const [maxPos] = await db
+    const [maxPos] = await tx
       .select({ max: sql<number>`COALESCE(MAX(${tasks.position}), -1)` })
       .from(tasks)
       .where(
@@ -550,7 +641,7 @@ ideasRouter.post(
       );
     const position = (maxPos?.max ?? -1) + 1;
 
-    const [task] = await db
+    const [task] = await tx
       .insert(tasks)
       .values({
         userId,
@@ -564,13 +655,33 @@ ideasRouter.post(
       .returning();
     if (!task) throw new Error("Failed to create task from idea");
 
-    const [updatedIdea] = await db
+    // The idea's checklist comes along, in order and with its ticks.
+    const checklist = await tx
+      .select()
+      .from(ideaSubtasks)
+      .where(eq(ideaSubtasks.ideaId, id))
+      .orderBy(asc(ideaSubtasks.position), asc(ideaSubtasks.createdAt));
+    if (checklist.length > 0) {
+      await tx.insert(subtasks).values(
+        checklist.map((item, position) => ({
+          taskId: task.id,
+          title: item.title,
+          completed: item.completed,
+          position,
+        }))
+      );
+    }
+
+    const [updatedIdea] = await tx
       .update(ideas)
       .set({ promotedTaskId: task.id, updatedAt: new Date() })
       .where(and(eq(ideas.id, id), eq(ideas.userId, userId)))
       .returning();
 
-    publishEvent(userId, "task:created", {
+      return { idea: updatedIdea!, task, created: true };
+    });
+    const { idea, task } = promotion;
+    if (promotion.created) publishEvent(userId, "task:created", {
       taskId: task.id,
       scheduledDate: task.scheduledDate,
     });
@@ -581,11 +692,21 @@ ideasRouter.post(
     });
 
     return c.json(
-      { success: true, data: { idea: updatedIdea, task } },
-      201
+      { success: true, data: { idea, task } },
+      promotion.created ? 201 : 200
     );
   }
 );
+
+/** Read one card without downloading its whole board. */
+ideasRouter.get("/:id", READ, zValidator("param", z.object({ id: uuidSchema })), async (c) => {
+  const { id } = c.req.valid("param");
+  const db = getDb();
+  const [idea] = await db.select().from(ideas).where(and(eq(ideas.id, id), eq(ideas.userId, c.get("userId"))));
+  if (!idea) throw new NotFoundError("Idea", id);
+  const checklist = await db.select().from(ideaSubtasks).where(eq(ideaSubtasks.ideaId, id)).orderBy(asc(ideaSubtasks.position), asc(ideaSubtasks.createdAt));
+  return c.json({ success: true, data: { ...idea, subtasks: checklist } });
+});
 
 /** PATCH /ideas/:id - update an idea card */
 ideasRouter.patch(

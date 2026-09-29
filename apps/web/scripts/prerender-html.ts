@@ -6,9 +6,10 @@
  * dist/<path>.html for <path> when the file exists.
  *
  * The tags mirror src/components/seo/seo-head.tsx and src/hooks/useSEO.ts.
- * They carry data-rh="true" so react-helmet-async adopts and replaces them on
- * client-side navigation. JSON-LD scripts use the ids the client components
- * use, so the client replaces them instead of adding duplicates.
+ * They carry data-rh="true" so the client removes the crawler-only copies
+ * before React 19 / Helmet 3 renders its own tags. JSON-LD scripts use the
+ * ids the client components use, so the client replaces them instead of
+ * adding duplicates.
  */
 
 import fs from "node:fs";

@@ -25,6 +25,7 @@ export function useInfiniteSearchTasks(params: InfiniteSearchTasksParams) {
       const filters: Parameters<typeof api.tasks.list>[0] = {
         limit,
         page: pageParam,
+        titleSearch: query.trim() || undefined,
       };
 
       // Status filter
@@ -41,30 +42,7 @@ export function useInfiniteSearchTasks(params: InfiniteSearchTasksParams) {
 
       const response = await api.tasks.list(filters);
 
-      // Safely handle null/undefined response data
-      const data = response.data ?? [];
-
-      // Apply client-side text filtering if query is provided
-      let filteredData = data;
-      if (query.trim()) {
-        const lowerQuery = query.toLowerCase().trim();
-        const searchTerms = lowerQuery.split(/\s+/);
-
-        filteredData = data.filter((task) => {
-          const titleLower = task.title.toLowerCase();
-          const notesLower = (task.notes || "").toLowerCase();
-
-          // All search terms must match either title or notes
-          return searchTerms.every(
-            (term) => titleLower.includes(term) || notesLower.includes(term)
-          );
-        });
-      }
-
-      return {
-        data: filteredData,
-        meta: response.meta,
-      };
+      return { data: response.data ?? [], meta: response.meta };
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {

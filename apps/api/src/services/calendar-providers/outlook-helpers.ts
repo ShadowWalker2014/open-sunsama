@@ -1,7 +1,7 @@
 /**
  * Outlook Calendar helper functions and types
  */
-import type { ExternalEvent } from './index';
+import type { ExternalAttendee, ExternalEvent } from './index';
 
 // Outlook API interfaces
 export interface OutlookCalendar {
@@ -50,6 +50,15 @@ export interface OutlookEvent {
   responseStatus?: {
     response?: string;
   };
+  attendees?: Array<{
+    type?: string;
+    status?: { response?: string };
+    emailAddress?: { name?: string; address?: string };
+  }>;
+  organizer?: { emailAddress?: { name?: string; address?: string } };
+  isOrganizer?: boolean;
+  onlineMeeting?: { joinUrl?: string } | null;
+  onlineMeetingUrl?: string | null;
   webLink?: string;
   changeKey?: string;
   '@removed'?: { reason: string };
@@ -264,5 +273,45 @@ export function parseOutlookEvent(event: OutlookEvent): ExternalEvent | null {
     responseStatus: mapOutlookResponseStatus(event.responseStatus?.response),
     htmlLink: event.webLink ?? null,
     etag: event.changeKey ?? null,
+    attendees: parseOutlookAttendees(event),
+    conferenceUrl:
+      event.onlineMeeting?.joinUrl ?? event.onlineMeetingUrl ?? null,
   };
+}
+
+/**
+ * Graph lists the organizer separately from attendees and doesn't mark
+ * the signed-in user's entry, so `self` is only known when we organize.
+ */
+function parseOutlookAttendees(event: OutlookEvent): ExternalAttendee[] | null {
+  const organizerEmail = event.organizer?.emailAddress?.address?.toLowerCase();
+  const people: ExternalAttendee[] = (event.attendees ?? [])
+    .filter((a) => a.emailAddress?.address && a.type !== 'resource')
+    .map((a) => {
+      const email = a.emailAddress!.address!;
+      const isOrganizer = email.toLowerCase() === organizerEmail;
+      return {
+        email,
+        name: a.emailAddress?.name ?? null,
+        responseStatus: isOrganizer
+          ? 'accepted'
+          : mapOutlookResponseStatus(a.status?.response),
+        organizer: isOrganizer,
+        self: isOrganizer && (event.isOrganizer ?? false),
+      };
+    });
+  if (
+    organizerEmail &&
+    !people.some((p) => p.email.toLowerCase() === organizerEmail)
+  ) {
+    people.unshift({
+      email: event.organizer!.emailAddress!.address!,
+      name: event.organizer?.emailAddress?.name ?? null,
+      responseStatus: 'accepted',
+      organizer: true,
+      self: event.isOrganizer ?? false,
+    });
+  }
+  // An event with only its organizer has no guests to show.
+  return people.length > 1 ? people : null;
 }

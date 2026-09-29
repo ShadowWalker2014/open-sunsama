@@ -32,6 +32,8 @@ interface SubtaskChecklistProps {
   /** Lets a parent (e.g. an "Add subtask" button) focus the add field. */
   addInputRef?: React.Ref<HTMLInputElement>;
   className?: string;
+  /** The "Subtasks 2/5" progress line; the task modal leaves it out. */
+  showHeader?: boolean;
 }
 
 // Rows created optimistically don't exist on the server until the create resolves.
@@ -45,6 +47,7 @@ export function SubtaskChecklist({
   taskId,
   addInputRef,
   className,
+  showHeader = true,
 }: SubtaskChecklistProps) {
   const { data: subtasks = [], isLoading } = useSubtasks(taskId);
   const createSubtask = useCreateSubtask();
@@ -99,7 +102,7 @@ export function SubtaskChecklist({
 
   return (
     <div className={className}>
-      {total > 0 && (
+      {showHeader && total > 0 && (
         <div className="mb-1.5 flex items-center gap-2.5">
           <span className="text-xs font-medium text-muted-foreground">
             Subtasks

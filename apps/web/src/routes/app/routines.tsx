@@ -70,7 +70,7 @@ export default function RoutinesPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-2.75rem)] overflow-y-auto">
+    <div className="h-full overflow-y-auto">
       <div className="max-w-4xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

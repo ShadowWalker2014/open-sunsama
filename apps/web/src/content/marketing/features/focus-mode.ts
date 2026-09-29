@@ -104,7 +104,7 @@ export default defineMarketingPage({
         {
           title: "The timer runs against your estimate",
           body: [
-            "The timer sits next to the task title and shows real time over planned time. Press W to change the estimate, or E to fix the real time by hand.",
+            "The timer sits next to the task title and shows real time over planned time. Press E to change the estimate, or W to fix the real time by hand.",
             "Start a timer on another task and the first one stops and saves on its own. You never lose time you forgot to log.",
           ],
           bullets: [
