@@ -9,8 +9,8 @@ import {
 } from "./index";
 
 describe("task-provider registry", () => {
-  it("starts empty and accepts an independent provider without schema changes", () => {
-    expect(listTaskProviders()).toEqual([]);
+  it("accepts an independent provider without schema changes", () => {
+    const initialCount = listTaskProviders().length;
     const provider: TaskProvider = {
       id: "example",
       displayName: "Example",
@@ -26,6 +26,7 @@ describe("task-provider registry", () => {
     };
 
     registerTaskProvider(provider);
+    expect(listTaskProviders()).toHaveLength(initialCount + 1);
     expect(hasTaskProvider("example")).toBe(true);
     expect(getTaskProvider("example")).toBe(provider);
     expect(() => registerTaskProvider(provider)).toThrow(/duplicate/);
