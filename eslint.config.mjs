@@ -47,6 +47,15 @@ export default tseslint.config(
     },
   },
   {
+    files: ["apps/web/scripts/{generate-blog-covers,qa-blog}.mjs"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+    },
+  },
+  {
     rules: {
       "@typescript-eslint/no-unused-vars": [
         "error",

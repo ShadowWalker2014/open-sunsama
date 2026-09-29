@@ -2,6 +2,8 @@
 
 AI-agent-friendly task management + time blocking app. TypeScript monorepo with Bun, Turborepo, PostgreSQL, Drizzle ORM.
 
+Follow [DESIGN.md](DESIGN.md) for the compact workspace design tokens, component measurements, themes, and interaction rules.
+
 ## Testing
 
 **Use Cursor browser tool for UI testing.**
@@ -198,7 +200,7 @@ Quick reference:
 
 - **Source of truth:** `package.json` (root)
 - **Sync command:** `bun run version:sync`
-- **Current version:** v1.2.2
+- **Current version:** v1.2.4
 
 ---
 

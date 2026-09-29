@@ -286,7 +286,7 @@ export function formatShortcut(shortcut: ShortcutDefinition): string {
   }
 
   // Format the key nicely
-  let keyDisplay = shortcut.key;
+  let keyDisplay: string;
   switch (shortcut.key) {
     case " ":
       keyDisplay = "Space";

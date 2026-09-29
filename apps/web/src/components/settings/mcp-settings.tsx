@@ -79,7 +79,7 @@ function highlightJson(json: string): React.ReactNode[] {
     lastIndex = match.index + match[0].length;
   }
   if (lastIndex < json.length) {
-    elements.push(<span key={key++}>{json.slice(lastIndex)}</span>);
+    elements.push(<span key={key}>{json.slice(lastIndex)}</span>);
   }
   return elements;
 }

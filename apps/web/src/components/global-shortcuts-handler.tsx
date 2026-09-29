@@ -20,7 +20,7 @@ interface GlobalShortcutsHandlerProps {
  * Renders nothing - just listens for keyboard events.
  */
 export function GlobalShortcutsHandler({ onAddTask }: GlobalShortcutsHandlerProps) {
-  const { setShowShortcutsModal } = useShortcutsModal();
+  const { showShortcutsModal, setShowShortcutsModal } = useShortcutsModal();
   const { openSearch } = useSearch();
   const { undo, redo } = useUndoRedo();
 
@@ -35,7 +35,7 @@ export function GlobalShortcutsHandler({ onAddTask }: GlobalShortcutsHandlerProp
         // Kick the chunk download in flight before React commits the open
         // state — by the time Suspense suspends, the module is loading.
         void prefetchShortcutsModal();
-        setShowShortcutsModal(true);
+        setShowShortcutsModal(!showShortcutsModal);
         return;
       }
 
@@ -71,7 +71,7 @@ export function GlobalShortcutsHandler({ onAddTask }: GlobalShortcutsHandlerProp
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [setShowShortcutsModal, openSearch, onAddTask, undo, redo]);
+  }, [showShortcutsModal, setShowShortcutsModal, openSearch, onAddTask, undo, redo]);
 
   return null; // This component renders nothing
 }

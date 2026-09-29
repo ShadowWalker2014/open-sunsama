@@ -238,13 +238,14 @@ export function KanbanBoardToolbar({
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 gap-1.5 px-2 text-muted-foreground hover:text-foreground"
+              className="relative h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+              aria-label={`Sort: ${currentSortLabel}`}
               title={`Sort: ${currentSortLabel}`}
             >
               <ArrowUpDown className="h-4 w-4" />
               {/* Name the order only when it isn't the default */}
               {sortBy !== "position" && (
-                <span className="text-sm">{currentSortLabel}</span>
+                <span className="absolute right-1 top-1 h-1 w-1 rounded-full bg-primary" />
               )}
             </Button>
           </DropdownMenuTrigger>

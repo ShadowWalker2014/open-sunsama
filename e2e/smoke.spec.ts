@@ -281,13 +281,64 @@ test("Today keeps its sidebar beside the calendar and sweeps an hour", async ({ 
   await page.mouse.down();
   await page.mouse.move(calendar!.x + 80, y + 64, { steps: 8 });
   await page.mouse.up();
-  const dialog = page.getByRole("dialog", { name: "Create", exact: true });
+  const dialog = page.getByRole("dialog", { name: "Add event", exact: true });
   await expect(dialog).toBeVisible();
-  await dialog.getByRole("textbox", { name: "Title", exact: true }).fill("Sweep review");
+  await dialog.getByRole("textbox", { name: "Event title", exact: true }).fill("Sweep review");
   const saved = page.waitForResponse((r) => r.url().endsWith("/time-blocks") && r.request().method() === "POST");
-  await dialog.getByRole("button", { name: "Create", exact: true }).click();
+  await dialog.getByRole("button", { name: "Save", exact: true }).click();
   const block = (await (await saved).json()).data;
   expect(block.durationMins).toBe(60);
+  expect(block.taskId).toBeNull();
+});
+
+for (const explicitDefault of [true, false]) test(`empty slots prefer ${explicitDefault ? "the chosen default" : "the primary calendar"} and retain edits after save failure`, async ({ page }) => {
+  const session = await register();
+  await page.route(`${API}/calendar/accounts`, r => r.fulfill({ json: { success: true, data: [{ id: "event-account", provider: "google", email: "owner@example.com", isActive: true }] } }));
+  await page.route(`${API}/calendars`, r => r.fulfill({ json: { success: true, data: [{ id: "event-account", provider: "google", calendars: [
+    { id: "readonly", name: "Read only", isReadOnly: true, isEnabled: true, isDefaultForEvents: true },
+    { id: "birthdays", name: "Birthdays", isReadOnly: false, isEnabled: true, isDefaultForEvents: false },
+    { id: "primary", externalId: "owner@example.com", name: "Main calendar", isReadOnly: false, isEnabled: true, isDefaultForEvents: false },
+    { id: "writable", name: "Work calendar", isReadOnly: false, isEnabled: true, isDefaultForEvents: explicitDefault },
+  ] }] } }));
+  let attempts = 0;
+  let payload: Record<string, unknown> = {};
+  await page.route(`${API}/calendar-events`, async r => {
+    payload = r.request().postDataJSON();
+    attempts++;
+    await r.fulfill(attempts === 1
+      ? { status: 503, json: { success: false, error: { code: "PROVIDER_UNAVAILABLE", message: "Calendar temporarily unavailable", statusCode: 503 } } }
+      : { json: { success: true, data: { id: "created-event", ...payload } } });
+  });
+  await signInWithToken(page, session);
+  await page.goto("/app");
+  const column = page.locator("[data-calendar-create-column]");
+  await expect(column).toBeVisible();
+  const rect = (await column.boundingBox())!;
+  const y = Math.max(rect.y, 160) + 80;
+  await page.mouse.move(rect.x + 80, y);
+  await page.mouse.down();
+  await page.mouse.move(rect.x + 80, y + 64, { steps: 8 });
+  await page.mouse.up();
+  const dialog = page.getByRole("dialog", { name: "Add event", exact: true });
+  await expect(dialog.getByRole("combobox", { name: "Calendar" })).toHaveText(explicitDefault ? "Work calendar" : "Main calendar");
+  await expect(dialog.getByText("Link to task (optional)")).toHaveCount(0);
+  await expect(dialog.getByRole("tab")).toHaveCount(0);
+  await dialog.getByLabel("Event title", { exact: true }).fill("Design review");
+  await dialog.getByRole("button", { name: "More options" }).click();
+  await dialog.getByLabel("Start", { exact: true }).fill(`${today}T14:00`);
+  await dialog.getByLabel("End", { exact: true }).fill(`${today}T13:00`);
+  await dialog.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByText("End time must be after start time", { exact: true })).toBeVisible();
+  expect(attempts).toBe(0);
+  await dialog.getByLabel("End", { exact: true }).fill(`${today}T15:15`);
+  await dialog.getByLabel("Location", { exact: true }).fill("Studio");
+  await dialog.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByText("Calendar temporarily unavailable", { exact: true })).toBeVisible();
+  await expect(dialog.getByLabel("Event title", { exact: true })).toHaveValue("Design review");
+  await dialog.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(dialog).toBeHidden();
+  expect(attempts).toBe(2);
+  expect(payload).toMatchObject({ calendarId: explicitDefault ? "writable" : "primary", title: "Design review", location: "Studio", startTime: `${today}T14:00:00.000Z`, endTime: `${today}T15:15:00.000Z` });
 });
 
 test("mobile subtask titles keep readable width alongside timer controls", async ({ page }) => {
@@ -518,4 +569,155 @@ test("editable calendar events resize from either edge in the sidebar", async ({
   }
   expect(updates).toHaveLength(2);
   await expect(page.getByRole('dialog')).toBeHidden();
+});
+
+test("question mark toggles shortcuts and sort stays compact", async ({ page }) => {
+  const session = await register();
+  await signInWithToken(page, session);
+  await page.goto('/app');
+  await expect(page.getByRole('button', {name:'Sort: Manual'})).toBeVisible();
+  await page.keyboard.press('Shift+?');
+  await expect(page.getByRole('heading', {name:'Keyboard Shortcuts'})).toBeVisible();
+  await page.keyboard.press('Shift+?');
+  await expect(page.getByRole('heading', {name:'Keyboard Shortcuts'})).toBeHidden();
+  await page.getByRole('button', {name:'Sort: Manual'}).click();
+  await page.getByRole('menuitem', {name:'Priority (P0 → P3)',exact:true}).click();
+  const sort = page.getByRole('button', {name:'Sort: Priority (P0 → P3)',exact:true});
+  await expect(sort).toBeVisible();
+  expect((await sort.boundingBox())!.width).toBeLessThanOrEqual(32);
+});
+
+test("dropping a task schedules it directly without a blank create dialog", async ({ page }) => {
+  const session = await register();
+  const task = await api<{id:string}>('POST','/tasks',{title:'Drag this task',scheduledDate:today,estimatedMins:30},session.token);
+  await signInWithToken(page, session);
+  await page.goto('/app');
+  const card = page.locator(`[data-task-id="${task.id}"]`).first();
+  await expect(card).toBeVisible();
+  const from = (await card.boundingBox())!;
+  const grid = (await page.locator('[data-calendar-create-column]').boundingBox())!;
+  await page.mouse.move(from.x+100,from.y+25);
+  await page.mouse.down();
+  await page.mouse.move(from.x+110,from.y+25,{steps:3});
+  await page.mouse.move(grid.x+120,228,{steps:15});
+  await page.mouse.up();
+  await expect.poll(async()=> (await api<Array<{taskId:string}>>('GET',`/time-blocks?date=${today}`,undefined,session.token)).filter(b=>b.taskId===task.id).length).toBe(1);
+  const minutes = Math.round(((228 - grid.y) / 64 * 60) / 15) * 15;
+  const expectedTime = `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+  const blocks = await api<Array<{taskId:string;startTime:string}>>('GET',`/time-blocks?date=${today}`,undefined,session.token);
+  expect(blocks.find(b=>b.taskId===task.id)?.startTime).toBe(expectedTime);
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await page.reload();
+  await expect(page.locator('[data-time-block]').filter({hasText:'Drag this task'})).toBeVisible();
+});
+
+test("Ideas tray navigates columns and drags an idea into today's tasks", async ({ page }) => {
+  const session = await register();
+  const board = await api<{id:string}>('POST','/ideas/boards',{name:'Planner ideas'},session.token);
+  const columns = await api<Array<{id:string}>>('GET',`/ideas/columns?boardId=${board.id}`,undefined,session.token);
+  await api<{id:string}>('POST','/ideas/columns',{boardId:board.id,name:'Ready'},session.token);
+  const idea = await api<{id:string}>('POST','/ideas',{boardId:board.id,columnId:columns[0]!.id,title:'Idea to plan',estimatedMins:25},session.token);
+  await api('POST',`/ideas/${idea.id}/subtasks`,{title:'Keep this checklist'},session.token);
+  await signInWithToken(page, session);
+  await page.goto('/app');
+  await page.getByRole('navigation',{name:'Right panel'}).getByRole('button',{name:'Ideas',exact:true}).click();
+  const tray = page.getByRole('region',{name:'Ideas tray'});
+  await expect(tray.getByText('Planner ideas',{exact:true})).toBeVisible();
+  await tray.getByRole('tab',{name:/Ready.*0/}).click();
+  await expect(tray.getByText('Ideas for ready go here.')).toBeVisible();
+  await tray.getByRole('tab',{name:/Ready.*0/}).press('ArrowLeft');
+  await expect(tray.getByRole('tab').first()).toHaveAttribute('aria-selected','true');
+  const source = (await tray.getByText('Idea to plan',{exact:true}).boundingBox())!;
+  const target = (await todayColumn(page).boundingBox())!;
+  await page.mouse.move(source.x+45,source.y+8);
+  await page.mouse.down();
+  await page.mouse.move(source.x+55,source.y+8,{steps:3});
+  await page.mouse.move(target.x+100,target.y+160,{steps:15});
+  await page.mouse.up();
+  await expect(todayColumn(page).getByText('Idea to plan',{exact:true})).toBeVisible();
+  const tasks = await api<Array<{id:string;title:string;estimatedMins:number}>>('GET',`/tasks?date=${today}`,undefined,session.token);
+  const task = tasks.find(t=>t.title==='Idea to plan')!;
+  expect(task.estimatedMins).toBe(25);
+  const subtasks = await api<Array<{title:string}>>('GET',`/tasks/${task.id}/subtasks`,undefined,session.token);
+  expect(subtasks.map(s=>s.title)).toContain('Keep this checklist');
+  await expect(tray.getByRole('link',{name:'Open task',exact:true})).toBeVisible();
+  const card = (await tray.getByText('Idea to plan',{exact:true}).boundingBox())!;
+  const tab = tray.getByRole('tab',{name:/Ready.*0/});
+  const tabBox = (await tab.boundingBox())!;
+  await page.mouse.move(card.x+30,card.y+8);
+  await page.mouse.down();
+  await page.mouse.move(card.x+45,card.y+8,{steps:3});
+  await page.mouse.move(tabBox.x+tabBox.width/2,tabBox.y+tabBox.height/2,{steps:8});
+  await expect(tab).toHaveAttribute('aria-selected','true');
+  const drop = (await page.locator('[data-ideas-tray-drop]').boundingBox())!;
+  await page.mouse.move(drop.x+100,drop.y+150,{steps:8});
+  await page.mouse.up();
+  await expect(tray.getByText('Idea to plan',{exact:true})).toBeVisible();
+  await page.reload();
+  await tray.getByRole('tab',{name:/Ready.*1/}).click();
+  await expect(tray.getByText('Idea to plan',{exact:true})).toBeVisible();
+});
+
+test("task drops save one linked idea with its checklist and reject another user's task", async ({ page }) => {
+  const session = await register();
+  const other = await register();
+  const board = await api<{id:string}>('POST','/ideas/boards',{name:'Linked ideas'},session.token);
+  const columns = await api<Array<{id:string}>>('GET',`/ideas/columns?boardId=${board.id}`,undefined,session.token);
+  const task = await api<{id:string}>('POST','/tasks',{title:'Keep the existing task',scheduledDate:today,estimatedMins:45},session.token);
+  await api('POST',`/tasks/${task.id}/subtasks`,{title:'Preserve checklist'},session.token);
+  await signInWithToken(page,session);
+  await page.goto('/app');
+  await page.getByRole('navigation',{name:'Right panel'}).getByRole('button',{name:'Ideas',exact:true}).click();
+  await expect(page.getByRole('region',{name:'Ideas tray'})).toBeVisible();
+  const from = (await page.locator(`[data-task-id="${task.id}"]`).first().boundingBox())!;
+  const to = (await page.locator('[data-ideas-tray-drop]').boundingBox())!;
+  await page.mouse.move(from.x+100,from.y+25);
+  await page.mouse.down();
+  await page.mouse.move(from.x+110,from.y+25,{steps:3});
+  await page.mouse.move(to.x+100,to.y+100,{steps:15});
+  await page.mouse.up();
+  await expect(page.getByRole('region',{name:'Ideas tray'}).getByText('Keep the existing task',{exact:true})).toBeVisible();
+  const payload = {taskId:task.id,boardId:board.id,columnId:columns[0]!.id};
+  const results = await Promise.all([api<{id:string}>('POST','/ideas/from-task',payload,session.token),api<{id:string}>('POST','/ideas/from-task',payload,session.token)]);
+  expect(results[0]!.id).toBe(results[1]!.id);
+  const saved = await api<Array<{promotedTaskId:string}>>('GET',`/ideas?boardId=${board.id}`,undefined,session.token);
+  expect(saved).toHaveLength(1);
+  expect(saved[0]!.promotedTaskId).toBe(task.id);
+  const checklist = await api<Array<{title:string}>>('GET',`/ideas/${results[0]!.id}/subtasks`,undefined,session.token);
+  expect(checklist.map(i=>i.title)).toEqual(['Preserve checklist']);
+  expect((await api<{scheduledDate:string}>('GET',`/tasks/${task.id}`,undefined,session.token)).scheduledDate).toBe(today);
+  const foreignTask = await api<{id:string}>('POST','/tasks',{title:'Private task'},other.token);
+  const denied = await fetch(`${API}/ideas/from-task`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.token}`},body:JSON.stringify({...payload,taskId:foreignTask.id})});
+  expect(denied.status).toBe(404);
+});
+
+test('Ideas surfaces stay neutral across accent colors and adapt to light and dark mode', async ({ page }) => {
+  const session = await register();
+  const board = await api<{id:string}>('POST','/ideas/boards',{name:'Theme validation'},session.token);
+  await signInWithToken(page, session);
+  const colors: string[] = [];
+  for (const mode of ['Light', 'Dark']) {
+    for (const theme of ['Ocean', 'Rose']) {
+      await page.goto('/app/settings?tab=appearance');
+      await page.getByRole('button',{name:mode,exact:true}).click();
+      await page.getByRole('button',{name:theme,exact:true}).click();
+      await expect(page.locator('html')).toHaveClass(new RegExp(`theme-${theme.toLowerCase()}`));
+      await page.goto(`/app/ideas?board=${board.id}`);
+      const column = page.locator('[data-idea-column-id]').first();
+      await expect(column).toBeVisible();
+      const color = await column.evaluate(el => getComputedStyle(el).backgroundColor);
+      expect(color).not.toBe('rgba(0, 0, 0, 0)');
+      colors.push(color);
+      await page.goto('/app');
+      const tray = page.locator('[data-ideas-tray-drop]');
+      const toggle = page.getByRole('navigation',{name:'Right panel'}).getByRole('button',{name:'Ideas',exact:true});
+      await expect(toggle).toBeVisible();
+      if (await toggle.getAttribute('aria-pressed') !== 'true') await toggle.click();
+      await expect(tray).toBeVisible();
+      await expect.poll(() => tray.evaluate(el => getComputedStyle(el).backgroundColor)).toBe(color);
+    }
+  }
+  expect(colors[0]).toBe(colors[1]);
+  expect(colors[2]).toBe(colors[3]);
+  expect(colors[0]).not.toBe(colors[2]);
 });

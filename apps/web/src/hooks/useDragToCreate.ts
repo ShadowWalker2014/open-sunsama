@@ -101,13 +101,13 @@ export function useDragToCreate(
    */
   const startCreate = React.useCallback(
     (e: React.MouseEvent<HTMLElement>, day: Date) => {
-      if (!onCreateRef.current || e.button !== 0) return;
+      if (!onCreateRef.current || e.button !== 0 || e.defaultPrevented) return;
       const target = e.target as HTMLElement;
       if (
         !e.currentTarget.contains(target) ||
         target.closest("button, a, input, textarea, select, [role=button], [data-time-block]") ||
         target.closest("[data-external-event]") ||
-        target.closest("[data-all-day-event]")
+        target.closest("[data-all-day-event], [data-projected-task]")
       ) {
         return;
       }

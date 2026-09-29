@@ -86,14 +86,14 @@ export function IdeaColumnView({
       data-idea-column-id={column.id}
       style={style}
       className={cn(
-        "flex h-full min-h-0 w-[min(272px,calc(100vw-48px))] sm:w-[272px] shrink-0 snap-start snap-always flex-col gap-2 rounded-xl border border-border bg-muted/40 p-2 transition-colors",
-        isOver && "border-primary/40 bg-primary/5 ring-1 ring-inset ring-primary/20"
+        "flex h-full min-h-0 w-[min(272px,calc(100vw-48px))] sm:w-[272px] shrink-0 snap-start snap-always flex-col gap-2 rounded-xl bg-tray p-2 transition-colors",
+        isOver && "ring-2 ring-inset ring-primary/30"
       )}
     >
       {/* Column header. No flex `gap` here — the grip handle manages its own
           spacing so it can collapse to zero width when not hovered.
           `shrink-0` keeps it pinned above the scrolling card list. */}
-      <div className="group/colhead flex min-h-9 shrink-0 items-center border-b border-border px-1 pb-2">
+      <div className="group/colhead flex min-h-9 shrink-0 items-center px-1">
         {renaming ? (
           <Input
             autoFocus
@@ -168,8 +168,8 @@ export function IdeaColumnView({
           DayColumn). Using Radix ScrollArea rather than a raw `overflow-y-auto`
           div keeps dnd-kit's sortable measurement + auto-scroll well-behaved,
           while the header above and the "Add idea" button below stay pinned. */}
-      <ScrollArea className="-mr-1 min-h-0 flex-1 pr-1">
-        <div className="flex flex-col gap-2">
+      <ScrollArea className="min-h-0 flex-1">
+        <div className="flex flex-col gap-2 p-1 pb-2">
           <SortableContext items={ideaIds} strategy={verticalListSortingStrategy}>
             {ideas.map((idea) => (
               <IdeaCard
