@@ -54,7 +54,7 @@ export type ApiKeyScope = (typeof API_KEY_SCOPES)[number];
 
 // Zod schemas for validation
 export const insertApiKeySchema = createInsertSchema(apiKeys, {
-  name: z.string().min(1, 'Name is required').max(255),
+  name: z.string().min(1, { error: 'Name is required' }).max(255),
   scopes: z.array(z.enum(API_KEY_SCOPES)).optional(),
   expiresAt: z.date().optional(),
 });
@@ -63,7 +63,7 @@ export const selectApiKeySchema = createSelectSchema(apiKeys);
 
 // Schema for creating a new API key (without hash, which is generated server-side)
 export const createApiKeySchema = z.object({
-  name: z.string().min(1, 'Name is required').max(255),
+  name: z.string().min(1, { error: 'Name is required' }).max(255),
   scopes: z.array(z.enum(API_KEY_SCOPES)).default(['tasks:read', 'time-blocks:read']),
   expiresAt: z.date().optional(),
 });

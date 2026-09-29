@@ -9,7 +9,7 @@ import { uuidSchema } from '@open-sunsama/utils';
  * Schema for creating a subtask
  */
 export const createSubtaskSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(500),
+  title: z.string().min(1, { error: 'Title is required' }).max(500),
   position: z.number().int().nonnegative().optional(),
 });
 

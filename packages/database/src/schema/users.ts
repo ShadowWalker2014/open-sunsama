@@ -53,7 +53,7 @@ import { calendarEvents } from './calendar-events';
 
 // Zod schemas for validation
 export const insertUserSchema = createInsertSchema(users, {
-  email: z.string().email('Invalid email address'),
+  email: z.email({ error: 'Invalid email address' }),
   name: z.string().min(1).max(255).optional(),
   timezone: z.string().max(50).optional(),
 });

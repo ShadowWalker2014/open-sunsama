@@ -42,11 +42,11 @@ export const attachmentsRelations = relations(attachments, ({ one }) => ({
 
 // Zod schemas for validation
 export const insertAttachmentSchema = createInsertSchema(attachments, {
-  url: z.string().min(1, 'URL is required').max(500),
-  filename: z.string().min(1, 'Filename is required').max(255),
-  contentType: z.string().min(1, 'Content type is required').max(100),
-  size: z.number().int().positive('Size must be a positive integer'),
-  s3Key: z.string().min(1, 'S3 key is required').max(500),
+  url: z.string().min(1, { error: 'URL is required' }).max(500),
+  filename: z.string().min(1, { error: 'Filename is required' }).max(255),
+  contentType: z.string().min(1, { error: 'Content type is required' }).max(100),
+  size: z.number().int().positive({ error: 'Size must be a positive integer' }),
+  s3Key: z.string().min(1, { error: 'S3 key is required' }).max(500),
 });
 
 export const selectAttachmentSchema = createSelectSchema(attachments);
