@@ -40,7 +40,8 @@
     "catalog": {
       "typescript": "^5.9.3",
       "zod": "^3.25.76",
-      "@tanstack/react-query": "^5.103.2"
+      "@tanstack/react-query": "^5.103.2",
+      "dotenv": "^17.4.2"
     }
   },
   "scripts": {
