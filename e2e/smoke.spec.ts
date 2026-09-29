@@ -291,12 +291,14 @@ test("Today keeps its sidebar beside the calendar and sweeps an hour", async ({ 
   expect(block.taskId).toBeNull();
 });
 
-test("empty slots default to a writable calendar and retain edits after save failure", async ({ page }) => {
+for (const explicitDefault of [true, false]) test(`empty slots prefer ${explicitDefault ? "the chosen default" : "the primary calendar"} and retain edits after save failure`, async ({ page }) => {
   const session = await register();
-  await page.route(`${API}/calendar/accounts`, r => r.fulfill({ json: { success: true, data: [{ id: "event-account", provider: "google", isActive: true }] } }));
+  await page.route(`${API}/calendar/accounts`, r => r.fulfill({ json: { success: true, data: [{ id: "event-account", provider: "google", email: "owner@example.com", isActive: true }] } }));
   await page.route(`${API}/calendars`, r => r.fulfill({ json: { success: true, data: [{ id: "event-account", provider: "google", calendars: [
     { id: "readonly", name: "Read only", isReadOnly: true, isEnabled: true, isDefaultForEvents: true },
-    { id: "writable", name: "Work calendar", isReadOnly: false, isEnabled: true, isDefaultForEvents: true },
+    { id: "birthdays", name: "Birthdays", isReadOnly: false, isEnabled: true, isDefaultForEvents: false },
+    { id: "primary", externalId: "owner@example.com", name: "Main calendar", isReadOnly: false, isEnabled: true, isDefaultForEvents: false },
+    { id: "writable", name: "Work calendar", isReadOnly: false, isEnabled: true, isDefaultForEvents: explicitDefault },
   ] }] } }));
   let attempts = 0;
   let payload: Record<string, unknown> = {};
@@ -318,7 +320,7 @@ test("empty slots default to a writable calendar and retain edits after save fai
   await page.mouse.move(rect.x + 80, y + 64, { steps: 8 });
   await page.mouse.up();
   const dialog = page.getByRole("dialog", { name: "Add event", exact: true });
-  await expect(dialog.getByRole("combobox", { name: "Calendar" })).toHaveText("Work calendar");
+  await expect(dialog.getByRole("combobox", { name: "Calendar" })).toHaveText(explicitDefault ? "Work calendar" : "Main calendar");
   await expect(dialog.getByText("Link to task (optional)")).toHaveCount(0);
   await expect(dialog.getByRole("tab")).toHaveCount(0);
   await dialog.getByLabel("Event title", { exact: true }).fill("Design review");
@@ -336,7 +338,7 @@ test("empty slots default to a writable calendar and retain edits after save fai
   await dialog.getByRole("button", { name: "Save", exact: true }).click();
   await expect(dialog).toBeHidden();
   expect(attempts).toBe(2);
-  expect(payload).toMatchObject({ calendarId: "writable", title: "Design review", location: "Studio", startTime: `${today}T14:00:00.000Z`, endTime: `${today}T15:15:00.000Z` });
+  expect(payload).toMatchObject({ calendarId: explicitDefault ? "writable" : "primary", title: "Design review", location: "Studio", startTime: `${today}T14:00:00.000Z`, endTime: `${today}T15:15:00.000Z` });
 });
 
 test("mobile subtask titles keep readable width alongside timer controls", async ({ page }) => {

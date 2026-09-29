@@ -706,7 +706,7 @@ export function MobileCalendarView({
             "hover:bg-primary/90 active:scale-95 transition-all",
             "lg:hidden"
           )}
-          aria-label="Add time block"
+          aria-label="Add event"
         >
           <Plus className="h-6 w-6" />
         </button>
