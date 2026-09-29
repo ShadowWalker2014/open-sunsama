@@ -41,11 +41,12 @@ jobs:
             updater_bundle_path: apps/desktop/src-tauri/target/x86_64-apple-darwin/release/bundle/macos
             updater_file_pattern: '*.app.tar.gz'
           - platform: ubuntu-22.04
-            args: --bundles appimage
+            args: --bundles appimage,deb
             name: Linux
             artifact_name: linux
             file_pattern: '*.AppImage'
             bundle_path: apps/desktop/src-tauri/target/release/bundle/appimage
+            deb_bundle_path: apps/desktop/src-tauri/target/release/bundle/deb
             updater_bundle_path: apps/desktop/src-tauri/target/release/bundle/appimage
             updater_file_pattern: '*.AppImage'
           - platform: windows-latest
@@ -253,6 +254,22 @@ jobs:
             echo "signature=" >> $GITHUB_OUTPUT
           fi
 
+      - name: Find Debian installer
+        if: matrix.platform == 'ubuntu-22.04'
+        id: find_deb
+        shell: bash
+        run: |
+          cd "${{ matrix.deb_bundle_path }}"
+          FILE=$(ls *.deb 2>/dev/null | head -1)
+          if [ -z "$FILE" ]; then
+            echo "::error::No Debian installer was built"
+            exit 1
+          fi
+          echo "file=$FILE" >> "$GITHUB_OUTPUT"
+          echo "path=${{ matrix.deb_bundle_path }}/$FILE" >> "$GITHUB_OUTPUT"
+          echo "size=$(stat -c%s "$FILE")" >> "$GITHUB_OUTPUT"
+          echo "sha256=$(sha256sum "$FILE" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
       - name: Upload to S3
         shell: bash
         env:
@@ -264,6 +281,11 @@ jobs:
           S3_OPTS="--endpoint-url ${{ secrets.AWS_ENDPOINT_URL }}"
 
           aws s3 cp "${{ steps.find_file.outputs.path }}" "$S3_DEST/${{ steps.find_file.outputs.file }}" $S3_OPTS
+
+          # The AppImage remains the updater artifact; distribute the Debian installer beside it.
+          if [ -n "${{ steps.find_deb.outputs.path }}" ]; then
+            aws s3 cp "${{ steps.find_deb.outputs.path }}" "$S3_DEST/${{ steps.find_deb.outputs.file }}" $S3_OPTS
+          fi
 
           UPDATER_FILE="${{ steps.find_updater.outputs.updater_file }}"
           UPDATER_KEY="${{ steps.find_updater.outputs.updater_key }}"
@@ -302,11 +324,35 @@ jobs:
               \"updaterUrl\": \"${UPDATER_URL}\"
             }"
 
+      - name: Register Debian release with API
+        if: matrix.platform == 'ubuntu-22.04'
+        shell: bash
+        run: |
+          curl --fail -X POST "${{ env.API_URL }}/releases" \
+            -H "Content-Type: application/json" \
+            -H "X-Release-Secret: ${{ secrets.RELEASE_SECRET }}" \
+            -d "{
+              \"version\": \"${{ steps.version.outputs.version }}\",
+              \"platform\": \"linux-deb\",
+              \"downloadUrl\": \"${{ env.API_URL }}/uploads/releases/v${{ steps.version.outputs.version }}/${{ steps.find_deb.outputs.file }}\",
+              \"fileSize\": ${{ steps.find_deb.outputs.size }},
+              \"fileName\": \"${{ steps.find_deb.outputs.file }}\",
+              \"sha256\": \"${{ steps.find_deb.outputs.sha256 }}\"
+            }"
+
       - name: Upload artifacts (backup)
         uses: actions/upload-artifact@v4
         with:
           name: desktop-${{ matrix.name }}
           path: ${{ steps.find_file.outputs.path }}
+          retention-days: 30
+
+      - name: Upload Debian installer (backup)
+        if: matrix.platform == 'ubuntu-22.04'
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.name }}-deb
+          path: ${{ steps.find_deb.outputs.path }}
           retention-days: 30
 
   verify:
@@ -325,14 +371,16 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Platform | Live version | Size | Download |" >> $GITHUB_STEP_SUMMARY
           echo "| --- | --- | --- | --- |" >> $GITHUB_STEP_SUMMARY
-          for p in macos-arm64 macos-x64 windows linux; do
+          for p in macos-arm64 macos-x64 windows linux linux-deb; do
             LIVE=$(echo "$LATEST" | jq -r ".data[\"$p\"].version // \"missing\"")
             SIZE=$(echo "$LATEST" | jq -r ".data[\"$p\"].fileSize // 0")
             URL=$(echo "$LATEST" | jq -r ".data[\"$p\"].downloadUrl // \"\"")
             UPDATER=$(echo "$LATEST" | jq -r ".data[\"$p\"].updaterUrl // \"\"")
             STATUS=$(curl -s -o /dev/null -w '%{http_code}' -I "${URL// /%20}" || echo 000)
-            UPDATER_STATUS=$(curl -s -o /dev/null -w '%{http_code}' -I "${UPDATER// /%20}" || echo 000)
-            [ "$UPDATER_STATUS" != "200" ] && STATUS="$STATUS, updater $UPDATER_STATUS"
+            if [ "$p" != "linux-deb" ]; then
+              UPDATER_STATUS=$(curl -s -o /dev/null -w '%{http_code}' -I "${UPDATER// /%20}" || echo 000)
+              [ "$UPDATER_STATUS" != "200" ] && STATUS="$STATUS, updater $UPDATER_STATUS"
+            fi
             echo "| $p | $LIVE | $((SIZE / 1024 / 1024)) MB | HTTP $STATUS |" >> $GITHUB_STEP_SUMMARY
             if [ "$LIVE" != "$VERSION" ] || [ "$STATUS" != "200" ]; then
               echo "::error::$p serves $LIVE (download HTTP $STATUS), expected $VERSION"
