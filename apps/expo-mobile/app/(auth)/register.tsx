@@ -14,11 +14,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
 import { useAuth } from '@/lib/auth';
 import { FormInput } from '@/components/FormInput';
+import { useThemeColors, type ThemeColors } from '@/lib/theme';
 
 /**
  * Register screen
  */
 export default function RegisterScreen() {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const { register } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -147,18 +150,18 @@ export default function RegisterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.surface },
   keyboardView: { flex: 1 },
   scrollContent: { flexGrow: 1 },
   content: { flex: 1, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 32 },
   header: { alignItems: 'center', marginBottom: 32 },
-  title: { fontSize: 28, fontWeight: '700', color: '#1f2937', marginBottom: 8 },
-  subtitle: { fontSize: 16, color: '#6b7280' },
+  title: { fontSize: 28, fontWeight: '700', color: colors.text, marginBottom: 8 },
+  subtitle: { fontSize: 16, color: colors.secondary },
   form: { gap: 20 },
   button: {
     height: 48,
-    backgroundColor: '#6366f1',
+    backgroundColor: colors.accentFill,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
@@ -173,6 +176,6 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 32,
   },
-  footerText: { fontSize: 14, color: '#6b7280' },
-  linkText: { fontSize: 14, fontWeight: '600', color: '#6366f1' },
+  footerText: { fontSize: 14, color: colors.secondary },
+  linkText: { fontSize: 14, fontWeight: '600', color: colors.accent },
 });

@@ -1,17 +1,19 @@
 import { Stack } from 'expo-router';
+import { useThemeColors } from '@/lib/theme';
 
 /**
  * Auth layout - stack navigator for login/register screens
  */
 export default function AuthLayout() {
+  const colors = useThemeColors();
   return (
     <Stack
       screenOptions={{
         headerShown: true,
         headerStyle: {
-          backgroundColor: '#fff',
+          backgroundColor: colors.surface,
         },
-        headerTintColor: '#1f2937',
+        headerTintColor: colors.text,
         headerTitleStyle: {
           fontWeight: '600',
         },

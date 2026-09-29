@@ -1,4 +1,5 @@
 import { View, Text, TextInput, StyleSheet, type TextInputProps } from 'react-native';
+import { useThemeColors, type ThemeColors } from '@/lib/theme';
 
 interface FormInputProps extends TextInputProps {
   label: string;
@@ -8,33 +9,35 @@ interface FormInputProps extends TextInputProps {
  * Reusable form input component with label
  */
 export function FormInput({ label, style, ...props }: FormInputProps) {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
         style={[styles.input, style]}
-        placeholderTextColor="#9ca3af"
+        placeholderTextColor={colors.muted}
         {...props}
       />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: { gap: 8 },
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#374151',
+    color: colors.text,
   },
   input: {
     height: 48,
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: colors.inputBorder,
     borderRadius: 8,
     paddingHorizontal: 16,
     fontSize: 16,
-    color: '#1f2937',
-    backgroundColor: '#fff',
+    color: colors.text,
+    backgroundColor: colors.surface,
   },
 });

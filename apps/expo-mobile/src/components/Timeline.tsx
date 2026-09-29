@@ -1,6 +1,7 @@
 import { View, Text, ScrollView, RefreshControl, StyleSheet } from 'react-native';
 import { TimeBlockCard } from '@/components/TimeBlockCard';
 import type { TimeBlock } from '@open-sunsama/types';
+import { useThemeColors, type ThemeColors } from '@/lib/theme';
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 export const HOUR_HEIGHT = 60;
@@ -17,6 +18,8 @@ interface TimelineProps {
  * Timeline component for displaying time blocks
  */
 export function Timeline({ timeBlocks, isLoading, isRefetching, onRefresh, isToday }: TimelineProps) {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const now = new Date();
   const currentHour = now.getHours() + now.getMinutes() / 60;
 
@@ -44,7 +47,7 @@ export function Timeline({ timeBlocks, isLoading, isRefetching, onRefresh, isTod
       style={styles.timeline}
       contentContainerStyle={styles.content}
       refreshControl={
-        <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor="#6366f1" />
+        <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor={colors.accent} />
       }
     >
       {HOURS.map((hour) => (
@@ -79,8 +82,8 @@ export function Timeline({ timeBlocks, isLoading, isRefetching, onRefresh, isTod
   );
 }
 
-const styles = StyleSheet.create({
-  timeline: { flex: 1 },
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
+  timeline: { flex: 1, backgroundColor: colors.background },
   content: {
     position: 'relative',
     height: HOURS.length * HOUR_HEIGHT + 40,
@@ -98,11 +101,11 @@ const styles = StyleSheet.create({
   hourLabel: {
     width: 54,
     fontSize: 11,
-    color: '#9ca3af',
+    color: colors.secondary,
     textAlign: 'right',
     paddingRight: 8,
   },
-  hourLine: { flex: 1, height: 1, backgroundColor: '#e5e7eb' },
+  hourLine: { flex: 1, height: 1, backgroundColor: colors.border },
   currentTime: {
     position: 'absolute',
     left: 54,
@@ -135,6 +138,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 48,
   },
-  emptyTitle: { fontSize: 18, fontWeight: '600', color: '#374151', marginBottom: 8 },
-  emptySubtitle: { fontSize: 14, color: '#6b7280' },
+  emptyTitle: { fontSize: 18, fontWeight: '600', color: colors.text, marginBottom: 8 },
+  emptySubtitle: { fontSize: 14, color: colors.secondary },
 });

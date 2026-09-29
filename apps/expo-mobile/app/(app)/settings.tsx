@@ -1,12 +1,15 @@
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/lib/auth';
+import { useThemeColors, type ThemeColors } from '@/lib/theme';
 import Constants from 'expo-constants';
 
 /**
  * Settings screen
  */
 export default function SettingsScreen() {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const { user, logout } = useAuth();
 
   const handleLogout = () => {
@@ -76,10 +79,10 @@ export default function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.background,
   },
   content: {
     padding: 16,
@@ -91,7 +94,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#6b7280',
+    color: colors.secondary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 12,
@@ -100,7 +103,7 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     shadowColor: '#000',
@@ -113,7 +116,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#6366f1',
+    backgroundColor: colors.accentFill,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -129,15 +132,15 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text,
     marginBottom: 2,
   },
   userEmail: {
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.secondary,
   },
   menuCard: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -153,27 +156,27 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: colors.border,
   },
   menuItemText: {
     fontSize: 16,
-    color: '#1f2937',
+    color: colors.text,
   },
   menuItemValue: {
     fontSize: 16,
-    color: '#6b7280',
+    color: colors.secondary,
   },
   logoutButton: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ef4444',
+    borderColor: colors.danger,
   },
   logoutText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#ef4444',
+    color: colors.danger,
   },
 });

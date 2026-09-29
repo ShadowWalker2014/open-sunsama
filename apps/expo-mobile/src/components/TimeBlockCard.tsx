@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { format } from 'date-fns';
 import type { TimeBlock } from '@open-sunsama/types';
+import { useThemeColors, type ThemeColors } from '@/lib/theme';
 
 interface TimeBlockCardProps {
   timeBlock: TimeBlock;
@@ -9,15 +10,17 @@ interface TimeBlockCardProps {
 /**
  * Get a color for the time block
  */
-function getBlockColor(color: string | null): string {
+function getBlockColor(color: string | null, colors: ThemeColors): string {
   if (color) return color;
-  return '#6366f1'; // default indigo
+  return colors.accent;
 }
 
 /**
  * Time block card component for calendar view
  */
 export function TimeBlockCard({ timeBlock }: TimeBlockCardProps) {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const startTime = timeBlock.startTime instanceof Date
     ? timeBlock.startTime
     : new Date(timeBlock.startTime);
@@ -25,11 +28,11 @@ export function TimeBlockCard({ timeBlock }: TimeBlockCardProps) {
     ? timeBlock.endTime
     : new Date(timeBlock.endTime);
 
-  const color = getBlockColor(timeBlock.color);
+  const color = getBlockColor(timeBlock.color, colors);
   const timeLabel = `${format(startTime, 'h:mm a')} - ${format(endTime, 'h:mm a')}`;
 
   return (
-    <View style={[styles.container, { borderLeftColor: color, backgroundColor: `${color}10` }]}>
+    <View style={[styles.container, { borderLeftColor: color, backgroundColor: `${color}20` }]}>
       <Text style={styles.title} numberOfLines={2}>
         {timeBlock.title}
       </Text>
@@ -43,28 +46,28 @@ export function TimeBlockCard({ timeBlock }: TimeBlockCardProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
     borderLeftWidth: 4,
     borderRadius: 6,
     padding: 8,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.raised,
     minHeight: 30,
   },
   title: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text,
     marginBottom: 2,
   },
   time: {
     fontSize: 11,
-    color: '#6b7280',
+    color: colors.secondary,
   },
   notes: {
     fontSize: 11,
-    color: '#9ca3af',
+    color: colors.muted,
     marginTop: 2,
   },
 });
