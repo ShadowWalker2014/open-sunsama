@@ -3,147 +3,147 @@
     "board": {
       "width": 1600,
       "height": 1000,
-      "light": "/blog-media/board-light.d511ccd4.webp",
-      "dark": "/blog-media/board-dark.c3943e18.webp"
+      "light": "/blog-media/board-light.271478b3.webp",
+      "dark": "/blog-media/board-dark.dddbba0e.webp"
     },
     "calendar-day": {
       "width": 1600,
       "height": 1000,
-      "light": "/blog-media/calendar-day-light.4f76b28a.webp",
-      "dark": "/blog-media/calendar-day-dark.193c8df2.webp"
+      "light": "/blog-media/calendar-day-light.98f248df.webp",
+      "dark": "/blog-media/calendar-day-dark.52e0cc71.webp"
     },
     "calendar-week": {
       "width": 1600,
       "height": 1000,
-      "light": "/blog-media/calendar-week-light.2b127fc9.webp",
-      "dark": "/blog-media/calendar-week-dark.8a8ea72f.webp"
+      "light": "/blog-media/calendar-week-light.6960cf73.webp",
+      "dark": "/blog-media/calendar-week-dark.488ce819.webp"
     },
     "command-palette": {
       "width": 1600,
       "height": 1014,
-      "light": "/blog-media/command-palette-light.7a0e5070.webp",
-      "dark": "/blog-media/command-palette-dark.413109c8.webp"
+      "light": "/blog-media/command-palette-light.0f861f01.webp",
+      "dark": "/blog-media/command-palette-dark.8fca5e5f.webp"
     },
     "consent-chatgpt": {
       "width": 1146,
-      "height": 1733,
-      "light": "/blog-media/consent-chatgpt-light.8e9de04c.webp",
-      "dark": "/blog-media/consent-chatgpt-dark.11463189.webp"
+      "height": 1858,
+      "light": "/blog-media/consent-chatgpt-light.20c24ae2.webp",
+      "dark": "/blog-media/consent-chatgpt-dark.1ab1db44.webp"
     },
     "consent-claude": {
       "width": 1146,
-      "height": 1733,
-      "light": "/blog-media/consent-claude-light.6b7da3bc.webp",
-      "dark": "/blog-media/consent-claude-dark.a9f9009c.webp"
+      "height": 1858,
+      "light": "/blog-media/consent-claude-light.008f609e.webp",
+      "dark": "/blog-media/consent-claude-dark.905c5afa.webp"
     },
     "focus": {
       "width": 1600,
       "height": 1333,
-      "light": "/blog-media/focus-light.bb127ad9.webp",
-      "dark": "/blog-media/focus-dark.e5bbdbd7.webp"
+      "light": "/blog-media/focus-light.cb00451b.webp",
+      "dark": "/blog-media/focus-dark.a45edf9e.webp"
     },
     "ideas": {
       "width": 1600,
       "height": 1000,
-      "light": "/blog-media/ideas-light.a35d1b82.webp",
-      "dark": "/blog-media/ideas-dark.ba57f8aa.webp"
+      "light": "/blog-media/ideas-light.c3a910fa.webp",
+      "dark": "/blog-media/ideas-dark.7005c9b7.webp"
     },
     "mcp-settings": {
       "width": 1600,
       "height": 1800,
-      "light": "/blog-media/mcp-settings-light.025b945e.webp",
-      "dark": "/blog-media/mcp-settings-dark.9cb3fca7.webp"
+      "light": "/blog-media/mcp-settings-light.ebb65617.webp",
+      "dark": "/blog-media/mcp-settings-dark.80fc5133.webp"
     },
     "mobile-tasks": {
       "width": 780,
       "height": 1688,
-      "light": "/blog-media/mobile-tasks-light.63aab403.webp",
-      "dark": "/blog-media/mobile-tasks-dark.145ca6ee.webp"
+      "light": "/blog-media/mobile-tasks-light.2a8cd5cf.webp",
+      "dark": "/blog-media/mobile-tasks-dark.2645f764.webp"
     },
     "task-detail": {
       "width": 1600,
-      "height": 1188,
-      "light": "/blog-media/task-detail-light.1943fb19.webp",
-      "dark": "/blog-media/task-detail-dark.85f6695e.webp"
+      "height": 1263,
+      "light": "/blog-media/task-detail-light.091c6104.webp",
+      "dark": "/blog-media/task-detail-dark.9ddfa142.webp"
     }
   },
   "clips": {
     "ai-plan": {
       "width": 1280,
       "height": 800,
-      "duration": 9.5,
+      "duration": 10.2,
       "light": {
-        "mp4": "/blog-media/ai-plan-light.b188a41a.mp4",
-        "poster": "/blog-media/ai-plan-poster-light.5c20e9b8.webp"
+        "mp4": "/blog-media/ai-plan-light.5255c1c5.mp4",
+        "poster": "/blog-media/ai-plan-poster-light.28184253.webp"
       },
       "dark": {
-        "mp4": "/blog-media/ai-plan-dark.7cddb70e.mp4",
-        "poster": "/blog-media/ai-plan-poster-dark.054319c5.webp"
+        "mp4": "/blog-media/ai-plan-dark.83d5935b.mp4",
+        "poster": "/blog-media/ai-plan-poster-dark.759855cd.webp"
       }
     },
     "command-palette": {
       "width": 1280,
       "height": 800,
-      "duration": 5.7,
+      "duration": 5.8,
       "light": {
-        "mp4": "/blog-media/command-palette-light.36121801.mp4",
-        "poster": "/blog-media/command-palette-poster-light.ef596154.webp"
+        "mp4": "/blog-media/command-palette-light.ba0b9ae1.mp4",
+        "poster": "/blog-media/command-palette-poster-light.824de0f6.webp"
       },
       "dark": {
-        "mp4": "/blog-media/command-palette-dark.42618ec3.mp4",
-        "poster": "/blog-media/command-palette-poster-dark.5af7aaf0.webp"
+        "mp4": "/blog-media/command-palette-dark.fad7ba6c.mp4",
+        "poster": "/blog-media/command-palette-poster-dark.8d24eb55.webp"
       }
     },
     "focus": {
       "width": 1280,
       "height": 800,
-      "duration": 9.4,
+      "duration": 8.8,
       "light": {
-        "mp4": "/blog-media/focus-light.dbc73e7e.mp4",
-        "poster": "/blog-media/focus-poster-light.3da0da69.webp"
+        "mp4": "/blog-media/focus-light.0a7877a4.mp4",
+        "poster": "/blog-media/focus-poster-light.02701b1b.webp"
       },
       "dark": {
-        "mp4": "/blog-media/focus-dark.98f428ff.mp4",
-        "poster": "/blog-media/focus-poster-dark.647c56d5.webp"
+        "mp4": "/blog-media/focus-dark.743b3716.mp4",
+        "poster": "/blog-media/focus-poster-dark.c2aaadda.webp"
       }
     },
     "ideas": {
       "width": 1280,
       "height": 800,
-      "duration": 7.6,
+      "duration": 7.5,
       "light": {
-        "mp4": "/blog-media/ideas-light.cc5fd6d2.mp4",
-        "poster": "/blog-media/ideas-poster-light.b8e45383.webp"
+        "mp4": "/blog-media/ideas-light.fa285a00.mp4",
+        "poster": "/blog-media/ideas-poster-light.f51431f2.webp"
       },
       "dark": {
-        "mp4": "/blog-media/ideas-dark.5a84d743.mp4",
-        "poster": "/blog-media/ideas-poster-dark.1c07820d.webp"
+        "mp4": "/blog-media/ideas-dark.b13b68cf.mp4",
+        "poster": "/blog-media/ideas-poster-dark.084bcf21.webp"
       }
     },
     "plan-day": {
       "width": 1280,
       "height": 800,
-      "duration": 10,
+      "duration": 11.7,
       "light": {
-        "mp4": "/blog-media/plan-day-light.972f47ff.mp4",
-        "poster": "/blog-media/plan-day-poster-light.5fcdf146.webp"
+        "mp4": "/blog-media/plan-day-light.d3712e36.mp4",
+        "poster": "/blog-media/plan-day-poster-light.88f3de61.webp"
       },
       "dark": {
-        "mp4": "/blog-media/plan-day-dark.25b900ad.mp4",
-        "poster": "/blog-media/plan-day-poster-dark.6c5a5971.webp"
+        "mp4": "/blog-media/plan-day-dark.34e3f6e2.mp4",
+        "poster": "/blog-media/plan-day-poster-dark.430e8f79.webp"
       }
     },
     "shutdown": {
       "width": 1280,
       "height": 800,
-      "duration": 7,
+      "duration": 7.1,
       "light": {
-        "mp4": "/blog-media/shutdown-light.365384c5.mp4",
-        "poster": "/blog-media/shutdown-poster-light.0eb93571.webp"
+        "mp4": "/blog-media/shutdown-light.6133eaa0.mp4",
+        "poster": "/blog-media/shutdown-poster-light.393d2554.webp"
       },
       "dark": {
-        "mp4": "/blog-media/shutdown-dark.ec37c7d9.mp4",
-        "poster": "/blog-media/shutdown-poster-dark.f33d8379.webp"
+        "mp4": "/blog-media/shutdown-dark.eb4d36c1.mp4",
+        "poster": "/blog-media/shutdown-poster-dark.51446d08.webp"
       }
     },
     "time-block": {
@@ -151,25 +151,25 @@
       "height": 800,
       "duration": 7.3,
       "light": {
-        "mp4": "/blog-media/time-block-light.01727913.mp4",
-        "poster": "/blog-media/time-block-poster-light.040b7823.webp"
+        "mp4": "/blog-media/time-block-light.ca4afd89.mp4",
+        "poster": "/blog-media/time-block-poster-light.6f5794ee.webp"
       },
       "dark": {
-        "mp4": "/blog-media/time-block-dark.c473436c.mp4",
-        "poster": "/blog-media/time-block-poster-dark.1acfddf9.webp"
+        "mp4": "/blog-media/time-block-dark.6b5af3d3.mp4",
+        "poster": "/blog-media/time-block-poster-dark.60c98c1c.webp"
       }
     },
     "week-plan": {
       "width": 1280,
       "height": 800,
-      "duration": 9.6,
+      "duration": 9.9,
       "light": {
-        "mp4": "/blog-media/week-plan-light.8ba72082.mp4",
-        "poster": "/blog-media/week-plan-poster-light.ec495cbc.webp"
+        "mp4": "/blog-media/week-plan-light.aac1e31d.mp4",
+        "poster": "/blog-media/week-plan-poster-light.50cd4f37.webp"
       },
       "dark": {
-        "mp4": "/blog-media/week-plan-dark.4566556c.mp4",
-        "poster": "/blog-media/week-plan-poster-dark.2cf7d3e3.webp"
+        "mp4": "/blog-media/week-plan-dark.e334b956.mp4",
+        "poster": "/blog-media/week-plan-poster-dark.520b9bf8.webp"
       }
     }
   },
@@ -177,10 +177,10 @@
     "ai": {
       "width": 1920,
       "height": 1080,
-      "duration": 48.1,
-      "mp4": "/blog-media/ai.ec1fbee7.mp4",
-      "poster": "/blog-media/ai-poster.7ef985e7.webp",
-      "captions": "/blog-media/ai.f9f554f5.vtt",
+      "duration": 48.2,
+      "mp4": "/blog-media/ai.c631d920.mp4",
+      "poster": "/blog-media/ai-poster.5318351f.webp",
+      "captions": "/blog-media/ai.52ff3d39.vtt",
       "title": "Let Claude or ChatGPT plan your day with Open Sunsama",
       "description": "Connect Claude, ChatGPT, Cursor or any MCP client to Open Sunsama, the open source daily planner. Add the connector URL, sign in once and allow access, then ask your agent to plan your afternoon and watch tasks and time blocks appear live.",
       "uploadDate": "2026-09-24"
@@ -188,10 +188,10 @@
     "tour": {
       "width": 1920,
       "height": 1080,
-      "duration": 69.4,
-      "mp4": "/blog-media/tour.6c568d47.mp4",
-      "poster": "/blog-media/tour-poster.3a1c979a.webp",
-      "captions": "/blog-media/tour.ffb9b9ac.vtt",
+      "duration": 69.6,
+      "mp4": "/blog-media/tour.962b625b.mp4",
+      "poster": "/blog-media/tour-poster.059dbf28.webp",
+      "captions": "/blog-media/tour.8135140f.vtt",
       "title": "Plan your whole day in one place with Open Sunsama",
       "description": "A one-minute tour of Open Sunsama, the open source daily planner: pull tasks into today on the board, time block them on the calendar, work in focus mode, find anything with Command K, and let an AI agent like Claude plan your afternoon over MCP.",
       "uploadDate": "2026-09-24"

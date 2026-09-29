@@ -209,7 +209,7 @@ export function TaskCardContent({
         "group relative flex flex-col gap-1 rounded-lg px-3 py-2 transition-[background-color,box-shadow,opacity] duration-150",
         "bg-surface hover:bg-surface-hover",
         !isDragging && !isCompleted && "shadow-card",
-        "cursor-grab active:cursor-grabbing touch-none select-none",
+        "cursor-grab active:cursor-grabbing touch-manipulation select-none",
         isDragging &&
           "shadow-xl ring-1 ring-primary/30 rotate-[0.5deg] cursor-grabbing",
         isCompleted && "opacity-50 hover:opacity-60",
