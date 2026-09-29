@@ -68,6 +68,10 @@ export interface CalendarDropData {
 export function dragPointerY(event: {
   activatorEvent: Event | null;
   delta: { y: number };
+  active: { rect: { current: {
+    initial: { top: number } | null;
+    translated: { top: number } | null;
+  } } };
 }): number | null {
   const start = event.activatorEvent;
   if (!start) return null;
@@ -75,7 +79,13 @@ export function dragPointerY(event: {
     "touches" in start
       ? (start as TouchEvent).touches[0]?.clientY
       : (start as MouseEvent).clientY;
-  return y === undefined ? null : y + event.delta.y;
+  const { initial, translated } = event.active.rect.current;
+  // dnd-kit's event delta includes scroll offsets from the current drop
+  // target. The translated rectangle retains viewport movement only.
+  const movement = initial && translated
+    ? translated.top - initial.top
+    : event.delta.y;
+  return y === undefined ? null : y + movement;
 }
 
 // Imported from the central source so adding a new provider is a

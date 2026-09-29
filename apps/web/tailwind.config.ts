@@ -61,7 +61,7 @@ const config: Config = {
         },
         chrome: "hsl(var(--chrome))",
         canvas: "hsl(var(--canvas))",
-        tray: "hsl(var(--tray))",
+        tray: "var(--tray)",
         surface: {
           DEFAULT: "hsl(var(--surface))",
           hover: "hsl(var(--surface-hover))",
