@@ -152,7 +152,7 @@ export default function IdeasPage() {
       {/* Canvas. `min-h-0` lets this flex child shrink to the bounded page
           height instead of growing to its content — without it the board can't
           bound its columns and long lists overflow under the mobile nav. */}
-      <main className="flex min-h-0 min-w-0 flex-1 flex-col bg-muted/30 dark:bg-background">
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
         {/* Header */}
         <div className="flex items-center gap-2.5 border-b border-border bg-background px-4 py-2.5">
           {/* Mobile board switcher — the board identity itself is the control
