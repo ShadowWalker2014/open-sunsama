@@ -45,7 +45,7 @@ taskSeriesRouter.use("*", auth);
 // Validation schemas
 const createTaskSeriesSchema = z
   .object({
-    title: z.string().min(1, "Title is required").max(500),
+    title: z.string().min(1, { error: "Title is required" }).max(500),
     notes: z.string().optional(),
     estimatedMins: z.number().int().positive().optional(),
     priority: z.enum(["P0", "P1", "P2", "P3"]).optional(),
@@ -57,15 +57,15 @@ const createTaskSeriesSchema = z
     frequency: z.number().int().min(1).max(12).optional(),
     startTime: z
       .string()
-      .regex(/^\d{2}:\d{2}$/, "Invalid time format (HH:MM)")
+      .regex(/^\d{2}:\d{2}$/, { error: "Invalid time format (HH:MM)" })
       .optional(),
     startDate: z
       .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format")
+      .regex(/^\d{4}-\d{2}-\d{2}$/, { error: "Invalid date format" })
       .optional(),
     endDate: z
       .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format")
+      .regex(/^\d{4}-\d{2}-\d{2}$/, { error: "Invalid date format" })
       .optional(),
   })
   .refine(
@@ -87,7 +87,7 @@ const createTaskSeriesSchema = z
       }
       return true;
     },
-    { message: "Required fields missing for recurrence type" }
+    { error: "Required fields missing for recurrence type" }
   );
 
 const updateTaskSeriesSchema = z.object({

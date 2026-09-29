@@ -39,7 +39,7 @@ export const ideaSubtasksRelations = relations(ideaSubtasks, ({ one }) => ({
 }));
 
 export const insertIdeaSubtaskSchema = createInsertSchema(ideaSubtasks, {
-  title: z.string().min(1, "Title is required").max(500),
+  title: z.string().min(1, { error: "Title is required" }).max(500),
   completed: z.boolean().optional(),
   position: z.number().int().nonnegative().optional(),
 });

@@ -104,7 +104,7 @@ export type TaskPriority = (typeof TASK_PRIORITIES)[number];
 
 // Zod schemas for validation
 export const insertTaskSchema = createInsertSchema(tasks, {
-  title: z.string().min(1, "Title is required").max(500),
+  title: z.string().min(1, { error: "Title is required" }).max(500),
   notes: z.string().optional(),
   scheduledDate: z.string().optional(),
   estimatedMins: z.number().int().positive().optional(),

@@ -80,7 +80,7 @@ export const calendarEventsRelations = relations(calendarEvents, ({ one }) => ({
 // Zod schemas for validation
 export const insertCalendarEventSchema = createInsertSchema(calendarEvents, {
   externalId: z.string().min(1).max(500),
-  title: z.string().min(1, 'Event title is required').max(500),
+  title: z.string().min(1, { error: 'Event title is required' }).max(500),
   description: z.string().optional().nullable(),
   location: z.string().max(500).optional().nullable(),
   startTime: z.date(),
@@ -91,7 +91,7 @@ export const insertCalendarEventSchema = createInsertSchema(calendarEvents, {
   recurringEventId: z.string().max(500).optional().nullable(),
   status: z.enum(EVENT_STATUS_OPTIONS).optional(),
   responseStatus: z.enum(RESPONSE_STATUS_OPTIONS).optional().nullable(),
-  htmlLink: z.string().url().max(1000).optional().nullable(),
+  htmlLink: z.url().max(1000).optional().nullable(),
   etag: z.string().max(255).optional().nullable(),
 });
 

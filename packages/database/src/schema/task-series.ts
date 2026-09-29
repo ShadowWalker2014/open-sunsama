@@ -161,7 +161,7 @@ export const taskSeriesRelations = relations(taskSeries, ({ one }) => ({
 
 // Zod schemas for validation
 const baseInsertSchema = createInsertSchema(taskSeries, {
-  title: z.string().min(1, "Title is required").max(500),
+  title: z.string().min(1, { error: "Title is required" }).max(500),
   notes: z.string().optional(),
   estimatedMins: z.number().int().positive().optional(),
   priority: z.enum(["P0", "P1", "P2", "P3"]).optional(),
@@ -173,13 +173,13 @@ const baseInsertSchema = createInsertSchema(taskSeries, {
   frequency: z.number().int().min(1).max(12).optional(),
   startTime: z
     .string()
-    .regex(/^\d{2}:\d{2}$/, "Invalid time format (HH:MM)")
+    .regex(/^\d{2}:\d{2}$/, { error: "Invalid time format (HH:MM)" })
     .optional(),
   timezone: z.string().min(1),
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format"),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { error: "Invalid date format" }),
   endDate: z
     .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format")
+    .regex(/^\d{4}-\d{2}-\d{2}$/, { error: "Invalid date format" })
     .optional(),
 });
 
@@ -203,7 +203,7 @@ export const insertTaskSeriesSchema = baseInsertSchema.refine(
     }
     return true;
   },
-  { message: "Required fields missing for recurrence type" }
+  { error: "Required fields missing for recurrence type" }
 );
 
 export const selectTaskSeriesSchema = createSelectSchema(taskSeries);

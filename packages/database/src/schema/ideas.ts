@@ -140,7 +140,7 @@ export const ideasRelations = relations(ideas, ({ one }) => ({
 
 // ───────────────────────── zod schemas ─────────────────────────
 export const insertIdeaBoardSchema = createInsertSchema(ideaBoards, {
-  name: z.string().min(1, "Name is required").max(120),
+  name: z.string().min(1, { error: "Name is required" }).max(120),
   icon: z.string().max(64).optional(),
   color: z.string().max(7).optional(),
   position: z.number().int().nonnegative().optional(),
@@ -151,7 +151,7 @@ export const updateIdeaBoardSchema = insertIdeaBoardSchema
   .omit({ userId: true });
 
 export const insertIdeaColumnSchema = createInsertSchema(ideaColumns, {
-  name: z.string().min(1, "Name is required").max(120),
+  name: z.string().min(1, { error: "Name is required" }).max(120),
   position: z.number().int().nonnegative().optional(),
 });
 export const selectIdeaColumnSchema = createSelectSchema(ideaColumns);
@@ -160,7 +160,7 @@ export const updateIdeaColumnSchema = insertIdeaColumnSchema
   .omit({ userId: true, boardId: true });
 
 export const insertIdeaSchema = createInsertSchema(ideas, {
-  title: z.string().min(1, "Title is required").max(500),
+  title: z.string().min(1, { error: "Title is required" }).max(500),
   notes: z.string().optional().nullable(),
   estimatedMins: z.number().int().positive().optional().nullable(),
   priority: z.enum(TASK_PRIORITIES).optional(),
