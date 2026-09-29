@@ -9,6 +9,12 @@
 import type { z } from "zod";
 import type { TaskPriority } from "@open-sunsama/database";
 import { NotFoundError } from "@open-sunsama/utils";
+export {
+  ProviderCredentialError,
+  ProviderTaskNotFoundError,
+  ProviderRateLimitError,
+  ProviderRequestError,
+} from "./errors.js";
 
 export interface ExternalSubtask {
   externalId: string;
@@ -87,65 +93,6 @@ export interface TaskProvider {
 
   /** Fetch one task by the id `parseReference` produced. */
   fetchTask(credentials: unknown, externalId: string): Promise<ExternalTask>;
-}
-
-/**
- * The credential was rejected (401 / 403) — the token was revoked or
- * mistyped. Routes return 401 and the UI prompts a reconnect.
- */
-export class ProviderCredentialError extends Error {
-  readonly code = "PROVIDER_CREDENTIAL_INVALID" as const;
-  constructor(provider: string, detail?: string) {
-    super(
-      `${provider} rejected the stored credentials${detail ? `: ${detail}` : ""} — please reconnect the account`
-    );
-    this.name = "ProviderCredentialError";
-  }
-}
-
-/**
- * The referenced object does not exist, or this token cannot see it.
- * Those two cases are indistinguishable from the outside, so the message
- * names both — a private task in another workspace is the most common
- * cause and the least obvious one.
- */
-export class ProviderTaskNotFoundError extends Error {
-  readonly code = "EXTERNAL_TASK_NOT_FOUND" as const;
-  constructor(provider: string, externalId: string) {
-    super(
-      `${provider} has no task "${externalId}", or your token can't see it`
-    );
-    this.name = "ProviderTaskNotFoundError";
-  }
-}
-
-/**
- * The provider is rate-limiting us (429).
- */
-export class ProviderRateLimitError extends Error {
-  readonly code = "PROVIDER_RATE_LIMITED" as const;
-  constructor(
-    provider: string,
-    readonly retryAfterSeconds: number | null = null
-  ) {
-    super(`${provider} rate limit reached — try again in a moment`);
-    this.name = "ProviderRateLimitError";
-  }
-}
-
-/** Any other non-2xx from the provider. */
-export class ProviderRequestError extends Error {
-  readonly code = "PROVIDER_REQUEST_FAILED" as const;
-  constructor(
-    provider: string,
-    readonly status: number,
-    detail?: string
-  ) {
-    super(
-      `${provider} request failed with ${status}${detail ? `: ${detail}` : ""}`
-    );
-    this.name = "ProviderRequestError";
-  }
 }
 
 /**
