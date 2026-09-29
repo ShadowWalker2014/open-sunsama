@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/server": "2.1.0",
+    "close-with-grace": "2.5.0",
     "zod": "4.6.5"
   },
   "devDependencies": {

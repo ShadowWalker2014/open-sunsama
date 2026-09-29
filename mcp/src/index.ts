@@ -15,6 +15,7 @@
  */
 
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
+import closeWithGrace from "close-with-grace";
 import { createOpenSunsamaMcpServer } from "./server.js";
 
 // Configuration from environment variables
@@ -48,15 +49,12 @@ async function main() {
       }),
     { onerror: (error) => console.error("MCP server error:", error) }
   );
-  console.error("Open Sunsama MCP Server running on stdio");
-
-  const shutdown = async () => {
-    console.error("Shutting down...");
+  closeWithGrace({ delay: 10_000 }, async ({ err, signal }) => {
+    console.error(`Shutting down${signal ? ` (${signal})` : ""}...`);
     await handle.close();
-    process.exit(0);
-  };
-  process.once("SIGINT", shutdown);
-  process.once("SIGTERM", shutdown);
+    if (err) throw err;
+  });
+  console.error("Open Sunsama MCP Server running on stdio");
 }
 
 main().catch((error) => {
