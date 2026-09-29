@@ -25,7 +25,7 @@ The open-source daily planner for time-blocking, focused work, and seamless AI i
   <img src="docs/images/readme/board.png" alt="Open Sunsama board: today's prioritized tasks in columns by day, with a time-blocked schedule on the right" width="100%" />
 </picture>
 
-<sub>A real Tuesday for a Head of Product: a prioritized board, subtasks, estimates, and a time-blocked schedule. The backlog is tucked away on the left.</sub>
+<sub>A real Thursday for a Head of Product: a prioritized board, subtasks, estimates, and a time-blocked schedule. The backlog waits one click away in the right rail.</sub>
 
 </div>
 
@@ -140,7 +140,7 @@ You can also send a key to the hosted server as an `X-API-Key` header. See [Loca
   <img src="docs/images/readme/demo.gif" alt="Demo: adding a task, opening task details, switching to the week calendar, tasks list, ideas board, and connecting an AI assistant" width="100%" />
 </p>
 
-<p align="center"><sub><a href="docs/images/readme/demo.mp4">▶ Watch the full-quality video (MP4)</a></sub></p>
+<p align="center"><sub><a href="docs/images/readme/demo.mp4">▶ Watch the full-quality video (MP4)</a> · <a href="https://opensunsama.com">▶ Watch the narrated 1-minute tour</a></sub></p>
 
 <br />
 
@@ -174,7 +174,7 @@ Subtasks, rich-text notes, attachments, priority, estimate, and a timer, all in 
 
 One task, one timer. Track actual time against your estimate while everything else fades away.
 
-<img src="docs/images/readme/focus.png" alt="Focus mode with a running timer at 23 minutes out of a 90-minute estimate" width="100%" />
+<img src="docs/images/readme/focus.png" alt="Focus mode with 23 minutes tracked against a 90-minute estimate and a Start button" width="100%" />
 
 </td>
 <td width="50%" valign="top">

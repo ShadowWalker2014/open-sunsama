@@ -20,7 +20,8 @@ import path from "node:path";
 const WEB = process.env.WEB_URL ?? "http://localhost:3000";
 const API = process.env.API_URL ?? "http://localhost:3001";
 const TOKEN = process.env.DEMO_TOKEN;
-const NOW = new Date(process.env.DEMO_NOW ?? "2026-09-22T10:40:00-07:00");
+const TODAY = process.env.DEMO_TODAY ?? "2026-09-22";
+const NOW = new Date(process.env.DEMO_NOW ?? `${TODAY}T10:40:00-07:00`);
 const PUBLIC_MCP_URL = "https://api.opensunsama.com/mcp";
 const OUT = path.resolve(import.meta.dirname, "../../docs/images/readme");
 const RAW = process.env.RAW_DIR ?? path.join(tmpdir(), "opensunsama-readme-media");
@@ -142,6 +143,14 @@ async function settle(page, ms = 1200) {
   await page.waitForTimeout(ms);
 }
 
+async function firstOnScreen(locator) {
+  for (const item of await locator.all()) {
+    const box = await item.boundingBox();
+    if (box && box.x >= 0) return item;
+  }
+  throw new Error("no on-screen match");
+}
+
 /** Week view opens at midnight; start it at the beginning of the workday. */
 async function scrollCalendarToMorning(page) {
   await page.getByText("7 AM", { exact: true }).first().evaluate((el) => el.scrollIntoView({ block: "start" }));
@@ -169,8 +178,10 @@ async function shotAround(page, name, locator, margin = { x: 120, y: 90 }) {
   });
 }
 
-const tasks = await api("GET", "/tasks?date=2026-09-22");
+const tasks = await api("GET", `/tasks?date=${TODAY}`);
 const roadmap = tasks.find((t) => t.title.startsWith("Finalize Q4 roadmap"));
+// Show time already tracked on the roadmap task in the focus and task detail shots.
+await api("PATCH", `/tasks/${roadmap.id}`, { actualMins: 23 });
 
 /**
  * Full-frame light + dark WebP assets for the marketing site
@@ -313,7 +324,8 @@ for (const [name, client] of [["consent-claude", CLAUDE], ["consent-chatgpt", CH
   await page.goto(`${WEB}/app/board`);
   await settle(page, 1800);
 
-  await page.getByRole("button", { name: /Add task/ }).first().click();
+  // Earlier days sit scrolled off to the left; add to the first on-screen column (today).
+  await firstOnScreen(page.getByRole("button", { name: /Add task/ })).then((button) => button.click());
   await pause(500);
   await page.keyboard.type("Prep talking points for Thursday's board meeting", { delay: 35 });
   await pause(400);
@@ -335,9 +347,9 @@ for (const [name, client] of [["consent-claude", CLAUDE], ["consent-chatgpt", CH
   await pause(1800);
 
   await page.getByRole("link", { name: "Tasks" }).first().click();
-  await pause(1800);
+  await settle(page, 1800);
   await page.getByRole("link", { name: "Ideas" }).first().click();
-  await pause(1800);
+  await settle(page, 1800);
 
   await page.keyboard.press("Meta+k");
   await pause(500);
