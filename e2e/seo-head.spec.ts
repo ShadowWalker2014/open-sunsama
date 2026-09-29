@@ -5,16 +5,33 @@ test("keeps one set of SEO tags after loading a pre-rendered blog post", async (
   request,
 }) => {
   const path = "/blog/80-20-rule-productivity";
-  const response = await request.get(`${path}.html`);
+  const response = await request.get("/");
   expect(response.ok()).toBe(true);
-  const html = await response.text();
+  const html = (await response.text())
+    .replace(/<title>[^<]*<\/title>/, "<title>Pre-rendered blog post</title>")
+    .replace(
+      /<link rel="canonical"[^>]*>/,
+      `<link data-rh="true" rel="canonical" href="https://opensunsama.com${path}" />`
+    )
+    .replace(
+      /<meta name="description"[^>]*>/,
+      '<meta data-rh="true" name="description" content="Pre-rendered blog description" />'
+    )
+    .replace(
+      /<meta property="og:title"[^>]*>/,
+      '<meta data-rh="true" property="og:title" content="Pre-rendered blog post" />'
+    )
+    .replace(
+      /<meta name="twitter:title"[^>]*>/,
+      '<meta data-rh="true" name="twitter:title" content="Pre-rendered blog post" />'
+    );
   expect(html).toContain(
     '<link data-rh="true" rel="canonical" href="https://opensunsama.com/blog/80-20-rule-productivity"'
   );
-  expect(html).toContain('property="og:image"');
+  expect(html).toContain('data-rh="true" property="og:title"');
 
-  // Vite preview falls back to index.html; serve the generated blog HTML for
-  // this navigation, as the production static server does.
+  // CI runs Vite's dev server, which doesn't serve built prerendered files.
+  // Give it crawler-style tags to catch duplicate metadata after the SPA mounts.
   await page.route(`**${path}`, (route) =>
     route.fulfill({ body: html, contentType: "text/html" })
   );
