@@ -281,13 +281,62 @@ test("Today keeps its sidebar beside the calendar and sweeps an hour", async ({ 
   await page.mouse.down();
   await page.mouse.move(calendar!.x + 80, y + 64, { steps: 8 });
   await page.mouse.up();
-  const dialog = page.getByRole("dialog", { name: "Create", exact: true });
+  const dialog = page.getByRole("dialog", { name: "Add event", exact: true });
   await expect(dialog).toBeVisible();
-  await dialog.getByRole("textbox", { name: "Title", exact: true }).fill("Sweep review");
+  await dialog.getByRole("textbox", { name: "Event title", exact: true }).fill("Sweep review");
   const saved = page.waitForResponse((r) => r.url().endsWith("/time-blocks") && r.request().method() === "POST");
-  await dialog.getByRole("button", { name: "Create", exact: true }).click();
+  await dialog.getByRole("button", { name: "Save", exact: true }).click();
   const block = (await (await saved).json()).data;
   expect(block.durationMins).toBe(60);
+  expect(block.taskId).toBeNull();
+});
+
+test("empty slots default to a writable calendar and retain edits after save failure", async ({ page }) => {
+  const session = await register();
+  await page.route(`${API}/calendar/accounts`, r => r.fulfill({ json: { success: true, data: [{ id: "event-account", provider: "google", isActive: true }] } }));
+  await page.route(`${API}/calendars`, r => r.fulfill({ json: { success: true, data: [{ id: "event-account", provider: "google", calendars: [
+    { id: "readonly", name: "Read only", isReadOnly: true, isEnabled: true, isDefaultForEvents: true },
+    { id: "writable", name: "Work calendar", isReadOnly: false, isEnabled: true, isDefaultForEvents: true },
+  ] }] } }));
+  let attempts = 0;
+  let payload: Record<string, unknown> = {};
+  await page.route(`${API}/calendar-events`, async r => {
+    payload = r.request().postDataJSON();
+    attempts++;
+    await r.fulfill(attempts === 1
+      ? { status: 503, json: { success: false, error: { code: "PROVIDER_UNAVAILABLE", message: "Calendar temporarily unavailable", statusCode: 503 } } }
+      : { json: { success: true, data: { id: "created-event", ...payload } } });
+  });
+  await signInWithToken(page, session);
+  await page.goto("/app");
+  const column = page.locator("[data-calendar-create-column]");
+  await expect(column).toBeVisible();
+  const rect = (await column.boundingBox())!;
+  const y = Math.max(rect.y, 160) + 80;
+  await page.mouse.move(rect.x + 80, y);
+  await page.mouse.down();
+  await page.mouse.move(rect.x + 80, y + 64, { steps: 8 });
+  await page.mouse.up();
+  const dialog = page.getByRole("dialog", { name: "Add event", exact: true });
+  await expect(dialog.getByRole("combobox", { name: "Calendar" })).toHaveText("Work calendar");
+  await expect(dialog.getByText("Link to task (optional)")).toHaveCount(0);
+  await expect(dialog.getByRole("tab")).toHaveCount(0);
+  await dialog.getByLabel("Event title", { exact: true }).fill("Design review");
+  await dialog.getByRole("button", { name: "More options" }).click();
+  await dialog.getByLabel("Start", { exact: true }).fill(`${today}T14:00`);
+  await dialog.getByLabel("End", { exact: true }).fill(`${today}T13:00`);
+  await dialog.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByText("End time must be after start time", { exact: true })).toBeVisible();
+  expect(attempts).toBe(0);
+  await dialog.getByLabel("End", { exact: true }).fill(`${today}T15:15`);
+  await dialog.getByLabel("Location", { exact: true }).fill("Studio");
+  await dialog.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByText("Calendar temporarily unavailable", { exact: true })).toBeVisible();
+  await expect(dialog.getByLabel("Event title", { exact: true })).toHaveValue("Design review");
+  await dialog.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(dialog).toBeHidden();
+  expect(attempts).toBe(2);
+  expect(payload).toMatchObject({ calendarId: "writable", title: "Design review", location: "Studio", startTime: `${today}T14:00:00.000Z`, endTime: `${today}T15:15:00.000Z` });
 });
 
 test("mobile subtask titles keep readable width alongside timer controls", async ({ page }) => {
