@@ -78,8 +78,8 @@
     "@types/dompurify": "^3.2.0",
     "@types/react": "~19.1.17",
     "@types/react-dom": "~19.1.11",
-    "@vitejs/plugin-react": "^4.7.0",
     "@tailwindcss/postcss": "^4.1.18",
+    "@vitejs/plugin-react": "^6.1.1",
     "gray-matter": "^4.0.3",
     "postcss": "^8.5.28",
     "rehype-stringify": "^10.0.1",
@@ -89,7 +89,7 @@
     "tailwindcss": "^4.1.18",
     "typescript": "catalog:",
     "unified": "^11.0.5",
-    "vite": "^6.4.3",
+    "vite": "^8.3.0",
     "vitest": "^2.1.9"
   }
 }

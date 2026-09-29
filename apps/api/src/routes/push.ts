@@ -15,10 +15,10 @@ const pushRouter = new Hono<{ Variables: AuthVariables }>();
 
 // Validation schema for push subscription
 const subscribeSchema = z.object({
-  endpoint: z.string().url('Invalid endpoint URL'),
+  endpoint: z.url({ error: 'Invalid endpoint URL' }),
   keys: z.object({
-    p256dh: z.string().min(1, 'p256dh key is required'),
-    auth: z.string().min(1, 'Auth key is required'),
+    p256dh: z.string().min(1, { error: 'p256dh key is required' }),
+    auth: z.string().min(1, { error: 'Auth key is required' }),
   }),
   expirationTime: z.number().nullable().optional(),
 });
@@ -183,7 +183,7 @@ pushRouter.post('/subscribe', zValidator('json', subscribeSchema), async (c) => 
  * Remove a push subscription for the authenticated user
  */
 pushRouter.delete('/subscribe', zValidator('json', z.object({
-  endpoint: z.string().url('Invalid endpoint URL'),
+  endpoint: z.url({ error: 'Invalid endpoint URL' }),
 })), async (c) => {
   const userId = c.get('userId');
   const { endpoint } = c.req.valid('json');
