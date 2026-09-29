@@ -651,6 +651,13 @@ async function showKeys(page, keys, theme, ms = 1400) {
   );
 }
 
+/** The board's right panel remembers its last tab; make sure it shows the day's calendar. */
+async function showCalendarPanel(page) {
+  if (await page.getByText("Deep work: Q4 roadmap").first().isVisible().catch(() => false)) return;
+  await page.getByRole("button", { name: "Calendar", exact: true }).click();
+  await page.getByText("Deep work: Q4 roadmap").first().waitFor();
+}
+
 /** Top edge of a board card, where a dropped card lands above it. */
 async function aboveCard(page, title) {
   const box = await card(page, title).boundingBox();
@@ -660,6 +667,7 @@ async function aboveCard(page, title) {
 const SCENES = {
   /** Board overview: the eye moves across today, tomorrow and the calendar. */
   async boardTour({ page, mouse }) {
+    await showCalendarPanel(page);
     await mouse.hoverOn(card(page, "Finalize Q4 roadmap"), { fx: 0.6, fy: 0.75, ms: 1000 });
     await sleep(1000);
     await mouse.hoverOn(page.getByText("Customer call: Acme onboarding feedback").first(), { dy: 14, ms: 900 });
@@ -671,6 +679,10 @@ const SCENES = {
   /** Pull tasks from the backlog and tomorrow into Today. */
   async planDay({ page, mouse }, { count = 3 } = {}) {
     await sleep(250);
+    // The backlog lives behind the right rail; swap the day's calendar for it.
+    await mouse.clickOn(page.getByRole("button", { name: "Backlog", exact: true }));
+    await page.getByText("Plan the team offsite agenda").first().waitFor();
+    await sleep(700);
     await mouse.drag(await center(page.getByText("Plan the team offsite agenda").first()), await aboveCard(page, "Finalize Q4 roadmap"), { ms: 1200 });
     await sleep(550);
     await mouse.drag(await center(page.getByText("Customer call: Acme onboarding feedback").first()), await aboveCard(page, "1:1 with Priya"), { ms: 1100 });
@@ -708,7 +720,7 @@ const SCENES = {
     await mouse.clickOn(page.getByText("Finalize Q4 roadmap for leadership review").first());
     await page.getByRole("dialog").first().waitFor();
     await sleep(900);
-    await mouse.clickOn(page.locator("button[title='Focus mode (F)']").first());
+    await mouse.clickOn(page.getByRole("button", { name: "Open in focus mode" }).first());
     await page.getByRole("button", { name: /Start/ }).first().waitFor();
     await sleep(900);
     await mouse.clickOn(page.getByRole("button", { name: /Start/ }).first());
@@ -835,7 +847,7 @@ const SCENES = {
    */
   async weekPlan({ page, mouse }) {
     await sleep(150);
-    const next = page.locator("button[title='Next day']").first();
+    const next = page.getByRole("button", { name: "Next day" }).first();
     await mouse.hoverOn(next);
     for (let i = 0; i < 4; i++) {
       await mouse.click(mouse.at.x, mouse.at.y, { before: 40, hold: 70 });
