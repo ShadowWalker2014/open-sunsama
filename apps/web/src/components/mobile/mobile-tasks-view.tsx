@@ -6,7 +6,8 @@ import type { MobileTasksViewMode } from "./mobile-view-controls";
 import { useSortPreference } from "@/components/kanban/kanban-board-toolbar";
 import { prefetchTaskModal } from "@/components/kanban/task-modal.lazy";
 
-const VIEW_MODE_KEY = "open-sunsama-mobile-tasks-view";
+// v2: devices that still remember the old list default open on the board.
+const VIEW_MODE_KEY = "open-sunsama-mobile-tasks-view-v2";
 
 /**
  * The mobile Tasks tab. Owns the list/board switch, the sort order and the
