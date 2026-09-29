@@ -1,14 +1,37 @@
 import * as React from "react";
-import { format } from "date-fns";
 import type { Task } from "@open-sunsama/types";
+import { SHORTCUTS, matchesShortcut, shouldIgnoreShortcut } from "@/hooks/useKeyboardShortcuts";
 import { useKanbanDates } from "@/hooks/useKanbanDates";
 import { useKanbanRangePrefetch } from "@/hooks/useKanbanRangePrefetch";
 import { useTasksDnd } from "@/lib/dnd/tasks-dnd-context";
 import { DayColumn } from "./day-column";
 import { TaskModal } from "./task-modal.lazy";
-import { AddTaskModal } from "./add-task-modal.lazy";
 import { KanbanBoardToolbar, useSortPreference } from "./kanban-board-toolbar";
 import { KanbanNavigationProvider } from "./kanban-navigation-context";
+import { addDays, format, startOfDay, subDays } from "date-fns";
+
+export type BoardMode = "board" | "day";
+const MODE_KEY = "open-sunsama-board-mode";
+
+/** Board (several days side by side) or Today (one day), remembered here. */
+export function useBoardMode(): [BoardMode, (mode: BoardMode) => void] {
+  const [mode, setMode] = React.useState<BoardMode>(() => {
+    try {
+      return localStorage.getItem(MODE_KEY) === "day" ? "day" : "board";
+    } catch {
+      return "board";
+    }
+  });
+  const update = React.useCallback((next: BoardMode) => {
+    setMode(next);
+    try {
+      localStorage.setItem(MODE_KEY, next);
+    } catch {
+      // The choice lasts for this visit only.
+    }
+  }, []);
+  return [mode, update];
+}
 
 interface KanbanBoardProps {
   /**
@@ -24,16 +47,29 @@ interface KanbanBoardProps {
    * Callback to navigate to a specific date
    */
   onDateSelect?: (date: Date) => void;
+  /** Board or Today, owned by the page so it can lay out the calendar. */
+  mode?: BoardMode;
+  onModeChange?: (mode: BoardMode) => void;
+  /**
+   * The Today view's calendar, drawn beside the day column so the two sit
+   * together in the middle of the page, as in Sunsama.
+   */
+  dayAside?: React.ReactNode;
 }
 
 /**
  * Linear-style infinite horizontal kanban board with day columns.
  * DnD is handled by the parent TasksDndProvider context.
  */
-export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardProps) {
+export function KanbanBoard({
+  children,
+  onFirstVisibleDateChange,
+  mode: modeProp,
+  onModeChange,
+  dayAside,
+}: KanbanBoardProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
-  const [isAddTaskOpen, setIsAddTaskOpen] = React.useState(false);
   const [sortBy, onSortChange] = useSortPreference();
   const [searchQuery, setSearchQuery] = React.useState("");
   const { isDragging } = useTasksDnd();
@@ -46,6 +82,8 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
     navigatePrevious,
     navigateNext,
     navigateToToday,
+    navigateToDate,
+    getLeadingDate,
     handleScroll,
     firstVisibleDate,
   } = useKanbanDates({ containerRef, isDragging });
@@ -58,34 +96,78 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
     centerDate: firstVisibleDate ?? new Date(),
   });
 
-  // Notify parent of first visible date changes
-  React.useEffect(() => {
-    onFirstVisibleDateChange?.(firstVisibleDate);
-  }, [firstVisibleDate, onFirstVisibleDateChange]);
 
-  // Navigate to a specific date
-  const navigateToDate = React.useCallback((targetDate: Date) => {
-    const targetIndex = dates.findIndex((d) => 
-      d.dateString === targetDate.toISOString().split('T')[0]
-    );
-    if (targetIndex >= 0) {
-      virtualizer.scrollToIndex(targetIndex, {
-        align: "start",
-        behavior: "smooth",
-      });
-    }
-  }, [dates, virtualizer]);
+
+  // Today view: one day at a time. Navigation steps that day instead of
+  // scrolling the board.
+  const [ownMode, setOwnMode] = useBoardMode();
+  const mode = modeProp ?? ownMode;
+  const setMode = onModeChange ?? setOwnMode;
+  const isDay = mode === "day";
+  const [day, setDay] = React.useState(() => startOfDay(new Date()));
+  const nav = React.useMemo(
+    () =>
+      isDay
+        ? {
+            navigatePrevious: () => setDay((d) => subDays(d, 1)),
+            navigateNext: () => setDay((d) => addDays(d, 1)),
+            navigateToToday: () => setDay(startOfDay(new Date())),
+            navigateToDate: (d: Date) => setDay(startOfDay(d)),
+          }
+        : { navigatePrevious, navigateNext, navigateToToday, navigateToDate },
+    [isDay, navigatePrevious, navigateNext, navigateToToday, navigateToDate]
+  );
+
+  // Switching views keeps you on the same day. The board's scroll area only
+  // exists once it renders, so the jump waits for that.
+  const boardDateRef = React.useRef<Date | null>(null);
+  const switchMode = (next: BoardMode) => {
+    if (next === mode) return;
+    if (next === "day") setDay(startOfDay(getLeadingDate() ?? new Date()));
+    else boardDateRef.current = day;
+    setMode(next);
+  };
+  React.useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.repeat || shouldIgnoreShortcut(event) ||
+        document.querySelector('[role="dialog"], [role="menu"], [role="listbox"]')) return;
+      if (matchesShortcut(event, SHORTCUTS.todayView!)) {
+        event.preventDefault();
+        switchMode("day");
+        setDay(startOfDay(new Date()));
+      } else if (matchesShortcut(event, SHORTCUTS.boardView!)) {
+        event.preventDefault();
+        switchMode("board");
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  });
+  React.useEffect(() => {
+    if (isDay || !boardDateRef.current) return;
+    // After the virtualizer has placed its initial scroll. Cleared only when
+    // the jump runs: a re-render cancels the timer and this effect sets it
+    // again. (Not requestAnimationFrame, which waits while a tab is hidden.)
+    const timer = setTimeout(() => {
+      const target = boardDateRef.current;
+      boardDateRef.current = null;
+      if (target) navigateToDate(target, { instant: true });
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [isDay, navigateToDate]);
+
+  // Tell the parent which day leads, so the side calendar follows it.
+  const leadingDate = isDay ? day : firstVisibleDate;
+  const leadingKey = leadingDate ? format(leadingDate, "yyyy-MM-dd") : "";
+  React.useEffect(() => {
+    onFirstVisibleDateChange?.(leadingDate);
+    // leadingKey stands in for the Date, which is a new object each render.
+  }, [leadingKey, onFirstVisibleDateChange]);
 
   // Memoize navigation context value
   const navigationContextValue = React.useMemo(
-    () => ({
-      navigatePrevious,
-      navigateNext,
-      navigateToToday,
-      navigateToDate,
-      selectTask: setSelectedTask,
-    }),
-    [navigatePrevious, navigateNext, navigateToToday, navigateToDate]
+    () => ({ ...nav, selectTask: setSelectedTask }),
+    [nav]
   );
 
   return (
@@ -93,20 +175,41 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
       <div className="flex h-full flex-col bg-canvas">
         {/* Toolbar */}
         <KanbanBoardToolbar
-          onNavigatePrevious={navigatePrevious}
-          onNavigateNext={navigateNext}
-          onNavigateToday={navigateToToday}
-          onAddTask={() => setIsAddTaskOpen(true)}
+          onNavigatePrevious={nav.navigatePrevious}
+          onNavigateNext={nav.navigateNext}
+          onNavigateToday={nav.navigateToToday}
+          onNavigateToDate={nav.navigateToDate}
+          firstVisibleDate={leadingDate}
+          mode={mode}
+          onModeChange={switchMode}
           sortBy={sortBy}
           onSortChange={onSortChange}
           searchQuery={searchQuery}
           onSearchQueryChange={setSearchQuery}
         />
 
-        {/* Kanban Board - DndContext is provided by TasksDndProvider */}
+        {isDay ? (
+          // The day and its calendar sit together in the middle of the page,
+          // as in Sunsama's Today.
+          <div className="flex min-h-0 flex-1 justify-center gap-5 overflow-hidden px-4">
+            <DayColumn
+              key={format(day, "yyyy-MM-dd")}
+              date={day}
+              dateString={format(day, "yyyy-MM-dd")}
+              onSelectTask={setSelectedTask}
+              sortBy={sortBy}
+              searchQuery={searchQuery}
+              wide
+            />
+            {dayAside && (
+              <div className="hidden h-full shrink-0 lg:block">{dayAside}</div>
+            )}
+          </div>
+        ) : (
+        /* Kanban Board - DndContext is provided by TasksDndProvider */
         <div
           ref={containerRef}
-          className="flex-1 overflow-x-auto overflow-y-hidden snap-x snap-mandatory sm:snap-none"
+          className="scrollbar-thin flex-1 overflow-x-auto overflow-y-hidden snap-x snap-mandatory sm:snap-none"
           onScroll={handleScroll}
         >
           <div
@@ -141,6 +244,7 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
             })}
           </div>
         </div>
+        )}
 
         {/* Task Detail Modal */}
         <TaskModal
@@ -151,12 +255,6 @@ export function KanbanBoard({ children, onFirstVisibleDateChange }: KanbanBoardP
           }}
         />
 
-        {/* Add Task Modal — scoped to the day currently in view */}
-        <AddTaskModal
-          open={isAddTaskOpen}
-          onOpenChange={setIsAddTaskOpen}
-          scheduledDate={format(firstVisibleDate ?? new Date(), "yyyy-MM-dd")}
-        />
       </div>
 
       {/* Render children inside the navigation provider scope */}

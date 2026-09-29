@@ -30,6 +30,14 @@ import {
   reorderTasksSchema,
 } from "../validation/tasks.js";
 import { publishEvent } from "../lib/websocket/index.js";
+import { stopTimerFields } from "../lib/timer.js";
+import {
+  startTaskTimer,
+  withTimerTransition,
+  stopTaskTimer,
+  stopSubtaskTimers,
+} from "../lib/timer-service.js";
+import { moveBlocksWithTasks } from "../services/task-blocks.js";
 import { format, subDays } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { getPgBoss, JOBS } from "../lib/pgboss.js";
@@ -238,63 +246,7 @@ tasksRouter.post(
       .limit(1);
     if (!task) throw new NotFoundError("Task", id);
 
-    let stoppedTask = null;
-
-    // Check if any other task has an active timer — auto-stop it
-    const [runningTask] = await db
-      .select()
-      .from(tasks)
-      .where(and(eq(tasks.userId, userId), isNotNull(tasks.timerStartedAt)))
-      .limit(1);
-
-    if (runningTask && runningTask.id !== id) {
-      const elapsed = Math.floor(
-        (Date.now() - runningTask.timerStartedAt!.getTime()) / 1000
-      );
-      const totalSeconds = runningTask.timerAccumulatedSeconds + elapsed;
-      const actualMins = Math.ceil(totalSeconds / 60);
-
-      const [stopped] = await db
-        .update(tasks)
-        .set({
-          actualMins,
-          timerStartedAt: null,
-          timerAccumulatedSeconds: 0,
-          updatedAt: new Date(),
-        })
-        .where(eq(tasks.id, runningTask.id))
-        .returning();
-
-      stoppedTask = stopped;
-
-      // Broadcast timer:stopped for the auto-stopped task
-      publishEvent(userId, "timer:stopped", {
-        taskId: runningTask.id,
-        actualMins,
-      });
-    }
-
-    // Start timer on target task
-    // Initialize accumulatedSeconds from existing actualMins so timer continues from previous total
-    const [updatedTask] = await db
-      .update(tasks)
-      .set({
-        timerStartedAt: new Date(),
-        timerAccumulatedSeconds: (task.actualMins ?? 0) * 60,
-        updatedAt: new Date(),
-      })
-      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
-      .returning();
-
-    // Broadcast timer:started event
-    if (updatedTask) {
-      publishEvent(userId, "timer:started", {
-        taskId: updatedTask.id,
-        startedAt: updatedTask.timerStartedAt!.toISOString(),
-        accumulatedSeconds: updatedTask.timerAccumulatedSeconds,
-      });
-    }
-
+    const { task: updatedTask, stoppedTask } = await startTaskTimer(db, userId, task);
     return c.json({ success: true, data: updatedTask, stoppedTask });
   }
 );
@@ -317,47 +269,9 @@ tasksRouter.post(
       .limit(1);
     if (!task) throw new NotFoundError("Task", id);
 
-    if (!task.timerStartedAt) {
-      return c.json(
-        {
-          success: false,
-          error: {
-            code: "BAD_REQUEST",
-            message: "Timer is not running for this task",
-            statusCode: 400,
-          },
-        },
-        400
-      );
-    }
-
-    // Calculate elapsed time
-    const elapsed = Math.floor(
-      (Date.now() - task.timerStartedAt.getTime()) / 1000
-    );
-    const totalSeconds = task.timerAccumulatedSeconds + elapsed;
-    const actualMins = Math.ceil(totalSeconds / 60);
-
-    // Update task: save actualMins, clear timer fields
-    const [updatedTask] = await db
-      .update(tasks)
-      .set({
-        actualMins,
-        timerStartedAt: null,
-        timerAccumulatedSeconds: 0,
-        updatedAt: new Date(),
-      })
-      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
-      .returning();
-
-    // Broadcast timer:stopped event
-    if (updatedTask) {
-      publishEvent(userId, "timer:stopped", {
-        taskId: updatedTask.id,
-        actualMins,
-      });
-    }
-
+    // Stopping a timer that isn't running changes nothing, so a double
+    // click or a stop from a second device can't fail.
+    const updatedTask = await stopTaskTimer(db, userId, task);
     return c.json({ success: true, data: updatedTask });
   }
 );
@@ -393,50 +307,91 @@ tasksRouter.patch(
     const userId = c.get("userId");
     const { id } = c.req.valid("param");
     const updates = c.req.valid("json");
-    const db = getDb();
+    return withTimerTransition(getDb(), userId, async (db, publishEvent) => {
 
-    const [existing] = await db
-      .select()
-      .from(tasks)
-      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
-      .limit(1);
-    if (!existing) throw new NotFoundError("Task", id);
+      const [existing] = await db
+        .select()
+        .from(tasks)
+        .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+        .limit(1);
+      if (!existing) throw new NotFoundError("Task", id);
 
-    const updateData: Record<string, unknown> = { updatedAt: new Date() };
-    if (updates.title !== undefined) updateData.title = updates.title;
-    if (updates.notes !== undefined) updateData.notes = updates.notes;
-    if (updates.scheduledDate !== undefined)
-      updateData.scheduledDate = updates.scheduledDate;
-    if (updates.estimatedMins !== undefined)
-      updateData.estimatedMins = updates.estimatedMins;
-    if (updates.priority !== undefined) updateData.priority = updates.priority;
-    if (updates.completedAt !== undefined)
-      updateData.completedAt = updates.completedAt
-        ? new Date(updates.completedAt)
-        : null;
-    if (updates.position !== undefined) updateData.position = updates.position;
-    if (updates.subtasksHidden !== undefined)
-      updateData.subtasksHidden = updates.subtasksHidden;
-    if (updates.actualMins !== undefined)
-      updateData.actualMins = updates.actualMins;
+      const updateData: Record<string, unknown> = { updatedAt: new Date() };
+      if (updates.title !== undefined) updateData.title = updates.title;
+      if (updates.notes !== undefined) updateData.notes = updates.notes;
+      if (updates.scheduledDate !== undefined)
+        updateData.scheduledDate = updates.scheduledDate;
+      if (updates.estimatedMins !== undefined)
+        updateData.estimatedMins = updates.estimatedMins;
+      if (updates.priority !== undefined) updateData.priority = updates.priority;
+      if (updates.completedAt !== undefined)
+        updateData.completedAt = updates.completedAt
+          ? new Date(updates.completedAt)
+          : null;
+      if (updates.position !== undefined) updateData.position = updates.position;
+      if (updates.subtasksHidden !== undefined)
+        updateData.subtasksHidden = updates.subtasksHidden;
+      let timerStopped: number | null = null;
+      if (updates.actualMins !== undefined) {
+        // A typed actual time replaces what the timer logged; a running timer
+        // carries on from it.
+        updateData.actualMins = updates.actualMins;
+        updateData.timerAccumulatedSeconds = (updates.actualMins ?? 0) * 60;
+        if (existing.timerStartedAt) updateData.timerStartedAt = new Date();
+      }
+      if (updates.completedAt) {
+        // Completing a task stops its timers, as POST /complete does.
+        await stopSubtaskTimers(db, userId, { taskId: id });
+        if (existing.timerStartedAt) {
+          if (updates.actualMins !== undefined) {
+            updateData.timerStartedAt = null;
+            timerStopped = updates.actualMins ?? 0;
+          } else {
+            const fields = stopTimerFields(existing);
+            Object.assign(updateData, fields);
+            timerStopped = fields.actualMins;
+          }
+        }
+      }
 
-    const [updatedTask] = await db
-      .update(tasks)
-      .set(updateData)
-      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
-      .returning();
+      const [updatedTask] = await db
+        .update(tasks)
+        .set(updateData)
+        .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+        .returning();
 
-    // Publish realtime event (fire and forget)
-    // Use 'task:completed' if completedAt changed to a truthy value, otherwise 'task:updated'
-    if (updatedTask) {
-      const eventType = updates.completedAt ? "task:completed" : "task:updated";
-      publishEvent(userId, eventType, {
-        taskId: updatedTask.id,
-        scheduledDate: updatedTask.scheduledDate,
-      });
-    }
+      if (
+        updatedTask &&
+        updates.scheduledDate !== undefined &&
+        updates.scheduledDate !== existing.scheduledDate
+      ) {
+        const moved = await moveBlocksWithTasks(
+          userId,
+          [{ taskId: id, from: existing.scheduledDate }],
+          updatedTask.scheduledDate,
+          db
+        );
+        if (moved > 0) publishEvent(userId, "timeblock:updated", { taskId: id });
+      }
 
-    return c.json({ success: true, data: updatedTask });
+      // Publish realtime event (fire and forget)
+      // Use 'task:completed' if completedAt changed to a truthy value, otherwise 'task:updated'
+      if (updatedTask && timerStopped !== null) {
+        publishEvent(userId, "timer:stopped", {
+          taskId: updatedTask.id,
+          actualMins: timerStopped,
+        });
+      }
+      if (updatedTask) {
+        const eventType = updates.completedAt ? "task:completed" : "task:updated";
+        publishEvent(userId, eventType, {
+          taskId: updatedTask.id,
+          scheduledDate: updatedTask.scheduledDate,
+        });
+      }
+
+      return c.json({ success: true, data: updatedTask });
+    });
   }
 );
 
@@ -530,54 +485,49 @@ tasksRouter.post(
   async (c) => {
     const userId = c.get("userId");
     const { id } = c.req.valid("param");
-    const db = getDb();
+    return withTimerTransition(getDb(), userId, async (db, publishEvent) => {
 
-    const [existing] = await db
-      .select()
-      .from(tasks)
-      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
-      .limit(1);
-    if (!existing) throw new NotFoundError("Task", id);
+      const [existing] = await db
+        .select()
+        .from(tasks)
+        .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+        .limit(1);
+      if (!existing) throw new NotFoundError("Task", id);
 
-    // Auto-stop timer if running
-    const updateData: Record<string, unknown> = {
-      completedAt: new Date(),
-      updatedAt: new Date(),
-    };
+      // Auto-stop timer if running
+      const updateData: Record<string, unknown> = {
+        completedAt: new Date(),
+        updatedAt: new Date(),
+      };
 
-    if (existing.timerStartedAt) {
-      const elapsed = Math.floor(
-        (Date.now() - existing.timerStartedAt.getTime()) / 1000
-      );
-      const totalSeconds = existing.timerAccumulatedSeconds + elapsed;
-      const actualMins = Math.ceil(totalSeconds / 60);
+      await stopSubtaskTimers(db, userId, { taskId: id });
+      if (existing.timerStartedAt) {
+        const fields = stopTimerFields(existing);
+        Object.assign(updateData, fields);
 
-      updateData.actualMins = actualMins;
-      updateData.timerStartedAt = null;
-      updateData.timerAccumulatedSeconds = 0;
+        // Broadcast timer:stopped before task:completed
+        publishEvent(userId, "timer:stopped", {
+          taskId: id,
+          actualMins: fields.actualMins,
+        });
+      }
 
-      // Broadcast timer:stopped before task:completed
-      publishEvent(userId, "timer:stopped", {
-        taskId: id,
-        actualMins,
-      });
-    }
+      const [updatedTask] = await db
+        .update(tasks)
+        .set(updateData)
+        .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
+        .returning();
 
-    const [updatedTask] = await db
-      .update(tasks)
-      .set(updateData)
-      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
-      .returning();
+      // Publish realtime event (fire and forget)
+      if (updatedTask) {
+        publishEvent(userId, "task:completed", {
+          taskId: updatedTask.id,
+          scheduledDate: updatedTask.scheduledDate,
+        });
+      }
 
-    // Publish realtime event (fire and forget)
-    if (updatedTask) {
-      publishEvent(userId, "task:completed", {
-        taskId: updatedTask.id,
-        scheduledDate: updatedTask.scheduledDate,
-      });
-    }
-
-    return c.json({ success: true, data: updatedTask });
+      return c.json({ success: true, data: updatedTask });
+    });
   }
 );
 
@@ -629,6 +579,12 @@ tasksRouter.post(
     const isBacklog = date === "backlog";
     const targetDate = isBacklog ? null : date;
 
+    // Tasks arriving from another day bring their time blocks along.
+    const previousDays = await db
+      .select({ taskId: tasks.id, from: tasks.scheduledDate })
+      .from(tasks)
+      .where(and(inArray(tasks.id, taskIds), eq(tasks.userId, userId)));
+
     // Update each task with new position and scheduled date
     // This handles both reordering within a date AND moving tasks between dates
     await Promise.all(
@@ -643,6 +599,9 @@ tasksRouter.post(
           .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
       )
     );
+
+    const movedBlocks = await moveBlocksWithTasks(userId, previousDays, targetDate);
+    if (movedBlocks > 0) publishEvent(userId, "timeblock:updated", { date });
 
     // Fetch all tasks for the target date
     const dateCondition = isBacklog
@@ -698,7 +657,7 @@ tasksRouter.get("/rollover/debug", requireScopes("tasks:read"), async (c) => {
     .limit(10);
 
   // Get PG Boss schedule and job info
-  let pgBossInfo: Record<string, unknown> = {};
+  let pgBossInfo: Record<string, unknown>;
   try {
     const boss = await getPgBoss();
 

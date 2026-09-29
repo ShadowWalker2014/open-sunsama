@@ -94,7 +94,7 @@ export function calculateCascadeShifts(
     const blockDuration = blockEndMinutes - blockStartMinutes;
 
     // Calculate the original gap between this block and the previous one
-    let originalGap = 0;
+    let originalGap: number;
     if (i === 0) {
       // Gap from the target block's ORIGINAL end to this block's start
       originalGap = Math.max(0, blockStartMinutes - originalEndMinutes);

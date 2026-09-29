@@ -33,7 +33,7 @@ export function PrioritySelector({ priority, onChange }: PrioritySelectorProps) 
             <span>{PRIORITY_LABELS[priority]}</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-36">
+        <DropdownMenuContent align="start" className="w-44">
           {PRIORITIES.map((p) => (
             <DropdownMenuItem
               key={p}
@@ -68,7 +68,7 @@ export function InlinePrioritySelector({ priority, onChange }: InlinePrioritySel
           <span>{PRIORITY_LABELS[priority]}</span>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-32">
+      <DropdownMenuContent align="start" className="w-44">
         {PRIORITIES.map((p) => (
           <DropdownMenuItem
             key={p}

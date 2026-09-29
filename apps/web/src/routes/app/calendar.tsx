@@ -1,3 +1,4 @@
+import type { CalendarCreateAnchor } from "@/hooks/useDragToCreate";
 import * as React from "react";
 import { useSearch } from "@tanstack/react-router";
 import type { Task, TimeBlock } from "@open-sunsama/types";
@@ -34,6 +35,7 @@ export default function CalendarPage() {
   const [timeBlockSheetOpen, setTimeBlockSheetOpen] = React.useState(false);
   
   // Create time block dialog state
+  const [createAnchor, setCreateAnchor] = React.useState<CalendarCreateAnchor>();
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [createDialogDate, setCreateDialogDate] = React.useState<Date>(new Date());
   const [createDialogStartTime, setCreateDialogStartTime] = React.useState<Date>(new Date());
@@ -90,7 +92,8 @@ export default function CalendarPage() {
     }
   };
 
-  const handleTimeSlotClick = (date: Date, startTime: Date, endTime: Date) => {
+  const handleTimeSlotClick = (date: Date, startTime: Date, endTime: Date, anchor?: CalendarCreateAnchor) => {
+    setCreateAnchor(anchor);
     setCreateDialogDate(date);
     setCreateDialogStartTime(startTime);
     setCreateDialogEndTime(endTime);
@@ -122,6 +125,7 @@ export default function CalendarPage() {
           onOpenChange={handleTimeBlockSheetOpenChange}
         />
         <CreateTimeBlockDialog
+        anchor={createAnchor}
           open={createDialogOpen}
           onOpenChange={setCreateDialogOpen}
           date={createDialogDate}
@@ -133,7 +137,7 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-3.5rem)]">
+    <div className="h-full">
       <CalendarView
         initialDate={initialDate}
         onTaskClick={handleTaskClick}
@@ -159,6 +163,7 @@ export default function CalendarPage() {
 
       {/* Create Time Block Dialog */}
       <CreateTimeBlockDialog
+        anchor={createAnchor}
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
         date={createDialogDate}

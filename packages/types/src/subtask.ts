@@ -23,6 +23,18 @@ export interface Subtask {
   /** Position of the subtask for ordering purposes */
   position: number;
 
+  /** Planned minutes, or null when not planned */
+  estimatedMins: number | null;
+
+  /** Minutes logged, rounded up, or null when none */
+  actualMins: number | null;
+
+  /** When the running timer started, or null when it is not running */
+  timerStartedAt: string | Date | null;
+
+  /** Seconds logged before the current run (exact, unlike actualMins) */
+  timerAccumulatedSeconds: number;
+
   /** Timestamp when the subtask was created */
   createdAt: string;
 
@@ -57,6 +69,12 @@ export interface UpdateSubtaskInput {
 
   /** Updated position for ordering */
   position?: number;
+
+  /** Planned minutes; null clears it */
+  estimatedMins?: number | null;
+
+  /** Logged minutes; null clears it */
+  actualMins?: number | null;
 }
 
 /**

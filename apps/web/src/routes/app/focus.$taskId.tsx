@@ -13,13 +13,17 @@ import {
 import {
   FocusTimer,
   FocusSubtasks,
-  FocusNotes,
   CalendarSidebar,
 } from "@/components/focus";
+import { NotesField } from "@/components/ui/notes-field";
+import { WithShortcut } from "@/components/ui/with-shortcut";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { PriorityIcon, PRIORITY_META } from "@/components/ui/priority-badge";
+import { PriorityMenu } from "@/components/kanban/priority-menu";
+import { SubtaskSizeContext } from "@/components/kanban/subtask-size";
 import type { FocusTimerRef } from "@/components/focus/focus-timer";
-import { shouldIgnoreShortcut } from "@/hooks/useKeyboardShortcuts";
+import { shouldIgnoreShortcut, matchesTimeEditShortcut } from "@/hooks/useKeyboardShortcuts";
 import { cn } from "@/lib/utils";
-import { InlinePrioritySelector } from "@/components/kanban/priority-selector";
 import { TaskSeriesBanner } from "@/components/kanban/task-series-banner";
 import { toast } from "@/hooks/use-toast";
 import type { TaskPriority } from "@open-sunsama/types";
@@ -39,6 +43,7 @@ export default function FocusPage() {
   const [isCalendarOpen, setIsCalendarOpen] = React.useState(false);
   const [wasCompleted, setWasCompleted] = React.useState(false);
   const [editingTitle, setEditingTitle] = React.useState(false);
+  const [priorityOpen, setPriorityOpen] = React.useState(false);
   const [titleValue, setTitleValue] = React.useState("");
   const titleInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -137,7 +142,7 @@ export default function FocusPage() {
       // Check if we should ignore (typing in input/textarea)
       if (shouldIgnoreShortcut(e)) return;
 
-      // Esc to close focus mode
+      // Esc to close focus mode (popovers and menus keep their own Escape)
       if (e.key === "Escape") {
         goBack();
         return;
@@ -146,6 +151,7 @@ export default function FocusPage() {
       // Space to toggle timer
       if (
         (e.key === " " || e.code === "Space") &&
+        !e.repeat &&
         !e.shiftKey &&
         !e.ctrlKey &&
         !e.metaKey &&
@@ -156,8 +162,8 @@ export default function FocusPage() {
         return;
       }
 
-      // E to edit actual time (only when timer is not running)
-      if (e.key === "e" || e.key === "E") {
+      // W to edit actual time (only when timer is not running)
+      if (matchesTimeEditShortcut(e, "actual")) {
         if (!timerRef.current?.isRunning) {
           e.preventDefault();
           timerRef.current?.openActualTimeDropdown();
@@ -165,8 +171,8 @@ export default function FocusPage() {
         return;
       }
 
-      // W to edit planned time
-      if (e.key === "w" || e.key === "W") {
+      // E to edit planned time
+      if (matchesTimeEditShortcut(e, "planned")) {
         e.preventDefault();
         timerRef.current?.openPlannedTimeDropdown();
         return;
@@ -306,168 +312,172 @@ export default function FocusPage() {
 
   const isCompleted = !!task.completedAt;
 
+  const scheduled = task.scheduledDate
+    ? parse(task.scheduledDate, "yyyy-MM-dd", new Date())
+    : null;
+
   return (
-    <div className="fixed inset-0 z-50 bg-background overflow-auto">
-      {/* Top bar - minimal */}
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border/50">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 h-12 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 overflow-auto bg-surface">
+      {/* Top bar: back on the left, actions on the right, no chrome. */}
+      <div className="sticky top-0 z-10 flex h-14 items-center justify-between bg-surface/90 px-4 backdrop-blur-sm sm:px-6">
+        <WithShortcut label="Back" keys={["Esc"]} side="bottom">
           <button
             onClick={handleClose}
-            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className="flex h-8 items-center gap-1.5 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            <span>Back</span>
+            <ArrowLeft className="h-4 w-4" />
+            Back
           </button>
-          <div className="flex items-center gap-0.5">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer">
-                  <MoreHorizontal className="h-4 w-4" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onSelect={handleDuplicate}>
-                  <Copy className="mr-2 h-4 w-4" />
-                  Duplicate
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onSelect={handleDelete}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+        </WithShortcut>
+        <div className="flex items-center gap-0.5">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                aria-label="More actions"
+                className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={handleDuplicate}>
+                <Copy className="mr-2 h-4 w-4" />
+                Duplicate
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={handleDelete}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <WithShortcut label="Close" keys={["Esc"]} side="bottom">
             <button
               onClick={handleClose}
-              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
+              aria-label="Close focus mode"
+              className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
               <X className="h-4 w-4" />
             </button>
-          </div>
+          </WithShortcut>
         </div>
       </div>
 
-      {/* Main content. The top bar is sticky (in-flow), so only a little
-          breathing room is needed below it — not a big empty gap. */}
-      <div className="mx-auto max-w-3xl px-4 pt-5 pb-10 sm:px-6 sm:pt-10 sm:pb-12">
-        {/* Task header — title gets a full row on mobile; the timer drops
-            below it instead of squeezing the title on the same line. */}
-        <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-          {/* Checkbox + title */}
-          <div className="flex min-w-0 flex-1 items-start gap-3 sm:items-center sm:gap-4">
-          {/* Checkbox */}
-          <button
-            onClick={handleToggleComplete}
-            className={cn(
-              "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-all cursor-pointer",
-              isCompleted
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-muted-foreground/30 hover:border-primary"
-            )}
-          >
-            {isCompleted && <Check className="h-3.5 w-3.5" strokeWidth={2.5} />}
-          </button>
-
-          {/* Title — click to edit */}
-          {editingTitle ? (
-            <input
-              ref={titleInputRef}
-              type="text"
-              value={titleValue}
-              onChange={(e) => setTitleValue(e.target.value)}
-              onBlur={handleTitleSave}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleTitleSave();
-                if (e.key === "Escape") {
-                  setTitleValue(task.title);
-                  setEditingTitle(false);
-                }
-              }}
-              autoFocus
-              className={cn(
-                "flex-1 text-xl sm:text-2xl font-semibold bg-transparent border-none outline-none tracking-tight",
-                "focus:ring-0 placeholder:text-muted-foreground/50",
-                isCompleted && "line-through text-muted-foreground"
-              )}
-              placeholder="Task title..."
-            />
-          ) : (
-            <h1
-              onClick={() => !isCompleted && setEditingTitle(true)}
-              className={cn(
-                "flex-1 text-xl sm:text-2xl font-semibold leading-tight cursor-text tracking-tight",
-                isCompleted && "line-through text-muted-foreground"
-              )}
+      <div className="mx-auto max-w-4xl px-5 pb-16 pt-6 sm:px-10 sm:pt-[10vh]">
+        {/* Title with the timer on the right, as in Sunsama's focus mode. */}
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex min-w-0 flex-1 items-start gap-3">
+            <WithShortcut
+              label={isCompleted ? "Mark incomplete" : "Complete task"}
+              shortcut="completeTask"
             >
-              {task.title}
-            </h1>
-          )}
+              <button
+                onClick={handleToggleComplete}
+                role="checkbox"
+                aria-checked={isCompleted}
+                aria-label={isCompleted ? "Mark incomplete" : "Complete task"}
+                className={cn(
+                  "mt-1.5 flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full border-[1.5px] transition-all active:scale-90",
+                  isCompleted
+                    ? "border-emerald-500 bg-emerald-500 text-white"
+                    : "border-muted-foreground/40 text-muted-foreground/40 hover:border-emerald-500 hover:text-emerald-500"
+                )}
+              >
+                <Check className="h-3.5 w-3.5" strokeWidth={3} />
+              </button>
+            </WithShortcut>
 
+            {editingTitle ? (
+              <input
+                ref={titleInputRef}
+                type="text"
+                value={titleValue}
+                onChange={(e) => setTitleValue(e.target.value)}
+                onBlur={handleTitleSave}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleTitleSave();
+                  if (e.key === "Escape") {
+                    setTitleValue(task.title);
+                    setEditingTitle(false);
+                  }
+                }}
+                autoFocus
+                data-escape-local="true"
+                aria-label="Task title"
+                className="min-w-0 flex-1 border-none bg-transparent text-[28px] font-medium leading-10 tracking-tight outline-none focus:ring-0 sm:text-[34px]"
+              />
+            ) : (
+              <h1
+                onClick={() => !isCompleted && setEditingTitle(true)}
+                className={cn(
+                  "min-w-0 flex-1 cursor-text break-words text-[28px] font-medium leading-10 tracking-tight sm:text-[34px]",
+                  isCompleted && "text-muted-foreground line-through"
+                )}
+              >
+                {task.title}
+              </h1>
+            )}
           </div>
-          {/* Timer — beside the title on desktop, on its own row on mobile */}
-          <div className="shrink-0">
-          <FocusTimer
-            taskId={task.id}
-            plannedMins={task.estimatedMins}
-            actualMins={task.actualMins ?? null}
-            onActualMinsChange={handleActualMinsChange}
-            onPlannedMinsChange={handlePlannedMinsChange}
-            timerRef={timerRef}
-            compact
-          />
+
+          <div className="pl-[38px] sm:pl-0">
+            <FocusTimer
+              task={task}
+              onActualMinsChange={handleActualMinsChange}
+              onPlannedMinsChange={handlePlannedMinsChange}
+              timerRef={timerRef}
+            />
           </div>
         </div>
 
-        {/* Metadata — priority · date */}
-        <div className="flex items-center gap-1 mb-6">
-          <InlinePrioritySelector
-            priority={task.priority}
-            onChange={handlePriorityChange}
-          />
-          {task.scheduledDate && (
-            <>
-              <div className="w-px h-3.5 bg-border/60 mx-1" />
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Calendar className="h-3.5 w-3.5 text-muted-foreground/60" />
-                <span>{format(parse(task.scheduledDate, "yyyy-MM-dd", new Date()), "EEE, MMM d")}</span>
-              </div>
-            </>
+        {/* Quiet details under the title: priority and day. */}
+        <div className="mt-2 flex items-center gap-1 pl-[30px] text-sm text-muted-foreground">
+          <Popover open={priorityOpen} onOpenChange={setPriorityOpen}>
+            <PopoverTrigger asChild>
+              <button className="flex items-center gap-1.5 rounded-md px-2 py-1 transition-colors hover:bg-accent hover:text-foreground">
+                <PriorityIcon priority={task.priority} />
+                {task.priority} {PRIORITY_META[task.priority].description}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <PriorityMenu
+                value={task.priority}
+                onChange={(p) => {
+                  handlePriorityChange(p);
+                  setPriorityOpen(false);
+                }}
+              />
+            </PopoverContent>
+          </Popover>
+          {scheduled && (
+            <span className="flex items-center gap-1.5 px-2 py-1">
+              <Calendar className="h-3.5 w-3.5" />
+              {format(scheduled, "EEE, MMM d")}
+            </span>
           )}
         </div>
 
-        {/* Series banner for recurring tasks */}
         {task.seriesId && (
-          <div className="mb-6">
+          <div className="mt-4 pl-[38px]">
             <TaskSeriesBanner task={task} />
           </div>
         )}
 
-        {/* Subtasks section */}
-        <div className="mb-8">
-          <FocusSubtasks taskId={task.id} />
-        </div>
+        <SubtaskSizeContext.Provider value="lg">
+          <div className="mt-5 pl-[3px]">
+            <FocusSubtasks taskId={task.id} />
+          </div>
+        </SubtaskSizeContext.Provider>
 
-        {/* Notes section */}
-        <div className="mb-12">
-          <FocusNotes notes={notes} onChange={handleNotesChange} />
-        </div>
-
-        {/* Keyboard hints */}
-        <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground/50">
-          <span>
-            <kbd className="px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground">
-              Space
-            </kbd>{" "}
-            timer
-          </span>
-          <span>
-            <kbd className="px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground">
-              Esc
-            </kbd>{" "}
-            close
-          </span>
+        <div className="mt-8 pl-[30px]">
+          <NotesField
+            notes={notes}
+            onChange={handleNotesChange}
+            onBlur={() => undefined}
+            placeholder="Notes…"
+            minHeight="160px"
+          />
         </div>
       </div>
 

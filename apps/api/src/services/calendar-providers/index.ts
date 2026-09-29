@@ -26,6 +26,20 @@ export interface ExternalEvent {
   responseStatus: 'accepted' | 'declined' | 'tentative' | 'needsAction' | null;
   htmlLink: string | null;
   etag: string | null;
+  /** Guests, or null when the provider doesn't report them. */
+  attendees: ExternalAttendee[] | null;
+  /** Video call join URL (Google Meet, Teams, Zoom), if any. */
+  conferenceUrl: string | null;
+}
+
+export type RsvpResponse = 'accepted' | 'declined' | 'tentative';
+
+export interface ExternalAttendee {
+  email: string;
+  name: string | null;
+  responseStatus: 'accepted' | 'declined' | 'tentative' | 'needsAction' | null;
+  organizer: boolean;
+  self: boolean;
 }
 
 export interface SyncOptions {
@@ -116,6 +130,17 @@ export interface CalendarProvider {
     eventExternalId: string,
     extras?: { eventUrl?: string | null; etag?: string | null }
   ): Promise<void>;
+  /**
+   * Answer an invitation as the connected account (going, maybe, not
+   * going). The organizer is notified the same way the provider's own
+   * app would notify them. Returns the event after the change.
+   */
+  respondToEvent?(
+    accessToken: string,
+    calendarExternalId: string,
+    eventExternalId: string,
+    response: RsvpResponse
+  ): Promise<ExternalEvent>;
 }
 
 /**
