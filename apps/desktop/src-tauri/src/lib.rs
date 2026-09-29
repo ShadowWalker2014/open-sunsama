@@ -1,5 +1,6 @@
 mod commands;
 mod menu;
+mod recovery;
 mod tray;
 
 use tauri::{Emitter, Manager};
@@ -39,8 +40,9 @@ pub fn run() {
             // Set up menu
             menu::create_menu(app)?;
 
-            // Register global shortcuts
-            register_global_shortcuts(app)?;
+            // Register global shortcuts. Another app may already own a key
+            // combination; that must not stop the app from starting.
+            register_global_shortcuts(app);
 
             Ok(())
         })
@@ -52,20 +54,41 @@ pub fn run() {
             commands::set_settings,
             commands::is_desktop,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|app, event| match event {
+            // An updater restart launches the executable directly. macOS can
+            // leave that process behind other apps unless we activate it once
+            // the event loop and main window are ready.
+            tauri::RunEvent::Ready => show_main_window(app),
+            #[cfg(target_os = "macos")]
+            tauri::RunEvent::Reopen { .. } => show_main_window(app),
+            _ => {}
+        });
 }
 
-fn register_global_shortcuts(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
-    let shortcut_toggle = Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyO);
-    let shortcut_new_task = Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyT);
-    let shortcut_focus = Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyF);
+fn show_main_window(app: &tauri::AppHandle) {
+    #[cfg(target_os = "macos")]
+    if let Err(error) = app.show() {
+        eprintln!("Failed to show application: {error}");
+    }
+    if let Some(window) = app.get_webview_window("main") {
+        bring_to_front(&window);
+    }
+}
 
-    app.global_shortcut().register(shortcut_toggle)?;
-    app.global_shortcut().register(shortcut_new_task)?;
-    app.global_shortcut().register(shortcut_focus)?;
+fn register_global_shortcuts(app: &tauri::App) {
+    let shortcuts = [
+        Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyO),
+        Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyT),
+        Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyF),
+    ];
 
-    Ok(())
+    for shortcut in shortcuts {
+        if let Err(error) = app.global_shortcut().register(shortcut) {
+            eprintln!("Failed to register global shortcut {shortcut:?}: {error}");
+        }
+    }
 }
 
 fn handle_global_shortcut(app: &tauri::AppHandle, shortcut: &Shortcut) {
@@ -84,16 +107,22 @@ fn handle_global_shortcut(app: &tauri::AppHandle, shortcut: &Shortcut) {
             }
         }
     } else if shortcut == &new_task_shortcut {
-        // Show window and emit event to create new task
+        // Bring the window forward, then let the web app open the add-task input
         if let Some(window) = app.get_webview_window("main") {
-            let _ = window.show();
-            let _ = window.set_focus();
+            bring_to_front(&window);
             let _ = window.emit("quick-add-task", ());
         }
     } else if shortcut == &focus_shortcut {
-        // Emit focus mode event
+        // Bring the window forward, then let the web app open focus mode
         if let Some(window) = app.get_webview_window("main") {
+            bring_to_front(&window);
             let _ = window.emit("start-focus-mode", ());
         }
     }
+}
+
+fn bring_to_front(window: &tauri::WebviewWindow) {
+    let _ = window.unminimize();
+    let _ = window.show();
+    let _ = window.set_focus();
 }

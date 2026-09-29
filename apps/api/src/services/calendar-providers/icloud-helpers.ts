@@ -353,6 +353,9 @@ function buildExternalEventFromComponent(
     // "Reset & re-sync" to repopulate.
     htmlLink: obj.url ?? null,
     etag,
+    // CalDAV ATTENDEE lines aren't parsed yet.
+    attendees: null,
+    conferenceUrl: null,
   };
 }
 

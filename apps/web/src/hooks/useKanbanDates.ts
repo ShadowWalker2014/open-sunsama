@@ -1,5 +1,11 @@
 import * as React from "react";
-import { addDays, subDays, startOfDay, isToday, format } from "date-fns";
+import {
+  addDays,
+  subDays,
+  startOfDay,
+  format,
+  differenceInCalendarDays,
+} from "date-fns";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
 // Number of days to show at a time
@@ -26,6 +32,10 @@ export interface UseKanbanDatesReturn {
   navigatePrevious: () => void;
   navigateNext: () => void;
   navigateToToday: () => void;
+  /** Scrolls so the day sits at the left edge, loading its range if needed. */
+  navigateToDate: (date: Date, options?: { instant?: boolean }) => void;
+  /** The day at the left edge right now, read from the scroll position. */
+  getLeadingDate: () => Date | null;
   handleScroll: () => void;
   firstVisibleDate: Date | null;
   lastVisibleDate: Date | null;
@@ -102,24 +112,58 @@ export function useKanbanDates({
     });
   }, [virtualizer.scrollOffset, containerRef]);
 
-  const navigateToToday = React.useCallback(() => {
-    const today = startOfDay(new Date());
-    const todayIndex = dates.findIndex((d) => isToday(d.date));
-    
-    if (todayIndex >= 0) {
-      // Today is in current date range, just scroll to it
-      virtualizer.scrollToIndex(todayIndex, {
-        align: "start",
-        behavior: "smooth",
-      });
-    } else {
-      // Today is NOT in current date range (e.g., stuck far in past/future)
-      // Reset centerDate to today - this regenerates the dates array
-      setCenterDate(today);
-      // Reset initialization tracking so scroll logic is refreshed
-      hasInitializedRef.current = false;
+  // A day outside the loaded range: recenter on it, then put it at the left
+  // edge once its columns exist (see the layout effect below).
+  const pendingDateRef = React.useRef<Date | null>(null);
+
+  const navigateToDate = React.useCallback(
+    (target: Date, options?: { instant?: boolean }) => {
+      const day = startOfDay(target);
+      const key = format(day, "yyyy-MM-dd");
+      const index = dates.findIndex((d) => d.dateString === key);
+      if (index >= 0 && options?.instant && containerRef.current) {
+        containerRef.current.scrollLeft = index * COLUMN_WIDTH;
+      } else if (index >= 0) {
+        virtualizer.scrollToIndex(index, { align: "start", behavior: "smooth" });
+      } else {
+        pendingDateRef.current = day;
+        setCenterDate(day);
+      }
+    },
+    [dates, virtualizer, containerRef]
+  );
+
+  const getLeadingDate = React.useCallback(() => {
+    const left = containerRef.current?.scrollLeft;
+    if (left === undefined) return null;
+    return dates[Math.round(left / COLUMN_WIDTH)]?.date ?? null;
+  }, [dates, containerRef]);
+
+  const navigateToToday = React.useCallback(
+    () => navigateToDate(new Date()),
+    [navigateToDate]
+  );
+
+  // When the loaded range moves, the same scroll position would show other
+  // days. Shift the scroll by the same number of columns so the view stays
+  // put, or land on the day someone asked to go to.
+  const prevCenterRef = React.useRef(centerDate);
+  React.useLayoutEffect(() => {
+    const container = containerRef.current;
+    const shiftDays = differenceInCalendarDays(prevCenterRef.current, centerDate);
+    prevCenterRef.current = centerDate;
+    if (!container) return;
+    const pending = pendingDateRef.current;
+    if (pending) {
+      pendingDateRef.current = null;
+      const index = dates.findIndex(
+        (d) => d.dateString === format(pending, "yyyy-MM-dd")
+      );
+      if (index >= 0) container.scrollLeft = index * COLUMN_WIDTH;
+      return;
     }
-  }, [dates, virtualizer]);
+    if (shiftDays) container.scrollLeft += shiftDays * COLUMN_WIDTH;
+  }, [centerDate, dates, containerRef]);
 
   // Load more days when scrolling near edges
   // Skip during drag and before initial render to prevent unwanted navigation
@@ -161,6 +205,8 @@ export function useKanbanDates({
     navigatePrevious,
     navigateNext,
     navigateToToday,
+    navigateToDate,
+    getLeadingDate,
     handleScroll,
     firstVisibleDate,
     lastVisibleDate,

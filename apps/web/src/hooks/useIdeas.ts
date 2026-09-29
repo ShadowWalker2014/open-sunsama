@@ -545,14 +545,12 @@ export function useReorderIdeas(boardId: string | undefined) {
       });
     },
     onSettled: () => {
-      if (boardId) {
-        queryClient.invalidateQueries({ queryKey: ideaKeys.byBoard(boardId) });
-      }
+      queryClient.invalidateQueries({ queryKey: boardId ? ideaKeys.byBoard(boardId) : ideaKeys.lists() });
     },
   });
 }
 
-export function usePromoteIdea(boardId: string | undefined) {
+export function usePromoteIdea(_boardId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
@@ -566,9 +564,9 @@ export function usePromoteIdea(boardId: string | undefined) {
       return await api.ideas.promote(id, input);
     },
     onSuccess: (result) => {
-      if (boardId) {
+      if (result.idea.boardId) {
         // Reflect the new promotedTaskId on the card.
-        queryClient.setQueryData<Idea[]>(ideaKeys.byBoard(boardId), (old) =>
+        queryClient.setQueryData<Idea[]>(ideaKeys.byBoard(result.idea.boardId), (old) =>
           (old ?? []).map((i) => (i.id === result.idea.id ? result.idea : i))
         );
       }
@@ -593,5 +591,17 @@ export function usePromoteIdea(boardId: string | undefined) {
         description: error instanceof Error ? error.message : "Unknown error",
       });
     },
+  });
+}
+
+export function useSaveTaskAsIdea() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {taskId:string; boardId:string; columnId:string}) => getApi().ideas.fromTask(input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({queryKey:ideaKeys.all});
+      toast({title:"Saved to Ideas",description:"The idea links to your existing task."});
+    },
+    onError: (error) => toast({variant:"destructive",title:"Could not save idea",description:error.message}),
   });
 }

@@ -1,3 +1,4 @@
+import type { CalendarCreateAnchor } from "@/hooks/useDragToCreate";
 import * as React from "react";
 import {
   format,
@@ -7,6 +8,7 @@ import {
   isToday,
   isWeekend,
   differenceInMinutes,
+  addMinutes,
 } from "date-fns";
 import type { CalendarEvent, TimeBlock } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
@@ -16,12 +18,21 @@ import {
   TIMELINE_START_HOUR,
   TIMELINE_END_HOUR,
   calculateYFromTime,
+  calculateTimeFromY,
+  snapToInterval,
 } from "@/hooks/useCalendarDnd";
 import { layoutOverlappingItems, type LayoutResult } from "./event-layout";
-import {
+import { useDragToCreate } from "@/hooks/useDragToCreate";
+import type {
+  EventDragMode,
   useMultiDayEventDrag,
-  type EventDragMode,
 } from "./multi-day-event-drag";
+
+/** Drag controller shared with the parent so tasks can be dragged in. */
+export type MultiDayDrag = ReturnType<typeof useMultiDayEventDrag>;
+
+/** Drag ids for time blocks carry this prefix; event ids are bare. */
+export const BLOCK_DRAG_PREFIX = "block:";
 
 /**
  * When N items overlap we split the column into N sub-columns, but we
@@ -48,18 +59,18 @@ interface MultiDayViewProps {
   isLoading?: boolean;
   onExternalEventClick?: (event: CalendarEvent) => void;
   onBlockClick?: (block: TimeBlock) => void;
-  /**
-   * Fired after the user drops an external event at a new time on the
-   * same day (no cross-column drag). The parent translates this into
-   * a PATCH /calendar-events/:id via useUpdateCalendarEvent.
-   */
-  onExternalEventReschedule?: (
-    eventId: string,
-    startTime: Date,
-    endTime: Date
-  ) => void;
   /** Editability gate per event — read-only events stay click-only. */
   externalEventCanEdit?: (event: CalendarEvent) => boolean;
+  /**
+   * Drag controller owned by the parent. Its `onCommit` receives event
+   * ids, `block:`-prefixed time block ids, and any ids the parent used
+   * for external drags (tasks dragged in from the list).
+   */
+  drag: MultiDayDrag;
+  /** Whether time blocks can be moved and resized on the grid. */
+  blocksEditable?: boolean;
+  /** Clicking an empty slot starts a one-hour block there. */
+  onTimeSlotClick?: (day: Date, startTime: Date, endTime: Date, anchor?: CalendarCreateAnchor) => void;
   className?: string;
 }
 
@@ -210,8 +221,8 @@ function MultiDayEvent({
         height: `${Math.max(height - 2, 16)}px`,
         left: `${leftPct}%`,
         width: `${widthPct}%`,
-        backgroundColor: hexToRgba(color, 0.12),
-        borderColor: hexToRgba(color, 0.55),
+        backgroundColor: hexToRgba(color, 0.2),
+        borderColor: color,
       }}
       onClick={(e) => {
         e.stopPropagation();
@@ -256,7 +267,7 @@ function MultiDayEvent({
           className="absolute bottom-0 left-0 right-0 h-1 cursor-ns-resize hover:bg-foreground/10 rounded-b"
         />
       )}
-      <p className="truncate text-[10px] font-medium text-foreground/85">
+      <p className="truncate text-[10px] font-medium text-foreground">
         {event.title}
       </p>
       {height >= 28 && (
@@ -282,11 +293,19 @@ function MultiDayBlock({
   displayDate,
   layout,
   onClick,
+  onMouseDownDrag,
+  onMouseDownResize,
+  isDragging = false,
+  justEndedDrag = false,
 }: {
   block: TimeBlock;
   displayDate: Date;
   layout: LayoutResult;
   onClick?: () => void;
+  onMouseDownDrag?: (e: React.MouseEvent) => void;
+  onMouseDownResize?: (e: React.MouseEvent, edge: "top" | "bottom") => void;
+  isDragging?: boolean;
+  justEndedDrag?: boolean;
 }) {
   const startTime = new Date(block.startTime);
   const endTime = new Date(block.endTime);
@@ -301,11 +320,20 @@ function MultiDayBlock({
 
   const widthPct = 100 / layout.columnCount - COLUMN_GAP_PCT;
   const leftPct = (100 / layout.columnCount) * layout.lane;
+  const continuesAcrossDay = startTime < dayStart || endTime > dayEnd;
+  const showResizeHandles = !!onMouseDownResize && !continuesAcrossDay;
 
   return (
     <div
       data-time-block
-      className="absolute z-10 my-0.5 rounded cursor-pointer hover:brightness-90 hover:z-20 transition-all overflow-hidden px-1 py-0.5"
+      className={cn(
+        "absolute z-10 my-0.5 rounded hover:brightness-90 hover:z-20 transition-all overflow-hidden px-1 py-0.5",
+        isDragging
+          ? "cursor-grabbing opacity-50"
+          : onMouseDownDrag
+            ? "cursor-grab"
+            : "cursor-pointer"
+      )}
       style={{
         top: `${top}px`,
         height: `${Math.max(height - 2, 16)}px`,
@@ -316,12 +344,38 @@ function MultiDayBlock({
       }}
       onClick={(e) => {
         e.stopPropagation();
+        if (justEndedDrag) return;
         onClick?.();
+      }}
+      onMouseDown={(e) => {
+        if (!onMouseDownDrag) return;
+        if ((e.target as HTMLElement).dataset.resize) return;
+        onMouseDownDrag(e);
       }}
       role="button"
       tabIndex={0}
       aria-label={`${block.title} at ${format(startTime, "h:mm a")}`}
     >
+      {showResizeHandles && (
+        <div
+          data-resize="top"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            onMouseDownResize?.(e, "top");
+          }}
+          className="absolute top-0 left-0 right-0 h-1 cursor-ns-resize hover:bg-white/20 rounded-t"
+        />
+      )}
+      {showResizeHandles && (
+        <div
+          data-resize="bottom"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            onMouseDownResize?.(e, "bottom");
+          }}
+          className="absolute bottom-0 left-0 right-0 h-1 cursor-ns-resize hover:bg-white/20 rounded-b"
+        />
+      )}
       <p className="truncate text-[10px] font-semibold leading-tight">
         {block.title}
       </p>
@@ -345,19 +399,19 @@ export function MultiDayView({
   isLoading = false,
   onExternalEventClick,
   onBlockClick,
-  onExternalEventReschedule,
   externalEventCanEdit,
+  drag,
+  blocksEditable = false,
+  onTimeSlotClick,
   className,
 }: MultiDayViewProps) {
-  // Per-column drag state. The hook tracks which day was grabbed, so
-  // vertical drag stays scoped to that column. Cross-column drag
-  // (Mon → Wed) is intentionally out of scope — see hook docstring.
-  const drag = useMultiDayEventDrag({
-    onCommit: (eventId, startTime, endTime, _mode: EventDragMode) => {
-      onExternalEventReschedule?.(eventId, startTime, endTime);
-    },
-  });
   const hours = React.useMemo(() => generateHours(), []);
+  // Press and drag on empty space to sweep out a new block.
+  const createDrag = useDragToCreate(
+    onTimeSlotClick
+      ? ({ day, start, end, anchor }) => onTimeSlotClick(day, start, end, anchor)
+      : undefined
+  );
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
   // Tick the now-indicator once per minute so it advances. Without
   // this, `new Date()` was captured at render time and the red line
@@ -654,6 +708,33 @@ export function MultiDayView({
                   // out of the column where the event was grabbed.
                   data-day-column
                   data-day={day.toISOString()}
+                  onClick={(e) => {
+                    if (
+                      !onTimeSlotClick ||
+                      drag.justEndedDrag ||
+                      createDrag.shouldIgnoreClick()
+                    ) {
+                      return;
+                    }
+                    // Clicks on blocks and events, and clicks bubbling up
+                    // from portals such as a block's menu, aren't slot
+                    // clicks.
+                    const target = e.target as HTMLElement;
+                    if (
+                      !e.currentTarget.contains(target) ||
+                      target.closest("[data-time-block]") ||
+                      target.closest("[data-external-event]")
+                    ) {
+                      return;
+                    }
+                    const y =
+                      e.clientY - e.currentTarget.getBoundingClientRect().top;
+                    const start = snapToInterval(
+                      calculateTimeFromY(Math.max(0, y), day)
+                    );
+                    onTimeSlotClick(day, start, addMinutes(start, 60), { x: e.clientX, y: e.clientY });
+                  }}
+                  onMouseDown={(e) => createDrag.startCreate(e, day)}
                   className={cn(
                     "flex-1 relative border-r last:border-r-0 min-w-0",
                     today && "bg-primary/[0.02]",
@@ -702,6 +783,19 @@ export function MultiDayView({
                     const layout =
                       dayLayouts[i]?.get(`block:${block.id}`) ??
                       DEFAULT_LAYOUT;
+                    const dragId = `${BLOCK_DRAG_PREFIX}${block.id}`;
+                    const startBlockDrag = (
+                      mode: EventDragMode,
+                      e: React.MouseEvent
+                    ) =>
+                      drag.startDrag(
+                        dragId,
+                        day,
+                        new Date(block.startTime),
+                        new Date(block.endTime),
+                        mode,
+                        e
+                      );
                     return (
                       <MultiDayBlock
                         key={block.id}
@@ -711,6 +805,24 @@ export function MultiDayView({
                         onClick={
                           onBlockClick ? () => onBlockClick(block) : undefined
                         }
+                        {...(blocksEditable
+                          ? {
+                              onMouseDownDrag: (e: React.MouseEvent) =>
+                                startBlockDrag("move", e),
+                              onMouseDownResize: (
+                                e: React.MouseEvent,
+                                edge: "top" | "bottom"
+                              ) =>
+                                startBlockDrag(
+                                  edge === "top"
+                                    ? "resize-top"
+                                    : "resize-bottom",
+                                  e
+                                ),
+                            }
+                          : {})}
+                        isDragging={drag.dragState?.eventId === dragId}
+                        justEndedDrag={drag.justEndedDrag}
                       />
                     );
                   })}
@@ -736,7 +848,7 @@ export function MultiDayView({
                             : undefined
                         }
                         onMouseDownDrag={
-                          canEdit && onExternalEventReschedule
+                          canEdit
                             ? (e) =>
                                 drag.startDrag(
                                   event.id,
@@ -749,7 +861,7 @@ export function MultiDayView({
                             : undefined
                         }
                         onMouseDownResize={
-                          canEdit && onExternalEventReschedule
+                          canEdit
                             ? (e, edge) =>
                                 drag.startDrag(
                                   event.id,
@@ -768,6 +880,29 @@ export function MultiDayView({
                       />
                     );
                   })}
+
+                  {/* Block being swept out by a drag on empty space */}
+                  {createDrag.range &&
+                    isSameDay(createDrag.range.day, day) && (
+                      <div
+                        className="absolute inset-x-1 z-30 rounded border-2 border-dashed border-primary bg-primary/10 pointer-events-none px-1.5 py-0.5"
+                        style={{
+                          top: `${calculateYFromTime(createDrag.range.start)}px`,
+                          height: `${Math.max(
+                            ((createDrag.range.end.getTime() -
+                              createDrag.range.start.getTime()) /
+                              3_600_000) *
+                              HOUR_HEIGHT,
+                            16
+                          )}px`,
+                        }}
+                      >
+                        <span className="text-[10px] font-semibold text-primary">
+                          {format(createDrag.range.start, "h:mm")} –{" "}
+                          {format(createDrag.range.end, "h:mm a")}
+                        </span>
+                      </div>
+                    )}
 
                   {/* Live drop preview while this column owns the
                       active drag — a dashed outline at the new

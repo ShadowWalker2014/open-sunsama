@@ -1,46 +1,57 @@
 import * as React from "react";
+import { startOfDay } from "date-fns";
 import { MobileTaskListView } from "./task-list-view";
 import { MobileBoardView } from "./mobile-board-view";
 import type { MobileTasksViewMode } from "./mobile-view-controls";
 import { useSortPreference } from "@/components/kanban/kanban-board-toolbar";
+import { prefetchTaskModal } from "@/components/kanban/task-modal.lazy";
 
 const VIEW_MODE_KEY = "open-sunsama-mobile-tasks-view";
 
 /**
- * The mobile Tasks tab. Owns the two things the phone layout was missing —
- * the list/board switch and the sort order — and hands them to whichever view
- * is showing. The sort preference is the same DB-free localStorage preference
- * the desktop board uses, so switching devices keeps the chosen order.
+ * The mobile Tasks tab. Owns the list/board switch, the sort order and the
+ * selected day, so switching views keeps you on the same date.
  */
 export function MobileTasksView() {
+  // The board, like desktop, unless this device chose the list.
   const [viewMode, setViewMode] = React.useState<MobileTasksViewMode>(() => {
-    if (typeof window === "undefined") return "list";
-    return localStorage.getItem(VIEW_MODE_KEY) === "board" ? "board" : "list";
+    if (typeof window === "undefined") return "board";
+    try {
+      return localStorage.getItem(VIEW_MODE_KEY) === "list" ? "list" : "board";
+    } catch {
+      return "board";
+    }
   });
   const [sortBy, setSortBy] = useSortPreference();
+  const [selectedDate, setSelectedDate] = React.useState(() => startOfDay(new Date()));
 
   const changeViewMode = React.useCallback((mode: MobileTasksViewMode) => {
     setViewMode(mode);
-    localStorage.setItem(VIEW_MODE_KEY, mode);
+    try {
+      localStorage.setItem(VIEW_MODE_KEY, mode);
+    } catch {
+      // Private mode: the choice lasts for this visit.
+    }
   }, []);
 
-  if (viewMode === "board") {
-    return (
-      <MobileBoardView
-        viewMode={viewMode}
-        onViewModeChange={changeViewMode}
-        sortBy={sortBy}
-        onSortChange={setSortBy}
-      />
-    );
-  }
+  // Load the task sheet up front: iOS only raises the keyboard for a focus
+  // that happens inside the tap, which a chunk download would break.
+  React.useEffect(() => {
+    void prefetchTaskModal();
+  }, []);
 
-  return (
-    <MobileTaskListView
-      viewMode={viewMode}
-      onViewModeChange={changeViewMode}
-      sortBy={sortBy}
-      onSortChange={setSortBy}
-    />
+  const shared = {
+    selectedDate,
+    onSelectDate: setSelectedDate,
+    viewMode,
+    onViewModeChange: changeViewMode,
+    sortBy,
+    onSortChange: setSortBy,
+  };
+
+  return viewMode === "board" ? (
+    <MobileBoardView {...shared} />
+  ) : (
+    <MobileTaskListView {...shared} />
   );
 }

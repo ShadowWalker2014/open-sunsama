@@ -25,6 +25,8 @@ import {
   subtaskIdParamSchema,
 } from '../validation/subtasks.js';
 import { publishEvent } from '../lib/websocket/index.js';
+import { stopTimerFields } from '../lib/timer.js';
+import { startSubtaskTimer, stopSubtaskTimer, withTimerTransition } from '../lib/timer-service.js';
 
 const subtasksRouter = new Hono<{ Variables: AuthVariables }>();
 subtasksRouter.use('*', auth);
@@ -32,7 +34,7 @@ subtasksRouter.use('*', auth);
 /**
  * Helper function to verify task ownership
  */
-async function verifyTaskOwnership(db: ReturnType<typeof getDb>, taskId: string, userId: string) {
+async function verifyTaskOwnership(db: Pick<ReturnType<typeof getDb>, "select">, taskId: string, userId: string) {
   const [task] = await db.select().from(tasks).where(and(eq(tasks.id, taskId), eq(tasks.userId, userId))).limit(1);
   if (!task) throw new NotFoundError('Task', taskId);
   return task;
@@ -174,39 +176,110 @@ subtasksRouter.patch(
     const userId = c.get('userId');
     const { taskId, id } = c.req.valid('param');
     const updates = c.req.valid('json');
-    const db = getDb();
+    return withTimerTransition(getDb(), userId, async (db, publishEvent) => {
 
-    // Verify task ownership
-    await verifyTaskOwnership(db, taskId, userId);
+      // Verify task ownership
+      await verifyTaskOwnership(db, taskId, userId);
 
-    // Verify subtask exists and belongs to task
-    const [existing] = await db
-      .select()
-      .from(subtasks)
-      .where(and(eq(subtasks.id, id), eq(subtasks.taskId, taskId)))
-      .limit(1);
-    if (!existing) throw new NotFoundError('Subtask', id);
+      // Verify subtask exists and belongs to task
+      const [existing] = await db
+        .select()
+        .from(subtasks)
+        .where(and(eq(subtasks.id, id), eq(subtasks.taskId, taskId)))
+        .limit(1);
+      if (!existing) throw new NotFoundError('Subtask', id);
 
-    const updateData: Record<string, unknown> = { updatedAt: new Date() };
-    if (updates.title !== undefined) updateData.title = updates.title;
-    if (updates.completed !== undefined) updateData.completed = updates.completed;
-    if (updates.position !== undefined) updateData.position = updates.position;
+      const updateData: Record<string, unknown> = { updatedAt: new Date() };
+      if (updates.title !== undefined) updateData.title = updates.title;
+      if (updates.completed !== undefined) updateData.completed = updates.completed;
+      if (updates.position !== undefined) updateData.position = updates.position;
+      if (updates.estimatedMins !== undefined) updateData.estimatedMins = updates.estimatedMins;
+      if (updates.actualMins !== undefined) {
+        // A typed actual time replaces what the timer logged; a running timer
+        // carries on from it.
+        updateData.actualMins = updates.actualMins;
+        updateData.timerAccumulatedSeconds = (updates.actualMins ?? 0) * 60;
+        if (existing.timerStartedAt) updateData.timerStartedAt = new Date();
+      }
+      // Ticking off a subtask stops its timer; the task's keeps running so
+      // the next subtask can pick up where this one ended.
+      if (updates.completed && existing.timerStartedAt) {
+        if (updates.actualMins === undefined) Object.assign(updateData, stopTimerFields(existing));
+        else updateData.timerStartedAt = null;
+      }
 
-    const [updatedSubtask] = await db
-      .update(subtasks)
-      .set(updateData)
-      .where(and(eq(subtasks.id, id), eq(subtasks.taskId, taskId)))
-      .returning();
+      const [updatedSubtask] = await db
+        .update(subtasks)
+        .set(updateData)
+        .where(and(eq(subtasks.id, id), eq(subtasks.taskId, taskId)))
+        .returning();
 
-    // Publish realtime event (fire and forget) - subtask change affects parent task
-    // Get parent task's scheduledDate for the event payload
-    const [parentTask] = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
-    publishEvent(userId, 'task:updated', {
-      taskId,
-      scheduledDate: parentTask?.scheduledDate ?? null,
+      // Publish realtime event (fire and forget) - subtask change affects parent task
+      // Get parent task's scheduledDate for the event payload
+      const [parentTask] = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
+      publishEvent(userId, 'task:updated', {
+        taskId,
+        scheduledDate: parentTask?.scheduledDate ?? null,
+      });
+
+      return c.json({ success: true, data: updatedSubtask });
     });
+  }
+);
 
-    return c.json({ success: true, data: updatedSubtask });
+/** Loads a task and one of its subtasks, both owned by the user. */
+async function loadSubtask(
+  db: ReturnType<typeof getDb>,
+  userId: string,
+  taskId: string,
+  id: string
+) {
+  const task = await verifyTaskOwnership(db, taskId, userId);
+  const [subtask] = await db
+    .select()
+    .from(subtasks)
+    .where(and(eq(subtasks.id, id), eq(subtasks.taskId, taskId)))
+    .limit(1);
+  if (!subtask) throw new NotFoundError('Subtask', id);
+  return { task, subtask };
+}
+
+/**
+ * POST /tasks/:taskId/subtasks/:id/timer/start - Time one subtask. The
+ * task's timer starts too (and any other timer stops), so the task's actual
+ * time includes the subtask's.
+ */
+subtasksRouter.post(
+  '/:taskId/subtasks/:id/timer/start',
+  requireScopes('tasks:write'),
+  zValidator('param', subtaskIdParamSchema),
+  async (c) => {
+    const userId = c.get('userId');
+    const { taskId, id } = c.req.valid('param');
+    const db = getDb();
+    const { task, subtask } = await loadSubtask(db, userId, taskId, id);
+    const result = await startSubtaskTimer(db, userId, task, subtask);
+    return c.json({
+      success: true,
+      data: result.subtask,
+      task: result.task,
+      stoppedTask: result.stoppedTask,
+    });
+  }
+);
+
+/** POST /tasks/:taskId/subtasks/:id/timer/stop - Stop a subtask and its task. */
+subtasksRouter.post(
+  '/:taskId/subtasks/:id/timer/stop',
+  requireScopes('tasks:write'),
+  zValidator('param', subtaskIdParamSchema),
+  async (c) => {
+    const userId = c.get('userId');
+    const { taskId, id } = c.req.valid('param');
+    const db = getDb();
+    const { task, subtask } = await loadSubtask(db, userId, taskId, id);
+    const result = await stopSubtaskTimer(db, userId, task, subtask);
+    return c.json({ success: true, data: result.subtask, task: result.task });
   }
 );
 

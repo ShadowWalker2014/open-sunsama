@@ -52,13 +52,14 @@ export function TaskGroup({
   return (
     <div
       className={cn(
-        "mb-2 rounded-lg border border-border/60 bg-card/40",
-        isOver && "border-primary/40 bg-primary/5"
+        "mb-6 rounded-lg",
+        isOver && "bg-primary/5"
       )}
       ref={setNodeRef}
     >
       {/* Group Header */}
       <button
+        aria-expanded={isExpanded}
         onClick={() => setIsExpanded(!isExpanded)}
         className={cn(
           "flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-sm font-medium transition-colors",
@@ -74,7 +75,7 @@ export function TaskGroup({
           )}
         />
         <span className="truncate">{label}</span>
-        <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-normal text-muted-foreground">
+        <span className="ml-1 px-1.5 py-0.5 text-[11px] font-normal text-muted-foreground">
           {tasks.length}
         </span>
       </button>
@@ -83,7 +84,7 @@ export function TaskGroup({
       {isExpanded && (
         <div
           className={cn(
-            "ml-3 mt-0.5 border-l border-border/50 pl-2 pr-2 pb-2",
+            "mt-1 space-y-0.5",
             isOver && "border-primary/50"
           )}
         >

@@ -4,8 +4,9 @@ import { CSS } from "@dnd-kit/utilities";
 import { X, GripVertical, Check } from "lucide-react";
 import type { Subtask } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui";
 import { useHoveredTask } from "@/hooks/useKeyboardShortcuts";
+import { useSubtaskSize, useSubtaskStyles, subtaskCheckState } from "./subtask-size";
+import { SubtaskTiming } from "./subtask-timing";
 
 // Re-export for convenience
 export type { Subtask };
@@ -18,8 +19,8 @@ interface SortableSubtaskItemProps {
 }
 
 /**
- * Sortable subtask item with drag handle and inline editing.
- * Click on title to edit directly.
+ * Sortable subtask row: gutter drag handle, round checkbox, click-to-edit
+ * title and a delete button. Shared by the task modal and focus mode.
  */
 export function SortableSubtaskItem({
   subtask,
@@ -28,6 +29,10 @@ export function SortableSubtaskItem({
   onUpdate,
 }: SortableSubtaskItemProps) {
   const { setHoveredSubtaskId } = useHoveredTask();
+  const size = useSubtaskStyles();
+  // The large rows (task modal, focus mode) carry times and a timer.
+  const showTiming =
+    useSubtaskSize() === "lg" && !subtask.id.startsWith("optimistic-");
   const [isEditing, setIsEditing] = React.useState(false);
   const [editValue, setEditValue] = React.useState(subtask.title);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -46,7 +51,6 @@ export function SortableSubtaskItem({
     transition,
   };
 
-  // Focus input when entering edit mode
   React.useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus();
@@ -54,16 +58,9 @@ export function SortableSubtaskItem({
     }
   }, [isEditing]);
 
-  // Sync edit value when subtask changes
   React.useEffect(() => {
     setEditValue(subtask.title);
   }, [subtask.title]);
-
-  const handleTitleClick = () => {
-    if (onUpdate) {
-      setIsEditing(true);
-    }
-  };
 
   const handleSave = () => {
     const trimmed = editValue.trim();
@@ -89,38 +86,50 @@ export function SortableSubtaskItem({
     <div
       ref={setNodeRef}
       style={style}
+      data-subtask-id={subtask.id}
       className={cn(
-        "group flex items-center gap-2 py-1 px-1 -mx-1 rounded-md hover:bg-muted/30 transition-colors",
-        isDragging && "opacity-50 bg-muted/30"
+        "group relative -mx-2 flex items-start rounded-md px-2 transition-colors",
+        size.row,
+        showTiming && "max-sm:grid max-sm:grid-cols-[auto_minmax(0,1fr)_auto]",
+        "hover:bg-muted/40",
+        isEditing && "bg-muted/40",
+        isDragging && "z-10 bg-muted/60 shadow-sm"
       )}
       onMouseEnter={() => setHoveredSubtaskId(subtask.id)}
       onMouseLeave={() => setHoveredSubtaskId(null)}
     >
-      {/* Drag handle — hidden on touch (no hover to reveal it, and it would
-          otherwise reserve dead space on the left of every row). */}
-      <div
+      {/* Drag handle sits in the left gutter so checkboxes line up with the
+          add row. Hidden on touch, where there is no hover to reveal it. */}
+      <button
+        type="button"
         {...attributes}
         {...listeners}
-        className="hidden sm:block touch-none cursor-grab active:cursor-grabbing"
-      >
-        <GripVertical className="h-4 w-4 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity" />
-      </div>
-
-      {/* Checkbox - circular style */}
-      <button
-        onClick={onToggle}
+        aria-label="Reorder subtask"
         className={cn(
-          "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-all",
-          "cursor-pointer",
-          subtask.completed
-            ? "border-primary bg-primary text-primary-foreground"
-            : "border-muted-foreground/30 hover:border-primary"
+          "absolute -left-4 top-1.5 hidden h-5 w-4 items-center justify-center rounded sm:flex",
+          "cursor-grab touch-none text-muted-foreground/40 opacity-0 transition-opacity",
+          "hover:text-muted-foreground group-hover:opacity-100 focus-visible:opacity-100 active:cursor-grabbing",
+          isDragging && "opacity-100"
         )}
       >
-        {subtask.completed && <Check className="h-2.5 w-2.5" strokeWidth={3} />}
+        <GripVertical className="h-3.5 w-3.5" />
       </button>
 
-      {/* Title - click to edit */}
+      <button
+        type="button"
+        role="checkbox"
+        aria-checked={subtask.completed}
+        aria-label={subtask.completed ? "Mark incomplete" : "Mark complete"}
+        onClick={onToggle}
+        className={cn(
+          "flex shrink-0 cursor-pointer items-center justify-center rounded-full border-[1.5px] transition-all duration-150 active:scale-90",
+          size.check,
+          subtaskCheckState(subtask.completed)
+        )}
+      >
+        <Check className={size.checkIcon} strokeWidth={3} />
+      </button>
+
       {isEditing ? (
         <input
           ref={inputRef}
@@ -129,32 +138,42 @@ export function SortableSubtaskItem({
           onChange={(e) => setEditValue(e.target.value)}
           onBlur={handleSave}
           onKeyDown={handleKeyDown}
+          data-escape-local="true"
+          aria-label="Edit subtask"
           className={cn(
-            "flex-1 text-[13px] bg-transparent border-none outline-none",
-            "focus:ring-0 p-0"
+            "min-w-0 flex-1 border-none bg-transparent p-0 outline-none focus:ring-0",
+            size.text
           )}
         />
       ) : (
         <span
-          onClick={handleTitleClick}
+          onClick={() => onUpdate && setIsEditing(true)}
           className={cn(
-            "flex-1 text-[13px] cursor-text",
-            subtask.completed && "line-through text-muted-foreground"
+            "min-w-0 flex-1 break-words transition-colors",
+            size.text,
+            onUpdate && "cursor-text",
+            subtask.completed &&
+              "text-muted-foreground line-through decoration-muted-foreground/50"
           )}
         >
           {subtask.title}
         </span>
       )}
 
-      {/* Delete button - shows on hover */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+      {showTiming && <div className="max-sm:col-start-2 max-sm:col-span-2 max-sm:row-start-2"><SubtaskTiming subtask={subtask} /></div>}
+
+      <button
+        type="button"
+        aria-label="Delete subtask"
         onClick={onDelete}
+        className={cn(
+          "-my-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded text-muted-foreground/60",
+          "opacity-0 transition-opacity hover:bg-muted hover:text-foreground",
+          "group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
+        )}
       >
         <X className="h-3.5 w-3.5" />
-      </Button>
+      </button>
     </div>
   );
 }

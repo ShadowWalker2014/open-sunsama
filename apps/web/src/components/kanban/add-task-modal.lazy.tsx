@@ -1,4 +1,5 @@
 import * as React from "react";
+import { preloadable } from "@/lib/preloadable";
 import type * as AddTaskModalModuleNS from "./add-task-modal";
 import type { AddPosition } from "./add-task-modal";
 
@@ -30,13 +31,11 @@ function importAddTaskModal(): Promise<AddTaskModalModule> {
   return preload;
 }
 
-const LazyAddTaskModal = React.lazy(async () => {
-  const mod = await importAddTaskModal();
-  return { default: mod.AddTaskModal };
-});
+const preloadableAddTaskModal = preloadable(() => importAddTaskModal().then((mod) => mod.AddTaskModal));
+const LazyAddTaskModal = preloadableAddTaskModal.Component;
 
 export function prefetchAddTaskModal(): Promise<unknown> {
-  return importAddTaskModal();
+  return preloadableAddTaskModal.preload();
 }
 
 /**

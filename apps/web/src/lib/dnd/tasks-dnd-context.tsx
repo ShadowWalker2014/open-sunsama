@@ -13,8 +13,20 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { snapCenterToCursor } from "@dnd-kit/modifiers";
-import type { Task } from "@open-sunsama/types";
+import type { Task, Idea } from "@open-sunsama/types";
+import { addMinutes } from "date-fns";
 import { useMoveTask, useReorderTasks, taskKeys } from "@/hooks/useTasks";
+import { useCreateTimeBlock } from "@/hooks/useTimeBlocks";
+import {
+  DEFAULT_DROP_MINS,
+  type CalendarDropData,
+} from "@/components/kanban/kanban-calendar-panel";
+import {
+  usePromoteIdea,
+  useReorderIdeas,
+  useSaveTaskAsIdea,
+  ideaKeys,
+} from "@/hooks/useIdeas";
 import { TaskCard } from "@/components/kanban/task-card";
 import { taskPriorityCollision } from "./collision-detection";
 
@@ -22,6 +34,7 @@ interface TasksDndContextValue {
   activeTask: Task | null;
   activeOverColumn: string | null;
   isDragging: boolean;
+  pointerY: React.MutableRefObject<number | null>;
 }
 
 const TasksDndContext = React.createContext<TasksDndContextValue | null>(null);
@@ -47,13 +60,37 @@ interface TasksDndProviderProps {
  */
 export function TasksDndProvider({ children }: TasksDndProviderProps) {
   const queryClient = useQueryClient();
+  const pointerY = React.useRef<number | null>(null);
+  React.useEffect(() => {
+    // Capture before the drag sensor handles release. Its delta includes
+    // scrolling, and its rendered rectangle may be one frame behind.
+    const trackMouse = (event: MouseEvent) => { pointerY.current = event.clientY; };
+    const trackTouch = (event: TouchEvent) => {
+      pointerY.current = event.touches[0]?.clientY ?? event.changedTouches[0]?.clientY ?? null;
+    };
+    document.addEventListener("mousemove", trackMouse, true);
+    document.addEventListener("mouseup", trackMouse, true);
+    document.addEventListener("touchmove", trackTouch, true);
+    document.addEventListener("touchend", trackTouch, true);
+    return () => {
+      document.removeEventListener("mousemove", trackMouse, true);
+      document.removeEventListener("mouseup", trackMouse, true);
+      document.removeEventListener("touchmove", trackTouch, true);
+      document.removeEventListener("touchend", trackTouch, true);
+    };
+  }, []);
   const [activeTask, setActiveTask] = React.useState<Task | null>(null);
   const [activeOverColumn, setActiveOverColumn] = React.useState<string | null>(
     null
   );
 
+  const [activeIdea, setActiveIdea] = React.useState<Idea | null>(null);
+  const promoteIdea = usePromoteIdea(activeIdea?.boardId);
+  const reorderIdeas = useReorderIdeas(activeIdea?.boardId);
+  const saveTaskAsIdea = useSaveTaskAsIdea();
   const moveTask = useMoveTask();
   const reorderTasks = useReorderTasks();
+  const createTimeBlock = useCreateTimeBlock();
 
   // Drag and drop sensors with keyboard support for accessibility
   // Mouse: distance-based so a drag starts the instant the pointer moves a
@@ -114,6 +151,7 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
   // DnD Event Handlers
   const handleDragStart = React.useCallback((event: DragStartEvent) => {
     const { active } = event;
+    setActiveIdea(active.data.current?.idea ?? null);
     const task = active.data.current?.task as Task | undefined;
     if (task) {
       setActiveTask(task);
@@ -146,8 +184,13 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
   const handleDragEnd = React.useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
+      const dropTarget = over?.data.current as CalendarDropData | undefined;
+      const calendarStart = dropTarget?.type === "calendar" && pointerY.current !== null
+        ? dropTarget.timeAt(pointerY.current)
+        : null;
 
       setActiveTask(null);
+      setActiveIdea(null);
       setActiveOverColumn(null);
 
       if (!over) return;
@@ -155,9 +198,92 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
       const taskId = String(active.id);
       const task = active.data.current?.task as Task | undefined;
 
+      const idea =
+        (active.data.current?.idea as Idea | undefined) ?? activeIdea;
+      if (idea) {
+        const target = over.data.current;
+        const targetIdea = target?.idea as Idea | undefined;
+        if (target?.type === "idea-tray" || targetIdea) {
+          const columnId = targetIdea?.columnId ?? target?.columnId;
+          const list = queryClient.getQueryData<Idea[]>(
+            ideaKeys.byBoard(idea.boardId)
+          );
+          const ordered = (list ?? [])
+            .filter((i) => i.columnId === columnId && i.id !== idea.id)
+            .sort((a, b) => a.position - b.position);
+          const index = targetIdea
+            ? ordered.findIndex((i) => i.id === targetIdea.id)
+            : ordered.length;
+          ordered.splice(index < 0 ? ordered.length : index, 0, idea);
+          reorderIdeas.mutate({ columnId, ideaIds: ordered.map((i) => i.id) });
+          return;
+        }
+        const calendar = target as CalendarDropData | undefined;
+        const date =
+          calendar?.type === "calendar"
+            ? calendar.date
+            : (findTargetColumnDate(over.id) ?? target?.columnId);
+        if (!date) return;
+        const scheduledDate = date === "backlog" ? null : String(date);
+        void promoteIdea
+          .mutateAsync({ id: idea.id, input: { scheduledDate } })
+          .then(async (result) => {
+            if (result.task.scheduledDate !== scheduledDate)
+              await moveTask.mutateAsync({
+                id: result.task.id,
+                targetDate: scheduledDate,
+              });
+            if (calendar?.type === "calendar") {
+              if (calendarStart) {
+                const startTime = calendarStart;
+                createTimeBlock.mutate({
+                  taskId: result.task.id,
+                  title: result.task.title,
+                  startTime,
+                  endTime: addMinutes(
+                    startTime,
+                    result.task.estimatedMins ?? DEFAULT_DROP_MINS
+                  ),
+                });
+              }
+            }
+          })
+          .catch(() => {});
+        return;
+      }
       if (!task) return;
+      const target = over.data.current;
+      if (target?.type === "idea-tray" || target?.type === "idea") {
+        saveTaskAsIdea.mutate({
+          taskId: task.id,
+          boardId: target.idea?.boardId ?? target.boardId,
+          columnId: target.idea?.columnId ?? target.columnId,
+        });
+        return;
+      }
 
       const overId = String(over.id);
+
+      // Dropped on the board's calendar: block the task at that time, on
+      // that day.
+      const calendar = over.data.current as CalendarDropData | undefined;
+      if (calendar?.type === "calendar") {
+        if (!calendarStart) return;
+        const startTime = calendarStart;
+        if (task.scheduledDate !== calendar.date) {
+          moveTask.mutate({ id: task.id, targetDate: calendar.date });
+        }
+        createTimeBlock.mutate({
+          taskId: task.id,
+          title: task.title,
+          startTime,
+          endTime: addMinutes(
+            startTime,
+            task.estimatedMins ?? DEFAULT_DROP_MINS
+          ),
+        });
+        return;
+      }
 
       // Read a column's tasks from the cache regardless of which `limit` /
       // filter the query was made with. Day columns cache under
@@ -174,8 +300,7 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
         for (const [key, data] of entries) {
           if (!data) continue;
           const filters = (key as unknown[])[2] as
-            | { scheduledDate?: string | null; backlog?: boolean }
-            | undefined;
+            { scheduledDate?: string | null; backlog?: boolean } | undefined;
           if (!filters) continue;
           const match = isBacklogCol
             ? filters.backlog === true
@@ -306,17 +431,34 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
         }
       }
     },
-    [findTargetColumnDate, moveTask, reorderTasks, isTaskId, queryClient]
+    [
+      findTargetColumnDate,
+      moveTask,
+      reorderTasks,
+      createTimeBlock,
+      activeIdea,
+      promoteIdea,
+      reorderIdeas,
+      saveTaskAsIdea,
+      isTaskId,
+      queryClient,
+    ]
   );
 
   const handleDragCancel = React.useCallback(() => {
+    setActiveIdea(null);
     setActiveTask(null);
     setActiveOverColumn(null);
   }, []);
 
   const contextValue = React.useMemo(
-    () => ({ activeTask, activeOverColumn, isDragging: !!activeTask }),
-    [activeTask, activeOverColumn]
+    () => ({
+      activeTask,
+      activeOverColumn,
+      pointerY,
+      isDragging: !!activeTask || !!activeIdea,
+    }),
+    [activeTask, activeIdea, activeOverColumn]
   );
 
   return (
@@ -338,6 +480,11 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
 
         {/* Drag Overlay - follows cursor with fixed width matching column */}
         <DragOverlay modifiers={[snapCenterToCursor]} dropAnimation={null}>
+          {activeIdea && (
+            <div className="pointer-events-none w-[264px] rounded-lg bg-card p-3 text-sm shadow-lg">
+              {activeIdea.title}
+            </div>
+          )}
           {activeTask && (
             <div className="w-[264px] pointer-events-none">
               <TaskCard task={activeTask} onSelect={() => {}} isDragging />

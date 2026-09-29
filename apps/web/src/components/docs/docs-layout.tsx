@@ -48,7 +48,7 @@ export function DocsLayout({ children, doc, sections }: DocsLayoutProps) {
   const showTOC = headings.length >= 4;
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans antialiased flex flex-col">
+    <div className="min-h-screen overflow-x-clip bg-background text-foreground font-sans antialiased flex flex-col">
       <SEOHead
         title={`${doc.title} | Open Sunsama Docs`}
         description={doc.description}
@@ -72,12 +72,12 @@ export function DocsLayout({ children, doc, sections }: DocsLayoutProps) {
       <div className="flex-1 container mx-auto max-w-6xl px-4">
         <div className="flex gap-8">
           {/* Sidebar - desktop only */}
-          <aside className="hidden lg:block w-64 flex-shrink-0 sticky top-12 h-[calc(100vh-3rem)]">
+          <aside className="hidden lg:block w-64 flex-shrink-0 sticky top-14 h-[calc(100vh-3.5rem)]">
             <DocsSidebar sections={sections} currentSlug={doc.slug} />
           </aside>
 
           {/* Main content */}
-          <main className="flex-1 min-w-0 py-8">
+          <main id="main" tabIndex={-1} className="flex-1 min-w-0 py-8 focus:outline-none">
             <article className="max-w-3xl">
               {/* Breadcrumbs */}
               <Breadcrumbs items={breadcrumbItems} />

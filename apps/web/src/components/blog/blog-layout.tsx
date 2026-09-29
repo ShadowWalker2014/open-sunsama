@@ -2,7 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { type ReactNode, useLayoutEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SiteFooter, SiteHeader } from "@/components/landing/sections";
+import { SiteFooter } from "@/components/marketing/site-footer";
+import { SiteHeader, SkipLink } from "@/components/marketing/site-header";
 import { ArticleSchema, Breadcrumbs, SEOHead } from "@/components/seo";
 import { lastUpdated } from "@/lib/blog";
 import type { BlogPost } from "@/types/blog";
@@ -98,9 +99,10 @@ export function BlogLayout({
         slug={post.slug}
       />
 
+      <SkipLink />
       <SiteHeader />
 
-      <main className="relative">
+      <main id="main" tabIndex={-1} className="relative focus:outline-none">
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[640px]">
           <div className="landing-grid absolute inset-0 opacity-60 dark:opacity-35" />
           <div className="absolute left-1/2 top-[-200px] h-[460px] w-[900px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,hsl(var(--primary)/0.12),transparent)] blur-2xl" />

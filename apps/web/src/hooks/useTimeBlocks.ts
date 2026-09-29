@@ -10,13 +10,17 @@ export { timeBlockKeys };
 /**
  * Fetch all time blocks with optional filters
  */
-export function useTimeBlocks(filters?: TimeBlockFilterInput) {
+export function useTimeBlocks(
+  filters?: TimeBlockFilterInput,
+  options?: { enabled?: boolean }
+) {
   return useQuery({
     queryKey: timeBlockKeys.list(filters ?? {}),
     queryFn: async () => {
       const api = getApi();
       return await api.timeBlocks.list(filters);
     },
+    enabled: options?.enabled ?? true,
   });
 }
 

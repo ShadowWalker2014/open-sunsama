@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import type { Task } from "@open-sunsama/types";
+import type { Task, TaskPriority } from "@open-sunsama/types";
 import { taskKeys } from "@/lib/query-keys";
 
 export interface ShortcutDefinition {
@@ -9,9 +9,36 @@ export interface ShortcutDefinition {
     shift?: boolean;
     cmd?: boolean; // Meta key (Cmd on Mac, Ctrl on Windows)
     alt?: boolean;
+    super?: boolean; // Cmd on Mac, Win/Super elsewhere (desktop global shortcuts)
   };
   description: string;
-  category: "navigation" | "task" | "general" | "focus" | "calendar";
+  category: "navigation" | "task" | "general" | "focus" | "calendar" | "desktop";
+}
+
+export const TIME_EDIT_KEYS = { planned: "e", actual: "w" } as const;
+
+export function matchesTimeEditShortcut(event: KeyboardEvent, field: keyof typeof TIME_EDIT_KEYS) {
+  return !event.repeat && !event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey
+    && event.key.toLowerCase() === TIME_EDIT_KEYS[field];
+}
+
+export function usePriorityShortcut(enabled: boolean, onChange: (priority: TaskPriority) => void) {
+  const changeRef = React.useRef(onChange);
+  changeRef.current = onChange;
+  React.useEffect(() => {
+    if (!enabled) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.repeat || event.isComposing || event.metaKey || event.ctrlKey || !event.altKey || !event.shiftKey) return;
+      // Option produces symbols on macOS; the physical digit stays stable.
+      const digit = /^(?:Digit|Numpad)([0-3])$/.exec(event.code)?.[1];
+      if (!digit) return;
+      event.preventDefault();
+      event.stopPropagation();
+      changeRef.current(`P${digit}` as TaskPriority);
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [enabled]);
 }
 
 // Define all shortcuts
@@ -24,8 +51,20 @@ export const SHORTCUTS: Record<string, ShortcutDefinition> = {
   focusToday: {
     key: " ", // Space
     modifiers: { shift: true },
-    description: "Focus on Today",
+    description: "Go to today’s date",
     category: "navigation",
+  },
+  todayView: {
+    key: "T", modifiers: { shift: true },
+    description: "Switch to Today view", category: "navigation",
+  },
+  boardView: {
+    key: "B", modifiers: { shift: true },
+    description: "Switch to Board view", category: "navigation",
+  },
+  editPriority: {
+    key: "0–3", modifiers: { alt: true, shift: true },
+    description: "Set priority while creating or editing a task", category: "task",
   },
   completeTask: {
     key: "c",
@@ -51,8 +90,8 @@ export const SHORTCUTS: Record<string, ShortcutDefinition> = {
     category: "task",
   },
   editEstimate: {
-    key: "e",
-    description: "Edit time estimate (while hovering)",
+    key: TIME_EDIT_KEYS.planned,
+    description: "Edit planned time (while hovering)",
     category: "task",
   },
   moveToTop: {
@@ -135,12 +174,12 @@ export const SHORTCUTS: Record<string, ShortcutDefinition> = {
     category: "focus",
   },
   editActualTime: {
-    key: "e",
+    key: TIME_EDIT_KEYS.actual,
     description: "Edit actual time",
     category: "focus",
   },
   editPlannedTime: {
-    key: "w",
+    key: TIME_EDIT_KEYS.planned,
     description: "Edit planned time",
     category: "focus",
   },
@@ -186,24 +225,68 @@ export const SHORTCUTS: Record<string, ShortcutDefinition> = {
     description: "Next range",
     category: "calendar",
   },
+  // Desktop app shortcuts. Global ones (super) are registered system-wide in
+  // apps/desktop/src-tauri/src/lib.rs; the cmd ones are app-menu accelerators
+  // in menu.rs. Both reach the web app via DesktopShortcutsHandler, and the
+  // `?` modal only lists them when running in the desktop app.
+  desktopQuickAdd: {
+    key: "t",
+    modifiers: { super: true, shift: true },
+    description: "Add task for today, from any app",
+    category: "desktop",
+  },
+  desktopStartFocus: {
+    key: "f",
+    modifiers: { super: true, shift: true },
+    description: "Focus on current task, from any app",
+    category: "desktop",
+  },
+  desktopToggleWindow: {
+    key: "o",
+    modifiers: { super: true, shift: true },
+    description: "Show or hide Open Sunsama",
+    category: "desktop",
+  },
+  desktopNewTask: {
+    key: "n",
+    modifiers: { cmd: true },
+    description: "New task",
+    category: "desktop",
+  },
+  desktopToday: {
+    key: "1",
+    modifiers: { cmd: true },
+    description: "Go to Today",
+    category: "desktop",
+  },
+  desktopCalendar: {
+    key: "2",
+    modifiers: { cmd: true },
+    description: "Go to Calendar",
+    category: "desktop",
+  },
 };
 
 // Format shortcut for display (e.g., "Shift + Space", "Cmd + Delete")
 export function formatShortcut(shortcut: ShortcutDefinition): string {
   const parts: string[] = [];
+  const isMac = navigator.platform.includes("Mac");
 
+  if (shortcut.modifiers?.super) {
+    parts.push(isMac ? "⌘" : navigator.platform.includes("Win") ? "Win" : "Super");
+  }
   if (shortcut.modifiers?.cmd) {
-    parts.push(navigator.platform.includes("Mac") ? "⌘" : "Ctrl");
+    parts.push(isMac ? "⌘" : "Ctrl");
   }
   if (shortcut.modifiers?.shift) {
     parts.push("⇧");
   }
   if (shortcut.modifiers?.alt) {
-    parts.push(navigator.platform.includes("Mac") ? "⌥" : "Alt");
+    parts.push(isMac ? "⌥" : "Alt");
   }
 
   // Format the key nicely
-  let keyDisplay = shortcut.key;
+  let keyDisplay: string;
   switch (shortcut.key) {
     case " ":
       keyDisplay = "Space";
@@ -411,7 +494,9 @@ export function useShortcutsModal() {
 
 // Hook to check if we should ignore shortcuts (when in input/textarea)
 export function shouldIgnoreShortcut(event: KeyboardEvent): boolean {
-  const target = event.target as HTMLElement;
+  // Key events can target the document or window, which have no tag.
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) return false;
   const tagName = target.tagName.toLowerCase();
 
   // Ignore if in input, textarea, or contenteditable

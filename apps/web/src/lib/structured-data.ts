@@ -70,6 +70,52 @@ export function faqPageJsonLd(items: FAQItem[]) {
   };
 }
 
+export interface BreadcrumbInput {
+  label: string;
+  href?: string;
+}
+
+/** Home, then each crumb. The last crumb (the current page) gets `currentPath` as its URL. */
+export function breadcrumbListJsonLd(items: BreadcrumbInput[], currentPath?: string) {
+  const crumbs = [{ label: "Home", href: "/" }, ...items];
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: crumbs.map((item, index) => {
+      const href = item.href ?? (index === crumbs.length - 1 ? currentPath : undefined);
+      return {
+        "@type": "ListItem",
+        position: index + 1,
+        name: item.label,
+        ...(href ? { item: absolute(href) } : {}),
+      };
+    }),
+  };
+}
+
+export interface SoftwareApplicationInput {
+  description: string;
+  url?: string;
+  featureList?: string[];
+}
+
+/** Open Sunsama as a SoftwareApplication. No offers or ratings: we don't sell on price or invent reviews. */
+export function softwareApplicationJsonLd(app: SoftwareApplicationInput) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "Open Sunsama",
+    description: app.description,
+    applicationCategory: "ProductivityApplication",
+    operatingSystem: "Web, macOS, Windows, Linux",
+    url: absolute(app.url ?? "/"),
+    downloadUrl: `${SITE_URL}/download`,
+    image: `${SITE_URL}/og-image.png`,
+    ...(app.featureList?.length ? { featureList: app.featureList } : {}),
+    author: { "@type": "Organization", name: "Open Sunsama", url: SITE_URL },
+  };
+}
+
 export function videoObjectJsonLd(video: VideoMedia) {
   return {
     "@context": "https://schema.org",

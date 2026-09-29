@@ -14,10 +14,13 @@ import {
   LogOut,
   ChevronRight,
   Search,
+  Smartphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useSearch } from "@/hooks/useSearch";
+import { isRunningInstalled } from "@/lib/pwa";
+import { InstallAppSheet } from "@/components/pwa/install-app-sheet";
 
 interface MenuItem {
   id: string;
@@ -131,6 +134,8 @@ export function MobileMoreMenu({ onLogout }: MobileMoreMenuProps) {
   const { logout } = useAuth();
   // Phones have no ⌘K, so the palette needs a visible entry point.
   const { openSearch } = useSearch();
+  const [installOpen, setInstallOpen] = React.useState(false);
+  const showInstall = React.useMemo(() => !isRunningInstalled(), []);
 
   const handleLogout = React.useCallback(() => {
     logout();
@@ -155,6 +160,16 @@ export function MobileMoreMenu({ onLogout }: MobileMoreMenuProps) {
           label: "Backlog",
           href: "/app/tasks?backlog=1",
         },
+        ...(showInstall
+          ? [
+              {
+                id: "install",
+                icon: Smartphone,
+                label: "Add to Home Screen",
+                onClick: () => setInstallOpen(true),
+              },
+            ]
+          : []),
       ],
     },
     {
@@ -230,13 +245,13 @@ export function MobileMoreMenu({ onLogout }: MobileMoreMenuProps) {
         },
       ],
     },
-  ], [handleLogout, openSearch]);
+  ], [handleLogout, openSearch, showInstall]);
 
   return (
     // Definite height so the list scrolls internally and the "More" header
     // stays fixed (the app shell is `min-h-screen`, so a percentage height
     // can't resolve — see mobile-calendar-view for the same fix).
-    <div className="flex h-[calc(100dvh-4rem)] flex-col overflow-hidden bg-background">
+    <div className="flex h-full flex-col overflow-hidden bg-background">
       {/* Header */}
       <div className="flex-shrink-0 px-4 py-4 border-b border-border/40">
         <h1 className="text-xl font-semibold">More</h1>
@@ -255,6 +270,7 @@ export function MobileMoreMenu({ onLogout }: MobileMoreMenuProps) {
           />
         ))}
       </div>
+      <InstallAppSheet open={installOpen} onOpenChange={setInstallOpen} />
     </div>
   );
 }

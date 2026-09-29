@@ -1,16 +1,20 @@
 export const frontmatter = {
-  title: "Self-Hosted Productivity Apps 2026: Task Manager, Planner, Notes",
-  description: "What to self-host for tasks, daily planning, calendar and notes in 2026. A self-hosted task manager comparison, a Docker quick start, and backup basics.",
+  title: "Best Self-Hosted Productivity Apps 2026: Tasks, Calendar, Notes",
+  description: "The best self-hosted apps for productivity in 2026: tasks, planning, kanban, calendar, notes and time tracking, plus a Docker quick start and backup basics.",
   date: "2026-01-27",
   updated: "2026-09-24",
   author: "Open Sunsama Team",
-  tags: ["self-hosted", "privacy", "open-source", "docker", "task-management"],
-  readingTime: 12,
+  tags: ["self-hosted", "open-source", "privacy", "docker", "task-management"],
+  readingTime: 15,
   image: "/blog-self-hosted-productivity-apps.webp",
   faqs: [
     {
+      question: "What are the best self-hosted productivity apps?",
+      answer: "Open Sunsama is our pick overall: tasks, a daily planner and time blocking in one app, with an MCP server for AI agents. Add Vikunja or tududi for shared task lists, Radicale or Nextcloud Calendar for your calendar, Joplin or Trilium for notes and Kimai for time tracking.",
+    },
+    {
       question: "What is the best self-hosted task manager?",
-      answer: "Open Sunsama is our pick overall: tasks, a daily planner and time blocking in one app, with an MCP server for AI agents. Vikunja is the best Todoist-style task manager, and Tududi is the lightest.",
+      answer: "Open Sunsama is our pick for planning your own day with time blocks. Vikunja is the best Todoist-style task manager, and tududi is the lightest. Nextcloud Tasks is best if you already run Nextcloud.",
     },
     {
       question: "Is there a self-hosted daily planner like Sunsama?",
@@ -22,7 +26,7 @@ export const frontmatter = {
     },
     {
       question: "Can I use a self-hosted todo app on my phone?",
-      answer: "Yes. Joplin has phone apps that sync with your own Joplin Server. Vikunja, Tududi and a self-hosted Open Sunsama run in your phone's browser or as home-screen web apps. Tasks.org on Android syncs with your own CalDAV server.",
+      answer: "Yes. Joplin has phone apps that sync with your own Joplin Server. Vikunja, tududi and a self-hosted Open Sunsama run in your phone's browser. Tasks.org on Android syncs with your own CalDAV server, like Radicale or Nextcloud.",
     },
     {
       question: "Is self-hosting more secure than a cloud app?",
@@ -30,61 +34,65 @@ export const frontmatter = {
     },
     {
       question: "How do I back up a self-hosted task manager?",
-      answer: "Dump the database every night, copy it to a second place, and test a restore. For Open Sunsama, that is a pg_dump of PostgreSQL. For SQLite apps like Tududi, copy the database file.",
+      answer: "Dump the database every night, copy it to a second place, and test a restore. For Open Sunsama, that is a pg_dump of PostgreSQL. For SQLite apps like tududi, copy the database file.",
     },
     {
       question: "Can AI agents use my self-hosted planner?",
-      answer: "Yes, if the app has an MCP server. Open Sunsama serves one at your own API address, and Tududi ships one in every instance. Your agent then talks to your server, not a third party.",
+      answer: "Yes, if the app has an MCP server. Open Sunsama serves one at your own API address, and tududi, Plane and Trilium ship their own. Your agent then talks to your server, not a third party.",
     },
   ],
 };
 
 The best self-hosted productivity app overall in 2026 is **Open Sunsama**. It is a task manager and daily planner with time blocking, and any AI agent can use it.
 
-Add **Vikunja** or **Tududi** if you need shared task lists. Add **Radicale** or **Nextcloud** for your calendar, and **Joplin Server** or **Trilium** for notes.
+Add **Vikunja** or **tududi** for shared task lists, **Radicale** or **Nextcloud Calendar** for your calendar, and **Joplin Server** or **Trilium** for notes. All of them run on a small server or a home box, most with a single Docker command.
 
-All of them run on a small server or a home box, most with a single Docker command.
+We build Open Sunsama, so we put it first — here is why, and where others fit better. A task list tells you what to do, and Open Sunsama also plans when you do it. If you need an MIT or GPL license, or shared team lists, Vikunja and tududi fit better.
 
-We build Open Sunsama, so we put it first — here is why, and where others fit better. A task list tells you what to do, and Open Sunsama also plans when you do it. If you need an MIT or GPL license, or shared team lists, Vikunja and Tududi fit better.
-
-This guide shows what each app replaces, how to run Open Sunsama with Docker, and how to keep it all safe and backed up.
+This guide covers the best self-hosted apps for each productivity job. Each one has a card with its license, latest release and a link to the source code. Then we show how to run Open Sunsama with Docker, and how to keep it all safe and backed up.
 
 ## Quick answer
 
-- **Best overall:** [Open Sunsama](https://github.com/ShadowWalker2014/open-sunsama), a self-hosted task manager and planner with time blocking and MCP.
-- **Self-hosted task lists under AGPL or MIT:** [Vikunja](https://vikunja.io), or [Tududi](https://tududi.com) if you want small and simple.
-- **Self-hosted calendar:** [Radicale](https://radicale.org) for a tiny CalDAV server, or [Nextcloud](https://nextcloud.com) for a full suite.
-- **Self-hosted notes:** [Joplin Server](https://joplinapp.org) for synced notes, or [Trilium](https://github.com/TriliumNext/Trilium) for a note tree.
-- **No server at all:** [Super Productivity](https://super-productivity.com) syncs through WebDAV or its own sync server.
+- **Best overall:** Open Sunsama, a self-hosted task manager and planner with time blocking and MCP.
+- **Self-hosted task lists:** Vikunja, or tududi if you want small and simple. Nextcloud Tasks if you run Nextcloud.
+- **Self-hosted kanban and projects:** WeKan or Kanboard for boards. Plane or Leantime for team projects.
+- **Self-hosted calendar:** Radicale or Baïkal for a small CalDAV server, or Nextcloud Calendar for a full web calendar.
+- **Self-hosted notes:** Joplin Server for synced notes, Trilium for a note tree, AppFlowy for Notion-style docs.
+- **Self-hosted time tracking:** Kimai for billing, solidtime for freelancers.
+
+## The best self-hosted app for each job
+
+| Job | Replaces | Our picks |
+|---|---|---|
+| Daily planning and time blocking | Sunsama, Akiflow | Open Sunsama |
+| Task lists | Todoist, TickTick | Vikunja, tududi, Nextcloud Tasks |
+| Kanban boards | Trello | WeKan, Kanboard, Nextcloud Deck |
+| Team projects | Jira, Asana | Plane, Leantime |
+| Calendar and contacts | Google Calendar | Nextcloud Calendar, Radicale, Baïkal |
+| Notes and docs | Evernote, Notion | Joplin, Trilium, AppFlowy |
+| Time tracking | Toggl, Harvest | Kimai, solidtime |
 
 ## Self-hosted productivity apps compared
 
-| App | Replaces | License | Install | Data store | Mobile | API | MCP | Last release |
-|---|---|---|---|---|---|---|---|---|
-| **Open Sunsama** | Sunsama, Todoist + calendar | Non-commercial (not OSI) | Docker | PostgreSQL | Web on your phone (ready-made apps use the hosted service) | REST + API keys | Built in, OAuth | v1.0.12, Sep 23, 2026 |
-| **Vikunja** | Todoist, Trello | AGPL-3.0 | Docker, binary | SQLite, PostgreSQL, MySQL | Web app (PWA) | REST | Community servers | v2.6.0, Aug 31, 2026 |
-| **Tududi** | Todoist, Things | MIT | Docker | SQLite or PostgreSQL | Web app (PWA) | REST | Built in | v1.5.0, Sep 16, 2026 |
-| **Super Productivity** | TickTick, Toggl | MIT | Apps + optional sync server | Local files | Android, iOS | Local REST | Community plugins | v19.1.0, Sep 19, 2026 |
-| **Joplin Server** | Evernote, Notion notes | Personal-use license (apps AGPL) | Docker | PostgreSQL | Android, iOS | Local data API | Built into desktop | v3.7.18 apps, Sep 11, 2026 |
-| **Trilium Notes** | Notion wiki | AGPL-3.0 | Docker | SQLite | Web | REST (ETAPI) | No | v0.105.0, Aug 19, 2026 |
-| **Radicale** | Google Calendar sync | GPL-3.0 | pip install | Files | Any CalDAV app | CalDAV | No | v3.8.0, Sep 3, 2026 |
-| **OpenProject** | Jira, Asana | GPL-3.0 | Docker | PostgreSQL | App in beta | REST | Enterprise add-on | v17.8.0, Sep 2, 2026 |
-
-We checked every license file and release on GitHub on September 24, 2026.
+<OssTable ids={["open-sunsama", "vikunja", "tududi", "nextcloud-tasks", "wekan", "kanboard", "nextcloud-deck", "plane", "leantime", "nextcloud-calendar", "radicale", "baikal", "joplin", "trilium", "appflowy", "kimai", "solidtime"]} />
 
 ## How we compared
 
-We build Open Sunsama and use it every day, so we know it best. For the other apps, we read the license, the release notes, and the install and backup docs. We also read what users say on r/selfhosted, Hacker News and GitHub.
+We build Open Sunsama and use it every day, so we know it best. For the other apps, we read the license file, the release notes, the install and backup docs, and the open issues. We also read what users say on r/selfhosted, Hacker News and GitHub.
 
-We did not run every app for weeks, so we don't claim to have tested them. We skipped projects with no release in the past year, because nobody wants tasks in an app that stops getting fixes.
+Stars, releases and last commits come from each project's GitHub page on 24 September 2026. Screenshots come from each project's own images, or from demos and web apps we opened ourselves. The caption under each shot names its source.
 
-## What should you self-host?
+We did not run every app for weeks, so we don't claim to have tested them. Every app here has a server you can run yourself, and still gets fixes.
 
-Think in jobs, not apps. Most people need four things: a task list, a way to plan the day, a calendar and notes.
-
-### Best overall: Open Sunsama, a self-hosted planner with time blocking
+## Self-hosted daily planner
 
 A to-do list tells you what to do. A planner tells you when. That is the gap people on r/selfhosted keep asking about: "So far I have not seen anything that comes close" to Sunsama.
+
+### Open Sunsama: best overall, a self-hosted planner with time blocking
+
+<OssApp id="open-sunsama" rank={1} bestFor="One person who wants tasks, a daily plan and time blocks on their own server, with AI agents that can help." />
+
+**Verdict:** best overall. It is the one self-hosted app here that plans your day on a calendar.
 
 <DemoVideo id="tour" />
 
@@ -102,70 +110,215 @@ What you get:
 
 <Clip id="time-block" caption="Drag a task onto the calendar, then resize the block to fit the work." />
 
-<Shot id="board" alt="Open Sunsama board with a backlog column and day columns" caption="Your backlog and each day side by side, so you only plan what fits." />
-
 Where it falls short:
 
-- The license is non-commercial. Personal self-hosting is fine. Companies need a commercial license.
+- The code is public on GitHub. It uses a non-commercial license: you can read it, run it and self-host it for personal use. Companies need a commercial license.
 - It is one person's planner, not a team project tool.
-- Calendar sync covers Google, Outlook and iCloud. There is no Nextcloud or CalDAV task sync yet.
-- The ready-made desktop and mobile apps connect to the hosted service. To point them at your server, you build them yourself with your own API address.
+- Calendar sync covers Google, Outlook and iCloud. There is no CalDAV task sync yet.
+- The ready-made desktop apps connect to the hosted service. On your own server, you use the web app, or build the desktop app with your own API address.
 
-### A self-hosted task manager: Vikunja or Tududi
+**Pick it if** you want to plan your day on your own server. The Docker quick start is further down.
 
-If you want a plain task list instead, **Vikunja** is the closest thing to a self-hosted Todoist. It has list, kanban, Gantt and table views, CalDAV and a Todoist importer. Its weak spot is the phone: you use the web app, and native apps are still on the roadmap.
+## Self-hosted task managers
 
-**Tududi** is smaller. One Docker command, one SQLite file, and a built-in MCP server with 59 tools. It has no calendar view, so it does not do time blocking.
+### Vikunja: the closest thing to a self-hosted Todoist
 
-Read our [open source Todoist alternatives](/blog/open-source-todoist-alternatives) for the full list.
+<OssApp id="vikunja" rank={2} bestFor="People and small teams who want Todoist-style lists plus kanban, Gantt and table views." />
 
-### A self-hosted calendar: Radicale or Nextcloud
+**Verdict:** the best self-hosted task manager for people coming from Todoist.
 
-**Radicale** is a tiny CalDAV and CardDAV server. Point your phone and desktop calendar apps at it and you are done. It has no full web calendar of its own.
+- **Good:** list, kanban, Gantt and table views, CalDAV, a Todoist importer, a REST API and SQLite, PostgreSQL or MySQL.
+- **Falls short:** the Android app is in alpha and there is no official iOS app. Some admin features are in the paid Pro add-on.
+- **Pick it if** you want Todoist's workflow on your own server. See our [open source Todoist alternatives](/blog/open-source-todoist-alternatives).
 
-**Nextcloud** gives you a web calendar, files, contacts and tasks in one suite. It is a bigger server to run, but it does a lot.
+### tududi: the smallest self-hosted to-do app with MCP
 
-### Self-hosted notes: Joplin Server or Trilium
+<OssApp id="tududi" rank={3} bestFor="Home-labbers who want tasks, projects and notes in one small container." />
 
-**Joplin Server** syncs Joplin's apps on every device, with end-to-end encryption. Note that the server uses a personal-use license, while the apps are AGPL.
+**Verdict:** the lightest self-hosted task app, with an MCP server built in.
 
-**Trilium** is a web app for a deep tree of notes. It suits people who want a private wiki.
+- **Good:** one Docker command, SQLite or PostgreSQL, CalDAV sync, a REST API and a Telegram bot.
+- **Falls short:** no native phone app, and no calendar view for time blocking.
+- **Pick it if** you want a simple task list your AI agent can use on day one.
+
+### Nextcloud Tasks: tasks inside your Nextcloud
+
+<OssApp id="nextcloud-tasks" rank={4} bestFor="Nextcloud users who want their tasks synced over CalDAV to any phone app." />
+
+**Verdict:** the natural pick if Nextcloud already runs your files and contacts.
+
+- **Good:** tasks live in your own Nextcloud, and any CalDAV app can sync them, like Tasks.org or Apple Reminders.
+- **Falls short:** you need a full Nextcloud server, and the app itself is simple.
+- **Pick it if** you already run Nextcloud and want tasks on your phone.
+
+## Self-hosted kanban and project tools
+
+### WeKan: a self-hosted Trello
+
+<OssApp id="wekan" rank={5} bestFor="Teams moving off Trello who want boards, swimlanes and checklists on their own server." />
+
+**Verdict:** the most complete Trello-style board you can self-host.
+
+- **Good:** swimlanes, checklists, custom fields, a REST API and webhooks. Install with Docker, Snap and more.
+- **Falls short:** no phone app, and it can feel heavy for one person.
+- **Pick it if** your team already thinks in Trello boards.
+
+### Kanboard: a tiny kanban board that keeps working
+
+<OssApp id="kanboard" rank={6} bestFor="People who want a small, stable kanban board and nothing else." />
+
+**Verdict:** a fast, minimal board that runs on almost any PHP host.
+
+- **Good:** list, calendar and Gantt views, automatic actions, plugins and a JSON-RPC API.
+- **Falls short:** the author says it is in maintenance mode, so expect fixes, not new features.
+- **Pick it if** you want a board you set up once and forget.
+
+### Nextcloud Deck: kanban inside your Nextcloud
+
+<OssApp id="nextcloud-deck" rank={7} bestFor="Nextcloud users who want a simple kanban board next to their files and calendar." />
+
+**Verdict:** a simple board for people who already run Nextcloud.
+
+- **Good:** boards, lists and cards, with a REST API. Cards with due dates show up in your Nextcloud calendar.
+- **Falls short:** it only runs inside Nextcloud, and its README warns it is not ready for very heavy use.
+- **Pick it if** you want a board without adding another server.
+
+### Plane: self-hosted issues, sprints and roadmaps
+
+<OssApp id="plane" rank={8} bestFor="Software teams that want a Jira or Linear style tool on their own server." />
+
+**Verdict:** the most modern self-hosted project tool for teams.
+
+- **Good:** issues, cycles, roadmaps, docs, a REST API, webhooks and an official MCP server.
+- **Falls short:** only the Community Edition is open source. The mobile apps and some features need a paid edition.
+- **Pick it if** your team wants to leave Jira or Linear for its own server. Our [open source kanban boards](/blog/best-open-source-kanban-boards) list covers more.
+
+### Leantime: projects plus a personal "My Work" page
+
+<OssApp id="leantime" rank={9} bestFor="Small teams who want projects, timesheets and a personal to-do view in one tool." />
+
+**Verdict:** a friendly project tool that also helps each person plan their own work.
+
+- **Good:** kanban, Gantt, list and calendar views, timesheets, goals and docs.
+- **Falls short:** no phone app, and some add-ons, like the MCP server, are paid plugins.
+- **Pick it if** you want team projects and personal to-dos in one place.
+
+## Self-hosted calendars
+
+### Nextcloud Calendar: a full web calendar you host
+
+<OssApp id="nextcloud-calendar" rank={10} bestFor="People who want a shared web calendar with invites, free/busy and booking pages." />
+
+**Verdict:** the most complete self-hosted calendar, if you run Nextcloud.
+
+- **Good:** shared calendars, invites, free/busy and appointment booking. Phones sync over CalDAV.
+- **Falls short:** it runs inside Nextcloud, so you need that server first.
+- **Pick it if** you want a real Google Calendar replacement on your own box.
+
+### Radicale: a tiny CalDAV server
+
+<OssApp id="radicale" rank={11} bestFor="People who only need a sync server for the calendar apps on their phone and computer." />
+
+**Verdict:** the lightest way to host your own calendar and contacts.
+
+- **Good:** small, simple to run with pip or Docker, and it stores everything as plain files.
+- **Falls short:** its web page manages calendars but can't show or edit events.
+- **Pick it if** you want your calendar off Google with the least work.
+
+### Baïkal: a CalDAV server with a web admin
+
+<OssApp id="baikal" rank={12} bestFor="People on a PHP host who want a calendar and contacts server with a simple admin page." />
+
+**Verdict:** a small calendar and contacts server with a friendly admin page.
+
+- **Good:** a web admin to add users and calendars, and it runs on common PHP hosting.
+- **Falls short:** like Radicale, it is only a sync server. You see events in another app.
+- **Pick it if** you want Radicale's job with a web admin for users.
+
+## Self-hosted notes and docs
+
+### Joplin Server: private notes on every device
+
+<OssApp id="joplin" rank={13} bestFor="People who want Markdown notes on desktop and phone, synced through their own server." />
+
+**Verdict:** the best self-hosted notes setup if you want real phone apps.
+
+- **Good:** apps for desktop, iOS and Android, end-to-end encryption, and Joplin Server in Docker.
+- **Falls short:** the apps are AGPL, but Joplin Server uses a personal-use license. For a fully open setup, sync the apps through WebDAV or Nextcloud instead.
+- **Pick it if** you want private notes on every device.
+
+### Trilium Notes: a private wiki on your server
+
+<OssApp id="trilium" rank={14} bestFor="People who want a large knowledge base as a tree of notes, in the browser." />
+
+**Verdict:** a personal wiki for people with thousands of notes.
+
+- **Good:** a web app you host, scripting, a REST API and a built-in MCP server.
+- **Falls short:** no official phone app; you use the web version or a community app.
+- **Pick it if** you want a big private knowledge base on your own server.
+
+### AppFlowy: self-hosted Notion-style docs
+
+<OssApp id="appflowy" rank={15} bestFor="People who want Notion-style docs, wikis and boards with apps on every device." />
+
+**Verdict:** the closest self-hosted match for Notion, with one catch.
+
+- **Good:** docs, databases and boards, with apps for desktop, web, iOS and Android.
+- **Falls short:** the apps are AGPL, but the current sync server is a commercial build. Its free self-host tier allows one user.
+- **Pick it if** you want a Notion-style workspace just for yourself.
+
+## Self-hosted time tracking
+
+### Kimai: time tracking with invoices
+
+<OssApp id="kimai" rank={16} bestFor="Freelancers and teams who bill clients by the hour." />
+
+**Verdict:** the most complete self-hosted time tracker for billable work.
+
+- **Good:** timesheets, rates, invoices, reports, teams and an API. Runs with Docker or on a PHP host.
+- **Falls short:** some extra features are paid plugins.
+- **Pick it if** you need timesheets and invoices on your own server.
+
+### solidtime: a modern time tracker for freelancers
+
+<OssApp id="solidtime" rank={17} bestFor="Freelancers who want a clean timer with projects, clients and billable rates." />
+
+**Verdict:** the most modern self-hosted time tracker.
+
+- **Good:** projects, clients, billable rates, desktop apps, a browser extension and a REST API.
+- **Falls short:** some advanced self-hosted features need a paid plan. No phone app.
+- **Pick it if** you want a polished timer you host yourself. Our [open source focus apps](/blog/best-open-source-focus-apps) list covers more timers.
 
 ## How to self-host Open Sunsama with Docker
 
 This quick start runs Open Sunsama on your own machine. You need Docker and about 2 GB of RAM. It takes one command, plus a few minutes for the first build.
 
-**1. Get the code.**
+**1. Get the code, then build and start everything.**
 
 ```bash
 git clone https://github.com/ShadowWalker2014/open-sunsama.git
 cd open-sunsama
-```
-
-**2. Build and start everything.**
-
-```bash
 docker compose up -d --build
 ```
 
-This starts PostgreSQL, the API and the web app. The API creates its tables and its own secret on first start, so a local trial needs no setup.
+This starts PostgreSQL, Redis, the API and the web app. The API creates its tables and its own secrets on first start, so a local trial needs no setup.
 
-**3. Open the app.** Go to `http://localhost:3000` and create your account. Check the API with `curl http://localhost:3001/health`.
+**2. Open the app.** Go to `http://localhost:3000` and create your account. Check the API with `curl http://localhost:3001/health`.
 
-For a real server, set `API_URL` and `WEB_APP_URL` in `.env` to your public addresses before you build. You will also want your own domain, HTTPS and a strong database password. The [Docker deployment guide](/docs/self-hosting/docker) covers the production setup, the reverse proxy and every setting.
+For a real server, set `API_URL`, `WEB_APP_URL` and `POSTGRES_PASSWORD` in `.env` before your first build. You will also want your own domain and HTTPS. The [Docker deployment guide](/docs/self-hosting/docker) covers the production setup, the reverse proxy and every setting.
 
 ### Features that need extra keys
 
 Tasks, time blocks, rollover and the API work out of the box. A few features call outside services, so you add your own keys:
 
-- **Google or Outlook calendar sync:** your own OAuth app keys, plus a calendar encryption key.
+- **Google or Outlook calendar sync:** your own OAuth app keys.
 - **File attachments:** any S3-compatible storage.
 - **Email:** a Resend API key.
 - **Push notifications:** VAPID keys.
 
 ### Connect your AI agent to your own server
 
-Your instance serves an MCP server at `https://your-api-domain/mcp`. Add it in Claude, ChatGPT, Cursor or any MCP client, then sign in with OAuth. Set `API_URL` and `WEB_APP_URL` in the API's environment so the sign-in screen points at your domain.
+Your instance serves an MCP server at `https://your-api-domain/mcp`. Add it in Claude, ChatGPT, Cursor or any MCP client, then sign in with OAuth. Set `API_URL` and `WEB_APP_URL` so the sign-in screen points at your domain.
 
 After that, you can say "plan my afternoon" and watch the blocks appear. The talk goes between your agent and your server, with no relay in between. The [MCP overview](/docs/mcp/overview) has the setup for each client, and the [API reference](/docs/api/authentication) covers API keys.
 
@@ -174,10 +327,10 @@ After that, you can say "plan my afternoon" and watch the blocks appear. The tal
 Self-hosting removes the vendor. It also makes you the security team. These basics cover most of the risk.
 
 1. **Use HTTPS.** Put Caddy, nginx or Traefik in front of every app. Never send a login over plain HTTP.
-2. **Keep the database private.** The sample compose file publishes PostgreSQL on port 5432 for local use. On a server, remove that port or block it with a firewall.
-3. **Change default passwords.** Replace the sample database password and use a long random `JWT_SECRET`.
+2. **Keep the database private.** Open Sunsama's compose file binds PostgreSQL and Redis to localhost only. Keep it that way, and check the same for every other app.
+3. **Change default passwords.** Set your own database password before the first start.
 4. **Put personal apps behind a VPN.** If only you use it, Tailscale or WireGuard keeps it off the open internet.
-5. **Update on a schedule.** Pull, rebuild and apply schema changes once a month, or when a release fixes a security bug.
+5. **Update on a schedule.** Pull and rebuild once a month, or when a release fixes a security bug.
 6. **Turn off open sign-ups** on apps that allow it, once your accounts exist.
 
 ## How to back up your self-hosted apps
@@ -190,7 +343,7 @@ For Open Sunsama, dump PostgreSQL every night:
 docker compose exec -T postgres pg_dump -U opensunsama opensunsama | gzip > backup_$(date +%F).sql.gz
 ```
 
-For SQLite apps like Tududi and Trilium, stop the app or use its backup feature, then copy the database file. For Radicale, copy its data folder.
+For SQLite apps like tududi and Trilium, stop the app or use its backup feature, then copy the database file. For Radicale, copy its data folder.
 
 Then copy the files off the box, for example to another server or object storage. Once a quarter, restore one into a fresh container and check your tasks are there.
 
@@ -198,15 +351,25 @@ Then copy the files off the box, for example to another server or object storage
 
 Self-host when you want full control, or when GDPR says your data must stay in one place. It also makes sense if you already run a home server. You trade a little time each month for owning everything.
 
-Use the hosted version when you want to plan your day today and never think about servers. Open Sunsama, Vikunja and Tududi run the same code in the cloud and on your box, so you can move later. On the hosted version, grab the [desktop apps](/download) too, and use the web app on your phone.
+Use a hosted version when you want to plan your day today and never think about servers. Open Sunsama, Vikunja and tududi run the same code in the cloud and on your box, so you can move later. On the hosted version, grab the [desktop apps](/download) too, and use the web app on your phone.
 
 ## Which one should you pick?
 
-- **You want one self-hosted place to plan your day, with time blocks and AI agents:** Open Sunsama. This is our pick for most people.
+- **For most people: Open Sunsama.** One self-hosted place to plan your day, with time blocks and AI agents.
 - **You want a self-hosted Todoist:** Vikunja.
-- **You want the smallest self-hosted todo app, with MCP, under MIT:** Tududi.
-- **You want no server at all:** Super Productivity.
-- **You want your calendar off Google:** Radicale or Nextcloud.
-- **You want private notes on every device:** Joplin Server.
+- **You want the smallest self-hosted to-do app, with MCP, under MIT:** tududi.
+- **You already run Nextcloud:** Nextcloud Tasks, Calendar and Deck.
+- **You want a Trello board:** WeKan or Kanboard.
+- **Your team wants Jira or Linear on its own server:** Plane.
+- **You want your calendar off Google:** Radicale, Baïkal or Nextcloud Calendar.
+- **You want private notes on every device:** Joplin.
+- **You bill by the hour:** Kimai or solidtime.
 
-For a wider list, including time trackers and kanban boards, see our [best open source productivity apps](/blog/best-open-source-productivity-apps) and the [open source task manager](/open-source-task-manager) page.
+## More open source guides
+
+- [Best open source productivity apps](/blog/best-open-source-productivity-apps)
+- [Best open source to-do list apps](/blog/best-open-source-todo-list-apps)
+- [Best open source planner apps](/blog/best-open-source-planner-apps)
+- [Best open source calendar apps](/blog/best-open-source-calendar-apps)
+- [Best open source kanban boards](/blog/best-open-source-kanban-boards)
+- [Open Sunsama as an open source task manager](/open-source-task-manager)
