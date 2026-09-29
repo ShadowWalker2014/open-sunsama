@@ -46,7 +46,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^22.20.4",
+    "@types/node": "^24.0.0",
     "drizzle-kit": "^0.28.1",
     "typescript": "catalog:"
   },

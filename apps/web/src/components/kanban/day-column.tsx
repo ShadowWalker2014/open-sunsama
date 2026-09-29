@@ -321,7 +321,8 @@ export function DayColumn({
 
       {/* Tasks */}
       <ScrollArea className="flex-1">
-        <div className="p-2 space-y-2">
+        {/* The phone board's last card scrolls clear of the + button. */}
+        <div className={cn("p-2 space-y-2", fill && "pb-24")}>
           {isError ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <p className="text-xs text-destructive">Failed to load</p>
