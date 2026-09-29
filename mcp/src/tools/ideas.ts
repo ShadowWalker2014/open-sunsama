@@ -19,6 +19,42 @@ const notes = z.string().max(5000).nullable();
 const estimatedMins = z.number().int().positive().max(1440).nullable();
 const ids = z.array(id).min(1);
 
+const boardFields = { name, icon: icon.optional(), color: color.optional(), position: position.optional() };
+const columnFields = { boardId: id, name, position: position.optional() };
+const ideaFields = { boardId: id, columnId: id, title, notes: notes.optional(), estimatedMins: estimatedMins.optional(), priority: priority.optional(), position: position.optional() };
+const ideaChanges = { title: title.optional(), notes: notes.optional(), estimatedMins: estimatedMins.optional(), priority: priority.optional(), columnId: id.optional(), position: position.optional(), completedAt: z.string().datetime().nullable().optional() };
+const operations = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("create_board"), data: z.object(boardFields) }),
+  z.object({ action: z.literal("update_board"), id, data: z.object(boardFields).partial() }),
+  z.object({ action: z.literal("delete_board"), id }),
+  z.object({ action: z.literal("create_column"), data: z.object(columnFields) }),
+  z.object({ action: z.literal("update_column"), id, data: z.object({ name: name.optional(), position: position.optional() }) }),
+  z.object({ action: z.literal("delete_column"), id }),
+  z.object({ action: z.literal("create_idea"), data: z.object(ideaFields) }),
+  z.object({ action: z.literal("update_idea"), id, data: z.object(ideaChanges) }),
+  z.object({ action: z.literal("delete_idea"), id }),
+  z.object({ action: z.literal("create_subtask"), ideaId: id, data: z.object({ title, position: position.optional() }) }),
+  z.object({ action: z.literal("update_subtask"), ideaId: id, id, data: z.object({ title: title.optional(), position: position.optional(), completed: z.boolean().optional() }) }),
+  z.object({ action: z.literal("delete_subtask"), ideaId: id, id }),
+]);
+
+async function executeOperation(api: ApiClient, op: z.infer<typeof operations>) {
+  switch (op.action) {
+    case "create_board": return api.createIdeaBoard(op.data);
+    case "update_board": return api.updateIdeaBoard(op.id, op.data);
+    case "delete_board": return api.deleteIdeaBoard(op.id);
+    case "create_column": return api.createIdeaColumn(op.data);
+    case "update_column": return api.updateIdeaColumn(op.id, op.data);
+    case "delete_column": return api.deleteIdeaColumn(op.id);
+    case "create_idea": return api.createIdea(op.data);
+    case "update_idea": return api.updateIdea(op.id, op.data);
+    case "delete_idea": return api.deleteIdea(op.id);
+    case "create_subtask": return api.createIdeaSubtask(op.ideaId, op.data);
+    case "update_subtask": return api.updateIdeaSubtask(op.ideaId, op.id, op.data);
+    case "delete_subtask": return api.deleteIdeaSubtask(op.ideaId, op.id);
+  }
+}
+
 function result(response: ApiResponse<unknown>, fallback: string) {
   if (!response.success) {
     return {
@@ -42,6 +78,21 @@ function result(response: ApiResponse<unknown>, fallback: string) {
 }
 
 export function registerIdeaTools(server: McpServer, api: ApiClient): void {
+  defineTool(server, "bulk_ideas", "Create, update, move, complete, or delete up to 50 Ideas boards, columns, cards, or checklist items in one call. Operations execute in order and return indexed success/error results. Not atomic: successful operations stay saved if another fails. Do not retry successful creates. Create parents first, then use the returned UUIDs in a subsequent call. Deleting a board/column also deletes its contents. Promotion uses promote_idea separately.",
+    { operations: z.array(operations).min(1).max(50) }, async (input) => {
+      const results = [];
+      for (const [index, op] of input.operations.entries()) {
+        try {
+          const response = await executeOperation(api, op);
+          results.push({ index, action: op.action, success: response.success, data: response.data ?? response.message, error: response.error });
+        } catch (error) {
+          results.push({ index, action: op.action, success: false, error: { message: error instanceof Error ? error.message : "Request failed" } });
+        }
+      }
+      return { content: [{ type: "text" as const, text: JSON.stringify({ results }) }], isError: results.some((r) => !r.success) };
+    });
+  defineTool(server, "get_idea", "Get one idea card, its checklist, and the ID of its planner task if promoted.", { id }, async ({ id }) => result(await api.getIdea(id), "Failed to get idea"));
+
   defineTool(
     server,
     "list_idea_boards",
@@ -215,7 +266,7 @@ export function registerIdeaTools(server: McpServer, api: ApiClient): void {
   defineTool(
     server,
     "promote_idea",
-    "Create a planner task from an idea card. Omit scheduledDate to put the task in the backlog. The idea remains and records the task ID.",
+    "Create a planner task from an idea card. Omit scheduledDate to put the task in the backlog. The idea remains and records the task ID. Repeating promotion returns the existing task without making a duplicate; use schedule_task to move it.",
     {
       id,
       scheduledDate: z

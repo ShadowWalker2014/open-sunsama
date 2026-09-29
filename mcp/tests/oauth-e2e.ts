@@ -293,9 +293,9 @@ async function main() {
   check("connected after auth", client.getServerVersion()?.name === "open-sunsama", client.getServerVersion());
 
   const { tools } = await client.listTools();
-  check("lists all 45 tools", tools.length === 45, tools.length);
+  check("lists all 47 tools", tools.length === 47, tools.length);
   check("OAuth grant includes ideas scopes", ["ideas:read", "ideas:write"].every((s) => provider.savedTokens?.scope?.split(" ").includes(s)), provider.savedTokens?.scope);
-  check("every Ideas tool declares its OAuth scope", tools.filter((t) => t.name.includes("idea")).length === 21 && tools.filter((t) => t.name.includes("idea")).every((t) => JSON.stringify(t._meta?.securitySchemes).includes("ideas:")));
+  check("every Ideas tool declares its OAuth scope", tools.filter((t) => t.name.includes("idea")).length === 23 && tools.filter((t) => t.name.includes("idea")).every((t) => JSON.stringify(t._meta?.securitySchemes).includes("ideas:")));
   check("delete_idea_board is destructive", tools.find((t) => t.name === "delete_idea_board")?.annotations?.destructiveHint === true);
   const calendarTool = tools.find((t) => t.name === "list_calendar_events");
   check("list_calendar_events is read-only", calendarTool?.annotations?.readOnlyHint === true, calendarTool?.annotations);
@@ -402,7 +402,46 @@ async function main() {
   const missingSubtask = await client.callTool({ name: "reorder_idea_subtasks", arguments: { ideaId: idea.id, subtaskIds: [subtask.id] } });
   check("reorder_idea_subtasks rejects an incomplete order", missingSubtask.isError === true);
   check("list_ideas includes checklist counts", (await ideaTool<Idea[]>("list_ideas", { boardId: board.id })).find((i) => i.id === idea.id)?.subtaskDoneCount === 1);
+  check("get_idea returns its checklist", (await ideaTool<{ subtasks: Subtask[] }>("get_idea", { id: idea.id })).subtasks.length === 2);
+  type Bulk = { results: Array<{ success: boolean; data?: { id: string; columns?: Array<{ id: string }> } }> };
+  const bulkBoards = await ideaTool<Bulk>("bulk_ideas", { operations: [{ action: "create_board", data: { name: "Bulk board" } }, { action: "create_board", data: { name: "Bulk board two" } }] });
+  check("bulk creates boards", bulkBoards.results.every((r) => r.success) && bulkBoards.results.length === 2);
+  const bulkBoard = bulkBoards.results[0]!.data!;
+  const bulkCards = await ideaTool<Bulk>("bulk_ideas", { operations: [
+    { action: "create_idea", data: { boardId: bulkBoard.id, columnId: bulkBoard.columns![0]!.id, title: "Bulk card" } },
+    { action: "create_column", data: { boardId: bulkBoard.id, name: "Bulk column" } },
+  ] });
+  check("bulk creates cards and columns", bulkCards.results.every((r) => r.success));
+  const bulkCardId = bulkCards.results[0]!.data!.id;
+  const bulkColumnId = bulkCards.results[1]!.data!.id;
+  const bulkSubtask = await ideaTool<Bulk>("bulk_ideas", { operations: [
+    { action: "update_board", id: bulkBoard.id, data: { name: "Updated bulk board" } },
+    { action: "update_column", id: bulkColumnId, data: { name: "Updated bulk column" } },
+    { action: "update_idea", id: bulkCardId, data: { columnId: bulkColumnId, priority: "P0" } },
+    { action: "create_subtask", ideaId: bulkCardId, data: { title: "Bulk checklist" } },
+  ] });
+  check("bulk edits and moves cards", bulkSubtask.results.every((r) => r.success));
+  const bulkSubtaskId = bulkSubtask.results[3]!.data!.id;
+  const bulkEdit = await ideaTool<Bulk>("bulk_ideas", { operations: [{ action: "update_subtask", ideaId: bulkCardId, id: bulkSubtaskId, data: { completed: true } }] });
+  check("bulk edits checklist", bulkEdit.results[0]?.success === true);
+  const partial = await client.callTool({ name: "bulk_ideas", arguments: { operations: [
+    { action: "update_idea", id: "00000000-0000-0000-0000-000000000000", data: { title: "Missing" } },
+    { action: "update_idea", id: bulkCardId, data: { title: "Survives a partial failure" } },
+  ] } });
+  const partialData = JSON.parse((partial.content as Array<{ text: string }>)[0]!.text) as Bulk;
+  check("bulk reports per-item failure and preserves successes", partial.isError === true && !partialData.results[0]?.success && partialData.results[1]?.success === true);
+  const deniedBulk = await mcpCall(otherSession, "tools/call", { name: "bulk_ideas", arguments: { operations: [{ action: "delete_board", id: bulkBoard.id }] } });
+  check("bulk respects account ownership", deniedBulk.body.result?.isError === true);
+  const bulkDelete = await ideaTool<Bulk>("bulk_ideas", { operations: [
+    { action: "delete_subtask", ideaId: bulkCardId, id: bulkSubtaskId },
+    { action: "delete_idea", id: bulkCardId },
+    { action: "delete_column", id: bulkColumnId },
+    ...bulkBoards.results.map((r) => ({ action: "delete_board", id: r.data!.id })),
+  ] });
+  check("bulk deletes every entity type", bulkDelete.results.every((r) => r.success));
   const promoted = await ideaTool<{ idea: Idea; task: { id: string; title: string } }>("promote_idea", { id: idea.id });
+  const again = await ideaTool<{ task: { id: string } }>("promote_idea", { id: idea.id });
+  check("promotion retries return the same task", again.task.id === promoted.task.id);
   check("promote_idea creates a task and links it", promoted.idea.promotedTaskId === promoted.task.id && promoted.task.title === "Edited MCP card");
   check("delete_idea_subtask removes item", (await ideaTool<string>("delete_idea_subtask", { ideaId: idea.id, id: subtask.id })) === "Subtask deleted successfully");
   check("delete_idea removes card", (await ideaTool<string>("delete_idea", { id: idea2.id })) === "Idea deleted successfully");

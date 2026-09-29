@@ -80,6 +80,8 @@ const TOOL_METADATA: Record<string, ToolMetadata> = {
   list_calendar_events: { title: "List calendar events", scopes: ["calendar:read"], readOnly: true },
 
   // Ideas
+  bulk_ideas: { title: "Bulk manage Ideas", scopes: ["ideas:write"], destructive: true },
+  get_idea: { title: "Get idea", scopes: ["ideas:read"], readOnly: true },
   list_idea_boards: { title: "List idea boards", scopes: ["ideas:read"], readOnly: true },
   create_idea_board: { title: "Create idea board", scopes: ["ideas:write"] },
   update_idea_board: { title: "Update idea board", scopes: ["ideas:write"], idempotent: true },

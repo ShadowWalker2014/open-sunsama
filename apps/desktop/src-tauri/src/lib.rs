@@ -54,8 +54,27 @@ pub fn run() {
             commands::set_settings,
             commands::is_desktop,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|app, event| match event {
+            // An updater restart launches the executable directly. macOS can
+            // leave that process behind other apps unless we activate it once
+            // the event loop and main window are ready.
+            tauri::RunEvent::Ready => show_main_window(app),
+            #[cfg(target_os = "macos")]
+            tauri::RunEvent::Reopen { .. } => show_main_window(app),
+            _ => {}
+        });
+}
+
+fn show_main_window(app: &tauri::AppHandle) {
+    #[cfg(target_os = "macos")]
+    if let Err(error) = app.show() {
+        eprintln!("Failed to show application: {error}");
+    }
+    if let Some(window) = app.get_webview_window("main") {
+        bring_to_front(&window);
+    }
 }
 
 fn register_global_shortcuts(app: &tauri::App) {

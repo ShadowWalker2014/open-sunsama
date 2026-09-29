@@ -1,3 +1,4 @@
+import type { CalendarCreateAnchor } from "@/hooks/useDragToCreate";
 import * as React from "react";
 import {
   format,
@@ -137,7 +138,7 @@ interface CalendarViewProps {
   onBlockClick?: (block: TimeBlock) => void;
   onEditBlock?: (block: TimeBlock) => void;
   onViewTask?: (taskId: string) => void;
-  onTimeSlotClick?: (date: Date, startTime: Date, endTime: Date) => void;
+  onTimeSlotClick?: (date: Date, startTime: Date, endTime: Date, anchor?: CalendarCreateAnchor) => void;
   className?: string;
 }
 
@@ -556,12 +557,6 @@ export function CalendarView({
     }
   };
 
-  const handleTimelineMouseUp = () => {
-    if (isDragging) {
-      endDrag();
-    }
-  };
-
   const handleTimelineMouseLeave = () => {
     // Don't cancel drag on mouse leave - let it continue
   };
@@ -765,7 +760,6 @@ export function CalendarView({
               onBlockDragStart={handleBlockDragStart}
               onBlockResizeStart={handleBlockResizeStart}
               onTimelineMouseMove={handleTimelineMouseMove}
-              onTimelineMouseUp={handleTimelineMouseUp}
               onTimelineMouseLeave={handleTimelineMouseLeave}
               onExternalEventClick={handleExternalEventClick}
               onExternalEventDragStart={handleExternalEventDragStart}
@@ -776,8 +770,8 @@ export function CalendarView({
               {...(onViewTask ? { onViewTask } : {})}
               {...(onTimeSlotClick
                 ? {
-                    onTimeSlotClick: (startTime: Date, endTime: Date) =>
-                      onTimeSlotClick(selectedDate, startTime, endTime),
+                    onTimeSlotClick: (startTime: Date, endTime: Date, anchor?: CalendarCreateAnchor) =>
+                      onTimeSlotClick(selectedDate, startTime, endTime, anchor),
                   }
                 : {})}
             />
@@ -802,6 +796,7 @@ export function CalendarView({
               isLoading={isLoading}
               drag={multiDayDrag}
               blocksEditable
+              {...(onTimeSlotClick ? { onTimeSlotClick } : {})}
               onExternalEventClick={handleExternalEventClick}
               externalEventCanEdit={externalEventCanEdit}
               {...(onBlockClick ? { onBlockClick } : {})}

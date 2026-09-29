@@ -156,6 +156,10 @@ function App() {
           <PersistQueryClientProvider
             client={queryClient}
             persistOptions={persistOptions}
+            onSuccess={() => {
+              // Disk writes are throttled, so restored data may predate a saved edit.
+              void queryClient.invalidateQueries();
+            }}
           >
             {inner}
           </PersistQueryClientProvider>
@@ -173,6 +177,14 @@ function App() {
 const rootElement = document.getElementById("root");
 if (!rootElement) {
   throw new Error("Root element not found");
+}
+
+// React 19 / Helmet 3 renders head tags natively. On pre-rendered pages,
+// remove crawler-only tags before mounting so they aren't duplicated.
+// Crawlers without JS still receive the original tags in the HTML response.
+if (document.head.querySelector('[data-rh="true"]')) {
+  document.head.querySelector("title")?.remove();
+  document.head.querySelectorAll('[data-rh="true"]').forEach((tag) => tag.remove());
 }
 
 // A dev hot update of this file re-runs it; reuse the root so the app isn't mounted twice

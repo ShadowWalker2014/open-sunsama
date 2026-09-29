@@ -472,6 +472,10 @@ export function useUpdateTask() {
       });
     },
     onSuccess: (updatedTask, variables, context) => {
+      // A task's blocks follow it to its new day on the server.
+      if (variables.data.scheduledDate !== undefined) {
+        queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
+      }
       // Update with actual server data. We deliberately do not invalidate
       // lists here — the optimistic update + this setQueryData already
       // produces the canonical state, and the WebSocket echo will reconcile
@@ -1023,6 +1027,8 @@ export function useMoveTask() {
       });
     },
     onSuccess: (movedTask, variables, context) => {
+      // The task's blocks moved with it on the server.
+      queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
       // Reconcile with the server-authoritative task. Importantly, this
       // populates the source/target lists with the canonical position the
       // server picked when only `targetDate` was provided.
@@ -1267,6 +1273,8 @@ export function useReorderTasks() {
       });
     },
     onSuccess: (serverTasks, variables, context) => {
+      // Tasks that changed day brought their blocks along on the server.
+      queryClient.invalidateQueries({ queryKey: timeBlockKeys.lists() });
       // The server returns the canonical task list for the destination
       // bucket. Distribute it to every cache that classifies as a
       // destination for the target date / backlog, then update detail

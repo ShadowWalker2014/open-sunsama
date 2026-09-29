@@ -1,11 +1,12 @@
 import * as React from "react";
-import { startOfDay, endOfDay } from "date-fns";
+import { startOfDay, endOfDay, format, isSameDay } from "date-fns";
 import { Loader2 } from "lucide-react";
 import {
   useCalendars,
   useCalendarAccounts,
   useCreateCalendarEvent,
 } from "@/hooks/useCalendars";
+import { useCreateTimeBlock } from "@/hooks/useTimeBlocks";
 import { toast } from "@/hooks/use-toast";
 import {
   Button,
@@ -21,11 +22,6 @@ import {
 } from "@/components/ui";
 import { isCalendarReadOnlyForUi } from "@/lib/calendar-providers";
 
-/**
- * Calendar event sub-form for the create dialog. Picks among the
- * user's writable calendars (Google for now) and writes through to
- * the provider via the same path the detail-sheet edit uses.
- */
 export function EventForm({
   date,
   startTime,
@@ -37,23 +33,38 @@ export function EventForm({
   endTime: Date;
   onClose: () => void;
 }) {
-  const { data: calendars = [] } = useCalendars();
-  const { data: accounts = [] } = useCalendarAccounts();
+  const { data: calendars = [], isLoading: calendarsLoading } = useCalendars();
+  const { data: accounts = [], isLoading: accountsLoading } =
+    useCalendarAccounts();
   const createMutation = useCreateCalendarEvent();
+  const createBlock = useCreateTimeBlock();
+  const pending = createMutation.isPending || createBlock.isPending;
+  const [expanded, setExpanded] = React.useState(false);
+  const [start, setStart] = React.useState(
+    format(startTime, "yyyy-MM-dd'T'HH:mm")
+  );
+  const [end, setEnd] = React.useState(format(endTime, "yyyy-MM-dd'T'HH:mm"));
 
   const writableCalendars = React.useMemo(() => {
     const providerByAccount = new Map<string, string>();
     for (const a of accounts) providerByAccount.set(a.id, a.provider);
+    const isPrimary = (calendar: (typeof calendars)[number]) => {
+      const account = accounts.find((a) => a.id === calendar.accountId);
+      return (
+        account?.provider === "google" &&
+        !!account.email &&
+        calendar.externalId?.toLowerCase() === account.email.toLowerCase()
+      );
+    };
     return calendars
       .filter((c) => {
         const provider = providerByAccount.get(c.accountId);
-        return (
-          !isCalendarReadOnlyForUi(provider, c.isReadOnly) && c.isEnabled
-        );
+        return !isCalendarReadOnlyForUi(provider, c.isReadOnly) && c.isEnabled;
       })
       .sort((a, b) => {
         if (a.isDefaultForEvents && !b.isDefaultForEvents) return -1;
         if (!a.isDefaultForEvents && b.isDefaultForEvents) return 1;
+        if (isPrimary(a) !== isPrimary(b)) return isPrimary(a) ? -1 : 1;
         return a.name.localeCompare(b.name);
       });
   }, [calendars, accounts]);
@@ -69,13 +80,15 @@ export function EventForm({
     setTitle("");
     setLocation("");
     setIsAllDay(false);
+    setStart(format(startTime, "yyyy-MM-dd'T'HH:mm"));
+    setEnd(format(endTime, "yyyy-MM-dd'T'HH:mm"));
   }, [date, startTime, endTime]);
 
   React.useEffect(() => {
-    if (!calendarId && writableCalendars[0]?.id) {
-      setCalendarId(writableCalendars[0].id);
+    if (!calendarId && !calendarsLoading && !accountsLoading) {
+      setCalendarId(writableCalendars[0]?.id ?? "local");
     }
-  }, [calendarId, writableCalendars]);
+  }, [calendarId, writableCalendars, calendarsLoading, accountsLoading]);
 
   const dayStart = React.useMemo(() => startOfDay(date), [date]);
   const dayEnd = React.useMemo(() => endOfDay(date), [date]);
@@ -85,7 +98,7 @@ export function EventForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = title.trim();
-    if (!trimmed) return;
+    if (!trimmed || pending) return;
     if (!calendarId) {
       toast({
         variant: "destructive",
@@ -94,72 +107,83 @@ export function EventForm({
       });
       return;
     }
-    // For all-day events the iCal convention is UTC midnight of the
-    // covered date(s) with end exclusive. The user's slot click gave
-    // us a timed startTime — project to UTC midnight of that local
-    // date and set end = next-day UTC midnight (single-day all-day).
-    const finalStart = isAllDay
+    const selectedStart = new Date(start);
+    const selectedEnd = new Date(end);
+    if (
+      !Number.isFinite(+selectedStart) ||
+      !Number.isFinite(+selectedEnd) ||
+      selectedEnd <= selectedStart
+    ) {
+      toast({
+        variant: "destructive",
+        title: "End time must be after start time",
+      });
+      return;
+    }
+    if (calendarId === "local" && !isSameDay(selectedStart, selectedEnd)) {
+      toast({
+        variant: "destructive",
+        title:
+          "Choose a connected calendar for an event spanning multiple days",
+      });
+      return;
+    }
+    const allDay = calendarId !== "local" && isAllDay;
+    const finalStart = allDay
       ? new Date(
           Date.UTC(
-            startTime.getFullYear(),
-            startTime.getMonth(),
-            startTime.getDate()
+            selectedStart.getFullYear(),
+            selectedStart.getMonth(),
+            selectedStart.getDate()
           )
         )
-      : startTime;
-    const finalEnd = isAllDay
+      : selectedStart;
+    const finalEnd = allDay
       ? new Date(
           Date.UTC(
-            startTime.getFullYear(),
-            startTime.getMonth(),
-            startTime.getDate() + 1
+            selectedEnd.getFullYear(),
+            selectedEnd.getMonth(),
+            selectedEnd.getDate() + 1
           )
         )
-      : endTime;
+      : selectedEnd;
 
     try {
-      await createMutation.mutateAsync({
-        calendarId,
-        rangeFrom,
-        rangeTo,
-        payload: {
+      if (calendarId === "local") {
+        await createBlock.mutateAsync({
           title: trimmed,
-          location: location.trim() || null,
           startTime: finalStart,
           endTime: finalEnd,
-          isAllDay,
-          timezone: isAllDay
-            ? null
-            : Intl.DateTimeFormat().resolvedOptions().timeZone,
-        },
-      });
-      toast({ title: "Event created" });
+        });
+      } else
+        await createMutation.mutateAsync({
+          calendarId,
+          rangeFrom,
+          rangeTo,
+          payload: {
+            title: trimmed,
+            location: location.trim() || null,
+            startTime: finalStart,
+            endTime: finalEnd,
+            isAllDay: allDay,
+            timezone: allDay
+              ? null
+              : Intl.DateTimeFormat().resolvedOptions().timeZone,
+          },
+        });
+      if (calendarId !== "local") toast({ title: "Event created" });
       onClose();
     } catch {
       // Mutation hook handled the toast.
     }
   };
 
-  if (writableCalendars.length === 0) {
-    return (
-      <div className="space-y-3 text-sm">
-        <p className="text-muted-foreground">
-          No writable calendars connected. Connect a Google account in
-          Settings → Calendar to create events from here.
-        </p>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Close
-          </Button>
-        </DialogFooter>
-      </div>
-    );
-  }
-
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="ev-title">Title</Label>
+        <Label htmlFor="ev-title" className="sr-only">
+          Event title
+        </Label>
         <Input
           id="ev-title"
           value={title}
@@ -169,18 +193,11 @@ export function EventForm({
         />
       </div>
 
-      <div className="flex items-center justify-between">
-        <Label htmlFor="ev-allday" className="text-sm font-medium">
-          All-day
-        </Label>
-        <Switch
-          id="ev-allday"
-          checked={isAllDay}
-          onCheckedChange={setIsAllDay}
-          disabled={createMutation.isPending}
-        />
-      </div>
-
+      <p className="text-xs text-muted-foreground">
+        {Number.isFinite(+new Date(start)) && Number.isFinite(+new Date(end))
+          ? `${format(new Date(start), "EEE, MMM d · h:mm a")} – ${format(new Date(end), isSameDay(new Date(start), new Date(end)) ? "h:mm a" : "MMM d · h:mm a")}`
+          : "Choose a start and end time"}
+      </p>
       <div className="space-y-2">
         <Label htmlFor="ev-cal">Calendar</Label>
         <Select value={calendarId} onValueChange={setCalendarId}>
@@ -188,6 +205,7 @@ export function EventForm({
             <SelectValue placeholder="Select calendar" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="local">Open Sunsama</SelectItem>
             {writableCalendars.map((c) => (
               <SelectItem key={c.id} value={c.id}>
                 <span className="inline-flex items-center gap-2">
@@ -204,28 +222,69 @@ export function EventForm({
         </Select>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="ev-location">Location (optional)</Label>
-        <Input
-          id="ev-location"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          placeholder="Add location"
-        />
-      </div>
+      {expanded && (
+        <div className="space-y-3 border-t pt-3">
+          <div className="space-y-1">
+            <Label htmlFor="ev-start">Start</Label>
+            <Input
+              id="ev-start"
+              type="datetime-local"
+              value={start}
+              onChange={(e) => setStart(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="ev-end">End</Label>
+            <Input
+              id="ev-end"
+              type="datetime-local"
+              value={end}
+              onChange={(e) => setEnd(e.target.value)}
+              required
+            />
+          </div>
+          {calendarId !== "local" && (
+            <>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="ev-allday" className="text-sm font-medium">
+                  All-day
+                </Label>
+                <Switch
+                  id="ev-allday"
+                  checked={isAllDay}
+                  onCheckedChange={setIsAllDay}
+                  disabled={pending}
+                />
+              </div>
+
+              <Label htmlFor="ev-location">Location</Label>
+              <Input
+                id="ev-location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Add location"
+              />
+            </>
+          )}
+        </div>
+      )}
 
       <DialogFooter>
-        <Button type="button" variant="outline" onClick={onClose}>
-          Cancel
+        <Button
+          type="button"
+          variant="ghost"
+          aria-expanded={expanded}
+          onClick={() => setExpanded(!expanded)}
+        >
+          {expanded ? "Fewer options" : "More options"}
         </Button>
         <Button
           type="submit"
-          disabled={!title.trim() || !calendarId || createMutation.isPending}
+          disabled={!title.trim() || !calendarId || pending}
         >
-          {createMutation.isPending && (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          )}
-          {createMutation.isPending ? "Creating..." : "Create event"}
+          {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {pending ? "Saving..." : "Save"}
         </Button>
       </DialogFooter>
     </form>

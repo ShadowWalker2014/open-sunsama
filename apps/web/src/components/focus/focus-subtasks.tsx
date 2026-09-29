@@ -6,5 +6,5 @@ interface FocusSubtasksProps {
 
 /** Subtasks section for focus mode — the same checklist the task modal uses. */
 export function FocusSubtasks({ taskId }: FocusSubtasksProps) {
-  return <SubtaskChecklist key={taskId} taskId={taskId} />;
+  return <SubtaskChecklist key={taskId} taskId={taskId} showHeader={false} />;
 }

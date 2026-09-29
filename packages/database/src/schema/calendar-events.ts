@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, timestamp, boolean, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, timestamp, boolean, index, jsonb } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
@@ -12,6 +12,16 @@ export type EventStatus = (typeof EVENT_STATUS_OPTIONS)[number];
 // Response status types
 export const RESPONSE_STATUS_OPTIONS = ['accepted', 'declined', 'tentative', 'needsAction'] as const;
 export type ResponseStatus = (typeof RESPONSE_STATUS_OPTIONS)[number];
+
+/** One guest on an event, as the provider reports it. */
+export interface EventAttendee {
+  email: string;
+  name: string | null;
+  responseStatus: ResponseStatus | null;
+  organizer: boolean;
+  /** The connected account's own entry. */
+  self: boolean;
+}
 
 export const calendarEvents = pgTable('calendar_events', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -39,6 +49,10 @@ export const calendarEvents = pgTable('calendar_events', {
   // Status
   status: varchar('status', { length: 20 }).default('confirmed'), // 'confirmed' | 'tentative' | 'cancelled'
   responseStatus: varchar('response_status', { length: 20 }), // 'accepted' | 'declined' | 'tentative' | 'needsAction'
+
+  // Guests and the video call link (Google Meet, Teams, Zoom)
+  attendees: jsonb('attendees').$type<EventAttendee[]>(),
+  conferenceUrl: varchar('conference_url', { length: 1000 }),
 
   // Metadata
   htmlLink: varchar('html_link', { length: 1000 }), // Link to event in provider's UI

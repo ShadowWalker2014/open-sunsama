@@ -1,16 +1,29 @@
 import * as React from "react";
-import { ChevronLeft, ChevronRight, CalendarDays, ArrowUpDown, Check, Plus } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ArrowUpDown,
+  Check,
+  CalendarDays,
+  Columns3,
+  Square,
+} from "lucide-react";
+import { format, isToday } from "date-fns";
+import type { BoardMode } from "./kanban-board";
 import type { TaskSortBy } from "@open-sunsama/types";
+import { cn } from "@/lib/utils";
 import {
   Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  ShortcutHint,
   ViewSearch,
 } from "@/components/ui";
-import { prefetchAddTaskModal } from "./add-task-modal.lazy";
+import { WithShortcut, KeyCaps } from "@/components/ui/with-shortcut";
+import { MonthGrid } from "@/components/ui/month-grid";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { SHORTCUTS, formatShortcut } from "@/hooks/useKeyboardShortcuts";
 
 // Extended sort option that includes direction
 export type SortOption = "position" | "priority-desc" | "priority-asc" | "createdAt-desc" | "createdAt-asc";
@@ -47,7 +60,13 @@ interface KanbanBoardToolbarProps {
   onNavigatePrevious: () => void;
   onNavigateNext: () => void;
   onNavigateToday: () => void;
-  onAddTask: () => void;
+  /** Puts a day at the left edge of the board. */
+  onNavigateToDate: (date: Date) => void;
+  /** The day at the left edge, marked in the calendar. */
+  firstVisibleDate: Date | null;
+  /** Board (several days) or Today (one day). */
+  mode: BoardMode;
+  onModeChange: (mode: BoardMode) => void;
   sortBy: SortOption;
   onSortChange: (sort: SortOption) => void;
   /** Substring filter applied to task titles/notes across the day columns. */
@@ -82,52 +101,130 @@ export function KanbanBoardToolbar({
   onNavigatePrevious,
   onNavigateNext,
   onNavigateToday,
-  onAddTask,
+  onNavigateToDate,
+  firstVisibleDate,
+  mode,
+  onModeChange,
   sortBy,
   onSortChange,
   searchQuery,
   onSearchQueryChange,
 }: KanbanBoardToolbarProps) {
+  const [goToOpen, setGoToOpen] = React.useState(false);
+  const go = (action: () => void) => {
+    action();
+    setGoToOpen(false);
+  };
+  const goToRows = [
+    { label: "Go to today", shortcut: SHORTCUTS.focusToday, action: onNavigateToday },
+    { label: "Go to next day", shortcut: SHORTCUTS.nextDay, action: onNavigateNext },
+    { label: "Go to previous day", shortcut: SHORTCUTS.previousDay, action: onNavigatePrevious },
+  ];
   const currentSortLabel = SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? "Manual";
 
   return (
-    <div className="flex h-14 flex-shrink-0 items-center justify-between px-3 sm:px-4">
+    <div className="flex h-12 flex-shrink-0 items-center justify-between px-3 sm:px-4">
       <div className="flex items-center gap-2 sm:gap-3">
         {/* Navigation Arrows */}
         <div className="flex items-center gap-0.5 sm:gap-1">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={onNavigatePrevious}
-            title="Previous day"
-            className="h-8 w-8"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            onClick={onNavigateToday}
-            className="group h-8 px-2.5"
-          >
-            <CalendarDays className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Today</span>
-            <ShortcutHint shortcutKey="goToToday" className="ml-2 hidden sm:flex" showOnHover />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={onNavigateNext}
-            title="Next day"
-            className="h-8 w-8"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+          <WithShortcut label="Previous day" shortcut="previousDay" side="bottom">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onNavigatePrevious}
+              aria-label="Previous day"
+              className="h-7 w-7"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          </WithShortcut>
+          {/* Sunsama's date menu: jump to today, step a day, or pick any date. */}
+          <Popover open={goToOpen} onOpenChange={setGoToOpen}>
+            <PopoverTrigger asChild>
+              <WithShortcut label="Go to date" side="bottom">
+                <Button variant="ghost" className="h-7 gap-1.5 px-2 text-[13px]">
+                  <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                  {/* One day at a time shows which day it is. */}
+                  {mode === "day" && firstVisibleDate && !isToday(firstVisibleDate)
+                    ? format(firstVisibleDate, "EEE, MMM d")
+                    : "Today"}
+                </Button>
+              </WithShortcut>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-auto p-0">
+              <div className="p-1">
+                {goToRows.map((row) => (
+                  <button
+                    key={row.label}
+                    type="button"
+                    onClick={() => go(row.action)}
+                    className="flex w-full items-center justify-between gap-6 rounded px-2.5 py-1.5 text-sm transition-colors hover:bg-accent"
+                  >
+                    {row.label}
+                    {row.shortcut && (
+                      <KeyCaps keys={formatShortcut(row.shortcut).split(" ")} />
+                    )}
+                  </button>
+                ))}
+              </div>
+              <div className="border-t border-border/60">
+                <MonthGrid
+                  selected={firstVisibleDate}
+                  onSelect={(date) => go(() => onNavigateToDate(date))}
+                />
+              </div>
+            </PopoverContent>
+          </Popover>
+          <WithShortcut label="Next day" shortcut="nextDay" side="bottom">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onNavigateNext}
+              aria-label="Next day"
+              className="h-7 w-7"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </WithShortcut>
         </div>
 
       </div>
 
       {/* Right-side actions */}
       <div className="flex items-center gap-2">
+        {/* Today (one day) or Board (several days), as in Sunsama */}
+        <div
+          role="radiogroup"
+          aria-label="View"
+          className="flex h-7 items-center rounded-md bg-muted/50 p-0.5"
+        >
+          {(
+            [
+              { value: "day", label: "Today", icon: Square, shortcut: "todayView" },
+              { value: "board", label: "Board", icon: Columns3, shortcut: "boardView" },
+            ] as const
+          ).map(({ value, label, icon: Icon, shortcut }) => (
+            <WithShortcut key={value} label={label} shortcut={shortcut} side="bottom">
+              <button
+                aria-keyshortcuts={value === "day" ? "Shift+T" : "Shift+B"}
+                type="button"
+                role="radio"
+                aria-checked={mode === value}
+                onClick={() => onModeChange(value)}
+                className={cn(
+                  "flex h-6 items-center gap-1.5 rounded px-2 text-xs transition-colors",
+                  mode === value
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+              </button>
+            </WithShortcut>
+          ))}
+        </div>
+
         {/* Filter the visible day columns down to matching cards */}
         <ViewSearch
           value={searchQuery}
@@ -135,32 +232,21 @@ export function KanbanBoardToolbar({
           placeholder="Search tasks…"
         />
 
-        {/* Primary Add Task action */}
-        <Button
-          onClick={onAddTask}
-          onMouseEnter={() => {
-            void prefetchAddTaskModal();
-          }}
-          onFocus={() => {
-            void prefetchAddTaskModal();
-          }}
-          size="sm"
-          className="gap-1.5 h-8 pl-2.5 pr-1.5"
-        >
-          <Plus className="h-4 w-4" />
-          <span className="hidden sm:inline">Add task</span>
-          <kbd className="hidden sm:inline-flex h-4 min-w-[16px] items-center justify-center rounded border border-primary-foreground/25 bg-primary-foreground/15 px-1 text-[9px] font-semibold leading-none">
-            A
-          </kbd>
-        </Button>
-
         {/* Sort Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1.5 h-8 px-2.5">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="relative h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+              aria-label={`Sort: ${currentSortLabel}`}
+              title={`Sort: ${currentSortLabel}`}
+            >
               <ArrowUpDown className="h-4 w-4" />
-              <span className="hidden sm:inline">Sort:</span>
-              <span className="text-xs sm:text-sm">{currentSortLabel}</span>
+              {/* Name the order only when it isn't the default */}
+              {sortBy !== "position" && (
+                <span className="absolute right-1 top-1 h-1 w-1 rounded-full bg-primary" />
+              )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
