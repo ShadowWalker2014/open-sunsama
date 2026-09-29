@@ -123,3 +123,7 @@ export function hasTaskProvider(id: string): boolean {
 export function listTaskProviders(): TaskProvider[] {
   return [...PROVIDERS.values()];
 }
+
+import { TodoistProvider } from "./todoist.js";
+
+registerTaskProvider(new TodoistProvider());
