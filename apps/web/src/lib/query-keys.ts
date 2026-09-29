@@ -20,8 +20,15 @@ import type { TaskFilterInput, TimeBlockFilterInput } from "@open-sunsama/types"
 
 export const taskKeys = {
   all: ["tasks"] as const,
+  // Every cache under `lists()` must hold a plain `Task[]`: task mutations
+  // walk all of them with `getQueriesData`/`setQueriesData` and spread or map
+  // the value. Anything shaped differently needs a key outside this prefix.
   lists: () => [...taskKeys.all, "list"] as const,
   list: (filters: TaskFilterInput) => [...taskKeys.lists(), filters] as const,
+  // The kanban's range prefetch (`useKanbanRangePrefetch`) caches an object,
+  // not a Task[], so it lives beside `lists()` rather than under it.
+  range: (from: string, to: string) =>
+    [...taskKeys.all, "range", { from, to }] as const,
   details: () => [...taskKeys.all, "detail"] as const,
   detail: (id: string) => [...taskKeys.details(), id] as const,
 };

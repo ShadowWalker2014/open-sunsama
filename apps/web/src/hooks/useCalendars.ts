@@ -3,6 +3,7 @@ import type {
   CalendarAccount,
   Calendar,
   CalendarEvent,
+  CalendarRsvpResponse,
   ConnectCalDavRequest,
   UpdateCalendarRequest,
 } from "@open-sunsama/types";
@@ -506,6 +507,61 @@ export function useUpdateCalendarEvent() {
       // edit would only land in the range that originated the
       // mutation, leaving siblings stale or showing the event in the
       // wrong slot if its time changed enough to leave the range.
+      queryClient.invalidateQueries({ queryKey: calendarKeys.all });
+    },
+  });
+}
+
+/**
+ * Answer an invitation (going / maybe / not going). The answer shows at
+ * once in every cached range and rolls back if the provider refuses.
+ */
+export function useRespondToCalendarEvent() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      response,
+    }: {
+      id: string;
+      response: CalendarRsvpResponse;
+    }): Promise<CalendarEvent> => {
+      const client = getApiClient();
+      const result = await client.post<{ success: boolean; data: CalendarEvent }>(
+        `calendar-events/${id}/rsvp`,
+        { response }
+      );
+      return result.data;
+    },
+    onMutate: async ({ id, response }) => {
+      const eventsPrefix = ["calendars", "events"] as const;
+      await queryClient.cancelQueries({ queryKey: eventsPrefix });
+      const snapshots = queryClient.getQueriesData<CalendarEvent[]>({
+        queryKey: eventsPrefix,
+      });
+      for (const [key, data] of snapshots) {
+        if (!data) continue;
+        queryClient.setQueryData<CalendarEvent[]>(
+          key,
+          data.map((ev) =>
+            ev.id === id ? { ...ev, responseStatus: response } : ev
+          )
+        );
+      }
+      return { snapshots };
+    },
+    onError: (error, _input, context) => {
+      for (const [key, prior] of context?.snapshots ?? []) {
+        queryClient.setQueryData(key, prior);
+      }
+      toast({
+        variant: "destructive",
+        title: "Couldn't send your answer",
+        description: isApiError(error) ? error.message : "Please try again.",
+      });
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: calendarKeys.all });
     },
   });

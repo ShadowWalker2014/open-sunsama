@@ -120,12 +120,22 @@ Available ids (check `src/lib/blog-media.json` for the current list):
 - Shots: `board`, `calendar-week`, `calendar-day`, `task-detail`, `focus`, `command-palette`, `ideas`, `mcp-settings`, `consent-claude`, `consent-chatgpt`, `mobile-tasks` (the mobile web app).
 - New media is recorded only on the local demo stack (SKILL.md section 5), never against production.
 
-## 9. Page quality (hard, checked by QA)
+## 9. Open-source app lists (authority)
+
+Every "best open source X" or "X alternatives" post lists apps as `<OssApp>` cards, never as plain text.
+- Cards read `apps/web/src/content/oss-apps.json`: license, stars, latest release, platforms, self-host, API and MCP, pulled from each project's source, plus a real screenshot we captured and its source credit.
+- `<OssApp id="vikunja" rank={2} bestFor="…" />` for each ranked app; `<OssTable ids={[...]} />` for the comparison table. Rank order feeds the ItemList JSON-LD.
+- Source-code links are followed; website and docs links are nofollow. Don't restate numbers the card shows in prose.
+- Before a run that touches these posts: `cd apps/web && node scripts/refresh-oss-apps.mjs` (updates stars, releases, archived status), and read its diff: an app that became archived moves down or out.
+- Adding an app: add its entry to the registry (verify every field at the source) and capture a real screenshot into `apps/web/public/oss/<id>.webp` from its demo, web app or official images. Never fabricate UI.
+- Only open-source licenses go in "open source" rankings. PLANKA (fair-use license) and Anytype (source-available) are noted, not ranked. Proton and Tuta calendars have closed servers. Focalboard is unmaintained.
+
+## 10. Page quality (hard, checked by QA)
 
 - Every changed page passes `node scripts/qa-blog.mjs` at 375, 768 and 1280 px in light and dark: layout shift below 0.1, no sideways scroll, no broken media, and no console errors other than the GitHub star-count rate limit and the analytics script.
 - Look at the screenshots yourself. Tables scroll inside their own box on phones, media shows the right theme, and nothing is blank or clipped.
 - `dist/blog/<slug>.html` must contain the article text in `<noscript>` plus BlogPosting and FAQPage JSON-LD, so AI crawlers that don't run JavaScript can read it.
 
-## 10. Length
+## 11. Length
 
 List and comparison posts: 1,800-2,800 words. How-to guides: 1,200-1,800 words. Every section earns its place; no padding.

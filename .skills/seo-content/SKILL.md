@@ -19,6 +19,7 @@ Read [playbook.md](playbook.md) before writing a word. It has the hard rules: po
 | Readability gate | `cd apps/web && bun run scripts/check-blog-readability.ts <slug>` | PASS/FAIL per post |
 | Media | `scripts/readme-media/blog-media.mjs` on a local seeded stack | Shots, clips, narrated videos in `apps/web/public/blog-media/` |
 | Covers | `cd apps/web && node scripts/generate-blog-covers.mjs <slug>` | Light, dark and social covers from real product screenshots |
+| Open-source registry | `cd apps/web && node scripts/refresh-oss-apps.mjs` | Fresh license, stars, releases and status for every app in `oss-apps.json` (playbook section 9) |
 | QA | `node apps/web/scripts/qa-blog.mjs <slug...>` | CLS, overflow, console errors, screenshots at 375/768/1280 in light and dark |
 | Ship | PR → squash merge to `main` → Railway deploys `web` | Live pages |
 
@@ -44,6 +45,9 @@ Look for:
 
 ## 2. Pick the work
 
+Start every run with `cd apps/web && node scripts/refresh-oss-apps.mjs` so the open-source cards stay current, and commit the refreshed registry with the run.
+
+
 - **3 new posts** for the queries with the best mix of volume, intent (people choosing an app), and weak competition (Reddit, small vendor blogs, directories).
 - **1-3 updates, 5 at most**: the most important outdated posts (impressions or signups at stake, stale facts, old date on page 1).
 - Check `apps/web/src/content/blog/` so a new post doesn't compete with an existing one for the same query. Update the existing post instead.
@@ -66,14 +70,7 @@ For updated posts: keep the slug and the original `date`, set `updated` to today
 
 Every post needs one narrated `<DemoVideo>`, 2-4 `<Clip>`s and 1-3 `<Shot>`s. Reuse ids from `apps/web/src/lib/blog-media.json` when they fit. Record new ones only when a post needs something not there.
 
-Local stack (never record against production):
-
-```bash
-docker start os-demo-pg || docker run -d --name os-demo-pg -e POSTGRES_PASSWORD=demo -e POSTGRES_DB=opensunsama -p 5433:5432 postgres:16
-(cd packages/database && DATABASE_URL=postgresql://postgres:demo@localhost:5433/opensunsama bunx drizzle-kit push --force)
-```
-
-Start the `api-demo-local` (port 3101) and `web-demo-local` (port 3107) configs from `.claude/launch.json` with `preview_start`. `api-demo-local` blanks Redis, email, S3 and OAuth secrets so nothing touches production. Then seed and record:
+Local stack (never record against production, never use Docker): start the `api-demo` (port 3101) and `web-demo` (port 3107) configs from `.claude/launch.json` with `preview_start`. They run `scripts/dev-local.mjs`, which uses the Railway development database, runs migrations on start, and blanks Redis, email, S3 and OAuth secrets so nothing touches production. Then seed and record:
 
 ```bash
 cd scripts/readme-media
@@ -110,6 +107,7 @@ Pass bar for every changed page, at 375, 768 and 1280px in light and dark:
 ```bash
 git checkout -b seo/weekly-<date> && git add -A && git commit
 git push -u origin HEAD && gh pr create
+gh pr checks --watch --fail-fast   # CI is required; fix any failure before merging
 gh pr merge --squash --delete-branch
 ```
 
@@ -117,7 +115,7 @@ Railway deploys the `web` service from `main` in a few minutes. Confirm each pag
 
 ## Gotchas
 
-- `apps/api/.env` points at the production database. Only run the API through `api-demo-local`.
+- `apps/api/.env` points at the production database. Only run the API through `api-demo` (or `bun run dev:local`).
 - Sunsama, Todoist, Akiflow, Reclaim and others have their own MCP servers now. Our edges are public code, self-hosting, a public REST API, your data, and any agent. Check facts every run; they change monthly.
 - MDX media components go on their own line with blank lines around them, or they end up inside a `<p>`.
 - The license is non-commercial, not OSI. Use the wording in the playbook.

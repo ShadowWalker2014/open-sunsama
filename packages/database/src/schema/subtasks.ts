@@ -14,6 +14,12 @@ export const subtasks = pgTable(
     title: varchar('title', { length: 500 }).notNull(),
     completed: boolean('completed').notNull().default(false),
     position: integer('position').notNull().default(0),
+    // Planned and logged minutes, and a focus timer, like the parent task's.
+    // A running subtask timer also runs its task's timer.
+    estimatedMins: integer('estimated_mins'),
+    actualMins: integer('actual_mins'),
+    timerStartedAt: timestamp('timer_started_at'),
+    timerAccumulatedSeconds: integer('timer_accumulated_seconds').notNull().default(0),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },

@@ -20,6 +20,10 @@ export const updateSubtaskSchema = z.object({
   title: z.string().min(1).max(500).optional(),
   completed: z.boolean().optional(),
   position: z.number().int().nonnegative().optional(),
+  /** Planned minutes, up to a day; null clears it. */
+  estimatedMins: z.number().int().min(1).max(1440).nullable().optional(),
+  /** Logged minutes, up to a day; null clears it. */
+  actualMins: z.number().int().min(0).max(1440).nullable().optional(),
 });
 
 /**

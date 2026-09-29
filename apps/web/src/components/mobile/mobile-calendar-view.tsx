@@ -356,7 +356,7 @@ export function MobileCalendarView({
     // page-scroll, carrying the header off-screen.
     <div
       className={cn(
-        "flex h-[calc(100dvh-4rem)] flex-col overflow-hidden bg-background",
+        "flex h-full flex-col overflow-hidden bg-background",
         className
       )}
     >
@@ -700,13 +700,13 @@ export function MobileCalendarView({
             }
           }}
           className={cn(
-            "fixed bottom-24 right-4 z-40",
+            "fab-above-nav fixed right-4 z-40",
             "flex h-14 w-14 items-center justify-center",
             "rounded-full bg-primary text-primary-foreground shadow-lg",
             "hover:bg-primary/90 active:scale-95 transition-all",
             "lg:hidden"
           )}
-          aria-label="Add time block"
+          aria-label="Add event"
         >
           <Plus className="h-6 w-6" />
         </button>

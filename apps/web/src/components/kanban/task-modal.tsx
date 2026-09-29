@@ -1,3 +1,4 @@
+import { TIME_EDIT_KEYS, matchesTimeEditShortcut, usePriorityShortcut } from "@/hooks/useKeyboardShortcuts";
 import * as React from "react";
 import { createPortal } from "react-dom";
 import {
@@ -5,53 +6,28 @@ import {
   addMinutes,
   addDays,
   startOfWeek,
-  startOfMonth,
-  endOfMonth,
-  eachDayOfInterval,
-  isSameMonth,
-  isSameDay,
   isToday,
-  addMonths,
-  subMonths,
-  getDay,
+  isTomorrow,
+  isYesterday,
   parse,
 } from "date-fns";
 import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import {
   Plus,
   Trash2,
+  ArrowUp,
+  ArrowDown,
   Check,
   Repeat,
   MoreHorizontal,
-  Expand,
+  Maximize2,
   X,
-  Calendar,
   Play,
-  ChevronLeft,
-  ChevronRight,
-  Archive,
-  Sun,
-  CalendarArrowUp,
+  Pause,
   Copy,
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import type {
   Task,
-  Subtask,
   CreateTaskSeriesInput,
   TaskPriority,
 } from "@open-sunsama/types";
@@ -63,21 +39,16 @@ import {
   useCompleteTask,
   useCreateTask,
 } from "@/hooks/useTasks";
-import {
-  useSubtasks,
-  useCreateSubtask,
-  useUpdateSubtask,
-  useDeleteSubtask,
-  useReorderSubtasks,
-} from "@/hooks/useSubtasks";
-import { useHoveredTask } from "@/hooks";
+import { useHoveredTask, useIsMobile } from "@/hooks";
+import { useCreateSubtask, useUpdateSubtask } from "@/hooks/useSubtasks";
+import { useAddTaskPosition, usePlaceNewTask } from "@/hooks/useAddTaskPosition";
+import { BottomSheetContent } from "@/components/ui/bottom-sheet";
 import { useTimeBlocks, useUpdateTimeBlock } from "@/hooks/useTimeBlocks";
 
 import {
   Dialog,
   DialogContent,
   DialogTitle,
-  Input,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -91,406 +62,27 @@ import {
   TimeDropdown,
   type TimeDropdownRef,
 } from "@/components/ui/time-dropdown";
-import { SortableSubtaskItem } from "./sortable-subtask-item";
+import { SubtaskChecklist } from "./subtask-checklist";
+import { SubtaskSizeContext } from "./subtask-size";
+import {
+  DatePickerPopover,
+  type DatePickerPopoverRef,
+} from "./task-date-picker";
+import { SubtaskList, type Subtask as DraftSubtask } from "./subtask-list";
 import { NotesField } from "./task-modal-form";
 import { TaskAttachments } from "./task-attachments";
 import { TaskSeriesBanner } from "./task-series-banner";
 import { RepeatConfigDialog } from "./repeat-config-popover";
-import { InlinePrioritySelector } from "./priority-selector";
+import { PriorityMenu } from "./priority-menu";
+import { PriorityIcon, PRIORITY_META } from "@/components/ui/priority-badge";
+import { WithShortcut } from "@/components/ui/with-shortcut";
 import { useCreateTaskSeries } from "@/hooks/useTaskSeries";
-import { useQueryClient } from "@tanstack/react-query";
+import {
+  formatClock,
+  isSingleClick,
+  useTaskTimerToggle,
+} from "@/hooks/useTaskTimerToggle";
 import { useTaskTimerDisplay } from "./task-time-badge";
-import { getApi } from "@/lib/api";
-import { timerKeys } from "@/hooks/useTimer";
-import { taskKeys } from "@/hooks/useTasks";
-
-// ============================================
-// DatePickerPopover Component
-// ============================================
-
-interface DatePickerPopoverRef {
-  open: () => void;
-  close: () => void;
-  focusInput: () => void;
-}
-
-interface DatePickerPopoverProps {
-  /** Current scheduled date in YYYY-MM-DD format or null for backlog */
-  value: string | null;
-  /** Callback when date changes */
-  onChange: (date: string | null) => void;
-  /** Task title for toast messages */
-  taskTitle?: string;
-}
-
-const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-
-const DatePickerPopover = React.forwardRef<
-  DatePickerPopoverRef,
-  DatePickerPopoverProps
->(function DatePickerPopover({ value, onChange, taskTitle }, ref) {
-  const [open, setOpen] = React.useState(false);
-  const [viewMonth, setViewMonth] = React.useState(() => {
-    if (value) {
-      return parse(value, "yyyy-MM-dd", new Date());
-    }
-    return new Date();
-  });
-  const [dateInputValue, setDateInputValue] = React.useState("");
-  const [showDateInput, setShowDateInput] = React.useState(false);
-  const dateInputRef = React.useRef<HTMLInputElement>(null);
-
-  // Expose methods via ref
-  React.useImperativeHandle(
-    ref,
-    () => ({
-      open: () => setOpen(true),
-      close: () => setOpen(false),
-      focusInput: () => {
-        setShowDateInput(true);
-        setTimeout(() => dateInputRef.current?.focus(), 0);
-      },
-    }),
-    []
-  );
-
-  // Reset view month when value changes
-  React.useEffect(() => {
-    if (value) {
-      setViewMonth(parse(value, "yyyy-MM-dd", new Date()));
-    }
-  }, [value]);
-
-  // Focus input when shown
-  React.useEffect(() => {
-    if (showDateInput && dateInputRef.current) {
-      dateInputRef.current.focus();
-      dateInputRef.current.select();
-    }
-  }, [showDateInput]);
-
-  // Generate calendar days for the current view month
-  const calendarDays = React.useMemo(() => {
-    const monthStart = startOfMonth(viewMonth);
-    const monthEnd = endOfMonth(viewMonth);
-    const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
-
-    // Get the day of week for the first day (0 = Sunday)
-    const startDayOfWeek = getDay(monthStart);
-
-    // Add padding days before the month starts
-    const paddingBefore: (Date | null)[] = Array(startDayOfWeek).fill(null);
-
-    // Add padding days after to complete the grid (6 rows max)
-    const totalDays = paddingBefore.length + daysInMonth.length;
-    const paddingAfter: (Date | null)[] = Array(
-      totalDays % 7 === 0 ? 0 : 7 - (totalDays % 7)
-    ).fill(null);
-
-    return [...paddingBefore, ...daysInMonth, ...paddingAfter];
-  }, [viewMonth]);
-
-  const selectedDate = value ? parse(value, "yyyy-MM-dd", new Date()) : null;
-
-  const handleDateSelect = (date: Date) => {
-    const formattedDate = format(date, "yyyy-MM-dd");
-    onChange(formattedDate);
-    setOpen(false);
-    if (taskTitle) {
-      toast({
-        title: "Date updated",
-        description: `"${taskTitle}" scheduled for ${format(date, "EEEE, MMM d")}.`,
-      });
-    }
-  };
-
-  const handleSnoozeOneDay = () => {
-    const tomorrow = addDays(new Date(), 1);
-    const formattedDate = format(tomorrow, "yyyy-MM-dd");
-    onChange(formattedDate);
-    setOpen(false);
-    if (taskTitle) {
-      toast({
-        title: "Snoozed one day",
-        description: `"${taskTitle}" scheduled for ${format(tomorrow, "EEEE, MMM d")}.`,
-      });
-    }
-  };
-
-  const handleMoveToNextWeek = () => {
-    const today = new Date();
-    const nextMonday = addDays(startOfWeek(today, { weekStartsOn: 1 }), 7);
-    const formattedDate = format(nextMonday, "yyyy-MM-dd");
-    onChange(formattedDate);
-    setOpen(false);
-    if (taskTitle) {
-      toast({
-        title: "Moved to next week",
-        description: `"${taskTitle}" scheduled for ${format(nextMonday, "EEEE, MMM d")}.`,
-      });
-    }
-  };
-
-  const handleMoveToBacklog = () => {
-    onChange(null);
-    setOpen(false);
-    if (taskTitle) {
-      toast({
-        title: "Moved to backlog",
-        description: `"${taskTitle}" removed from schedule.`,
-      });
-    }
-  };
-
-  const handleDateInputSubmit = () => {
-    const trimmed = dateInputValue.trim();
-    if (!trimmed) {
-      setShowDateInput(false);
-      return;
-    }
-
-    // Try to parse various date formats
-    const today = new Date();
-    let parsedDate: Date | null = null;
-
-    // Try common formats
-    const formats = [
-      "yyyy-MM-dd",
-      "MM/dd/yyyy",
-      "MM-dd-yyyy",
-      "M/d/yyyy",
-      "M-d-yyyy",
-      "MMM d",
-      "MMMM d",
-      "d MMM",
-      "d MMMM",
-    ];
-
-    for (const fmt of formats) {
-      try {
-        const result = parse(trimmed, fmt, today);
-        if (!isNaN(result.getTime())) {
-          parsedDate = result;
-          break;
-        }
-      } catch {
-        // Continue trying other formats
-      }
-    }
-
-    if (parsedDate) {
-      handleDateSelect(parsedDate);
-    }
-
-    setShowDateInput(false);
-    setDateInputValue("");
-  };
-
-  const handleOpenChange = (newOpen: boolean) => {
-    setOpen(newOpen);
-    if (!newOpen) {
-      setShowDateInput(false);
-      setDateInputValue("");
-    }
-  };
-
-  // Display value for the trigger button
-  const displayValue = value
-    ? format(parse(value, "yyyy-MM-dd", new Date()), "MMM d")
-    : "No date";
-
-  return (
-    <Popover open={open} onOpenChange={handleOpenChange}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            "text-sm font-medium transition-colors hover:text-foreground",
-            value ? "text-foreground" : "text-muted-foreground"
-          )}
-        >
-          {displayValue}
-        </button>
-      </PopoverTrigger>
-      <PopoverContent
-        className="w-64 p-0"
-        align="start"
-        side="bottom"
-        sideOffset={4}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Move section - Quick actions */}
-        <div className="p-2 border-b border-border/50">
-          <div className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-1.5 px-1">
-            Move:
-          </div>
-
-          {/* Set date input */}
-          {showDateInput ? (
-            <div className="px-1 mb-1">
-              <Input
-                ref={dateInputRef}
-                type="text"
-                value={dateInputValue}
-                onChange={(e) => setDateInputValue(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleDateInputSubmit();
-                  }
-                  if (e.key === "Escape") {
-                    e.preventDefault();
-                    setShowDateInput(false);
-                    setDateInputValue("");
-                  }
-                }}
-                onBlur={() => {
-                  if (!dateInputValue.trim()) {
-                    setShowDateInput(false);
-                  }
-                }}
-                placeholder="Jan 27, 2024"
-                className="h-7 text-xs"
-              />
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setShowDateInput(true)}
-              className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded hover:bg-muted/50 transition-colors"
-            >
-              <span className="text-muted-foreground">Set start date @</span>
-              <span className="text-[10px] text-muted-foreground/60 px-1 py-0.5 rounded bg-muted/50">
-                @
-              </span>
-            </button>
-          )}
-
-          {/* Snooze one day */}
-          <button
-            type="button"
-            onClick={handleSnoozeOneDay}
-            className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded hover:bg-muted/50 transition-colors"
-          >
-            <span className="flex items-center gap-2">
-              <Sun className="h-3.5 w-3.5 text-muted-foreground" />
-              Snooze one day
-            </span>
-            <span className="text-[10px] text-muted-foreground/60 px-1 py-0.5 rounded bg-muted/50">
-              D
-            </span>
-          </button>
-
-          {/* Move to next week */}
-          <button
-            type="button"
-            onClick={handleMoveToNextWeek}
-            className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded hover:bg-muted/50 transition-colors"
-          >
-            <span className="flex items-center gap-2">
-              <CalendarArrowUp className="h-3.5 w-3.5 text-muted-foreground" />
-              Move to next week
-            </span>
-            <span className="text-[10px] text-muted-foreground/60 px-1 py-0.5 rounded bg-muted/50 flex items-center gap-0.5">
-              <span className="text-[9px]">⇧</span>Z
-            </span>
-          </button>
-
-          {/* Move to backlog */}
-          <button
-            type="button"
-            onClick={handleMoveToBacklog}
-            className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded hover:bg-muted/50 transition-colors"
-          >
-            <span className="flex items-center gap-2">
-              <Archive className="h-3.5 w-3.5 text-muted-foreground" />
-              Move to backlog
-            </span>
-            <span className="text-[10px] text-muted-foreground/60 px-1 py-0.5 rounded bg-muted/50">
-              Z
-            </span>
-          </button>
-        </div>
-
-        {/* Calendar section */}
-        <div className="p-2">
-          <div className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-1.5 px-1">
-            Start date:
-          </div>
-
-          {/* Month navigation */}
-          <div className="flex items-center justify-between mb-2">
-            <button
-              type="button"
-              onClick={() => setViewMonth(subMonths(viewMonth, 1))}
-              className="p-1 rounded hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <span className="text-xs font-medium">
-              {format(viewMonth, "MMMM yyyy")}
-            </span>
-            <button
-              type="button"
-              onClick={() => setViewMonth(addMonths(viewMonth, 1))}
-              className="p-1 rounded hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-
-          {/* Weekday headers */}
-          <div className="grid grid-cols-7 gap-0.5 mb-1">
-            {WEEKDAYS.map((day) => (
-              <div
-                key={day}
-                className="h-6 flex items-center justify-center text-[10px] text-muted-foreground/60 font-medium"
-              >
-                {day}
-              </div>
-            ))}
-          </div>
-
-          {/* Calendar grid */}
-          <div className="grid grid-cols-7 gap-0.5">
-            {calendarDays.map((day, index) => {
-              if (!day) {
-                return <div key={`empty-${index}`} className="h-7" />;
-              }
-
-              const isCurrentMonth = isSameMonth(day, viewMonth);
-              const isSelected = selectedDate && isSameDay(day, selectedDate);
-              const isTodayDate = isToday(day);
-
-              return (
-                <button
-                  key={day.toISOString()}
-                  type="button"
-                  onClick={() => handleDateSelect(day)}
-                  className={cn(
-                    "h-7 w-full flex items-center justify-center text-xs rounded transition-colors",
-                    !isCurrentMonth && "text-muted-foreground/30",
-                    isCurrentMonth &&
-                      !isSelected &&
-                      !isTodayDate &&
-                      "text-foreground hover:bg-muted/50",
-                    isTodayDate &&
-                      !isSelected &&
-                      "bg-primary/20 text-primary font-medium",
-                    isSelected &&
-                      "bg-primary text-primary-foreground font-medium"
-                  )}
-                >
-                  {format(day, "d")}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-});
 
 // ============================================
 // TaskModal Component
@@ -500,18 +92,59 @@ interface TaskModalProps {
   task: Task | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /**
+   * Opens the modal as a composer for a new task (with `task` null): the same
+   * layout as editing, but fields stay local until "Add task" creates it.
+   */
+  createDefaults?: { scheduledDate?: string | null };
 }
 
-export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
+export function TaskModal({
+  task,
+  open,
+  onOpenChange,
+  createDefaults,
+}: TaskModalProps) {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const isCompose = !!createDefaults && !task;
   const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [plannedMins, setPlannedMins] = React.useState<number | null>(null);
-  const [newSubtaskTitle, setNewSubtaskTitle] = React.useState("");
-  const [isAddingSubtask, setIsAddingSubtask] = React.useState(false);
+  const subtaskInputRef = React.useRef<HTMLInputElement>(null);
   const [repeatDialogOpen, setRepeatDialogOpen] = React.useState(false);
   const [actualMins, setActualMins] = React.useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
+  const [priorityOpen, setPriorityOpen] = React.useState(false);
+
+  // Grow the title field to fit long titles.
+  React.useLayoutEffect(() => {
+    const el = titleRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [title, open]);
+  const titleRef = React.useRef<HTMLTextAreaElement>(null);
+
+  // Composer-only state: everything a new task carries before it exists.
+  const [draftPriority, setDraftPriority] = React.useState<TaskPriority>("P2");
+  const [draftDate, setDraftDate] = React.useState<string | null>(null);
+  const [draftSubtasks, setDraftSubtasks] = React.useState<DraftSubtask[]>([]);
+  const { addPosition, setAddPosition } = useAddTaskPosition();
+  const placeNewTask = usePlaceNewTask(draftDate);
+  const createSubtask = useCreateSubtask();
+  const updateSubtask = useUpdateSubtask();
+  const [isCreating, setIsCreating] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!open || !isCompose) return;
+    setTitle("");
+    setDescription("");
+    setPlannedMins(null);
+    setDraftPriority("P2");
+    setDraftDate(createDefaults?.scheduledDate ?? null);
+    setDraftSubtasks([]);
+  }, [open, isCompose]);
 
   // Keep a ref to the last non-null task so the Dialog can still render content
   // during its close animation (after task prop becomes null)
@@ -540,7 +173,6 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   const { setHoveredTask } = useHoveredTask();
   const createTaskSeries = useCreateTaskSeries();
   const updateTask = useUpdateTask();
-  const queryClient = useQueryClient();
 
   // Fetch reactive task data from query cache (updates via WebSocket + invalidation)
   // The prop `task` is a stale snapshot; this gives us live data
@@ -550,7 +182,6 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   // Live timer display — ticks every second when timer is active
   const {
     isTimerRunning,
-    displayText: liveTimeText,
     liveSeconds,
   } = useTaskTimerDisplay(
     liveTask ??
@@ -576,6 +207,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
 
   // Handle scheduled date change
   const handleScheduledDateChange = async (newDate: string | null) => {
+    if (isCompose) setDraftDate(newDate);
     if (!task) return;
     await updateTask.mutateAsync({
       id: task.id,
@@ -585,6 +217,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
 
   // Handle priority change
   const handlePriorityChange = async (newPriority: TaskPriority) => {
+    if (isCompose) setDraftPriority(newPriority);
     if (!task) return;
     await updateTask.mutateAsync({
       id: task.id,
@@ -592,7 +225,12 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     });
   };
 
-  // Handle keyboard shortcuts: F for focus, E for actual time, W for planned time, D/Z/Shift+Z for date, @ for date input
+  usePriorityShortcut(open, (priority) => {
+    void handlePriorityChange(priority);
+    setPriorityOpen(false);
+  });
+
+  // Handle keyboard shortcuts: F for focus, E for planned time, W for actual time, D/Z/Shift+Z for date, @ for date input
   React.useEffect(() => {
     if (!open || !task) return;
 
@@ -609,6 +247,7 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
       // Space to toggle timer (same as focus mode)
       if (
         (e.key === " " || e.code === "Space") &&
+        !e.repeat &&
         !e.shiftKey &&
         !e.ctrlKey &&
         !e.metaKey &&
@@ -626,13 +265,13 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
         return;
       }
 
-      if (e.key === "e" || e.key === "E") {
+      if (matchesTimeEditShortcut(e, "actual")) {
         e.preventDefault();
         actualTimeRef.current?.open();
         return;
       }
 
-      if (e.key === "w" || e.key === "W") {
+      if (matchesTimeEditShortcut(e, "planned")) {
         e.preventDefault();
         plannedTimeRef.current?.open();
         return;
@@ -690,14 +329,15 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   }, [open, task, onOpenChange, navigate]);
 
   // Handle save on close
-  const handleOpenChange = async (newOpen: boolean) => {
+  const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen && task) {
       const hasChanges =
         title !== task.title ||
         description !== (task.notes || "") ||
         plannedMins !== task.estimatedMins;
+      // The update is optimistic, so the modal closes without waiting on it.
       if (hasChanges && title.trim()) {
-        await updateTask.mutateAsync({
+        updateTask.mutate({
           id: task.id,
           data: {
             title: title.trim(),
@@ -716,8 +356,10 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
   const updateTimeBlock = useUpdateTimeBlock();
 
   // Fetch time blocks for this task
+  // Without a task this would list every time block the user has.
   const { data: timeBlocks = [] } = useTimeBlocks(
-    task ? { taskId: task.id } : undefined
+    task ? { taskId: task.id } : undefined,
+    { enabled: !!task }
   );
 
   // Get the first (most relevant) time block for this task
@@ -730,20 +372,6 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     return sorted[0] ?? null;
   }, [timeBlocks]);
 
-  // Subtask hooks
-  const { data: subtasks = [] } = useSubtasks(task?.id ?? "");
-  const createSubtask = useCreateSubtask();
-  const updateSubtask = useUpdateSubtask();
-  const deleteSubtaskMutation = useDeleteSubtask();
-  const reorderSubtasks = useReorderSubtasks();
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
   const isCompleted = !!task?.completedAt;
 
   React.useEffect(() => {
@@ -752,8 +380,6 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
       setDescription(task.notes || "");
       setPlannedMins(task.estimatedMins || null);
       setActualMins(task.actualMins || null);
-      setIsAddingSubtask(false);
-      setNewSubtaskTitle("");
       setShowDeleteConfirm(false);
     }
   }, [task]);
@@ -825,25 +451,10 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     }
   };
 
-  // Use ref to always read the latest isTimerRunning value (avoids stale closure)
-  const isTimerRunningRef = React.useRef(isTimerRunning);
-  isTimerRunningRef.current = isTimerRunning;
-
-  // Start/stop timer from the modal
-  const handleTimerToggle = React.useCallback(async () => {
-    if (!task) return;
-    const api = getApi();
-    const wasRunning = isTimerRunningRef.current;
-    if (wasRunning) {
-      await api.tasks.timerStop(task.id);
-    } else {
-      await api.tasks.timerStart(task.id);
-    }
-    // Always invalidate regardless of success — ensures UI stays in sync
-    queryClient.invalidateQueries({ queryKey: timerKeys.active() });
-    queryClient.invalidateQueries({ queryKey: taskKeys.detail(task.id) });
-    queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
-  }, [task, queryClient]);
+  const toggleTimer = useTaskTimerToggle();
+  const handleTimerToggle = React.useCallback(() => {
+    if (task) void toggleTimer(task.id);
+  }, [task, toggleTimer]);
 
   // Keep the ref in sync so keyboard handler always calls latest version
   timerToggleRef.current = handleTimerToggle;
@@ -878,50 +489,57 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     await completeTask.mutateAsync({ id: task.id, completed: !isCompleted });
   };
 
-  const addSubtask = async () => {
-    if (!newSubtaskTitle.trim() || !task) return;
-    await createSubtask.mutateAsync({
-      taskId: task.id,
-      data: { title: newSubtaskTitle.trim() },
-    });
-    setNewSubtaskTitle("");
+
+  const handleCreate = async () => {
+    const trimmed = title.trim();
+    if (!isCompose || !trimmed || isCreating) return;
+    setIsCreating(true);
+    try {
+      const newTask = await createTask.mutateAsync({
+        title: trimmed,
+        notes: description || undefined,
+        scheduledDate: draftDate ?? undefined,
+        estimatedMins: plannedMins ?? undefined,
+        priority: draftPriority,
+      });
+      // In order, so the checklist keeps the order it was typed in.
+      for (const [position, st] of draftSubtasks.entries()) {
+        const created = await createSubtask.mutateAsync({
+          taskId: newTask.id,
+          data: { title: st.title, position },
+        });
+        if (st.completed) {
+          await updateSubtask.mutateAsync({
+            taskId: newTask.id,
+            subtaskId: created.id,
+            data: { completed: true },
+          });
+        }
+      }
+      await placeNewTask(newTask.id, addPosition);
+      onOpenChange(false);
+    } finally {
+      setIsCreating(false);
+    }
   };
-
-  const toggleSubtask = async (subtask: Subtask) => {
-    if (!task) return;
-    await updateSubtask.mutateAsync({
-      taskId: task.id,
-      subtaskId: subtask.id,
-      data: { completed: !subtask.completed },
-    });
-  };
-
-  const handleDeleteSubtask = async (subtaskId: string) => {
-    if (!task) return;
-    await deleteSubtaskMutation.mutateAsync({
-      taskId: task.id,
-      subtaskId,
-    });
-  };
-
-  const handleSubtaskDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || !task || active.id === over.id) return;
-
-    const oldIndex = subtasks.findIndex((item) => item.id === active.id);
-    const newIndex = subtasks.findIndex((item) => item.id === over.id);
-    const newOrder = arrayMove(subtasks, oldIndex, newIndex);
-
-    await reorderSubtasks.mutateAsync({
-      taskId: task.id,
-      subtaskIds: newOrder.map((st) => st.id),
-    });
-  };
-
-  const subtaskIds = subtasks.map((st) => st.id);
 
   // Use the live task for rendering, falling back to lastTaskRef during close animation
-  const renderTask = task ?? lastTaskRef.current;
+  const renderTask: Task | null =
+    liveTask ??
+    lastTaskRef.current ??
+    (isCompose
+      ? ({
+          id: "draft",
+          title,
+          notes: description,
+          priority: draftPriority,
+          scheduledDate: draftDate,
+          estimatedMins: plannedMins,
+          actualMins: null,
+          completedAt: null,
+          seriesId: null,
+        } as unknown as Task)
+      : null);
 
   // If no task data at all (never opened), render nothing
   if (!renderTask) return null;
@@ -943,313 +561,428 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
     });
   };
 
-  return (
-    <>
-      <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent
-          className="max-w-2xl p-0 gap-0 overflow-hidden [&>button]:hidden"
-          aria-describedby={undefined}
-        >
-          {/* The visible title is an editable field; screen readers get it here. */}
-          <DialogTitle className="sr-only">{renderTask.title || "Task"}</DialogTitle>
-          {/* Title row with inline actions */}
-          <div className="flex items-start gap-2.5 px-4 pt-4 pb-2.5 sm:gap-3 sm:px-6 sm:pt-5 sm:pb-3">
-            {/* Checkbox */}
-            <button
-              type="button"
-              className={cn(
-                "mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-all cursor-pointer",
-                isCompleted
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-muted-foreground/30 hover:border-primary"
-              )}
-              onClick={handleToggleComplete}
+  const iconButton = cn(
+    "flex shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+    isMobile ? "h-9 w-9" : "h-8 w-8"
+  );
+  const fieldButton =
+    "flex shrink-0 flex-col items-start justify-end gap-0.5 rounded-md px-2 py-1 text-left transition-colors hover:bg-accent focus:outline-none focus-visible:ring-1 focus-visible:ring-ring";
+  const fieldLabel =
+    "text-[10px] font-medium uppercase leading-3 tracking-wider text-muted-foreground/60";
+  const fieldValue = "flex items-center gap-1.5 text-sm leading-5 text-muted-foreground";
+
+  const scheduled = renderTask.scheduledDate
+    ? parse(renderTask.scheduledDate, "yyyy-MM-dd", new Date())
+    : null;
+  const dateText = !scheduled
+    ? "Backlog"
+    : isToday(scheduled)
+      ? "Today"
+      : isTomorrow(scheduled)
+        ? "Tomorrow"
+        : isYesterday(scheduled)
+          ? "Yesterday"
+          : format(scheduled, "EEE, MMM d");
+
+  // Properties on the left, actions on the right, like Sunsama's header.
+  const header = (
+    <div
+      className={cn(
+        "flex items-center gap-1",
+        isMobile ? "px-3 pb-1 pt-1" : "px-6 pt-5"
+      )}
+    >
+      <div className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <WithShortcut label="Start date" keys={["@"]} side="bottom">
+          <span className="shrink-0">
+            <DatePickerPopover
+              ref={datePickerRef}
+              value={renderTask.scheduledDate}
+              onChange={handleScheduledDateChange}
+              taskTitle={isCompose ? undefined : renderTask.title}
+              className={fieldButton}
             >
-              {isCompleted && <Check className="h-3 w-3" strokeWidth={3} />}
-            </button>
-
-            {/* Title */}
-            <textarea
-              value={title}
-              // Titles are one line; pasted line breaks become spaces.
-              onChange={(e) => setTitle(e.target.value.replace(/[\r\n]+/g, " "))}
-              onBlur={() => title !== renderTask.title && handleSave()}
-              onKeyDown={(e) => {
-                // Enter saves and closes, like the other task dialogs.
-                if (e.key === "Enter" && !e.nativeEvent.isComposing) {
-                  e.preventDefault();
-                  void handleOpenChange(false);
-                }
-              }}
-              enterKeyHint="done"
-              rows={1}
-              className={cn(
-                "flex-1 min-w-0 resize-none border-none p-0 text-base sm:text-lg font-semibold shadow-none focus:outline-none focus:ring-0 bg-transparent leading-snug",
-                isCompleted && "line-through text-muted-foreground"
-              )}
-              placeholder="Task title"
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = "auto";
-                target.style.height = target.scrollHeight + "px";
-              }}
-            />
-
-            {/* Action buttons */}
-            <div className="flex items-center gap-0.5 shrink-0">
+              <span className={fieldLabel}>Start</span>
+              <span className={cn(fieldValue, "text-foreground")}>{dateText}</span>
+            </DatePickerPopover>
+          </span>
+        </WithShortcut>
+        <Popover open={priorityOpen} onOpenChange={setPriorityOpen}>
+          <PopoverTrigger asChild>
+            <WithShortcut label="Priority" shortcut="editPriority" side="bottom">
               <button
                 type="button"
-                onClick={handleExpandToFocus}
-                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
-                title="Focus mode (F)"
+                className={fieldButton}
+                aria-label={`Priority: ${renderTask.priority} ${PRIORITY_META[renderTask.priority].description}`}
               >
-                <Expand className="h-4 w-4" />
+                <span className={fieldValue}>
+                  <PriorityIcon priority={renderTask.priority} />
+                  <span className={renderTask.priority !== "P2" ? "text-foreground" : ""}>
+                    {renderTask.priority} {PRIORITY_META[renderTask.priority].description}
+                  </span>
+                </span>
               </button>
-              <DropdownMenu>
+            </WithShortcut>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <PriorityMenu
+              value={renderTask.priority}
+              onChange={(p) => {
+                void handlePriorityChange(p);
+                setPriorityOpen(false);
+              }}
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      <div className="flex shrink-0 items-center gap-0.5">
+        {!isMobile && (
+          <button
+            type="button"
+            onClick={() => subtaskInputRef.current?.focus()}
+            className="flex h-8 items-center gap-1.5 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <Plus className="h-4 w-4" />
+            Subtasks
+          </button>
+        )}
+        {!isCompose && (
+          <>
+            <DropdownMenu>
+              <WithShortcut label="More actions" side="bottom">
                 <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
-                  >
+                  <button type="button" className={iconButton} aria-label="More actions">
                     <MoreHorizontal className="h-4 w-4" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onSelect={handleDuplicate}>
-                    <Copy className="mr-2 h-4 w-4" />
-                    Duplicate
+              </WithShortcut>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={handleDuplicate}>
+                  <Copy className="mr-2 h-4 w-4" />
+                  Duplicate
+                </DropdownMenuItem>
+                {!renderTask.seriesId && (
+                  <DropdownMenuItem onSelect={() => setRepeatDialogOpen(true)}>
+                    <Repeat className="mr-2 h-4 w-4" />
+                    Repeat…
                   </DropdownMenuItem>
-                  {!renderTask.seriesId && (
-                    <DropdownMenuItem
-                      onSelect={() => setRepeatDialogOpen(true)}
-                    >
-                      <Repeat className="mr-2 h-4 w-4" />
-                      Repeat...
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem
-                    onSelect={handleDelete}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                )}
+                <DropdownMenuItem
+                  onSelect={handleDelete}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <WithShortcut label="Focus mode" keys={["F"]} side="bottom">
               <button
                 type="button"
-                onClick={() => onOpenChange(false)}
-                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
+                onClick={handleExpandToFocus}
+                className={iconButton}
+                aria-label="Open in focus mode"
               >
-                <X className="h-4 w-4" />
+                <Maximize2 className="h-4 w-4" />
               </button>
-            </div>
+            </WithShortcut>
+          </>
+        )}
+        <WithShortcut label="Close" keys={["Esc"]} side="bottom">
+          <button
+            type="button"
+            onClick={() => handleOpenChange(false)}
+            className={iconButton}
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </WithShortcut>
+      </div>
+    </div>
+  );
+
+  const timerButton = !isCompose && (
+    <WithShortcut
+      label={isTimerRunning ? "Stop timer" : "Start timer"}
+      keys={["Space"]}
+    >
+      <button
+        type="button"
+        onClick={(e) => isSingleClick(e) && handleTimerToggle()}
+        aria-label={isTimerRunning ? "Stop timer" : "Start timer"}
+        className={cn(
+          "flex h-9 shrink-0 items-center gap-2 rounded-md border px-3 text-xs font-medium uppercase tracking-wider transition-colors",
+          isTimerRunning
+            ? "border-emerald-500/70 text-emerald-500 hover:bg-emerald-500/10"
+            : "border-foreground/10 text-muted-foreground hover:border-emerald-500/60 hover:text-emerald-500"
+        )}
+      >
+        {isTimerRunning ? (
+          <Pause className="h-3.5 w-3.5" />
+        ) : (
+          <Play className="h-3.5 w-3.5" />
+        )}
+        {isTimerRunning ? "Stop" : "Start"}
+      </button>
+    </WithShortcut>
+  );
+
+  const timeValue = "font-sans text-base font-normal tabular-nums tracking-normal";
+  const actualColumn = !isCompose && (
+    isTimerRunning ? (
+      <div className="flex flex-col items-center gap-1">
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
+          Actual
+        </span>
+        <span
+          className={cn(
+            timeValue,
+            renderTask.estimatedMins && liveSeconds > renderTask.estimatedMins * 60
+              ? "text-amber-500"
+              : "text-emerald-500"
+          )}
+        >
+          {formatClock(liveSeconds)}
+        </span>
+      </div>
+    ) : (
+      <TimeDropdown
+        ref={actualTimeRef}
+        value={actualMins}
+        onChange={handleActualMinsChange}
+        label="Actual"
+        dropdownHeader="Actual"
+        shortcutHint={TIME_EDIT_KEYS.actual.toUpperCase()}
+        placeholder="0:00"
+        className={timeValue}
+      />
+    )
+  );
+  const plannedColumn = (
+    <TimeDropdown
+      ref={plannedTimeRef}
+      value={plannedMins}
+      onChange={handleDurationChange}
+      label="Planned"
+      dropdownHeader="Planned"
+      shortcutHint={isCompose ? undefined : TIME_EDIT_KEYS.planned.toUpperCase()}
+      placeholder="--:--"
+      className={timeValue}
+    />
+  );
+  const times = (
+    <div className="flex shrink-0 items-center gap-4">
+      {actualColumn}
+      {plannedColumn}
+      {timerButton}
+    </div>
+  );
+
+  const titleRow = (
+    <div
+      className={cn(
+        "flex items-start gap-3",
+        isMobile ? "px-5 pt-2" : "px-8 pt-6"
+      )}
+    >
+      {isCompose ? (
+        // Placeholder circle keeps the title aligned with the edit layout.
+        <div className="mt-1.5 h-6 w-6 shrink-0 rounded-full border-[1.5px] border-dashed border-muted-foreground/30" />
+      ) : (
+        <WithShortcut label={isCompleted ? "Mark incomplete" : "Complete task"} shortcut="completeTask">
+          <button
+            type="button"
+            role="checkbox"
+            aria-checked={isCompleted}
+            aria-label={isCompleted ? "Mark incomplete" : "Mark complete"}
+            className={cn(
+              "mt-1.5 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-full border-[1.5px] transition-all active:scale-90",
+              isCompleted
+                ? "border-emerald-500 bg-emerald-500 text-white"
+                : "border-muted-foreground/40 text-muted-foreground/40 hover:border-emerald-500 hover:text-emerald-500"
+            )}
+            onClick={handleToggleComplete}
+          >
+            <Check className="h-3.5 w-3.5" strokeWidth={3} />
+          </button>
+        </WithShortcut>
+      )}
+
+      <textarea
+        ref={titleRef}
+        autoFocus={isCompose}
+        value={title}
+        // Titles are one line; pasted line breaks become spaces.
+        onChange={(e) => setTitle(e.target.value.replace(/[\r\n]+/g, " "))}
+        onBlur={() => !isCompose && title !== renderTask.title && handleSave()}
+        onKeyDown={(e) => {
+          // Enter creates (composer) or saves and closes (editor).
+          if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+            e.preventDefault();
+            if (isCompose) void handleCreate();
+            else handleOpenChange(false);
+          }
+        }}
+        enterKeyHint={isCompose ? "send" : "done"}
+        rows={1}
+        className={cn(
+          "min-w-0 flex-1 resize-none overflow-hidden border-none bg-transparent p-0 font-medium tracking-tight leading-snug shadow-none placeholder:text-muted-foreground/45 focus:outline-none focus:ring-0",
+          isMobile ? "text-xl" : "text-2xl leading-8",
+          isCompleted && "text-muted-foreground line-through"
+        )}
+        placeholder={isCompose ? "What needs to be done?" : "Task title"}
+        aria-label="Task title"
+      />
+
+      {!isMobile && <div className="pt-0.5">{times}</div>}
+    </div>
+  );
+
+  // Subtasks line up under the title's checkbox, as in Sunsama.
+  const subtasks = (
+    <SubtaskSizeContext.Provider value="lg">
+    <div className={isMobile ? "pl-[22px] pr-5 pt-2" : "pl-[34px] pr-8 pt-3"}>
+      {isCompose ? (
+        <SubtaskList
+          subtasks={draftSubtasks}
+          onSubtasksChange={setDraftSubtasks}
+          addInputRef={subtaskInputRef}
+        />
+      ) : (
+        <SubtaskChecklist
+          key={renderTask.id}
+          taskId={renderTask.id}
+          addInputRef={subtaskInputRef}
+          showHeader={false}
+        />
+      )}
+    </div>
+    </SubtaskSizeContext.Provider>
+  );
+
+  const notes = (
+    <div
+      className={cn(
+        // Notes start where the title text starts.
+        "space-y-4 border-t border-foreground/10",
+        isMobile ? "mt-3 pb-6 pl-12 pr-5 pt-4" : "mt-5 pb-8 pl-[60px] pr-8 pt-6"
+      )}
+    >
+      <NotesField
+        notes={description}
+        onChange={setDescription}
+        onBlur={() => {
+          if (!isCompose && description !== (renderTask.notes || "")) handleSave();
+        }}
+        placeholder="Notes…"
+        minHeight={isMobile ? "96px" : "140px"}
+      />
+      {!isCompose && <TaskAttachments taskId={renderTask.id} />}
+    </div>
+  );
+
+  const content = (
+    <>
+      {header}
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        {!isCompose && renderTask.seriesId && (
+          <div className={isMobile ? "px-5 pt-2" : "px-6 pt-2"}>
+            <TaskSeriesBanner task={renderTask} />
           </div>
+        )}
+        {titleRow}
+        {isMobile && <div className="px-5 pt-3">{times}</div>}
+        {subtasks}
+        {notes}
+      </div>
+    </>
+  );
 
-          {/* Property bar — priority · date · time. On mobile the actions
-              group wraps to its own line so the metadata keeps full width. */}
-          <div className="flex flex-wrap items-center gap-x-1 gap-y-2 px-4 pb-3 sm:px-6 sm:pb-4">
-            {/* Properties group — stays together as one unit */}
-            <div className="flex items-center gap-1">
-            <InlinePrioritySelector
-              priority={renderTask.priority}
-              onChange={handlePriorityChange}
-            />
-            <div className="w-px h-3.5 bg-border/60 mx-1" />
-            <div className="flex items-center gap-1.5">
-              <Calendar className="h-3.5 w-3.5 text-muted-foreground/60" />
-              <DatePickerPopover
-                ref={datePickerRef}
-                value={renderTask.scheduledDate}
-                onChange={handleScheduledDateChange}
-                taskTitle={renderTask.title}
-              />
-            </div>
-            <div className="w-px h-3.5 bg-border/60 mx-1" />
-            <div className="flex items-center gap-1">
-              {/* When timer is running: show live ticking time */}
-              {isTimerRunning ? (
-                <div className="flex items-center gap-1.5">
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
-                  </span>
-                  <span
-                    className={cn(
-                      "font-mono text-sm tabular-nums font-medium",
-                      renderTask.estimatedMins &&
-                        liveSeconds > renderTask.estimatedMins * 60 * 1.5
-                        ? "text-red-500"
-                        : renderTask.estimatedMins &&
-                            liveSeconds > renderTask.estimatedMins * 60
-                          ? "text-amber-500"
-                          : "text-emerald-600 dark:text-emerald-400"
-                    )}
-                  >
-                    {liveTimeText}
-                  </span>
-                </div>
-              ) : (
-                <>
-                  <TimeDropdown
-                    ref={actualTimeRef}
-                    value={actualMins}
-                    onChange={handleActualMinsChange}
-                    placeholder="0:00"
-                    dropdownHeader="Actual time"
-                    shortcutHint="E"
-                    showClear
-                    clearText="Clear"
-                    size="sm"
-                    className="font-mono text-sm text-foreground"
-                  />
-                  <span className="text-muted-foreground/30 text-xs">/</span>
-                  <TimeDropdown
-                    ref={plannedTimeRef}
-                    value={plannedMins}
-                    onChange={handleDurationChange}
-                    placeholder="0:00"
-                    dropdownHeader="Planned time"
-                    shortcutHint="W"
-                    showClear
-                    clearText="Clear"
-                    size="sm"
-                    className="font-mono text-sm text-muted-foreground/60"
-                  />
-                </>
-              )}
-            </div>
-            </div>
-            {/* Actions group — pinned right on desktop, wraps to its own
-                full line on mobile (keeps tap targets uncramped) */}
-            <div className="ml-auto flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => setIsAddingSubtask(true)}
-              className="flex items-center gap-1.5 h-7 px-2.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Add subtask</span>
-            </button>
-            <button
-              onClick={handleTimerToggle}
-              className={cn(
-                "flex items-center gap-1.5 h-7 px-2.5 rounded-md text-xs font-medium border transition-colors cursor-pointer",
-                isTimerRunning
-                  ? "border-red-500/30 text-red-500 hover:bg-red-500/10"
-                  : "border-[#22c55e]/30 text-[#22c55e] hover:bg-[#22c55e]/10"
-              )}
-            >
-              {isTimerRunning ? (
-                <>
-                  <span className="h-2.5 w-2.5 rounded-sm bg-current" />
-                  Stop
-                </>
-              ) : (
-                <>
-                  <Play className="h-3 w-3 fill-current" />
-                  Start
-                </>
-              )}
-            </button>
-            </div>
-          </div>
+  const canCreate = !!title.trim() && !isCreating;
+  const composeFooter = isCompose && (
+    <div
+      className={cn(
+        "flex shrink-0 items-center gap-2 border-t border-border/40",
+        isMobile ? "px-4 py-3" : "px-4 py-3 sm:px-6"
+      )}
+    >
+      <button
+        type="button"
+        // Keep the keyboard up: don't let the tap steal focus from the title.
+        onPointerDown={(e) => e.preventDefault()}
+        onClick={() => setAddPosition(addPosition === "top" ? "bottom" : "top")}
+        aria-label={addPosition === "top" ? "Adding to top of the day" : "Adding to bottom of the day"}
+        className={cn(
+          "flex h-9 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium transition-colors",
+          addPosition === "top"
+            ? "border-primary/50 bg-primary/5 text-primary"
+            : "border-border text-muted-foreground"
+        )}
+      >
+        {addPosition === "top" ? (
+          <ArrowUp className="h-3.5 w-3.5" />
+        ) : (
+          <ArrowDown className="h-3.5 w-3.5" />
+        )}
+        {addPosition === "top" ? "Top" : "Bottom"}
+      </button>
+      <div className="flex-1" />
+      <button
+        type="button"
+        onPointerDown={(e) => e.preventDefault()}
+        onClick={() => void handleCreate()}
+        disabled={!canCreate}
+        className={cn(
+          "flex h-10 items-center gap-2 rounded-full px-5 text-sm font-semibold transition-all active:scale-[0.97]",
+          canCreate
+            ? "bg-primary text-primary-foreground shadow-sm shadow-primary/30"
+            : "bg-muted text-muted-foreground"
+        )}
+      >
+        {isCreating ? "Adding…" : "Add task"}
+      </button>
+    </div>
+  );
 
-          {/* Main Content */}
-          <div className="border-t border-border/40 px-4 py-3 sm:px-6 sm:py-4 space-y-4 max-h-[55vh] overflow-y-auto">
-            {/* Series Banner */}
-            {renderTask.seriesId && <TaskSeriesBanner task={renderTask} />}
-
-            {/* Subtasks Section */}
-            <div className="space-y-3">
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleSubtaskDragEnd}
-              >
-                <SortableContext
-                  items={subtaskIds}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="space-y-1">
-                    {subtasks.map((subtask) => (
-                      <SortableSubtaskItem
-                        key={subtask.id}
-                        subtask={subtask}
-                        onToggle={() => toggleSubtask(subtask)}
-                        onDelete={() => handleDeleteSubtask(subtask.id)}
-                        onUpdate={(newTitle) =>
-                          updateSubtask.mutate({
-                            taskId: renderTask.id,
-                            subtaskId: subtask.id,
-                            data: { title: newTitle },
-                          })
-                        }
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
-
-              {/* Add Subtask input */}
-              {isAddingSubtask && (
-                <div className="flex items-center gap-3 py-2 pl-1">
-                  <div className="h-4 w-4 shrink-0 rounded border border-dashed border-muted-foreground/30" />
-                  <Input
-                    value={newSubtaskTitle}
-                    onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        addSubtask();
-                      }
-                      if (e.key === "Escape") {
-                        setNewSubtaskTitle("");
-                        setIsAddingSubtask(false);
-                      }
-                    }}
-                    onBlur={() => {
-                      if (newSubtaskTitle.trim()) {
-                        addSubtask();
-                      } else {
-                        setIsAddingSubtask(false);
-                      }
-                    }}
-                    placeholder="Add subtask..."
-                    className="flex-1 border-none p-0 h-auto text-sm shadow-none focus-visible:ring-0 bg-transparent"
-                    autoFocus
-                  />
-                </div>
-              )}
-
-              {/* Show add button only when not adding and no subtasks */}
-              {!isAddingSubtask && subtasks.length === 0 && (
-                <button
-                  onClick={() => setIsAddingSubtask(true)}
-                  className="flex items-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Add subtask</span>
-                </button>
-              )}
-            </div>
-
-            {/* Notes Section */}
-            <div>
-              <NotesField
-                notes={description}
-                onChange={setDescription}
-                onBlur={() => {
-                  if (description !== (renderTask.notes || "")) handleSave();
-                }}
-                minHeight="150px"
-              />
-            </div>
-
-            {/* Attachments */}
-            <TaskAttachments taskId={renderTask.id} />
-          </div>
-        </DialogContent>
+  return (
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        {isMobile ? (
+          <BottomSheetContent
+            onDismiss={() => handleOpenChange(false)}
+            aria-describedby={undefined}
+            onOpenAutoFocus={(e) => {
+              e.preventDefault();
+              if (isCompose) titleRef.current?.focus({ preventScroll: true });
+            }}
+          >
+            <DialogTitle className="sr-only">
+              {isCompose ? "New task" : renderTask.title || "Task"}
+            </DialogTitle>
+            {content}
+            {composeFooter}
+          </BottomSheetContent>
+        ) : (
+          <DialogContent
+            className="top-[8vh] flex max-h-[84vh] max-w-3xl translate-y-0 flex-col gap-0 overflow-hidden rounded-xl border-border/40 bg-surface p-0 shadow-2xl outline-none [&>button]:hidden"
+            aria-describedby={undefined}
+            // Don't land focus on the first control (it would show a focus
+            // ring and its tooltip); the composer focuses its title itself.
+            onOpenAutoFocus={(e) => {
+              e.preventDefault();
+              if (isCompose) titleRef.current?.focus({ preventScroll: true });
+            }}
+          >
+            {/* The visible title is an editable field; screen readers get it here. */}
+            <DialogTitle className="sr-only">
+              {isCompose ? "New task" : renderTask.title || "Task"}
+            </DialogTitle>
+            {content}
+            {composeFooter}
+          </DialogContent>
+        )}
 
         {/* Repeat Config Dialog */}
         {renderTask && !renderTask.seriesId && (
@@ -1271,11 +1004,13 @@ export function TaskModal({ task, open, onOpenChange }: TaskModalProps) {
         Uses onPointerDown instead of onClick because Radix Dialog's FocusScope
         traps focus at the document level — it intercepts between pointerdown
         and click, yanking focus back into the dialog before click fires.
-        onPointerDown fires before the focus trap kicks in. */}
+        onPointerDown fires before the focus trap kicks in.
+        pointer-events-auto: the open modal Dialog sets `pointer-events: none`
+        on <body>, which this portal would otherwise inherit. */}
       {showDeleteConfirm &&
         createPortal(
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
+            className="pointer-events-auto fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
             onPointerDown={() => setShowDeleteConfirm(false)}
           >
             <div

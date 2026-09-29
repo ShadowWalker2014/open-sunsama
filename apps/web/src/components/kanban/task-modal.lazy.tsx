@@ -1,4 +1,5 @@
 import * as React from "react";
+import { preloadable } from "@/lib/preloadable";
 import type { Task } from "@open-sunsama/types";
 import type * as TaskModalModuleNS from "./task-modal";
 
@@ -24,6 +25,8 @@ type TaskModalProps = {
   task: Task | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Opens the modal as a new-task composer; see task-modal.tsx. */
+  createDefaults?: { scheduledDate?: string | null };
 };
 
 type TaskModalModule = typeof TaskModalModuleNS;
@@ -37,13 +40,11 @@ function importTaskModal(): Promise<TaskModalModule> {
   return preload;
 }
 
-const LazyTaskModal = React.lazy(async () => {
-  const mod = await importTaskModal();
-  return { default: mod.TaskModal };
-});
+const preloadableTaskModal = preloadable(() => importTaskModal().then((mod) => mod.TaskModal));
+const LazyTaskModal = preloadableTaskModal.Component;
 
 export function prefetchTaskModal(): Promise<unknown> {
-  return importTaskModal();
+  return preloadableTaskModal.preload();
 }
 
 /**

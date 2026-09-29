@@ -5,6 +5,7 @@
 
 import type {
   Subtask,
+  Task,
   CreateSubtaskInput,
   UpdateSubtaskInput,
 } from "@open-sunsama/types";
@@ -61,6 +62,23 @@ export interface SubtasksApi {
    * @returns Updated subtasks array
    */
   reorder(taskId: string, subtaskIds: string[], options?: RequestOptions): Promise<Subtask[]>;
+
+  /**
+   * Start timing a subtask. Its task's timer starts too, and any other
+   * running timer stops.
+   */
+  timerStart(
+    taskId: string,
+    subtaskId: string,
+    options?: RequestOptions
+  ): Promise<{ subtask: Subtask; task: Task; stoppedTask: Task | null }>;
+
+  /** Stop a subtask's timer and its task's. */
+  timerStop(
+    taskId: string,
+    subtaskId: string,
+    options?: RequestOptions
+  ): Promise<{ subtask: Subtask; task: Task }>;
 
   /**
    * Toggle subtask completion status
@@ -139,6 +157,26 @@ export function createSubtasksApi(client: OpenSunsamaClient): SubtasksApi {
         `tasks/${taskId}/subtasks/${subtaskId}`,
         options
       );
+    },
+
+    async timerStart(taskId: string, subtaskId: string, options?: RequestOptions) {
+      const response = await client.post<
+        ApiResponseWrapper<Subtask> & { task: Task; stoppedTask: Task | null }
+      >(`tasks/${taskId}/subtasks/${subtaskId}/timer/start`, undefined, options);
+      return {
+        subtask: response.data,
+        task: response.task,
+        stoppedTask: response.stoppedTask ?? null,
+      };
+    },
+
+    async timerStop(taskId: string, subtaskId: string, options?: RequestOptions) {
+      const response = await client.post<ApiResponseWrapper<Subtask> & { task: Task }>(
+        `tasks/${taskId}/subtasks/${subtaskId}/timer/stop`,
+        undefined,
+        options
+      );
+      return { subtask: response.data, task: response.task };
     },
 
     async reorder(

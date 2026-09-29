@@ -44,7 +44,7 @@ Looking for a place to start? Check out issues labeled:
 ### Prerequisites
 
 - [Bun](https://bun.sh/) 1.4.2 (run `mise install` when using mise)
-- Docker Compose, or PostgreSQL 15+
+- PostgreSQL 15+ (Homebrew's `postgresql@17`, or a hosted database such as Neon or Supabase)
 - Git
 
 ### Setup
@@ -65,17 +65,9 @@ mise install
 # 5. Install dependencies
 bun install
 
-# 6. Set up environment (root is for Drizzle; API is for the server)
-cp .env.example .env
-cp apps/api/.env.example apps/api/.env
-# Both default to the PostgreSQL from step 6; edit DATABASE_URL to use your own
-
-# 7. Start PostgreSQL and create the tables
-docker compose up -d postgres
-bun run db:migrate
-
-# 8. Start development servers
-bun run dev
+# 6. Start the API (:3001) and web app (:3000) against your PostgreSQL.
+#    Tables are created on start. Redis, email, background jobs and OAuth stay off.
+DEV_DATABASE_URL=postgresql://localhost:5432/opensunsama bun run dev:local
 ```
 
 ### Project Structure

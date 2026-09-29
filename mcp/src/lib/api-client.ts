@@ -171,6 +171,95 @@ export class ApiClient {
     );
   }
 
+  // Ideas
+  async listIdeaBoards() {
+    return this.request<IdeaBoard[]>("GET", "/ideas/boards");
+  }
+
+  async createIdeaBoard(data: CreateIdeaBoardInput) {
+    return this.request<IdeaBoard & { columns: IdeaColumn[] }>("POST", "/ideas/boards", data);
+  }
+
+  async updateIdeaBoard(id: string, data: Partial<CreateIdeaBoardInput>) {
+    return this.request<IdeaBoard>("PATCH", `/ideas/boards/${id}`, data);
+  }
+
+  async deleteIdeaBoard(id: string) {
+    return this.request<never>("DELETE", `/ideas/boards/${id}`);
+  }
+
+  async reorderIdeaBoards(boardIds: string[]) {
+    return this.request<IdeaBoard[]>("POST", "/ideas/boards/reorder", { boardIds });
+  }
+
+  async listIdeaColumns(boardId: string) {
+    return this.request<IdeaColumn[]>("GET", "/ideas/columns", undefined, { boardId });
+  }
+
+  async createIdeaColumn(data: CreateIdeaColumnInput) {
+    return this.request<IdeaColumn>("POST", "/ideas/columns", data);
+  }
+
+  async updateIdeaColumn(id: string, data: Partial<Pick<IdeaColumn, "name" | "position">>) {
+    return this.request<IdeaColumn>("PATCH", `/ideas/columns/${id}`, data);
+  }
+
+  async deleteIdeaColumn(id: string) {
+    return this.request<never>("DELETE", `/ideas/columns/${id}`);
+  }
+
+  async reorderIdeaColumns(boardId: string, columnIds: string[]) {
+    return this.request<IdeaColumn[]>("POST", "/ideas/columns/reorder", { boardId, columnIds });
+  }
+
+  async listIdeas(filters: { boardId?: string; columnId?: string; completed?: boolean }) {
+    return this.request<Idea[]>("GET", "/ideas", undefined, filters);
+  }
+
+  async getIdea(id: string) {
+    return this.request<Idea & { subtasks: IdeaSubtask[] }>("GET", `/ideas/${id}`);
+  }
+
+  async createIdea(data: CreateIdeaInput) {
+    return this.request<Idea>("POST", "/ideas", data);
+  }
+
+  async updateIdea(id: string, data: UpdateIdeaInput) {
+    return this.request<Idea>("PATCH", `/ideas/${id}`, data);
+  }
+
+  async deleteIdea(id: string) {
+    return this.request<never>("DELETE", `/ideas/${id}`);
+  }
+
+  async reorderIdeas(columnId: string, ideaIds: string[]) {
+    return this.request<Idea[]>("POST", "/ideas/reorder", { columnId, ideaIds });
+  }
+
+  async promoteIdea(id: string, scheduledDate?: string | null) {
+    return this.request<{ idea: Idea; task: Task }>("POST", `/ideas/${id}/promote`, { scheduledDate });
+  }
+
+  async listIdeaSubtasks(ideaId: string) {
+    return this.request<IdeaSubtask[]>("GET", `/ideas/${ideaId}/subtasks`);
+  }
+
+  async createIdeaSubtask(ideaId: string, data: CreateIdeaSubtaskInput) {
+    return this.request<IdeaSubtask>("POST", `/ideas/${ideaId}/subtasks`, data);
+  }
+
+  async updateIdeaSubtask(ideaId: string, id: string, data: UpdateIdeaSubtaskInput) {
+    return this.request<IdeaSubtask>("PATCH", `/ideas/${ideaId}/subtasks/${id}`, data);
+  }
+
+  async deleteIdeaSubtask(ideaId: string, id: string) {
+    return this.request<never>("DELETE", `/ideas/${ideaId}/subtasks/${id}`);
+  }
+
+  async reorderIdeaSubtasks(ideaId: string, subtaskIds: string[]) {
+    return this.request<IdeaSubtask[]>("POST", `/ideas/${ideaId}/subtasks/reorder`, { subtaskIds });
+  }
+
   // Time Blocks
   async listTimeBlocks(params?: {
     date?: string;
@@ -228,6 +317,88 @@ export class ApiClient {
 // Types
 export type TaskPriority = "P0" | "P1" | "P2" | "P3";
 
+export interface IdeaBoard {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  position: number;
+}
+
+export interface IdeaColumn {
+  id: string;
+  boardId: string;
+  name: string;
+  position: number;
+}
+
+export interface Idea {
+  id: string;
+  boardId: string;
+  columnId: string;
+  title: string;
+  notes: string | null;
+  estimatedMins: number | null;
+  priority: TaskPriority;
+  position: number;
+  completedAt: string | null;
+  promotedTaskId: string | null;
+  subtaskCount?: number;
+  subtaskDoneCount?: number;
+}
+
+export interface IdeaSubtask {
+  id: string;
+  ideaId: string;
+  title: string;
+  completed: boolean;
+  position: number;
+}
+
+export interface CreateIdeaBoardInput {
+  name: string;
+  icon?: string;
+  color?: string;
+  position?: number;
+}
+
+export interface CreateIdeaColumnInput {
+  boardId: string;
+  name: string;
+  position?: number;
+}
+
+export interface CreateIdeaInput {
+  boardId: string;
+  columnId: string;
+  title: string;
+  notes?: string | null;
+  estimatedMins?: number | null;
+  priority?: TaskPriority;
+  position?: number;
+}
+
+export interface UpdateIdeaInput {
+  title?: string;
+  notes?: string | null;
+  estimatedMins?: number | null;
+  priority?: TaskPriority;
+  columnId?: string;
+  position?: number;
+  completedAt?: string | null;
+}
+
+export interface CreateIdeaSubtaskInput {
+  title: string;
+  position?: number;
+}
+
+export interface UpdateIdeaSubtaskInput {
+  title?: string;
+  completed?: boolean;
+  position?: number;
+}
+
 export interface Task {
   id: string;
   userId: string;
@@ -269,6 +440,9 @@ export interface Subtask {
   title: string;
   completed: boolean;
   position: number;
+  estimatedMins?: number | null;
+  actualMins?: number | null;
+  timerStartedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -282,6 +456,8 @@ export interface UpdateSubtaskInput {
   title?: string;
   completed?: boolean;
   position?: number;
+  estimatedMins?: number | null;
+  actualMins?: number | null;
 }
 
 export interface TimeBlock {
@@ -336,6 +512,10 @@ export interface CalendarEvent {
   isAllDay: boolean;
   status: "confirmed" | "tentative" | "cancelled" | null;
   responseStatus: "accepted" | "declined" | "tentative" | "needsAction" | null;
+  /** Guests; null when there are none or the provider doesn't report them. */
+  attendees?: Array<{ email: string; name: string | null }> | null;
+  /** Video call join URL (Google Meet, Teams, Zoom). */
+  conferenceUrl?: string | null;
   calendar: { id: string; name: string; color: string | null } | null;
 }
 

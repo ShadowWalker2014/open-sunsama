@@ -7,6 +7,10 @@ import { uuidSchema, dateSchema } from "@open-sunsama/utils";
 
 const prioritySchema = z.enum(["P0", "P1", "P2", "P3"]);
 const estimatedMinsSchema = z.number().int().positive().max(1440);
+const orderedIdsSchema = z.array(uuidSchema).min(1).refine(
+  (ids) => new Set(ids).size === ids.length,
+  "IDs must be unique"
+);
 
 // lucide icon name — letters/digits only (e.g. "Film", "Rocket")
 const iconSchema = z
@@ -34,7 +38,7 @@ export const updateIdeaBoardSchema = z.object({
 });
 
 export const reorderIdeaBoardsSchema = z.object({
-  boardIds: z.array(uuidSchema).min(1),
+  boardIds: orderedIdsSchema,
 });
 
 // ───────────────────────── columns ─────────────────────────
@@ -51,7 +55,7 @@ export const updateIdeaColumnSchema = z.object({
 
 export const reorderIdeaColumnsSchema = z.object({
   boardId: uuidSchema,
-  columnIds: z.array(uuidSchema).min(1),
+  columnIds: orderedIdsSchema,
 });
 
 // ───────────────────────── ideas ─────────────────────────
@@ -83,7 +87,7 @@ export const ideaFilterSchema = z.object({
 
 export const reorderIdeasSchema = z.object({
   columnId: uuidSchema,
-  ideaIds: z.array(uuidSchema).min(1),
+  ideaIds: orderedIdsSchema,
 });
 
 export const promoteIdeaSchema = z.object({
@@ -103,7 +107,7 @@ export const updateIdeaSubtaskSchema = z.object({
 });
 
 export const reorderIdeaSubtasksSchema = z.object({
-  subtaskIds: z.array(uuidSchema).min(1),
+  subtaskIds: orderedIdsSchema,
 });
 
 export const ideaIdParamSchema = z.object({
