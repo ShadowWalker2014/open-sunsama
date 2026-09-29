@@ -241,8 +241,8 @@ export function useMultiDayEventDrag(options: EventDragOptions) {
         ds.mode === "move" ? nextDayDate : ds.originDayDate;
       const relativeY = e.clientY - activeColumnRect.top + scrollDelta;
 
-      let previewStart = ds.previewStart;
-      let previewEnd = ds.previewEnd;
+      let previewStart: Date;
+      let previewEnd: Date;
 
       if (ds.mode === "move") {
         // Anchor the event's top edge to the cursor by computing the

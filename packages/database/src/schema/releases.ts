@@ -3,13 +3,13 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
 // Available platforms for desktop releases
-export const RELEASE_PLATFORMS = ['windows', 'macos-arm64', 'macos-x64', 'linux'] as const;
+export const RELEASE_PLATFORMS = ['windows', 'macos-arm64', 'macos-x64', 'linux', 'linux-deb'] as const;
 export type ReleasePlatform = (typeof RELEASE_PLATFORMS)[number];
 
 export const releases = pgTable('releases', {
   id: text('id').primaryKey(), // Format: rel_<nanoid>
   version: text('version').notNull(), // Semver format, e.g., "1.0.0"
-  platform: text('platform').notNull(), // windows, macos-arm64, macos-x64, linux
+  platform: text('platform').notNull(), // windows, macos-arm64, macos-x64, linux (AppImage), linux-deb
   downloadUrl: text('download_url').notNull(), // S3 URL
   fileSize: integer('file_size').notNull(), // Size in bytes
   fileName: text('file_name').notNull(),

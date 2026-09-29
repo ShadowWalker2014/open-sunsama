@@ -48,6 +48,14 @@ export function EventForm({
   const writableCalendars = React.useMemo(() => {
     const providerByAccount = new Map<string, string>();
     for (const a of accounts) providerByAccount.set(a.id, a.provider);
+    const isPrimary = (calendar: (typeof calendars)[number]) => {
+      const account = accounts.find((a) => a.id === calendar.accountId);
+      return (
+        account?.provider === "google" &&
+        !!account.email &&
+        calendar.externalId?.toLowerCase() === account.email.toLowerCase()
+      );
+    };
     return calendars
       .filter((c) => {
         const provider = providerByAccount.get(c.accountId);
@@ -56,6 +64,7 @@ export function EventForm({
       .sort((a, b) => {
         if (a.isDefaultForEvents && !b.isDefaultForEvents) return -1;
         if (!a.isDefaultForEvents && b.isDefaultForEvents) return 1;
+        if (isPrimary(a) !== isPrimary(b)) return isPrimary(a) ? -1 : 1;
         return a.name.localeCompare(b.name);
       });
   }, [calendars, accounts]);
