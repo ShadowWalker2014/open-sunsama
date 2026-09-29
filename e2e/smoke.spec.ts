@@ -548,10 +548,10 @@ test("dropping a task schedules it directly without a blank create dialog", asyn
   await page.mouse.move(from.x+100,from.y+25);
   await page.mouse.down();
   await page.mouse.move(from.x+110,from.y+25,{steps:3});
-  await page.mouse.move(grid.x+120,220,{steps:15});
+  await page.mouse.move(grid.x+120,228,{steps:15});
   await page.mouse.up();
   await expect.poll(async()=> (await api<Array<{taskId:string}>>('GET',`/time-blocks?date=${today}`,undefined,session.token)).filter(b=>b.taskId===task.id).length).toBe(1);
-  const minutes = Math.round(((220 - grid.y) / 64 * 60) / 15) * 15;
+  const minutes = Math.round(((228 - grid.y) / 64 * 60) / 15) * 15;
   const expectedTime = `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
   const blocks = await api<Array<{taskId:string;startTime:string}>>('GET',`/time-blocks?date=${today}`,undefined,session.token);
   expect(blocks.find(b=>b.taskId===task.id)?.startTime).toBe(expectedTime);
@@ -640,7 +640,7 @@ test("task drops save one linked idea with its checklist and reject another user
   expect(denied.status).toBe(404);
 });
 
-test('Ideas surfaces follow appearance colors in light and dark mode', async ({ page }) => {
+test('Ideas surfaces stay neutral across accent colors and adapt to light and dark mode', async ({ page }) => {
   const session = await register();
   const board = await api<{id:string}>('POST','/ideas/boards',{name:'Theme validation'},session.token);
   await signInWithToken(page, session);
@@ -666,5 +666,7 @@ test('Ideas surfaces follow appearance colors in light and dark mode', async ({ 
       await expect.poll(() => tray.evaluate(el => getComputedStyle(el).backgroundColor)).toBe(color);
     }
   }
-  expect(new Set(colors).size).toBe(4);
+  expect(colors[0]).toBe(colors[1]);
+  expect(colors[2]).toBe(colors[3]);
+  expect(colors[0]).not.toBe(colors[2]);
 });
