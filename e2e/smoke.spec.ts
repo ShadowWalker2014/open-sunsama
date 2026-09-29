@@ -281,13 +281,62 @@ test("Today keeps its sidebar beside the calendar and sweeps an hour", async ({ 
   await page.mouse.down();
   await page.mouse.move(calendar!.x + 80, y + 64, { steps: 8 });
   await page.mouse.up();
-  const dialog = page.getByRole("dialog", { name: "Create", exact: true });
+  const dialog = page.getByRole("dialog", { name: "Add event", exact: true });
   await expect(dialog).toBeVisible();
-  await dialog.getByRole("textbox", { name: "Title", exact: true }).fill("Sweep review");
+  await dialog.getByRole("textbox", { name: "Event title", exact: true }).fill("Sweep review");
   const saved = page.waitForResponse((r) => r.url().endsWith("/time-blocks") && r.request().method() === "POST");
-  await dialog.getByRole("button", { name: "Create", exact: true }).click();
+  await dialog.getByRole("button", { name: "Save", exact: true }).click();
   const block = (await (await saved).json()).data;
   expect(block.durationMins).toBe(60);
+  expect(block.taskId).toBeNull();
+});
+
+test("empty slots default to a writable calendar and retain edits after save failure", async ({ page }) => {
+  const session = await register();
+  await page.route(`${API}/calendar/accounts`, r => r.fulfill({ json: { success: true, data: [{ id: "event-account", provider: "google", isActive: true }] } }));
+  await page.route(`${API}/calendars`, r => r.fulfill({ json: { success: true, data: [{ id: "event-account", provider: "google", calendars: [
+    { id: "readonly", name: "Read only", isReadOnly: true, isEnabled: true, isDefaultForEvents: true },
+    { id: "writable", name: "Work calendar", isReadOnly: false, isEnabled: true, isDefaultForEvents: true },
+  ] }] } }));
+  let attempts = 0;
+  let payload: Record<string, unknown> = {};
+  await page.route(`${API}/calendar-events`, async r => {
+    payload = r.request().postDataJSON();
+    attempts++;
+    await r.fulfill(attempts === 1
+      ? { status: 503, json: { success: false, error: { code: "PROVIDER_UNAVAILABLE", message: "Calendar temporarily unavailable", statusCode: 503 } } }
+      : { json: { success: true, data: { id: "created-event", ...payload } } });
+  });
+  await signInWithToken(page, session);
+  await page.goto("/app");
+  const column = page.locator("[data-calendar-create-column]");
+  await expect(column).toBeVisible();
+  const rect = (await column.boundingBox())!;
+  const y = Math.max(rect.y, 160) + 80;
+  await page.mouse.move(rect.x + 80, y);
+  await page.mouse.down();
+  await page.mouse.move(rect.x + 80, y + 64, { steps: 8 });
+  await page.mouse.up();
+  const dialog = page.getByRole("dialog", { name: "Add event", exact: true });
+  await expect(dialog.getByRole("combobox", { name: "Calendar" })).toHaveText("Work calendar");
+  await expect(dialog.getByText("Link to task (optional)")).toHaveCount(0);
+  await expect(dialog.getByRole("tab")).toHaveCount(0);
+  await dialog.getByLabel("Event title", { exact: true }).fill("Design review");
+  await dialog.getByRole("button", { name: "More options" }).click();
+  await dialog.getByLabel("Start", { exact: true }).fill(`${today}T14:00`);
+  await dialog.getByLabel("End", { exact: true }).fill(`${today}T13:00`);
+  await dialog.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByText("End time must be after start time", { exact: true })).toBeVisible();
+  expect(attempts).toBe(0);
+  await dialog.getByLabel("End", { exact: true }).fill(`${today}T15:15`);
+  await dialog.getByLabel("Location", { exact: true }).fill("Studio");
+  await dialog.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByText("Calendar temporarily unavailable", { exact: true })).toBeVisible();
+  await expect(dialog.getByLabel("Event title", { exact: true })).toHaveValue("Design review");
+  await dialog.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(dialog).toBeHidden();
+  expect(attempts).toBe(2);
+  expect(payload).toMatchObject({ calendarId: "writable", title: "Design review", location: "Studio", startTime: `${today}T14:00:00.000Z`, endTime: `${today}T15:15:00.000Z` });
 });
 
 test("mobile subtask titles keep readable width alongside timer controls", async ({ page }) => {
@@ -548,10 +597,10 @@ test("dropping a task schedules it directly without a blank create dialog", asyn
   await page.mouse.move(from.x+100,from.y+25);
   await page.mouse.down();
   await page.mouse.move(from.x+110,from.y+25,{steps:3});
-  await page.mouse.move(grid.x+120,220,{steps:15});
+  await page.mouse.move(grid.x+120,228,{steps:15});
   await page.mouse.up();
   await expect.poll(async()=> (await api<Array<{taskId:string}>>('GET',`/time-blocks?date=${today}`,undefined,session.token)).filter(b=>b.taskId===task.id).length).toBe(1);
-  const minutes = Math.round(((220 - grid.y) / 64 * 60) / 15) * 15;
+  const minutes = Math.round(((228 - grid.y) / 64 * 60) / 15) * 15;
   const expectedTime = `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
   const blocks = await api<Array<{taskId:string;startTime:string}>>('GET',`/time-blocks?date=${today}`,undefined,session.token);
   expect(blocks.find(b=>b.taskId===task.id)?.startTime).toBe(expectedTime);
@@ -640,7 +689,7 @@ test("task drops save one linked idea with its checklist and reject another user
   expect(denied.status).toBe(404);
 });
 
-test('Ideas surfaces follow appearance colors in light and dark mode', async ({ page }) => {
+test('Ideas surfaces stay neutral across accent colors and adapt to light and dark mode', async ({ page }) => {
   const session = await register();
   const board = await api<{id:string}>('POST','/ideas/boards',{name:'Theme validation'},session.token);
   await signInWithToken(page, session);
@@ -666,5 +715,7 @@ test('Ideas surfaces follow appearance colors in light and dark mode', async ({ 
       await expect.poll(() => tray.evaluate(el => getComputedStyle(el).backgroundColor)).toBe(color);
     }
   }
-  expect(new Set(colors).size).toBe(4);
+  expect(colors[0]).toBe(colors[1]);
+  expect(colors[2]).toBe(colors[3]);
+  expect(colors[0]).not.toBe(colors[2]);
 });
