@@ -21,8 +21,8 @@ export const oauthInitiateParamsSchema = z.object({
  * Schema for OAuth callback query params
  */
 export const oauthCallbackQuerySchema = z.object({
-  code: z.string().min(1, 'Authorization code is required'),
-  state: z.string().min(1, 'State parameter is required'),
+  code: z.string().min(1, { error: 'Authorization code is required' }),
+  state: z.string().min(1, { error: 'State parameter is required' }),
   error: z.string().optional(),
   error_description: z.string().optional(),
 });
@@ -31,9 +31,9 @@ export const oauthCallbackQuerySchema = z.object({
  * Schema for CalDAV connect body
  */
 export const caldavConnectSchema = z.object({
-  email: z.string().email('Invalid email address').max(255),
-  appPassword: z.string().min(1, 'App password is required').max(255),
-  caldavUrl: z.string().url().max(500).optional(),
+  email: z.email({ error: 'Invalid email address' }).max(255),
+  appPassword: z.string().min(1, { error: 'App password is required' }).max(255),
+  caldavUrl: z.url().max(500).optional(),
 });
 
 /**
@@ -63,7 +63,7 @@ export const updateCalendarSettingsSchema = z.object({
   isDefaultForTasks: z.boolean().optional(),
   color: z
     .string()
-    .regex(/^#[0-9A-Fa-f]{6}$/, 'color must be a #RRGGBB hex string')
+    .regex(/^#[0-9A-Fa-f]{6}$/, { error: 'color must be a #RRGGBB hex string' })
     .nullable()
     .optional(),
 });
@@ -74,14 +74,14 @@ export const updateCalendarSettingsSchema = z.object({
 export const calendarEventsQuerySchema = z
   .object({
     // ISO instants, or YYYY-MM-DD for whole days in the user's timezone.
-    from: z.string().datetime({ offset: true }).or(dateSchema).optional(),
-    to: z.string().datetime({ offset: true }).or(dateSchema).optional(),
+    from: z.iso.datetime({ offset: true }).or(dateSchema).optional(),
+    to: z.iso.datetime({ offset: true }).or(dateSchema).optional(),
     // Shorthand for from=to=date.
     date: dateSchema.optional(),
     calendarIds: z.string().optional(), // Comma-separated UUIDs
   })
   .refine((q) => (q.date ? !q.from && !q.to : !!q.from && !!q.to), {
-    message: 'Pass either date, or both from and to',
+    error: 'Pass either date, or both from and to',
   });
 
 /**
