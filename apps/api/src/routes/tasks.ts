@@ -17,6 +17,7 @@ import {
   inArray,
   tasks,
   subtasks,
+  taskExternalLinks,
   sql,
   notificationPreferences,
 } from "@open-sunsama/database";
@@ -145,9 +146,37 @@ tasksRouter.get(
       }));
     }
 
+    // Inline external links so the card can render its source chip
+    // without a second round-trip per task. Cheap: one indexed query
+    // over the page of ids, and most users have none at all.
+    let withLinks: Array<
+      (typeof withSubtasks)[number] & { externalLinks?: unknown[] }
+    > = withSubtasks;
+    if (results.length > 0) {
+      const ids = results.map((t) => t.id);
+      const links = await db
+        .select()
+        .from(taskExternalLinks)
+        .where(inArray(taskExternalLinks.taskId, ids));
+
+      if (links.length > 0) {
+        const linksByTaskId = new Map<string, typeof links>();
+        for (const link of links) {
+          const list = linksByTaskId.get(link.taskId);
+          if (list) list.push(link);
+          else linksByTaskId.set(link.taskId, [link]);
+        }
+
+        withLinks = withSubtasks.map((t) => ({
+          ...t,
+          externalLinks: linksByTaskId.get(t.id) ?? [],
+        }));
+      }
+    }
+
     return c.json({
       success: true,
-      data: withSubtasks,
+      data: withLinks,
       meta: {
         page: filters.page,
         limit: filters.limit,
@@ -293,7 +322,15 @@ tasksRouter.get(
       .limit(1);
     if (!task) throw new NotFoundError("Task", id);
 
-    return c.json({ success: true, data: task });
+    // The task modal reads from this endpoint, and it renders the
+    // source chips (open upstream / refresh). Without the links here
+    // they would show on the board card but vanish when you open it.
+    const links = await db
+      .select()
+      .from(taskExternalLinks)
+      .where(eq(taskExternalLinks.taskId, id));
+
+    return c.json({ success: true, data: { ...task, externalLinks: links } });
   }
 );
 

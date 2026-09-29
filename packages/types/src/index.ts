@@ -162,6 +162,21 @@ export type {
   UpdateCalendarRequest,
 } from "./calendar.js";
 
+// Task-source integration types
+export type {
+  IntegrationCredentialField,
+  IntegrationProviderInfo,
+  IntegrationAccount,
+  ExternalLinkKind,
+  ExternalLinkRole,
+  ExternalLinkStatus,
+  ExternalLinkMeta,
+  TaskExternalLink,
+  ConnectIntegrationRequest,
+  ImportTaskRequest,
+  CreateTaskLinkRequest,
+} from "./integration.js";
+
 // Ideas types
 export type {
   IdeaBoard,

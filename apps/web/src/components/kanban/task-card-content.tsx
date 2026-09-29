@@ -19,6 +19,7 @@ import { WithShortcut } from "@/components/ui/with-shortcut";
 import { EDIT_ESTIMATE_EVENT } from "@/components/task-shortcuts-handler";
 import { PRIORITY_META } from "@/components/ui/priority-badge";
 import { PriorityMenu } from "./priority-menu";
+import { TaskSourceChips } from "./task-source-chip";
 
 interface TaskCardContentProps {
   task: Task;
@@ -296,6 +297,11 @@ export function TaskCardContent({
             subtasks={subtasks!}
             onToggleSubtask={onToggleSubtask}
           />
+        </div>
+      )}
+      {!!task.externalLinks?.length && (
+        <div className="pl-6">
+          <TaskSourceChips links={task.externalLinks} />
         </div>
       )}
     </div>

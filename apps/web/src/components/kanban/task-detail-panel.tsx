@@ -22,6 +22,7 @@ import {
   EstimatedTimeSection,
   NotesSection,
 } from "./task-form-sections";
+import { TaskSourceChips } from "./task-source-chip";
 import { TimeBlocksList } from "./task-time-blocks";
 
 interface TaskDetailPanelProps {
@@ -158,6 +159,10 @@ export function TaskDetailPanel({
             onChange={setTitle}
             onBlur={handleTitleBlur}
           />
+
+          {/* Where this task came from, with a refresh affordance. The
+              panel has the room the board card doesn't. */}
+          <TaskSourceChips links={task?.externalLinks} showRefresh />
 
           <DateSection
             scheduledDate={scheduledDate}

@@ -21,6 +21,8 @@ export type WebSocketEventType =
   | "calendar:updated"
   | "calendar-event:updated"
   | "calendar-event:deleted"
+  | "integration:account-connected"
+  | "integration:account-disconnected"
   | "user:updated"
   | "idea-board:created"
   | "idea-board:updated"

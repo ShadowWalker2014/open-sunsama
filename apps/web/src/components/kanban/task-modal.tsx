@@ -72,6 +72,7 @@ import { SubtaskList, type Subtask as DraftSubtask } from "./subtask-list";
 import { NotesField } from "./task-modal-form";
 import { TaskAttachments } from "./task-attachments";
 import { TaskSeriesBanner } from "./task-series-banner";
+import { TaskSourceChips } from "./task-source-chip";
 import { RepeatConfigDialog } from "./repeat-config-popover";
 import { PriorityMenu } from "./priority-menu";
 import { PriorityIcon, PRIORITY_META } from "@/components/ui/priority-badge";
@@ -894,6 +895,11 @@ export function TaskModal({
         )}
         {titleRow}
         {isMobile && <div className="px-5 pt-3">{times}</div>}
+        {!isCompose && !!renderTask.externalLinks?.length && (
+          <div className={isMobile ? "px-5 pt-3" : "px-8 pt-3"}>
+            <TaskSourceChips links={renderTask.externalLinks} showRefresh />
+          </div>
+        )}
         {subtasks}
         {notes}
       </div>
