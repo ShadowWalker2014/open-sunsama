@@ -54,6 +54,7 @@ function writeTaskToCaches(qc: QueryClient, task: Task) {
 /** Refetch the task-related caches after an undo/redo applies a raw change. */
 function invalidateTaskCaches(qc: QueryClient) {
   qc.invalidateQueries({ queryKey: taskKeys.lists() });
+  qc.invalidateQueries({ queryKey: taskKeys.rangeAll() });
   qc.invalidateQueries({ queryKey: ["tasks", "search", "infinite"] });
   qc.invalidateQueries({ queryKey: timeBlockKeys.lists() });
 }
@@ -734,6 +735,8 @@ export function useBatchDeleteTasks() {
       // removed some tasks server-side. Refetch to converge on server truth
       // instead of trusting the rolled-back optimistic snapshot.
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      // The kanban range prefetch lives outside lists(); refresh it too.
+      queryClient.invalidateQueries({ queryKey: taskKeys.rangeAll() });
       queryClient.invalidateQueries({
         queryKey: ["tasks", "search", "infinite"],
       });

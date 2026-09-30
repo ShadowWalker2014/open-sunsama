@@ -250,6 +250,8 @@ export function useTimer({
             queryKey: taskKeys.detail(result.stoppedTask.id),
           });
           queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      // The kanban range prefetch lives outside lists(); refresh it too.
+      queryClient.invalidateQueries({ queryKey: taskKeys.rangeAll() });
         }
       })
       .catch(() => {
@@ -283,6 +285,8 @@ export function useTimer({
           queryKey: taskKeys.detail(taskId),
         });
         queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      // The kanban range prefetch lives outside lists(); refresh it too.
+      queryClient.invalidateQueries({ queryKey: taskKeys.rangeAll() });
       })
       .catch(() => {
         // On failure, refetch to reconcile
