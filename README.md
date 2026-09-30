@@ -448,6 +448,14 @@ Open Sunsama uses a custom **non-commercial license**. It covers personal, educa
 
 [![Star on GitHub](https://img.shields.io/github/stars/ShadowWalker2014/open-sunsama?style=for-the-badge&logo=github&color=yellow)](https://github.com/ShadowWalker2014/open-sunsama/stargazers)
 
+<a href="https://star-history.com/#ShadowWalker2014/open-sunsama&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ShadowWalker2014/open-sunsama&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ShadowWalker2014/open-sunsama&type=Date" />
+    <img alt="Star history chart for Open Sunsama" src="https://api.star-history.com/svg?repos=ShadowWalker2014/open-sunsama&type=Date" width="600" />
+  </picture>
+</a>
+
 <sub>Made by <a href="https://circo.so">Circo</a> · <a href="https://opensunsama.com">opensunsama.com</a></sub>
 
 </div>
