@@ -413,7 +413,7 @@ export default defineMarketingPage({
       {
         question: "Does Open Sunsama integrate with GitHub, Linear or Jira?",
         answer:
-          "Not yet. There are no built-in task integrations. You can bring tasks in with a short script against the REST API, or ask your agent to file them over MCP.",
+          "Not for GitHub, Linear or Jira yet. You can import individual Todoist tasks, bring other tasks in through the REST API, or ask your agent to file them over MCP.",
       },
     ],
   },

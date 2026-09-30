@@ -30,7 +30,7 @@ const verdict: AlternativeExtras["verdict"] = {
 const giveUps: AlternativeExtras["giveUps"] = [
   {
     title: "A universal inbox",
-    body: "Akiflow pulls tasks from Slack, Gmail, Linear and more into one list. Open Sunsama syncs your calendars only. Other tasks come in by hand, through the REST API, or from your AI agent.",
+    body: "Akiflow pulls tasks from Slack, Gmail, Linear and more into one list. Open Sunsama syncs calendars, supports one-at-a-time Todoist task imports, and accepts other tasks through its REST API or an AI agent.",
   },
   {
     title: "Native phone apps",
