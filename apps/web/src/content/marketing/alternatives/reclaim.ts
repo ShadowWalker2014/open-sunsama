@@ -38,7 +38,7 @@ const giveUps: AlternativeExtras["giveUps"] = [
   },
   {
     title: "Built-in task integrations",
-    body: "Reclaim syncs tasks from Asana, Jira, Linear, Todoist and more on its paid plans. Open Sunsama syncs your calendars only. Other tasks come in by hand, through the REST API, or from your AI agent.",
+    body: "Reclaim syncs tasks from Asana, Jira, Linear, Todoist and more on its paid plans. Open Sunsama syncs calendars and lets you import Todoist tasks one at a time; other sources need the REST API or an AI agent.",
   },
   {
     title: "A one-click import",

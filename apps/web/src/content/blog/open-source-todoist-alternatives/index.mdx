@@ -22,7 +22,7 @@ export const frontmatter = {
     },
     {
       question: "Can I import my tasks from Todoist?",
-      answer: "Vikunja has a built-in Todoist importer, and Planify syncs with a Todoist account directly. Open Sunsama has no Todoist importer. You can move open tasks by hand, or connect both apps to Claude over MCP and ask it to copy them.",
+      answer: "Vikunja has a bulk Todoist importer, and Planify syncs with a Todoist account directly. Open Sunsama lets you connect Todoist and import selected tasks one link at a time. It does not migrate whole projects or labels.",
     },
     {
       question: "Which open source to-do apps work with Claude or ChatGPT?",
@@ -105,7 +105,7 @@ Where it falls short:
 
 - The code is public on GitHub. It uses a non-commercial license: you can read it, run it and self-host it for personal use. Companies need a commercial license.
 - It is young. The first commit was in January 2026, so it has fewer years behind it than Vikunja or Joplin.
-- No Todoist importer yet, and no CalDAV task sync.
+- No bulk Todoist migration for projects or labels, and no CalDAV task sync. Individual Todoist tasks can be imported by link.
 - No native iOS or Android app. On a phone, it runs in the browser.
 - The ready-made desktop apps connect to the hosted service, not to a server you host.
 - It plans one person's day. It is not a team project tool.

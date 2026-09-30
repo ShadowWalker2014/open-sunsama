@@ -43,11 +43,11 @@ const giveUps: AlternativeExtras["giveUps"] = [
   },
   {
     title: "Built-in integrations",
-    body: "Todoist connects to many apps. Open Sunsama syncs your calendars only. Other tasks come in by hand, through the REST API, or from your AI agent.",
+    body: "Todoist connects to many apps. Open Sunsama syncs your calendars and lets you pull individual Todoist tasks into your backlog. Other sources need the REST API or an AI agent.",
   },
   {
-    title: "A Todoist importer",
-    body: "There is no Todoist importer yet. Move your open tasks by hand, or connect both apps to Claude over MCP and ask it to copy them.",
+    title: "Bulk Todoist migration",
+    body: "You can connect Todoist and import tasks one link at a time. There is no one-click bulk migration for projects, labels or due dates.",
   },
   LICENSE_GIVE_UP,
 ];
@@ -272,7 +272,7 @@ export default defineMarketingPage({
         },
         {
           title: "Bring over your open tasks",
-          body: "There is no Todoist importer yet. Connect both Todoist and Open Sunsama to Claude over MCP, and ask it to copy this week's tasks. Check the result before you stop using Todoist.",
+          body: "Connect Todoist under Settings → Integrations, then paste links to the tasks you want in your backlog. Each import keeps a link to the original; bulk migration of projects and labels is not available.",
         },
       ],
     },
@@ -297,7 +297,7 @@ export default defineMarketingPage({
       {
         question: "Can I import my tasks from Todoist?",
         answer:
-          "Not with one click yet. Move your open tasks by hand, or connect both apps to Claude over MCP and ask it to copy them.",
+          "Yes, one task at a time. Connect Todoist under Settings → Integrations and paste a task link into Import. Bulk migration of projects and labels is not available.",
         link: { label: "Migration guide", href: "/blog/todoist-to-open-sunsama-migration" },
       },
       {
