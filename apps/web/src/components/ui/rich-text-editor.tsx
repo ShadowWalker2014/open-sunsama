@@ -401,7 +401,7 @@ export function RichTextEditor({
       attributes: {
         class: cn(
           // Compact text like Linear - smaller font, tighter spacing
-          "prose dark:prose-invert max-w-none focus:outline-none px-2 py-1.5",
+          "prose dark:prose-invert max-w-none focus:outline-hidden px-2 py-1.5",
           variant === "plain" ? "text-[15px] leading-relaxed" : "text-[13px] leading-relaxed",
           "prose-p:my-0.5 prose-ul:my-0.5 prose-ol:my-0.5 prose-li:my-0",
           "[&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5",

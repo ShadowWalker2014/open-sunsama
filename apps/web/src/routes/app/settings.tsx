@@ -220,7 +220,7 @@ export default function SettingsPage() {
   return (
     <div className="flex h-full overflow-hidden">
       {/* Left Navigation - Linear style */}
-      <nav className="w-48 flex-shrink-0 border-r border-border/40 bg-background/50 p-2">
+      <nav className="w-48 shrink-0 border-r border-border/40 bg-background/50 p-2">
         <div className="space-y-0.5">
           {TABS.map((tab) => {
             const Icon = tab.icon;

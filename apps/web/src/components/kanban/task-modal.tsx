@@ -562,11 +562,11 @@ export function TaskModal({
   };
 
   const iconButton = cn(
-    "flex shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+    "flex shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus:outline-hidden focus-visible:ring-1 focus-visible:ring-ring",
     isMobile ? "h-9 w-9" : "h-8 w-8"
   );
   const fieldButton =
-    "flex shrink-0 flex-col items-start justify-end gap-0.5 rounded-md px-2 py-1 text-left transition-colors hover:bg-accent focus:outline-none focus-visible:ring-1 focus-visible:ring-ring";
+    "flex shrink-0 flex-col items-start justify-end gap-0.5 rounded-md px-2 py-1 text-left transition-colors hover:bg-accent focus:outline-hidden focus-visible:ring-1 focus-visible:ring-ring";
   const fieldLabel =
     "text-[10px] font-medium uppercase leading-3 tracking-wider text-muted-foreground/60";
   const fieldValue = "flex items-center gap-1.5 text-sm leading-5 text-muted-foreground";
@@ -828,7 +828,7 @@ export function TaskModal({
         enterKeyHint={isCompose ? "send" : "done"}
         rows={1}
         className={cn(
-          "min-w-0 flex-1 resize-none overflow-hidden border-none bg-transparent p-0 font-medium tracking-tight leading-snug shadow-none placeholder:text-muted-foreground/45 focus:outline-none focus:ring-0",
+          "min-w-0 flex-1 resize-none overflow-hidden border-none bg-transparent p-0 font-medium tracking-tight leading-snug shadow-none placeholder:text-muted-foreground/45 focus:outline-hidden focus:ring-0",
           isMobile ? "text-xl" : "text-2xl leading-8",
           isCompleted && "text-muted-foreground line-through"
         )}
@@ -937,7 +937,7 @@ export function TaskModal({
         className={cn(
           "flex h-10 items-center gap-2 rounded-full px-5 text-sm font-semibold transition-all active:scale-[0.97]",
           canCreate
-            ? "bg-primary text-primary-foreground shadow-sm shadow-primary/30"
+            ? "bg-primary text-primary-foreground shadow-xs shadow-primary/30"
             : "bg-muted text-muted-foreground"
         )}
       >
@@ -966,7 +966,7 @@ export function TaskModal({
           </BottomSheetContent>
         ) : (
           <DialogContent
-            className="top-[8vh] flex max-h-[84vh] max-w-3xl translate-y-0 flex-col gap-0 overflow-hidden rounded-xl border-border/40 bg-surface p-0 shadow-2xl outline-none [&>button]:hidden"
+            className="top-[8vh] flex max-h-[84vh] max-w-3xl translate-y-0 flex-col gap-0 overflow-hidden rounded-xl border-border/40 bg-surface p-0 shadow-2xl outline-hidden [&>button]:hidden"
             aria-describedby={undefined}
             // Don't land focus on the first control (it would show a focus
             // ring and its tooltip); the composer focuses its title itself.

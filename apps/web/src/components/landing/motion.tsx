@@ -165,7 +165,7 @@ export function introStyle(ready: boolean, delay: number, reduced: boolean): Rea
 }
 
 const ACCENT_TEXT =
-  "bg-gradient-to-br from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent";
+  "bg-linear-to-br from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent";
 
 /**
  * The home page's headline intro: each word rises out of its own mask, one

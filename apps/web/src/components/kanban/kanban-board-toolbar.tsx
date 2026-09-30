@@ -214,7 +214,7 @@ export function KanbanBoardToolbar({
                 className={cn(
                   "flex h-6 items-center gap-1.5 rounded px-2 text-xs transition-colors",
                   mode === value
-                    ? "bg-background text-foreground shadow-sm"
+                    ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >

@@ -251,7 +251,7 @@ export function AccountCard({
       {/* Account header */}
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">
-          <Icon className="h-5 w-5 flex-shrink-0" />
+          <Icon className="h-5 w-5 shrink-0" />
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">{account.email}</p>
             <p className="text-xs text-muted-foreground">{config.name}</p>

@@ -143,7 +143,7 @@ export function ProfileSettings() {
               type="button"
               onClick={handleAvatarClick}
               disabled={isUploadingAvatar}
-              className="group relative rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              className="group relative rounded-full focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               aria-label="Change avatar"
             >
               <Avatar className="h-20 w-20">
@@ -228,7 +228,7 @@ export function ProfileSettings() {
                 id="timezone"
                 {...register("timezone")}
                 disabled={isLoading}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="America/New_York">Eastern Time (ET)</option>
                 <option value="America/Chicago">Central Time (CT)</option>

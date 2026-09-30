@@ -355,7 +355,7 @@ function TasksListPageDesktop() {
               placeholder="Search all tasks…"
               aria-label="Search all tasks"
               maxLength={200}
-              className="w-full h-7 pl-8 pr-3 rounded-md bg-surface text-xs outline-none focus:ring-1 focus:ring-primary"
+              className="w-full h-7 pl-8 pr-3 rounded-md bg-surface text-xs outline-hidden focus:ring-1 focus:ring-primary"
             />
           </div>
 

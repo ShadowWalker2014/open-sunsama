@@ -530,7 +530,7 @@ export function KanbanCalendarPanel({
     >
       {/* Header — height matched to the board toolbar (h-14) so the two
           top rows line up as one uniform band. */}
-      <div className="flex h-14 flex-shrink-0 flex-col justify-center px-3 leading-tight">
+      <div className="flex h-14 shrink-0 flex-col justify-center px-3 leading-tight">
         <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
           {format(date, "EEE")}
         </div>
@@ -541,7 +541,7 @@ export function KanbanCalendarPanel({
           event for this day. Compact one-line chips with a colored
           left-border, click to open the same detail sheet. */}
       {allDayEvents.length > 0 && (
-        <div className="flex-shrink-0 border-b bg-muted/30 px-2 py-1 space-y-0.5">
+        <div className="shrink-0 border-b bg-muted/30 px-2 py-1 space-y-0.5">
           {allDayEvents.map((event) => {
             const color = event.calendar?.color ?? "#6B7280";
             return (
@@ -574,7 +574,7 @@ export function KanbanCalendarPanel({
       >
         <div className="flex" style={{ minHeight: hours.length * HOUR_HEIGHT }}>
           {/* Time Labels Column */}
-          <div className="w-10 flex-shrink-0 sticky left-0 bg-canvas z-10">
+          <div className="w-10 shrink-0 sticky left-0 bg-canvas z-10">
             {hours.map((hour) => (
               <div
                 key={hour}
@@ -594,8 +594,8 @@ export function KanbanCalendarPanel({
             className={cn(
               "relative flex-1",
               isDragging ? "cursor-grabbing" : "cursor-default",
-              isToday && "bg-primary/[0.02]",
-              isCardOver && "bg-primary/[0.04]"
+              isToday && "bg-primary/2",
+              isCardOver && "bg-primary/4"
             )}
             onMouseMove={handleTimelineMouseMove}
             onMouseLeave={handleTimelineMouseLeave}
@@ -671,7 +671,7 @@ export function KanbanCalendarPanel({
                 className="absolute left-0 right-0 z-30 pointer-events-none flex items-center"
                 style={{ top: currentTimePosition }}
               >
-                <div className="h-2 w-2 rounded-full bg-red-500 -ml-1 shadow-sm" />
+                <div className="h-2 w-2 rounded-full bg-red-500 -ml-1 shadow-xs" />
                 <div className="h-px flex-1 bg-red-500" />
               </div>
             )}

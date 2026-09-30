@@ -147,7 +147,7 @@ export function TaskCardContent({
             onClick={(e) => e.stopPropagation()}
             aria-label={`${task.priority} · ${PRIORITY_META[task.priority].description}`}
             className={cn(
-              "shrink-0 rounded px-1.5 py-px text-[10px] font-semibold transition-[opacity,box-shadow] hover:ring-1 hover:ring-foreground/20 focus:outline-none",
+              "shrink-0 rounded px-1.5 py-px text-[10px] font-semibold transition-[opacity,box-shadow] hover:ring-1 hover:ring-foreground/20 focus:outline-hidden",
               PRIORITY_CHIP[task.priority],
               // Normal is the default, so it only shows on hover.
               task.priority === "P2" &&

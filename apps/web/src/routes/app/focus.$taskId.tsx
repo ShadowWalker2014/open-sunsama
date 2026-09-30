@@ -319,7 +319,7 @@ export default function FocusPage() {
   return (
     <div className="fixed inset-0 z-50 overflow-auto bg-surface">
       {/* Top bar: back on the left, actions on the right, no chrome. */}
-      <div className="sticky top-0 z-10 flex h-14 items-center justify-between bg-surface/90 px-4 backdrop-blur-sm sm:px-6">
+      <div className="sticky top-0 z-10 flex h-14 items-center justify-between bg-surface/90 px-4 backdrop-blur-xs sm:px-6">
         <WithShortcut label="Back" keys={["Esc"]} side="bottom">
           <button
             onClick={handleClose}
@@ -406,7 +406,7 @@ export default function FocusPage() {
                 autoFocus
                 data-escape-local="true"
                 aria-label="Task title"
-                className="min-w-0 flex-1 border-none bg-transparent text-[28px] font-medium leading-10 tracking-tight outline-none focus:ring-0 sm:text-[34px]"
+                className="min-w-0 flex-1 border-none bg-transparent text-[28px] font-medium leading-10 tracking-tight outline-hidden focus:ring-0 sm:text-[34px]"
               />
             ) : (
               <h1

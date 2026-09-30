@@ -33,9 +33,9 @@ export function VideoLightbox({
       <VideoSchema id={id} video={video} />
       <DialogPrimitive.Trigger asChild>{children}</DialogPrimitive.Trigger>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-[hsl(228_20%_4%/0.82)] backdrop-blur-sm" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-60 bg-[hsl(228_20%_4%/0.82)] backdrop-blur-xs" />
         <DialogPrimitive.Content
-          className="fixed left-1/2 top-1/2 z-[61] w-[min(1120px,calc(100vw-24px),calc((100dvh-96px)*16/9))] -translate-x-1/2 -translate-y-1/2 focus:outline-none"
+          className="fixed left-1/2 top-1/2 z-61 w-[min(1120px,calc(100vw-24px),calc((100dvh-96px)*16/9))] -translate-x-1/2 -translate-y-1/2 focus:outline-hidden"
           aria-describedby={undefined}
         >
           <DialogPrimitive.Title className="sr-only">{video.title}</DialogPrimitive.Title>
@@ -62,7 +62,7 @@ export function VideoLightbox({
           </div>
           <div className="mt-3 flex items-center justify-between gap-4 px-1 text-[13px] text-white/75">
             <span className="min-w-0 truncate">{video.title}</span>
-            <DialogPrimitive.Close className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
+            <DialogPrimitive.Close className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60">
               <X className="h-4 w-4" />
               Close
             </DialogPrimitive.Close>
@@ -90,7 +90,7 @@ export const VideoCard = React.forwardRef<
       type="button"
       aria-label={`Play video: ${video.title} (${clockDuration(video.duration)})`}
       className={cn(
-        "group flex w-full items-center gap-4 rounded-2xl border border-border/70 bg-background/80 p-2.5 pr-4 text-left shadow-sm transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_16px_40px_-20px_hsl(var(--shadow-color)/0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "group flex w-full items-center gap-4 rounded-2xl border border-border/70 bg-background/80 p-2.5 pr-4 text-left shadow-xs transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_16px_40px_-20px_hsl(var(--shadow-color)/0.5)] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
         className
       )}
       {...props}

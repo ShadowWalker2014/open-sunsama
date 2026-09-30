@@ -37,7 +37,7 @@ export function RelatedLinks({
             <Reveal as="li" key={link.href} delay={(i % 3) * 60} className="min-w-0">
               <SmartLink
                 href={link.href}
-                className="group relative flex h-full flex-col rounded-2xl border border-border/70 bg-card p-5 transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_16px_40px_-24px_hsl(var(--shadow-color)/0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/[0.08] md:p-6"
+                className="group relative flex h-full flex-col rounded-2xl border border-border/70 bg-card p-5 transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_16px_40px_-24px_hsl(var(--shadow-color)/0.45)] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring dark:border-white/8 md:p-6"
               >
                 <span className="flex items-center justify-between gap-3">
                   <span className="rounded-full border border-border/70 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">

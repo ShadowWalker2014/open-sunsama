@@ -21,7 +21,7 @@ function CopyButton({ text }: { text: string }) {
           })
           .catch(() => {});
       }}
-      className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md border border-border/70 bg-background px-2 text-[12px] font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md border border-border/70 bg-background px-2 text-[12px] font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
     >
       {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
       {copied ? "Copied" : "Copy"}
@@ -121,7 +121,7 @@ export function CodeTabs({
                   <SmartLink
                     key={link.href}
                     href={link.href}
-                    className="rounded-sm font-medium text-foreground underline decoration-border underline-offset-4 hover:text-primary hover:decoration-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="rounded-sm font-medium text-foreground underline decoration-border underline-offset-4 hover:text-primary hover:decoration-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {link.label}
                   </SmartLink>
@@ -136,7 +136,7 @@ export function CodeTabs({
                 role="tablist"
                 aria-label="Ways to connect"
                 onKeyDown={onKeyDown}
-                className="flex gap-1 overflow-x-auto border-b border-border/60 px-2 pt-2 [scrollbar-width:none]"
+                className="flex gap-1 overflow-x-auto border-b border-border/60 px-2 pt-2 scrollbar-none"
               >
                 {snippets.map((item, i) => (
                   <button
@@ -152,7 +152,7 @@ export function CodeTabs({
                     tabIndex={i === active ? 0 : -1}
                     onClick={() => setActive(i)}
                     className={cn(
-                      "relative shrink-0 rounded-t-md px-3 pb-2.5 pt-1.5 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                      "relative shrink-0 rounded-t-md px-3 pb-2.5 pt-1.5 text-[13px] font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                       i === active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                     )}
                   >

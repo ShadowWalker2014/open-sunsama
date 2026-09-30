@@ -51,7 +51,7 @@ function CardCover({
   return (
     <div
       className={cn(
-        "relative aspect-[2/1] overflow-hidden bg-muted/60 dark:bg-white/[0.03]",
+        "relative aspect-2/1 overflow-hidden bg-muted/60 dark:bg-white/3",
         className
       )}
     >
@@ -90,7 +90,7 @@ function CardMeta({ post, className }: { post: BlogPost; className?: string }) {
 }
 
 const CARD_SURFACE =
-  "group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_24px_60px_-28px_hsl(var(--shadow-color)/0.45),0_10px_24px_-14px_rgb(0_0_0/0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:border-white/[0.08] dark:hover:border-primary/35";
+  "group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card transition-[transform,box-shadow,border-color] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_24px_60px_-28px_hsl(var(--shadow-color)/0.45),0_10px_24px_-14px_rgb(0_0_0/0.18)] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:border-white/8 dark:hover:border-primary/35";
 
 /**
  * Grid card: 2:1 cover, one topic pill, title, two-line description, date.
@@ -120,7 +120,7 @@ export function BlogCard({
       <div
         className={cn(
           COVER_BAND,
-          "border-b border-border/60 dark:border-white/[0.06]",
+          "border-b border-border/60 dark:border-white/6",
           wideOnTablet && "sm:border-b-0 sm:border-r lg:border-b lg:border-r-0"
         )}
       >
@@ -156,7 +156,7 @@ export function BlogFeaturedCard({ post }: { post: BlogPost }) {
       <div
         className={cn(
           COVER_BAND,
-          "border-b border-border/60 dark:border-white/[0.06] lg:border-b-0 lg:border-r"
+          "border-b border-border/60 dark:border-white/6 lg:border-b-0 lg:border-r"
         )}
       >
         <CardCover post={post} className="w-full" />

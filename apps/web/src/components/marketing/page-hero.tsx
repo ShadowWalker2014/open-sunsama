@@ -49,7 +49,7 @@ function HeroFrameMedia({ media }: { media: MediaRef }) {
   if (!video) return null;
   return (
     <VideoLightbox id={media.video}>
-      <button type="button" aria-label={`Play video: ${video.title}`} className="group absolute inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
+      <button type="button" aria-label={`Play video: ${video.title}`} className="group absolute inset-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
         <img src={video.poster} alt="" width={video.width} height={video.height} fetchPriority="high" className="absolute inset-0 h-full w-full object-cover" />
         <span className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-black/20 transition-transform group-hover:scale-105">
           <Play className="h-7 w-7 translate-x-0.5 fill-current" />
@@ -113,7 +113,7 @@ export function PageHero({ hero, before }: { hero: PageHeroContent; before?: Rea
         {before}
         <div className="text-center">
           <div style={introStyle(ready, 0, reduced)}>
-            <p className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 py-1 pl-1 pr-3 text-[12px] font-medium text-muted-foreground shadow-sm backdrop-blur">
+            <p className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 py-1 pl-1 pr-3 text-[12px] font-medium text-muted-foreground shadow-xs backdrop-blur-sm">
               {hero.badge && (
                 <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground">
                   {hero.badge}
@@ -152,7 +152,7 @@ export function PageHero({ hero, before }: { hero: PageHeroContent; before?: Rea
                 <Button
                   variant="outline"
                   size="lg"
-                  className="group h-11 w-full gap-2.5 rounded-lg bg-background/70 pl-2 pr-4 text-[14px] backdrop-blur sm:w-auto"
+                  className="group h-11 w-full gap-2.5 rounded-lg bg-background/70 pl-2 pr-4 text-[14px] backdrop-blur-sm sm:w-auto"
                 >
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                     <Play className="h-3.5 w-3.5 translate-x-px fill-current" />
@@ -166,7 +166,7 @@ export function PageHero({ hero, before }: { hero: PageHeroContent; before?: Rea
                 </Button>
               </VideoLightbox>
             ) : (
-              <Button variant="outline" size="lg" className="h-11 w-full rounded-lg bg-background/70 px-5 text-[14px] backdrop-blur sm:w-auto" asChild>
+              <Button variant="outline" size="lg" className="h-11 w-full rounded-lg bg-background/70 px-5 text-[14px] backdrop-blur-sm sm:w-auto" asChild>
                 <Link to={secondary.href}>{secondary.label}</Link>
               </Button>
             )}
@@ -202,7 +202,7 @@ export function PageHero({ hero, before }: { hero: PageHeroContent; before?: Rea
                 }
           }
         >
-          <div ref={tiltRef} className="relative [--p:0] [perspective:2200px]">
+          <div ref={tiltRef} className="relative [--p:0] perspective-[2200px]">
             <div
               className="relative origin-top will-change-transform"
               style={
@@ -216,7 +216,7 @@ export function PageHero({ hero, before }: { hero: PageHeroContent; before?: Rea
             >
               <div className={cn(SUNRISE_GLOW, "-inset-x-16 -top-16 bottom-[20%]")} />
               <BrowserFrame className="relative">
-                <div className="relative aspect-[16/10] w-full overflow-hidden">
+                <div className="relative aspect-16/10 w-full overflow-hidden">
                   <HeroFrameMedia media={hero.media} />
                 </div>
               </BrowserFrame>

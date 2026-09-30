@@ -21,7 +21,7 @@ export function Breadcrumbs({
   className?: string;
 }) {
   const link =
-    "rounded-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+    "rounded-sm transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring";
   return (
     <nav aria-label="Breadcrumb" className={cn("text-[12.5px] text-muted-foreground", className)}>
       <JsonLd id={JSON_LD_IDS.breadcrumbs} data={breadcrumbListJsonLd(items, path)} />

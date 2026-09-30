@@ -239,9 +239,9 @@ export function TaskAttachments({ taskId }: TaskAttachmentsProps) {
               )}
             >
               {state.status === "uploading" ? (
-                <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
+                <Loader2 className="h-4 w-4 animate-spin shrink-0" />
               ) : (
-                <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0" />
+                <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
               )}
               <div className="flex-1 min-w-0">
                 <p className="truncate">{fileName}</p>
@@ -415,7 +415,7 @@ function AttachmentThumbnail({
       </div>
 
       {/* Filename tooltip */}
-      <div className="absolute bottom-0 left-0 right-0 p-1.5 bg-gradient-to-t from-black/60 to-transparent">
+      <div className="absolute bottom-0 left-0 right-0 p-1.5 bg-linear-to-t from-black/60 to-transparent">
         <p className="text-xs text-white truncate">{attachment.filename}</p>
       </div>
     </div>
@@ -491,7 +491,7 @@ function AttachmentVideoThumbnail({
       </div>
 
       {/* Filename */}
-      <div className="absolute bottom-0 left-0 right-0 p-1.5 bg-gradient-to-t from-black/60 to-transparent">
+      <div className="absolute bottom-0 left-0 right-0 p-1.5 bg-linear-to-t from-black/60 to-transparent">
         <p className="text-xs text-white truncate">{attachment.filename}</p>
       </div>
     </div>
@@ -526,7 +526,7 @@ function AttachmentFileCard({
         "hover:bg-accent/50"
       )}
     >
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <FileIcon contentType={attachment.contentType} className="h-5 w-5" />
       </div>
 
@@ -537,7 +537,7 @@ function AttachmentFileCard({
         </p>
       </div>
 
-      <div className="flex items-center gap-1 flex-shrink-0">
+      <div className="flex items-center gap-1 shrink-0">
         {showDeleteConfirm ? (
           <DeleteConfirmation
             isDeleting={isDeleting}

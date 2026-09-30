@@ -27,7 +27,7 @@ interface BlogLayoutProps {
 /** Compact sign-up card under the table of contents. */
 function TryCard() {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-card p-5 shadow-[0_16px_40px_-24px_hsl(var(--shadow-color)/0.35)] dark:border-white/[0.08]">
+    <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-card p-5 shadow-[0_16px_40px_-24px_hsl(var(--shadow-color)/0.35)] dark:border-white/8">
       <div className="pointer-events-none absolute -right-10 -top-12 h-32 w-32 rounded-full bg-[radial-gradient(closest-side,hsl(var(--primary)/0.22),transparent)] blur-xl" />
       <img
         src="/open-sunsama-logo.png"
@@ -102,13 +102,13 @@ export function BlogLayout({
       <SkipLink />
       <SiteHeader />
 
-      <main id="main" tabIndex={-1} className="relative focus:outline-none">
+      <main id="main" tabIndex={-1} className="relative focus:outline-hidden">
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[640px]">
           <div className="landing-grid absolute inset-0 opacity-60 dark:opacity-35" />
           <div className="absolute left-1/2 top-[-200px] h-[460px] w-[900px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,hsl(var(--primary)/0.12),transparent)] blur-2xl" />
         </div>
 
-        <div className="container mx-auto max-w-3xl px-4 pt-8 md:pt-12 lg:max-w-[68rem]">
+        <div className="container mx-auto max-w-3xl px-4 pt-8 md:pt-12 lg:max-w-272">
           <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_15rem] lg:gap-16 xl:grid-cols-[minmax(0,1fr)_16rem] xl:gap-20">
             <article className="min-w-0 pb-16">
               <Breadcrumbs
@@ -127,7 +127,7 @@ export function BlogLayout({
                 <BlogFaqs faqs={post.faqs} />
               </div>
 
-              <div className="mt-14 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/70 bg-muted/30 px-5 py-4 dark:border-white/[0.08] dark:bg-white/[0.02]">
+              <div className="mt-14 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/70 bg-muted/30 px-5 py-4 dark:border-white/8 dark:bg-white/2">
                 <p className="text-[14px] font-medium">
                   Found this useful? Pass it on.
                 </p>

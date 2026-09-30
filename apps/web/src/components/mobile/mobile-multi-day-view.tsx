@@ -95,8 +95,8 @@ export function MobileMultiDayView({
   return (
     <div className={cn("flex min-h-0 flex-1 flex-col", className)}>
       {/* Day headers — tap one to open that day full-width */}
-      <div className="flex flex-shrink-0 border-b bg-background">
-        <div className="w-10 flex-shrink-0 border-r bg-muted/30" />
+      <div className="flex shrink-0 border-b bg-background">
+        <div className="w-10 shrink-0 border-r bg-muted/30" />
         {days.map((day) => (
           <button
             key={day.toISOString()}
@@ -124,7 +124,7 @@ export function MobileMultiDayView({
       <ScrollArea className="flex-1" ref={scrollRef}>
         <div className="flex" style={{ minHeight: hours.length * HOUR_HEIGHT }}>
           {/* Hour gutter */}
-          <div className="w-10 flex-shrink-0 border-r bg-muted/30">
+          <div className="w-10 shrink-0 border-r bg-muted/30">
             {hours.map((hour) => (
               <div
                 key={hour}
@@ -156,7 +156,7 @@ export function MobileMultiDayView({
                 key={day.toISOString()}
                 className={cn(
                   "relative flex-1 border-r border-border/40 last:border-r-0",
-                  isToday(day) && "bg-primary/[0.03]"
+                  isToday(day) && "bg-primary/3"
                 )}
               >
                 {hours.map((hour) => (
@@ -196,7 +196,7 @@ export function MobileMultiDayView({
                       key={event.id}
                       onClick={() => onEventClick(event)}
                       style={{ top, height }}
-                      className="absolute inset-x-0.5 z-[9] overflow-hidden rounded border-l-2 border-muted-foreground/40 bg-muted/70 px-1 text-left text-[10px] leading-tight text-foreground active:brightness-95"
+                      className="absolute inset-x-0.5 z-9 overflow-hidden rounded border-l-2 border-muted-foreground/40 bg-muted/70 px-1 text-left text-[10px] leading-tight text-foreground active:brightness-95"
                     >
                       <span className="line-clamp-2">{event.title}</span>
                     </button>

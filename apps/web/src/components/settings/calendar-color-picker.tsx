@@ -99,13 +99,13 @@ export function CalendarColorPicker({
                 }}
                 aria-label={c.label}
                 className={cn(
-                  "relative h-6 w-6 rounded-full border border-border/40 transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background"
+                  "relative h-6 w-6 rounded-full border border-border/40 transition-transform hover:scale-110 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-1 focus:ring-offset-background"
                 )}
                 style={{ backgroundColor: c.hex }}
               >
                 {isCurrent && (
                   <Check
-                    className="absolute inset-0 m-auto h-3 w-3 text-white drop-shadow"
+                    className="absolute inset-0 m-auto h-3 w-3 text-white drop-shadow-sm"
                     aria-hidden
                   />
                 )}

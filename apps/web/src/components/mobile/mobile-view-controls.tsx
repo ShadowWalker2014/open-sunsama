@@ -77,7 +77,7 @@ export function MobileViewControls({
               className={cn(
                 "flex items-center justify-center gap-1.5 rounded-md py-1.5 text-sm",
                 viewMode === mode
-                  ? "bg-background text-foreground shadow-sm focus:bg-background"
+                  ? "bg-background text-foreground shadow-xs focus:bg-background"
                   : "text-muted-foreground"
               )}
             >

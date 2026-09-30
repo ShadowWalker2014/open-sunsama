@@ -1,6 +1,17 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+/* JS container.center/padding/screens aren't applied by Tailwind 4. */
+@utility container {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: 2rem;
+  @media (width >= 40rem) { max-width: 640px; }
+  @media (width >= 48rem) { max-width: 768px; }
+  @media (width >= 64rem) { max-width: 1024px; }
+  @media (width >= 80rem) { max-width: 1280px; }
+  @media (width >= 96rem) { max-width: 1400px; }
+}
 
 @layer base {
   :root {
@@ -257,7 +268,14 @@ html.font-jetbrains body {
   }
 
   *:focus-visible {
-    outline: none;
+    /* Invisible in regular mode, retained by forced-colors for keyboard focus. */
+    outline: 2px solid transparent;
+  }
+
+  /* Tailwind 4 preflight no longer sets a pointer cursor on buttons. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
   }
 }
 
@@ -307,16 +325,17 @@ html.font-jetbrains body {
   }
 }
 
-/* Animation utilities */
+/* Animation utilities. @utility (not plain CSS) so variants like
+   data-[state=open]:animate-in generate CSS in Tailwind 4. */
+@utility animate-in {
+  animation: animate-in 0.3s ease-out both;
+}
+
+@utility animate-out {
+  animation: animate-out 0.2s ease-out both;
+}
+
 @layer utilities {
-  .animate-in {
-    animation: animate-in 0.3s ease-out both;
-  }
-
-  .animate-out {
-    animation: animate-out 0.2s ease-out both;
-  }
-
   @keyframes animate-in {
     from {
       opacity: 0;
@@ -673,7 +692,7 @@ html.font-jetbrains body {
 }
 
 .blog-prose a:focus-visible {
-  @apply rounded-sm outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  @apply rounded-sm outline-hidden ring-2 ring-ring ring-offset-2 ring-offset-background;
 }
 
 /* Lists */
@@ -1020,7 +1039,7 @@ html.font-jetbrains body {
 }
 
 .blog-prose .oss-card .oss-btn:focus-visible {
-  @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  @apply outline-hidden ring-2 ring-ring ring-offset-2 ring-offset-background;
 }
 
 .blog-prose .oss-checked {
@@ -1086,7 +1105,7 @@ html.font-jetbrains body {
 }
 
 .blog-prose .blog-faq-list summary:focus-visible {
-  @apply outline-none ring-2 ring-inset ring-ring;
+  @apply outline-hidden ring-2 ring-inset ring-ring;
 }
 
 .blog-prose .blog-faq-list h3 {

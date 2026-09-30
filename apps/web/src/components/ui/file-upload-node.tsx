@@ -69,7 +69,7 @@ export function ImageNodeView({ node, deleteNode, selected }: NodeViewProps) {
             className={cn(
               "absolute top-2 left-2 p-1.5 rounded-full bg-black/60 text-white",
               "opacity-0 group-hover:opacity-100 transition-opacity",
-              "hover:bg-black/80 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-white"
+              "hover:bg-black/80 focus:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-white"
             )}
             aria-label="Preview image"
           >
@@ -82,7 +82,7 @@ export function ImageNodeView({ node, deleteNode, selected }: NodeViewProps) {
           className={cn(
             "absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white",
             "opacity-0 group-hover:opacity-100 transition-opacity",
-            "hover:bg-black/80 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-white"
+            "hover:bg-black/80 focus:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-white"
           )}
           aria-label="Remove image"
         >
@@ -144,7 +144,7 @@ export function VideoNodeView({ node, deleteNode, selected }: NodeViewProps) {
           className={cn(
             "absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white z-20",
             "opacity-0 group-hover:opacity-100 transition-opacity",
-            "hover:bg-black/80 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-white"
+            "hover:bg-black/80 focus:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-white"
           )}
           aria-label="Remove video"
         >
@@ -189,10 +189,10 @@ export function FileAttachmentNodeView({ node, deleteNode, selected }: NodeViewP
         <button
           type="button"
           onClick={openPreview}
-          className="flex flex-1 items-center gap-3 min-w-0 text-left cursor-pointer focus:outline-none"
+          className="flex flex-1 items-center gap-3 min-w-0 text-left cursor-pointer focus:outline-hidden"
           aria-label={`Preview ${filename}`}
         >
-          <div className="flex-shrink-0 text-2xl">{icon}</div>
+          <div className="shrink-0 text-2xl">{icon}</div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate" title={filename}>
               {filename}
@@ -204,13 +204,13 @@ export function FileAttachmentNodeView({ node, deleteNode, selected }: NodeViewP
         </button>
 
         {/* Action Buttons */}
-        <div className="flex flex-shrink-0 items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
           <button
             onClick={handleDownload}
             className={cn(
               "p-1.5 rounded-md text-muted-foreground",
               "hover:bg-background hover:text-foreground transition-colors",
-              "focus:outline-none focus:ring-2 focus:ring-primary"
+              "focus:outline-hidden focus:ring-2 focus:ring-primary"
             )}
             aria-label="Download file"
           >
@@ -221,7 +221,7 @@ export function FileAttachmentNodeView({ node, deleteNode, selected }: NodeViewP
             className={cn(
               "p-1.5 rounded-md text-muted-foreground",
               "hover:bg-destructive/10 hover:text-destructive transition-colors",
-              "focus:outline-none focus:ring-2 focus:ring-destructive"
+              "focus:outline-hidden focus:ring-2 focus:ring-destructive"
             )}
             aria-label="Remove file"
           >

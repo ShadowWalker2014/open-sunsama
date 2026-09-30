@@ -126,7 +126,7 @@ export function IdeaEditDialog({
             rows={1}
             placeholder="Idea title"
             className={cn(
-              "mt-0.5 min-w-0 flex-1 resize-none border-none bg-transparent p-0 pr-6 text-lg font-semibold outline-none focus:ring-0",
+              "mt-0.5 min-w-0 flex-1 resize-none border-none bg-transparent p-0 pr-6 text-lg font-semibold outline-hidden focus:ring-0",
               isCompleted && "text-muted-foreground line-through"
             )}
           />

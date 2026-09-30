@@ -44,14 +44,14 @@ function StepCopy({ step, active }: { step: PinnedStep; active: boolean }) {
         {Icon && <Icon className="h-3.5 w-3.5" />}
         {step.eyebrow}
       </div>
-      <h3 className="mt-3 text-[26px] font-semibold leading-tight tracking-[-0.025em] md:text-[32px]">{step.title}</h3>
+      <h3 className="mt-3 text-[26px] font-semibold leading-tight tracking-tight md:text-[32px]">{step.title}</h3>
       <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground md:text-[16px]">
         <RichText text={step.body} />
       </p>
       {step.link && (
         <Link
           to={step.link.href}
-          className="mt-4 inline-flex items-center gap-1.5 rounded-sm text-[14px] font-medium text-foreground/80 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="mt-4 inline-flex items-center gap-1.5 rounded-sm text-[14px] font-medium text-foreground/80 hover:text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
         >
           {step.link.label}
           <ArrowRight className="h-3.5 w-3.5" />
@@ -110,7 +110,7 @@ export function StoryPinned({
             <div className="sticky" style={{ top: "calc(50vh - 220px)" }}>
               <div className="flex items-center gap-4">
                 <BrowserFrame className="flex-1">
-                  <div className="relative aspect-[16/10] w-full overflow-hidden">
+                  <div className="relative aspect-16/10 w-full overflow-hidden">
                     {steps.map((step, i) => (
                       <div
                         key={step.key}
@@ -163,7 +163,7 @@ export function StoryPinned({
                 <Clip id={step.clip} />
               ) : (
                 <BrowserFrame>
-                  <div className="relative aspect-[16/10] w-full overflow-hidden">{step.still}</div>
+                  <div className="relative aspect-16/10 w-full overflow-hidden">{step.still}</div>
                 </BrowserFrame>
               )}
             </Reveal>
