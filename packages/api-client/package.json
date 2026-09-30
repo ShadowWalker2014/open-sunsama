@@ -33,8 +33,8 @@
   "devDependencies": {
     "@tanstack/react-query": "catalog:",
     "@types/node": "^24.0.0",
-    "@types/react": "^19.1.17",
-    "react": "^19.1.0",
+    "@types/react": "~19.2.18",
+    "react": "~19.2.8",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
