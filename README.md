@@ -382,7 +382,7 @@ open-sunsama/
 - [ ] Analytics dashboard
 - [ ] AI auto-scheduling
 
-Have an idea? [Start a discussion](https://github.com/ShadowWalker2014/open-sunsama/discussions/new?category=ideas).
+Have an idea? [Open a feature request](https://github.com/ShadowWalker2014/open-sunsama/issues/new?template=feature.yml). Found a bug? [Report it](https://github.com/ShadowWalker2014/open-sunsama/issues/new?template=bug.yml).
 
 <br />
 
@@ -428,7 +428,7 @@ Yes. Use the one-click buttons above for Cursor and VS Code, or run <code>claude
 
 ## 🤝 Contributing
 
-Contributions are welcome! [Open an issue](https://github.com/ShadowWalker2014/open-sunsama/issues), [start a discussion](https://github.com/ShadowWalker2014/open-sunsama/discussions), or send a PR. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions are welcome! [Open an issue](https://github.com/ShadowWalker2014/open-sunsama/issues/new/choose), [ask in Discussions](https://github.com/ShadowWalker2014/open-sunsama/discussions), or send a PR. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```bash
 git checkout -b feature/amazing-feature
