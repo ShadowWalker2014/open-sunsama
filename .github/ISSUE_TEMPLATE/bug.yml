@@ -1,0 +1,52 @@
+name: Bug report
+description: Something in Open Sunsama is broken or behaves wrongly
+labels: [bug, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please search [open issues](https://github.com/ShadowWalker2014/open-sunsama/issues) first. A 👍 on an existing issue helps us more than a duplicate.
+        Never paste passwords, API keys, or tokens. Security problems go to security@circo.so, not here.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened, and what did you expect?
+      placeholder: "I dragged a task onto 3pm and it jumped to tomorrow. I expected it to stay on today at 3pm."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the calendar
+        2. Drag a task onto 3pm
+        3. See the task move to tomorrow
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where did it happen?
+      options:
+        - Web app (opensunsama.com)
+        - Desktop app
+        - Mobile app
+        - Calendar sync (Google, Outlook, iCloud)
+        - AI connector / MCP
+        - API
+        - Self-hosting
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version or browser
+      description: "Desktop: the version in the app menu. Web: your browser and version."
+      placeholder: "Desktop 1.2.4, or Chrome 130 on macOS"
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots, recordings, or logs
+      description: Drag files into this box. Remove anything private first.

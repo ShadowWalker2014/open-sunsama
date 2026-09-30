@@ -15,6 +15,7 @@ import {
   BookOpen,
   Check,
   Keyboard,
+  MessageSquare,
 } from "lucide-react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
@@ -223,6 +224,17 @@ export function Header({ className }: HeaderProps) {
                 >
                   <BookOpen className="mr-2 h-3.5 w-3.5" />
                   Documentation
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="text-[13px] py-1.5">
+                <a
+                  href="https://github.com/ShadowWalker2014/open-sunsama/issues/new/choose"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full cursor-pointer"
+                >
+                  <MessageSquare className="mr-2 h-3.5 w-3.5" />
+                  Send feedback
                 </a>
               </DropdownMenuItem>
               {!isDesktopApp && (
