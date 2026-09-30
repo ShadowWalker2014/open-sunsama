@@ -90,6 +90,6 @@
     "typescript": "catalog:",
     "unified": "^11.0.5",
     "vite": "^8.3.0",
-    "vitest": "^2.1.9"
+    "vitest": "catalog:"
   }
 }
