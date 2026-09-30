@@ -1,7 +1,8 @@
 import { View, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
 import type { Task } from '@open-sunsama/types';
 import { useCompleteTask } from '@/hooks/useTasks';
-import { PRIORITY_LABELS } from './PrioritySelector';
+import { PRIORITY_LABELS, getPriorityColor } from './PrioritySelector';
+import { useThemeColors, type ThemeColors } from '@/lib/theme';
 
 interface TaskCardProps {
   task: Task;
@@ -9,27 +10,11 @@ interface TaskCardProps {
 }
 
 /**
- * Get priority color
- */
-function getPriorityColor(priority: string): string {
-  switch (priority) {
-    case 'P0':
-      return '#ef4444'; // red
-    case 'P1':
-      return '#f97316'; // orange
-    case 'P2':
-      return '#6366f1'; // indigo
-    case 'P3':
-      return '#6b7280'; // gray
-    default:
-      return '#6b7280';
-  }
-}
-
-/**
  * Task card component
  */
 export function TaskCard({ task, onPress }: TaskCardProps) {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const completeTask = useCompleteTask();
   const isCompleted = !!task.completedAt;
 
@@ -72,11 +57,11 @@ export function TaskCard({ task, onPress }: TaskCardProps) {
           <View
             style={[
               styles.priority,
-              { backgroundColor: `${getPriorityColor(task.priority)}15` },
+              { backgroundColor: `${getPriorityColor(task.priority, colors)}${colors.priorityAlpha}` },
             ]}
           >
             <Text
-              style={[styles.priorityText, { color: getPriorityColor(task.priority) }]}
+              style={[styles.priorityText, { color: getPriorityColor(task.priority, colors) }]}
             >
               {PRIORITY_LABELS[task.priority]}
             </Text>
@@ -94,11 +79,13 @@ export function TaskCard({ task, onPress }: TaskCardProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: 12,
     padding: 16,
     shadowColor: '#000',
@@ -111,22 +98,22 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   containerPressed: {
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.raised,
   },
   checkbox: {
     width: 24,
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#d1d5db',
+    borderColor: colors.inputBorder,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
     marginTop: 2,
   },
   checkboxCompleted: {
-    backgroundColor: '#6366f1',
-    borderColor: '#6366f1',
+    backgroundColor: colors.accentFill,
+    borderColor: colors.accentFill,
   },
   checkmark: {
     color: '#fff',
@@ -139,13 +126,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#1f2937',
+    color: colors.text,
     lineHeight: 22,
     marginBottom: 8,
   },
   titleCompleted: {
     textDecorationLine: 'line-through',
-    color: '#9ca3af',
+    color: colors.muted,
   },
   meta: {
     flexDirection: 'row',
@@ -164,12 +151,12 @@ const styles = StyleSheet.create({
   estimate: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.raised,
     borderRadius: 4,
   },
   estimateText: {
     fontSize: 11,
     fontWeight: '500',
-    color: '#6b7280',
+    color: colors.secondary,
   },
 });

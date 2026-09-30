@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { TaskPriority } from '@open-sunsama/types';
 import { useCreateTask } from '@/hooks/useTasks';
 import { PrioritySelector } from './PrioritySelector';
+import { useThemeColors, type ThemeColors } from '@/lib/theme';
 
 interface CreateTaskModalProps {
   onClose: () => void;
@@ -25,6 +26,8 @@ interface CreateTaskModalProps {
  * Create task modal component
  */
 export function CreateTaskModal({ onClose, defaultDate }: CreateTaskModalProps) {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
   const [priority, setPriority] = useState<TaskPriority>('P2');
@@ -71,7 +74,7 @@ export function CreateTaskModal({ onClose, defaultDate }: CreateTaskModalProps) 
             disabled={createTask.isPending || !title.trim()}
           >
             {createTask.isPending ? (
-              <ActivityIndicator size="small" color="#6366f1" />
+              <ActivityIndicator size="small" color={colors.accent} />
             ) : (
               <Text style={[styles.saveText, !title.trim() && styles.saveTextDisabled]}>
                 Create
@@ -87,7 +90,7 @@ export function CreateTaskModal({ onClose, defaultDate }: CreateTaskModalProps) 
             <TextInput
               style={styles.titleInput}
               placeholder="What needs to be done?"
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor={colors.muted}
               value={title}
               onChangeText={setTitle}
               autoFocus
@@ -102,7 +105,7 @@ export function CreateTaskModal({ onClose, defaultDate }: CreateTaskModalProps) 
             <TextInput
               style={styles.notesInput}
               placeholder="Add any details or context..."
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor={colors.muted}
               value={notes}
               onChangeText={setNotes}
               multiline
@@ -122,7 +125,7 @@ export function CreateTaskModal({ onClose, defaultDate }: CreateTaskModalProps) 
             <TextInput
               style={styles.input}
               placeholder="30"
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor={colors.muted}
               value={estimatedMins}
               onChangeText={setEstimatedMins}
               keyboardType="number-pad"
@@ -135,8 +138,8 @@ export function CreateTaskModal({ onClose, defaultDate }: CreateTaskModalProps) 
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.surface },
   keyboardView: { flex: 1 },
   header: {
     flexDirection: 'row',
@@ -145,30 +148,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: colors.border,
   },
   cancelButton: { padding: 8 },
-  cancelText: { fontSize: 16, color: '#6b7280' },
-  headerTitle: { fontSize: 17, fontWeight: '600', color: '#1f2937' },
+  cancelText: { fontSize: 16, color: colors.secondary },
+  headerTitle: { fontSize: 17, fontWeight: '600', color: colors.text },
   saveButton: { padding: 8, minWidth: 60, alignItems: 'center' },
   saveButtonDisabled: { opacity: 0.5 },
-  saveText: { fontSize: 16, fontWeight: '600', color: '#6366f1' },
-  saveTextDisabled: { color: '#9ca3af' },
+  saveText: { fontSize: 16, fontWeight: '600', color: colors.accent },
+  saveTextDisabled: { color: colors.muted },
   form: { flex: 1, padding: 16 },
   inputGroup: { marginBottom: 24 },
-  label: { fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 8 },
+  label: { fontSize: 14, fontWeight: '500', color: colors.text, marginBottom: 8 },
   titleInput: {
     fontSize: 18,
-    color: '#1f2937',
+    color: colors.text,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: colors.border,
     minHeight: 48,
   },
   notesInput: {
     fontSize: 16,
-    color: '#1f2937',
-    backgroundColor: '#f9fafb',
+    color: colors.text,
+    backgroundColor: colors.background,
     borderRadius: 8,
     padding: 12,
     minHeight: 100,
@@ -177,11 +180,11 @@ const styles = StyleSheet.create({
   input: {
     height: 48,
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: colors.inputBorder,
     borderRadius: 8,
     paddingHorizontal: 16,
     fontSize: 16,
-    color: '#1f2937',
-    backgroundColor: '#fff',
+    color: colors.text,
+    backgroundColor: colors.surface,
   },
 });

@@ -2,13 +2,17 @@ import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format, addDays, subDays } from 'date-fns';
+import { Lucide } from '@react-native-vector-icons/lucide';
 import { useTimeBlocks } from '@/hooks/useTimeBlocks';
 import { Timeline } from '@/components/Timeline';
+import { useThemeColors, type ThemeColors } from '@/lib/theme';
 
 /**
  * Calendar screen - shows time blocks for the selected date
  */
 export default function CalendarScreen() {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const [selectedDate, setSelectedDate] = useState(new Date());
   
   const dateString = format(selectedDate, 'yyyy-MM-dd');
@@ -34,8 +38,8 @@ export default function CalendarScreen() {
     <SafeAreaView style={styles.container} edges={['left', 'right']}>
       {/* Date Navigation */}
       <View style={styles.dateNav}>
-        <TouchableOpacity onPress={goToPreviousDay} style={styles.navButton}>
-          <Text style={styles.navButtonText}>{'<'}</Text>
+        <TouchableOpacity onPress={goToPreviousDay} style={styles.navButton} accessibilityRole="button" accessibilityLabel="Previous day">
+          <Lucide name="chevron-left" size={22} color={colors.secondary} />
         </TouchableOpacity>
         
         <TouchableOpacity onPress={goToToday} style={styles.dateButton}>
@@ -47,8 +51,8 @@ export default function CalendarScreen() {
           )}
         </TouchableOpacity>
         
-        <TouchableOpacity onPress={goToNextDay} style={styles.navButton}>
-          <Text style={styles.navButtonText}>{'>'}</Text>
+        <TouchableOpacity onPress={goToNextDay} style={styles.navButton} accessibilityRole="button" accessibilityLabel="Next day">
+          <Lucide name="chevron-right" size={22} color={colors.secondary} />
         </TouchableOpacity>
       </View>
 
@@ -64,28 +68,27 @@ export default function CalendarScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f9fafb' },
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
   dateNav: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: colors.border,
   },
   navButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.raised,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  navButtonText: { fontSize: 18, fontWeight: '600', color: '#6b7280' },
   dateButton: { alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 },
-  dateText: { fontSize: 18, fontWeight: '600', color: '#1f2937' },
-  dateSubtext: { fontSize: 12, color: '#6b7280', marginTop: 2 },
+  dateText: { fontSize: 18, fontWeight: '600', color: colors.text },
+  dateSubtext: { fontSize: 12, color: colors.secondary, marginTop: 2 },
 });

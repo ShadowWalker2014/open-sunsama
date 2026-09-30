@@ -10,15 +10,19 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format, addDays, subDays } from 'date-fns';
+import { Lucide } from '@react-native-vector-icons/lucide';
 import { useTasks } from '@/hooks/useTasks';
 import { TaskCard } from '@/components/TaskCard';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
+import { useThemeColors, type ThemeColors } from '@/lib/theme';
 import type { Task } from '@open-sunsama/types';
 
 /**
  * Tasks screen - shows tasks for the selected date
  */
 export default function TasksScreen() {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   
@@ -67,8 +71,8 @@ export default function TasksScreen() {
     <SafeAreaView style={styles.container} edges={['left', 'right']}>
       {/* Date Navigation */}
       <View style={styles.dateNav}>
-        <TouchableOpacity onPress={goToPreviousDay} style={styles.navButton}>
-          <Text style={styles.navButtonText}>{'<'}</Text>
+        <TouchableOpacity onPress={goToPreviousDay} style={styles.navButton} accessibilityRole="button" accessibilityLabel="Previous day">
+          <Lucide name="chevron-left" size={22} color={colors.secondary} />
         </TouchableOpacity>
         
         <TouchableOpacity onPress={goToToday} style={styles.dateButton}>
@@ -82,8 +86,8 @@ export default function TasksScreen() {
           )}
         </TouchableOpacity>
         
-        <TouchableOpacity onPress={goToNextDay} style={styles.navButton}>
-          <Text style={styles.navButtonText}>{'>'}</Text>
+        <TouchableOpacity onPress={goToNextDay} style={styles.navButton} accessibilityRole="button" accessibilityLabel="Next day">
+          <Lucide name="chevron-right" size={22} color={colors.secondary} />
         </TouchableOpacity>
       </View>
 
@@ -105,7 +109,7 @@ export default function TasksScreen() {
           <RefreshControl
             refreshing={isRefetching}
             onRefresh={refetch}
-            tintColor="#6366f1"
+            tintColor={colors.accent}
           />
         }
         ListEmptyComponent={
@@ -142,10 +146,10 @@ export default function TasksScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.background,
   },
   dateNav: {
     flexDirection: 'row',
@@ -153,22 +157,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: colors.border,
   },
   navButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.raised,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  navButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#6b7280',
   },
   dateButton: {
     alignItems: 'center',
@@ -179,21 +178,21 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text,
   },
   dateSubtext: {
     fontSize: 12,
-    color: '#6b7280',
+    color: colors.secondary,
     marginTop: 2,
   },
   stats: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
   },
   statsText: {
     fontSize: 13,
-    color: '#6b7280',
+    color: colors.secondary,
   },
   listContent: {
     padding: 16,
@@ -209,12 +208,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#374151',
+    color: colors.text,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.secondary,
   },
   fab: {
     position: 'absolute',
@@ -223,7 +222,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#6366f1',
+    backgroundColor: colors.accentFill,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',

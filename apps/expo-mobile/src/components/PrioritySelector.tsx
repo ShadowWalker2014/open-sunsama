@@ -1,5 +1,6 @@
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import type { TaskPriority } from '@open-sunsama/types';
+import { useThemeColors, type ThemeColors } from '@/lib/theme';
 
 export const PRIORITY_LABELS: Record<TaskPriority, string> = {
   P0: "P0",
@@ -8,12 +9,18 @@ export const PRIORITY_LABELS: Record<TaskPriority, string> = {
   P3: "P3",
 };
 
-const PRIORITIES: { value: TaskPriority; label: string; color: string }[] = [
-  { value: 'P0', label: PRIORITY_LABELS.P0, color: '#ef4444' },
-  { value: 'P1', label: PRIORITY_LABELS.P1, color: '#f97316' },
-  { value: 'P2', label: PRIORITY_LABELS.P2, color: '#6366f1' },
-  { value: 'P3', label: PRIORITY_LABELS.P3, color: '#6b7280' },
+const PRIORITIES: TaskPriority[] = [
+  'P0', 'P1', 'P2', 'P3',
 ];
+
+export function getPriorityColor(priority: TaskPriority, colors: ThemeColors): string {
+  switch (priority) {
+    case 'P0': return colors.danger;
+    case 'P1': return colors.warning;
+    case 'P2': return colors.accent;
+    case 'P3': return colors.secondary;
+  }
+}
 
 interface PrioritySelectorProps {
   value: TaskPriority;
@@ -24,26 +31,28 @@ interface PrioritySelectorProps {
  * Priority selector component for task forms
  */
 export function PrioritySelector({ value, onChange }: PrioritySelectorProps) {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   return (
     <View style={styles.container}>
-      {PRIORITIES.map((p) => (
+      {PRIORITIES.map((priority) => (
         <TouchableOpacity
-          key={p.value}
+          key={priority}
           style={[
             styles.button,
-            value === p.value && styles.buttonActive,
-            value === p.value && { borderColor: p.color },
+            value === priority && styles.buttonActive,
+            value === priority && { borderColor: getPriorityColor(priority, colors) },
           ]}
-          onPress={() => onChange(p.value)}
+          onPress={() => onChange(priority)}
         >
-          <View style={[styles.dot, { backgroundColor: p.color }]} />
+          <View style={[styles.dot, { backgroundColor: getPriorityColor(priority, colors) }]} />
           <Text
             style={[
               styles.label,
-              value === p.value && { color: p.color },
+              value === priority && { color: getPriorityColor(priority, colors) },
             ]}
           >
-            {p.label}
+            {PRIORITY_LABELS[priority]}
           </Text>
         </TouchableOpacity>
       ))}
@@ -51,7 +60,7 @@ export function PrioritySelector({ value, onChange }: PrioritySelectorProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -64,11 +73,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-    backgroundColor: '#fff',
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
   },
   buttonActive: {
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.raised,
     borderWidth: 2,
   },
   dot: {
@@ -80,6 +89,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#6b7280',
+    color: colors.secondary,
   },
 });

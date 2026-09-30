@@ -13,11 +13,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
 import { useAuth } from '@/lib/auth';
+import { useThemeColors, type ThemeColors } from '@/lib/theme';
 
 /**
  * Login screen
  */
 export default function LoginScreen() {
+  const colors = useThemeColors();
+  const styles = createStyles(colors);
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -60,7 +63,7 @@ export default function LoginScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="you@example.com"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={colors.muted}
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"
@@ -76,7 +79,7 @@ export default function LoginScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="Enter your password"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={colors.muted}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
@@ -114,10 +117,10 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
   },
   keyboardView: {
     flex: 1,
@@ -134,12 +137,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: '700',
-    color: '#1f2937',
+    color: colors.text,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6b7280',
+    color: colors.secondary,
   },
   form: {
     gap: 20,
@@ -150,21 +153,21 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#374151',
+    color: colors.text,
   },
   input: {
     height: 48,
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: colors.inputBorder,
     borderRadius: 8,
     paddingHorizontal: 16,
     fontSize: 16,
-    color: '#1f2937',
-    backgroundColor: '#fff',
+    color: colors.text,
+    backgroundColor: colors.surface,
   },
   button: {
     height: 48,
-    backgroundColor: '#6366f1',
+    backgroundColor: colors.accentFill,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
@@ -187,11 +190,11 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 14,
-    color: '#6b7280',
+    color: colors.secondary,
   },
   linkText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6366f1',
+    color: colors.accent,
   },
 });
