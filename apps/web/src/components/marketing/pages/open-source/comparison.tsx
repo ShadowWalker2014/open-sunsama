@@ -11,7 +11,7 @@ import { openSource } from "@/content/marketing/pages/open-source-task-manager";
 import type { ComparisonSection } from "@/content/marketing/types";
 
 const LINK =
-  "rounded-sm underline decoration-border underline-offset-4 transition-colors hover:text-primary hover:decoration-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "rounded-sm underline decoration-border underline-offset-4 transition-colors hover:text-primary hover:decoration-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring";
 
 export function OpenSourceComparison({ section }: { section: ComparisonSection }) {
   return (

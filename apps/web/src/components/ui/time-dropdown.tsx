@@ -87,7 +87,7 @@ export const TimeDropdown = React.forwardRef<
             disabled={disabled}
             className={cn(
               "font-mono tabular-nums tracking-tight transition-colors",
-              "hover:text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+              "hover:text-foreground focus:outline-hidden focus-visible:ring-1 focus-visible:ring-ring",
               value ? "text-foreground" : "text-muted-foreground/60",
               disabled &&
                 "opacity-50 cursor-not-allowed hover:text-muted-foreground/60",

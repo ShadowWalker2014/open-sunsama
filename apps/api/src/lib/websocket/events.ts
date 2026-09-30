@@ -27,6 +27,9 @@ export type WebSocketEventType =
   | "calendar:updated"
   | "calendar-event:updated"
   | "calendar-event:deleted"
+  // Task-source integration events
+  | "integration:account-connected"
+  | "integration:account-disconnected"
   // Timer events
   | "timer:started"
   | "timer:stopped"

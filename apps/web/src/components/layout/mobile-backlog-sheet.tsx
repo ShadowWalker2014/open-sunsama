@@ -78,8 +78,8 @@ export function MobileBacklogSheet({ trigger, onTaskClick }: MobileBacklogSheetP
         "lg:hidden", // Only show on mobile
         // Linear-style: subtle pill with glassmorphism
         "flex items-center gap-2 px-3 py-2 rounded-full",
-        "bg-background/80 backdrop-blur-sm border border-border/50",
-        "shadow-sm hover:shadow-md",
+        "bg-background/80 backdrop-blur-xs border border-border/50",
+        "shadow-xs hover:shadow-md",
         "text-sm font-medium text-foreground/80",
         "active:scale-[0.98] transition-all duration-150",
         // Hover state
@@ -104,7 +104,7 @@ export function MobileBacklogSheet({ trigger, onTaskClick }: MobileBacklogSheetP
       <SheetTrigger asChild>{trigger || defaultTrigger}</SheetTrigger>
       <SheetContent side="left" className="w-full max-w-sm p-0 flex flex-col">
         {/* Header */}
-        <SheetHeader className="border-b p-4 flex-shrink-0">
+        <SheetHeader className="border-b p-4 shrink-0">
           <div className="flex items-center justify-between">
             <div>
               <SheetTitle className="text-lg">Backlog</SheetTitle>
@@ -142,7 +142,7 @@ export function MobileBacklogSheet({ trigger, onTaskClick }: MobileBacklogSheetP
 
         {/* Quick Add Form */}
         {isAddingTask && (
-          <form onSubmit={handleSubmit} className="border-b p-4 flex-shrink-0">
+          <form onSubmit={handleSubmit} className="border-b p-4 shrink-0">
             <Input
               ref={inputRef}
               value={newTaskTitle}
@@ -212,7 +212,7 @@ export function MobileBacklogSheet({ trigger, onTaskClick }: MobileBacklogSheetP
 
         {/* Footer hint */}
         {!isLoading && backlogTasks.length > 0 && (
-          <div className="border-t p-3 flex-shrink-0">
+          <div className="border-t p-3 shrink-0">
             <p className="text-xs text-center text-muted-foreground">
               Tap and hold to drag tasks to schedule them
             </p>

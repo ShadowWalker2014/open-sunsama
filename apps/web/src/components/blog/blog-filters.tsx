@@ -18,8 +18,8 @@ export function BlogTopicTabs({ selectedTag, onSelect }: BlogTopicTabsProps) {
 
   return (
     <nav aria-label="Blog topics" className="container mx-auto max-w-6xl px-4">
-      <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <ul className="mx-auto flex w-max items-center gap-1 rounded-full border border-border/60 bg-muted/40 p-1 backdrop-blur dark:border-white/[0.08] dark:bg-white/[0.03]">
+      <div className="-mx-4 overflow-x-auto px-4 scrollbar-none [&::-webkit-scrollbar]:hidden">
+        <ul className="mx-auto flex w-max items-center gap-1 rounded-full border border-border/60 bg-muted/40 p-1 backdrop-blur-sm dark:border-white/8 dark:bg-white/3">
           {tabs.map((tab) => {
             const isActive = active === tab.id;
             return (
@@ -31,9 +31,9 @@ export function BlogTopicTabs({ selectedTag, onSelect }: BlogTopicTabsProps) {
                     onSelect(tab.id === "all" ? undefined : tab.id)
                   }
                   className={cn(
-                    "whitespace-nowrap rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "whitespace-nowrap rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
                     isActive
-                      ? "bg-background text-foreground shadow-sm ring-1 ring-border/60 dark:bg-white/10 dark:ring-white/10"
+                      ? "bg-background text-foreground shadow-xs ring-1 ring-border/60 dark:bg-white/10 dark:ring-white/10"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -66,7 +66,7 @@ function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
         type="button"
         onClick={onRemove}
         aria-label={`Remove ${label}`}
-        className="flex h-5 w-5 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex h-5 w-5 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
       >
         <X className="h-3 w-3" />
       </button>
@@ -96,7 +96,7 @@ export function BlogResultsBar({
   return (
     <div className="flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h2 className="text-[22px] font-semibold tracking-[-0.025em] md:text-[26px]">
+        <h2 className="text-[22px] font-semibold tracking-tight md:text-[26px]">
           {heading}
         </h2>
         <p

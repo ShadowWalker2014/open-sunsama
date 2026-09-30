@@ -93,7 +93,7 @@ export function SortableSubtaskItem({
         showTiming && "max-sm:grid max-sm:grid-cols-[auto_minmax(0,1fr)_auto]",
         "hover:bg-muted/40",
         isEditing && "bg-muted/40",
-        isDragging && "z-10 bg-muted/60 shadow-sm"
+        isDragging && "z-10 bg-muted/60 shadow-xs"
       )}
       onMouseEnter={() => setHoveredSubtaskId(subtask.id)}
       onMouseLeave={() => setHoveredSubtaskId(null)}
@@ -141,7 +141,7 @@ export function SortableSubtaskItem({
           data-escape-local="true"
           aria-label="Edit subtask"
           className={cn(
-            "min-w-0 flex-1 border-none bg-transparent p-0 outline-none focus:ring-0",
+            "min-w-0 flex-1 border-none bg-transparent p-0 outline-hidden focus:ring-0",
             size.text
           )}
         />

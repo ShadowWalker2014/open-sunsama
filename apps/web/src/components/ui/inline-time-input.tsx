@@ -150,7 +150,7 @@ export function InlineTimeInput({
         onClick={(e) => e.stopPropagation()}
         className={cn(
           "w-14 text-center text-[11px] tabular-nums bg-transparent",
-          "border-b border-primary focus:outline-none",
+          "border-b border-primary focus:outline-hidden",
           "rounded-none px-0.5",
           className
         )}
@@ -168,7 +168,7 @@ export function InlineTimeInput({
       className={cn(
         "text-[11px] tabular-nums cursor-text",
         "hover:underline hover:decoration-dotted",
-        "focus:outline-none focus:underline",
+        "focus:outline-hidden focus:underline",
         "transition-colors",
         value ? "text-foreground" : "text-muted-foreground",
         disabled && "cursor-default hover:no-underline opacity-50",

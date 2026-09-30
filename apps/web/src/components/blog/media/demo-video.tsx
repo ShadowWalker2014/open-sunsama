@@ -52,7 +52,7 @@ export function DemoVideo({ id }: { id: string }) {
             type="button"
             onClick={start}
             aria-label={`Play video: ${video.title} (${clockDuration(video.duration)})`}
-            className="group absolute inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+            className="group absolute inset-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
           >
             <img
               src={video.poster}

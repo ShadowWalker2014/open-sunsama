@@ -13,6 +13,7 @@ import {
   timeBlockKeys,
   subtaskKeys,
   calendarKeys,
+  integrationKeys,
   ideaBoardKeys,
   ideaKeys,
   ideaSubtaskKeys,
@@ -146,6 +147,8 @@ function handleWebSocketEvent(
     case "task:completed":
     case "task:reordered":
       batcher.schedule(taskKeys.lists());
+      // The kanban range prefetch lives outside lists(); refresh it too.
+      batcher.schedule(taskKeys.rangeAll());
       batcher.schedule(["tasks", "search", "infinite"]);
 
       if (event.payload && typeof event.payload === "object" && "taskId" in event.payload) {
@@ -196,6 +199,7 @@ function handleWebSocketEvent(
         queryClient.invalidateQueries({ queryKey: taskKeys.detail(taskId) });
       }
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: taskKeys.rangeAll() });
       break;
 
     case "idea-board:created":
@@ -248,6 +252,13 @@ function handleWebSocketEvent(
       // calendarKeys.all is the prefix for accounts/list/events, so this
       // single refetch covers all sub-trees.
       queryClient.refetchQueries({ queryKey: calendarKeys.all });
+      break;
+
+    case "integration:account-connected":
+    case "integration:account-disconnected":
+      queryClient.refetchQueries({ queryKey: integrationKeys.all });
+      // Disconnecting orphans links, which changes the source chips.
+      batcher.schedule(taskKeys.all);
       break;
   }
 }

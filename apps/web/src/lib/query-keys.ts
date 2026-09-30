@@ -25,12 +25,25 @@ export const taskKeys = {
   // the value. Anything shaped differently needs a key outside this prefix.
   lists: () => [...taskKeys.all, "list"] as const,
   list: (filters: TaskFilterInput) => [...taskKeys.lists(), filters] as const,
-  // The kanban's range prefetch (`useKanbanRangePrefetch`) caches an object,
-  // not a Task[], so it lives beside `lists()` rather than under it.
-  range: (from: string, to: string) =>
-    [...taskKeys.all, "range", { from, to }] as const,
   details: () => [...taskKeys.all, "detail"] as const,
   detail: (id: string) => [...taskKeys.details(), id] as const,
+  /**
+   * The kanban month-range prefetch.
+   *
+   * Deliberately NOT under `lists()`. Everything that touches
+   * `getQueriesData({ queryKey: taskKeys.lists() })` — every optimistic
+   * mutation in `useTasks` — assumes each matching entry is a `Task[]`.
+   * This query's data is `{ tasks, subtasksByTaskId, truncated }`, so
+   * living under that prefix made every one of those loops crash with
+   * "not iterable" the moment the range query held data.
+   *
+   * It still sits under `all`, so `invalidateQueries(taskKeys.all)`
+   * refreshes it. Callers that invalidate `lists()` specifically must
+   * invalidate this too — see `taskKeys.rangeAll()`.
+   */
+  rangeAll: () => [...taskKeys.all, "range"] as const,
+  range: (from: string, to: string) =>
+    [...taskKeys.rangeAll(), { from, to }] as const,
 };
 
 export const timerKeys = {
@@ -60,6 +73,12 @@ export const calendarKeys = {
   calendars: () => [...calendarKeys.all, "list"] as const,
   events: (from: string, to: string) =>
     [...calendarKeys.all, "events", from, to] as const,
+};
+
+export const integrationKeys = {
+  all: ["integrations"] as const,
+  providers: () => [...integrationKeys.all, "providers"] as const,
+  accounts: () => [...integrationKeys.all, "accounts"] as const,
 };
 
 export const ideaBoardKeys = {

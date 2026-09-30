@@ -17,7 +17,7 @@ export function BlogCTA({ className }: { className?: string }) {
           <div className="dark relative overflow-hidden rounded-3xl border border-white/10 bg-[hsl(228_14%_7%)] text-foreground shadow-[0_32px_100px_-40px_hsl(24_95%_53%/0.5)]">
             <div className="landing-grid-dark pointer-events-none absolute inset-0 opacity-60" />
             <div className="pointer-events-none absolute -left-24 -top-28 h-80 w-80 rounded-full bg-[radial-gradient(closest-side,hsl(24_95%_60%/0.32),transparent)] blur-2xl" />
-            <div className="pointer-events-none absolute -bottom-40 right-0 h-96 w-[36rem] rounded-full bg-[radial-gradient(closest-side,hsl(24_95%_60%/0.22),transparent)] blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-40 right-0 h-96 w-xl rounded-full bg-[radial-gradient(closest-side,hsl(24_95%_60%/0.22),transparent)] blur-3xl" />
 
             <div className="relative grid items-center gap-10 lg:grid-cols-[1fr_1.2fr] lg:gap-6">
               <div className="min-w-0 px-7 pt-10 sm:px-10 sm:pt-12 lg:py-16 lg:pl-14 lg:pr-0">
@@ -60,7 +60,7 @@ export function BlogCTA({ className }: { className?: string }) {
               <div className="min-w-0 pl-7 sm:pl-10 lg:pl-0">
                 <div className="-mb-px translate-x-0 lg:-mr-2 lg:translate-y-10">
                   <BrowserFrame className="rounded-b-none rounded-r-none border-b-0 border-r-0 sm:rounded-tr-none">
-                    <div className="aspect-[16/10] w-full overflow-hidden">
+                    <div className="aspect-16/10 w-full overflow-hidden">
                       <ThemedShot
                         name="board"
                         alt="The Open Sunsama board: today's tasks beside a time-blocked calendar"

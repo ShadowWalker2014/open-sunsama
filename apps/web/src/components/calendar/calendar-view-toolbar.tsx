@@ -159,7 +159,7 @@ export function CalendarViewToolbar({
               className={cn(
                 "px-2.5 sm:px-3 h-7 sm:h-8 rounded text-xs sm:text-[13px] font-medium transition-colors",
                 viewMode === mode
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >

@@ -27,3 +27,10 @@ export {
   CalendarItem,
 } from "./calendar-account-card";
 export { RemoveAccountDialog } from "./remove-account-dialog";
+export { IntegrationsSettings } from "./integrations-settings";
+export { ConnectIntegrationDialog } from "./connect-integration-dialog";
+export { IntegrationAccountCard } from "./integration-account-card";
+export {
+  INTEGRATION_PROVIDER_CONFIG,
+  getIntegrationProviderConfig,
+} from "./integration-provider-icons";

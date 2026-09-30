@@ -335,7 +335,7 @@ export function IdeasBoardView({
           // Drag preview of the whole column (header + its cards), rotated +
           // elevated. Cards are static (non-interactive) clones to avoid
           // registering duplicate sortable ids during the column drag.
-          <div className="flex w-[272px] rotate-[2deg] flex-col gap-2 rounded-xl border border-primary/40 bg-muted/95 p-2.5 shadow-xl ring-2 ring-primary/20">
+          <div className="flex w-[272px] rotate-2 flex-col gap-2 rounded-xl border border-primary/40 bg-muted/95 p-2.5 shadow-xl ring-2 ring-primary/20">
             <div className="flex items-center gap-2 px-1">
               <GripVertical className="h-4 w-4 text-muted-foreground" />
               <span className="text-[13px] font-semibold">
@@ -349,7 +349,7 @@ export function IdeasBoardView({
               {(ideasByColumn.get(activeColumn.id) ?? []).map((idea) => (
                 <div
                   key={idea.id}
-                  className="rounded-lg border border-border/40 bg-card px-3 py-2.5 shadow-sm"
+                  className="rounded-lg border border-border/40 bg-card px-3 py-2.5 shadow-xs"
                 >
                   <div className="flex items-start gap-2">
                     <span className="mt-0.5 h-4 w-4 shrink-0 rounded-full border-[1.5px] border-muted-foreground/40" />

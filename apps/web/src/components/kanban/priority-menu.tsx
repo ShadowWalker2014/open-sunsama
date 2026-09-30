@@ -41,7 +41,7 @@ export function PriorityMenu({
           aria-selected={value === p}
           onClick={() => onChange(p)}
           className={cn(
-            "flex w-full items-center gap-2.5 rounded px-2 py-1.5 text-sm transition-colors hover:bg-accent focus:bg-accent focus:outline-none",
+            "flex w-full items-center gap-2.5 rounded px-2 py-1.5 text-sm transition-colors hover:bg-accent focus:bg-accent focus:outline-hidden",
             value === p && "bg-accent"
           )}
         >

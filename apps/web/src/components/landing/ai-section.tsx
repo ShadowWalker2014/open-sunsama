@@ -65,8 +65,8 @@ function DemoBlock({ block, visible, fresh }: { block: Block; visible: boolean; 
   return (
     <div
       className={cn(
-        "absolute left-1 right-1 z-10 my-0.5 origin-top rounded-md border-l-[3px] transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
-        visible ? "opacity-100 [transform:none]" : "opacity-0 [transform:scaleY(0.6)_translateY(-6px)]",
+        "absolute left-1 right-1 z-10 my-0.5 origin-top rounded-md border-l-[3px] transition-[opacity,transform] duration-500 ease-spring",
+        visible ? "opacity-100 transform-none" : "opacity-0 transform-[scaleY(0.6)_translateY(-6px)]",
         fresh && visible && "animate-[landing-ring_1.6s_ease-out_1]"
       )}
       style={{
@@ -103,7 +103,7 @@ function MiniTimeline({ shown }: { shown: number }) {
         </p>
       </div>
       <div className="relative flex flex-1 overflow-hidden">
-        <div className="w-12 flex-shrink-0 border-r bg-muted/30">
+        <div className="w-12 shrink-0 border-r bg-muted/30">
           {hours.map((h) => (
             <div key={h} className="relative border-b border-border/50" style={{ height: HOUR }}>
               {h !== START_HOUR && (
@@ -127,8 +127,8 @@ function MiniTimeline({ shown }: { shown: number }) {
           ))}
           {/* Now line, as in the app. */}
           <div className="absolute left-0 right-0 z-30 flex items-center" style={{ top: (12.55 - START_HOUR) * HOUR }}>
-            <div className="-ml-1.5 h-3 w-3 rounded-full bg-red-500 shadow-sm" />
-            <div className="h-0.5 flex-1 bg-red-500 shadow-sm" />
+            <div className="-ml-1.5 h-3 w-3 rounded-full bg-red-500 shadow-xs" />
+            <div className="h-0.5 flex-1 bg-red-500 shadow-xs" />
           </div>
         </div>
       </div>
@@ -146,7 +146,7 @@ function ToolCall({ name, detail, state }: { name: string; detail?: string; stat
     >
       <span
         className={cn(
-          "flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full",
+          "flex h-4 w-4 shrink-0 items-center justify-center rounded-full",
           state === "done" ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"
         )}
       >
@@ -158,7 +158,7 @@ function ToolCall({ name, detail, state }: { name: string; detail?: string; stat
       </span>
       <span className="font-mono text-[11.5px] font-medium text-foreground">{name}</span>
       {detail && <span className="truncate text-muted-foreground">{detail}</span>}
-      <span className="ml-auto flex-shrink-0 text-[10px] text-muted-foreground">Open Sunsama</span>
+      <span className="ml-auto shrink-0 text-[10px] text-muted-foreground">Open Sunsama</span>
     </div>
   );
 }
@@ -223,7 +223,7 @@ export function AssistantDemo() {
             </span>
           </div>
           <div className="flex flex-1 flex-col gap-3 p-4">
-            <div className="ml-auto max-w-[85%] rounded-2xl rounded-br-md bg-primary px-3.5 py-2 text-[13.5px] leading-snug text-primary-foreground shadow-sm">
+            <div className="ml-auto max-w-[85%] rounded-2xl rounded-br-md bg-primary px-3.5 py-2 text-[13.5px] leading-snug text-primary-foreground shadow-xs">
               Plan my afternoon around the roadmap review.
             </div>
             <div className="flex flex-col gap-1.5">
@@ -242,7 +242,7 @@ export function AssistantDemo() {
             <div
               className={cn(
                 "max-w-[92%] rounded-2xl rounded-bl-md bg-muted/60 px-3.5 py-2 text-[13.5px] leading-snug text-foreground transition-[opacity,transform] duration-500",
-                replyVisible ? "opacity-100 [transform:none]" : "translate-y-1 opacity-0"
+                replyVisible ? "opacity-100 transform-none" : "translate-y-1 opacity-0"
               )}
             >
               {REPLY}
@@ -336,7 +336,7 @@ export function AiSection() {
             {STEPS.map((step, i) => (
               <Reveal key={step.title} as="li" delay={100 + i * 90} className="flex gap-4">
                 <div className="relative flex flex-col items-center">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-border/70 bg-background text-primary shadow-sm">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-border/70 bg-background text-primary shadow-xs">
                     <step.icon className="h-4 w-4" />
                   </span>
                   {i < STEPS.length - 1 && <span className="mt-2 w-px flex-1 bg-border" />}

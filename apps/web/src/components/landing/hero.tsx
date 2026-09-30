@@ -67,7 +67,7 @@ function Showcase({ ready, reduced }: { ready: boolean; reduced: boolean }) {
       {/* Scroll-linked tilt: leans back at the top of the page, flattens as you scroll. */}
       <div
         ref={tiltRef}
-        className="relative [--p:0] [perspective:2200px]"
+        className="relative [--p:0] perspective-[2200px]"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -85,13 +85,13 @@ function Showcase({ ready, reduced }: { ready: boolean; reduced: boolean }) {
           {/* Sunrise behind the window: amber core fading through orange to rose. */}
           <div className="pointer-events-none absolute -inset-x-16 -top-16 bottom-[20%] -z-10 rounded-[48px] bg-[radial-gradient(55%_65%_at_50%_18%,rgb(251_191_36/0.38),rgb(249_115_22/0.24)_38%,rgb(244_63_94/0.12)_62%,transparent_78%)] blur-2xl dark:bg-[radial-gradient(55%_65%_at_50%_18%,rgb(251_191_36/0.26),rgb(249_115_22/0.2)_38%,rgb(244_63_94/0.12)_62%,transparent_78%)]" />
           <BrowserFrame className="relative">
-            <div className="relative aspect-[16/10] w-full overflow-hidden">
+            <div className="relative aspect-16/10 w-full overflow-hidden">
               {VIEWS.map((view, i) => (
                 <div
                   key={view.id}
                   className={cn(
                     "absolute inset-0 transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)]",
-                    i === active ? "opacity-100 [transform:none]" : "opacity-0 [transform:scale(1.015)]"
+                    i === active ? "opacity-100 transform-none" : "opacity-0 transform-[scale(1.015)]"
                   )}
                   aria-hidden={i !== active}
                 >
@@ -120,7 +120,7 @@ function Showcase({ ready, reduced }: { ready: boolean; reduced: boolean }) {
           </FloatingChip>
 
           <FloatingChip
-            className="-right-8 top-[9%] !p-0"
+            className="-right-8 top-[9%] p-0!"
             depth={-26}
             visible={ready}
             delay={1450}
@@ -153,7 +153,7 @@ function Showcase({ ready, reduced }: { ready: boolean; reduced: boolean }) {
       {/* View switcher with autoplay progress. */}
       <div className="mt-8 flex justify-center">
         <div
-          className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-muted/40 p-1 backdrop-blur"
+          className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-muted/40 p-1 backdrop-blur-sm"
           role="tablist"
           aria-label="Product views"
         >
@@ -169,7 +169,7 @@ function Showcase({ ready, reduced }: { ready: boolean; reduced: boolean }) {
               className={cn(
                 "relative flex items-center gap-1.5 overflow-hidden rounded-full px-3 py-1.5 text-[12.5px] font-medium transition-colors sm:px-3.5 sm:text-[13px]",
                 i === active
-                  ? "bg-background text-foreground shadow-sm ring-1 ring-border/60"
+                  ? "bg-background text-foreground shadow-xs ring-1 ring-border/60"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -255,7 +255,7 @@ export function Hero() {
           <Link
             to="/docs/$"
             params={{ _splat: "mcp/overview" }}
-            className="group inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 py-1 pl-1 pr-3 text-[12px] font-medium text-muted-foreground shadow-sm backdrop-blur transition-colors hover:border-primary/40 hover:text-foreground"
+            className="group inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 py-1 pl-1 pr-3 text-[12px] font-medium text-muted-foreground shadow-xs backdrop-blur-sm transition-colors hover:border-primary/40 hover:text-foreground"
           >
             <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground">
               New
@@ -291,7 +291,7 @@ export function Hero() {
             <Button
               variant="outline"
               size="lg"
-              className="group h-11 gap-2.5 rounded-lg bg-background/70 pl-2 pr-4 text-[14px] backdrop-blur"
+              className="group h-11 gap-2.5 rounded-lg bg-background/70 pl-2 pr-4 text-[14px] backdrop-blur-sm"
             >
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                 <Play className="h-3.5 w-3.5 translate-x-px fill-current" />

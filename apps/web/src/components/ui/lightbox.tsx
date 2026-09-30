@@ -210,7 +210,7 @@ export function Lightbox({ items, initialIndex = 0, open, onClose }: LightboxPro
 
   return (
     <div
-      className="fixed inset-0 z-[100] bg-black/95 flex flex-col"
+      className="fixed inset-0 z-100 bg-black/95 flex flex-col"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -390,7 +390,7 @@ export function Lightbox({ items, initialIndex = 0, open, onClose }: LightboxPro
             <button
               key={index}
               className={cn(
-                "h-12 w-12 rounded-md overflow-hidden border-2 transition-all flex-shrink-0",
+                "h-12 w-12 rounded-md overflow-hidden border-2 transition-all shrink-0",
                 index === currentIndex
                   ? "border-white"
                   : "border-transparent opacity-50 hover:opacity-75"

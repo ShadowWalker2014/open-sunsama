@@ -218,7 +218,7 @@ export function CommandPalette({ open, onOpenChange, onSelectTask, onAddTask }: 
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search tasks, ideas, events — or run a command…"
-            className="flex-1 bg-transparent text-[13px] outline-none placeholder:text-muted-foreground/60"
+            className="flex-1 bg-transparent text-[13px] outline-hidden placeholder:text-muted-foreground/60"
           />
           {isSearchingTasks && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground/60" />}
         </div>

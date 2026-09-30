@@ -29,7 +29,7 @@ export function BlogRelatedPosts({ posts }: { posts: BlogPost[] }) {
           <Link
             to="/blog"
             search={{}}
-            className="group inline-flex items-center gap-1.5 rounded-md text-[14px] font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="group inline-flex items-center gap-1.5 rounded-md text-[14px] font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           >
             All articles
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />

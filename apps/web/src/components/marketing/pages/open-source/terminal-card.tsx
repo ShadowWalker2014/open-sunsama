@@ -31,7 +31,7 @@ function CopyButton({ text, label }: { text: string; label: string }) {
           .catch(() => {});
       }}
       aria-label={copied ? "Copied" : label}
-      className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2 text-[11.5px] font-medium text-white/55 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(24_95%_60%)]"
+      className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2 text-[11.5px] font-medium text-white/55 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[hsl(24_95%_60%)]"
     >
       {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
       <span className="hidden sm:inline">{copied ? "Copied" : "Copy"}</span>
@@ -45,7 +45,7 @@ function Line({ line, index, animate }: { line: string; index: number; animate: 
   return (
     <div
       className={cn(
-        "flex gap-2.5 [overflow-wrap:anywhere]",
+        "flex gap-2.5 wrap-anywhere",
         animate && "motion-safe:animate-[landing-line_500ms_cubic-bezier(0.2,0.8,0.2,1)_both]",
         comment ? "text-white/40" : "text-white/90"
       )}
@@ -113,7 +113,7 @@ export function TerminalCard({
                 aria-controls={`${baseId}-panel`}
                 onClick={() => setActiveId(tab.id)}
                 className={cn(
-                  "shrink-0 rounded-md px-2.5 py-1 text-[12px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(24_95%_60%)]",
+                  "shrink-0 rounded-md px-2.5 py-1 text-[12px] font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[hsl(24_95%_60%)]",
                   tab.id === active.id ? "bg-white/10 text-white" : "text-white/45 hover:text-white/80"
                 )}
               >
