@@ -47,7 +47,7 @@ export function MobileDateHeader({
   const onToday = isToday(selectedDate);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85">
+    <header className="sticky top-0 z-40 border-b border-border/40 bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/85">
       <div className="flex h-12 items-center gap-1 px-3">
         {leading}
         <MobileDatePicker value={selectedDate} onChange={(d) => onSelectDate(startOfDay(d))}>
@@ -117,7 +117,7 @@ function WeekStrip({
       onScroll={settle.onScroll}
       onTouchStart={settle.onTouchStart}
       onTouchEnd={settle.onTouchEnd}
-      className="flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain pb-2 scrollbar-none [&::-webkit-scrollbar]:hidden"
     >
       {[-1, 0, 1].map((offset) => {
         const start = addWeeks(weekStart, offset);
@@ -194,7 +194,7 @@ function DayPill({
           "group-active:scale-90",
           selected
             ? today
-              ? "bg-primary text-primary-foreground shadow-sm shadow-primary/40"
+              ? "bg-primary text-primary-foreground shadow-xs shadow-primary/40"
               : "bg-foreground text-background"
             : today
               ? "text-primary"

@@ -94,7 +94,7 @@ export function DurationPicker({
           }}
           aria-invalid={invalid}
           className={cn(
-            "mt-1 w-full border-b-2 bg-transparent pb-0.5 text-lg font-semibold tabular-nums outline-none transition-colors placeholder:text-muted-foreground/40",
+            "mt-1 w-full border-b-2 bg-transparent pb-0.5 text-lg font-semibold tabular-nums outline-hidden transition-colors placeholder:text-muted-foreground/40",
             invalid
               ? "border-destructive text-destructive"
               : "border-border/60 focus:border-primary"

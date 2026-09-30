@@ -4,9 +4,11 @@ const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;
 
 function getEncryptionKey(): Buffer {
-  const key = process.env.CALENDAR_ENCRYPTION_KEY;
+  // Calendar tokens predate integrations; their key takes precedence if both
+  // variables are set so adding an integration never strands existing tokens.
+  const key = process.env.CALENDAR_ENCRYPTION_KEY || process.env.ENCRYPTION_KEY;
   if (!key) {
-    throw new Error('CALENDAR_ENCRYPTION_KEY environment variable is required');
+    throw new Error('ENCRYPTION_KEY environment variable is required');
   }
   // Key should be 32 bytes (64 hex chars)
   return Buffer.from(key, 'hex');

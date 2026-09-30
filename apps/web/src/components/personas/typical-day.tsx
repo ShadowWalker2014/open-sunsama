@@ -109,7 +109,7 @@ export function TypicalDay({
                   <SmartLink
                     key={link.href}
                     href={link.href}
-                    className="rounded-sm font-medium text-foreground underline decoration-border underline-offset-4 hover:text-primary hover:decoration-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="rounded-sm font-medium text-foreground underline decoration-border underline-offset-4 hover:text-primary hover:decoration-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {link.label}
                   </SmartLink>

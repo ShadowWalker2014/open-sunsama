@@ -63,7 +63,7 @@ export function UnscheduledTasksDrawer({
   return (
     <>
       {/* Header */}
-      <SheetHeader className="border-b p-4 flex-shrink-0">
+      <SheetHeader className="border-b p-4 shrink-0">
         <div className="flex items-center justify-between">
           <div>
             <SheetTitle className="text-lg">Unscheduled Tasks</SheetTitle>
@@ -85,7 +85,7 @@ export function UnscheduledTasksDrawer({
 
       {/* Quick Add Form */}
       {isAddingTask && (
-        <form onSubmit={handleSubmit} className="border-b p-4 flex-shrink-0">
+        <form onSubmit={handleSubmit} className="border-b p-4 shrink-0">
           <Input
             ref={inputRef}
             value={newTaskTitle}
@@ -155,7 +155,7 @@ export function UnscheduledTasksDrawer({
 
       {/* Footer hint */}
       {!isLoading && tasks.length > 0 && (
-        <div className="border-t p-3 flex-shrink-0">
+        <div className="border-t p-3 shrink-0">
           <p className="text-xs text-center text-muted-foreground">
             Tap a task to view details
           </p>

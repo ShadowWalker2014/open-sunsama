@@ -35,7 +35,7 @@ function ShortcutsModalLoadingShell({ open }: { open: boolean }) {
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/40 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/40 backdrop-blur-xs"
       aria-hidden="true"
     >
       <div className="w-[min(560px,90vw)] rounded-lg border bg-popover p-6 shadow-lg">

@@ -361,13 +361,13 @@ export function MobileCalendarView({
       )}
     >
       {/* Header */}
-      <header className="flex flex-shrink-0 flex-col gap-2 border-b px-3 py-2">
+      <header className="flex shrink-0 flex-col gap-2 border-b px-3 py-2">
         <div className="flex items-center gap-2">
           <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
             <SheetTrigger asChild>
               <button
                 className={cn(
-                  "flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg",
+                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
                   "hover:bg-accent active:bg-accent/80 transition-colors"
                 )}
                 aria-label="Open unscheduled tasks"
@@ -446,7 +446,7 @@ export function MobileCalendarView({
               className={cn(
                 "h-7 flex-1 rounded-md text-xs font-medium transition-colors",
                 dayCount === option.value
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground"
               )}
             >
@@ -478,7 +478,7 @@ export function MobileCalendarView({
           {/* All-day banner — shown only when there's at least one all-day
           event for this day. Compact chips matching the desktop. */}
           {allDayEvents.length > 0 && (
-            <div className="flex-shrink-0 border-b bg-muted/30 px-2 py-1 space-y-0.5">
+            <div className="shrink-0 border-b bg-muted/30 px-2 py-1 space-y-0.5">
               {allDayEvents.map((event) => {
                 const color = event.calendar?.color ?? "#6B7280";
                 return (
@@ -495,7 +495,7 @@ export function MobileCalendarView({
                     title={event.title}
                   >
                     <CalendarIcon
-                      className="h-3 w-3 flex-shrink-0"
+                      className="h-3 w-3 shrink-0"
                       style={{ color }}
                     />
                     <span className="truncate text-left">{event.title}</span>
@@ -512,7 +512,7 @@ export function MobileCalendarView({
               style={{ minHeight: hours.length * HOUR_HEIGHT }}
             >
               {/* Time Labels Column — 12-hour to match desktop. */}
-              <div className="w-14 flex-shrink-0 border-r bg-muted/30">
+              <div className="w-14 shrink-0 border-r bg-muted/30">
                 {hours.map((hour) => (
                   <div
                     key={hour}
@@ -570,8 +570,8 @@ export function MobileCalendarView({
                     className="absolute left-0 right-0 z-30 flex items-center pointer-events-none"
                     style={{ top: currentTimePosition }}
                   >
-                    <div className="h-3 w-3 rounded-full bg-red-500 -ml-1.5 shadow-sm" />
-                    <div className="h-0.5 flex-1 bg-red-500 shadow-sm" />
+                    <div className="h-3 w-3 rounded-full bg-red-500 -ml-1.5 shadow-xs" />
+                    <div className="h-0.5 flex-1 bg-red-500 shadow-xs" />
                   </div>
                 )}
 

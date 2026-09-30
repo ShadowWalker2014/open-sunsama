@@ -184,8 +184,8 @@ export function ExternalEvent({
           <div
             data-external-event
             className={cn(
-              "absolute z-[5] my-0.5 rounded-md border-l-[3px] transition-all select-none",
-              "hover:brightness-90 hover:z-[15]",
+              "absolute z-5 my-0.5 rounded-md border-l-[3px] transition-all select-none",
+              "hover:brightness-90 hover:z-15",
               isDragging
                 ? "opacity-50 cursor-grabbing"
                 : onDragStart
@@ -193,7 +193,7 @@ export function ExternalEvent({
                   : "cursor-pointer",
               // Touch-drag visual feedback: lift + shadow on mobile.
               isTouchDragging &&
-                "opacity-60 scale-[1.02] shadow-lg z-[15]",
+                "opacity-60 scale-[1.02] shadow-lg z-15",
               className
             )}
             style={{
@@ -262,7 +262,7 @@ export function ExternalEvent({
               {/* Title row with external indicator */}
               <div className="flex items-center gap-1 min-w-0">
                 {!isVeryCompact && (
-                  <CalendarDays className="h-3 w-3 flex-shrink-0 text-muted-foreground" />
+                  <CalendarDays className="h-3 w-3 shrink-0 text-muted-foreground" />
                 )}
                 <p className={cn(
                   "truncate font-medium text-foreground",
@@ -375,7 +375,7 @@ export function AllDayEvent({
               }
             }}
           >
-            <CalendarDays className="h-3 w-3 flex-shrink-0 text-muted-foreground" />
+            <CalendarDays className="h-3 w-3 shrink-0 text-muted-foreground" />
             <span className="truncate text-foreground/80">{event.title}</span>
           </div>
         </TooltipTrigger>

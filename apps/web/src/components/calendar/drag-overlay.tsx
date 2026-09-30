@@ -232,7 +232,7 @@ function EventDragPreview({
     >
       <div className="p-3">
         <div className="flex items-center gap-1.5">
-          <CalendarDays className="h-3 w-3 flex-shrink-0" style={{ color }} />
+          <CalendarDays className="h-3 w-3 shrink-0" style={{ color }} />
           <p className="text-sm font-medium truncate">{event.title}</p>
         </div>
         <p className="mt-1 text-xs text-muted-foreground">

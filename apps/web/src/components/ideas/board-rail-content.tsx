@@ -212,7 +212,7 @@ export function BoardRailContent({
               if (!query) onCloseSearch?.();
             }}
             placeholder="Search boards…"
-            className="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-muted-foreground"
+            className="min-w-0 flex-1 bg-transparent text-[13px] outline-hidden placeholder:text-muted-foreground"
           />
           <button
             onClick={onCloseSearch}

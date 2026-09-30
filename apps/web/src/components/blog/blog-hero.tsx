@@ -41,7 +41,7 @@ export function BlogHero({ searchInput, onSearchChange }: BlogHeroProps) {
           <Link
             to="/blog"
             search={{ tag: "ai", page: undefined, q: undefined }}
-            className="group inline-flex max-w-full items-center gap-2 rounded-full border border-border/70 bg-background/70 py-1 pl-1 pr-3 text-[12px] font-medium text-muted-foreground shadow-sm backdrop-blur transition-colors hover:border-primary/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="group inline-flex max-w-full items-center gap-2 rounded-full border border-border/70 bg-background/70 py-1 pl-1 pr-3 text-[12px] font-medium text-muted-foreground shadow-xs backdrop-blur-sm transition-colors hover:border-primary/40 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           >
             <span className="shrink-0 rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground">
               New
@@ -58,7 +58,7 @@ export function BlogHero({ searchInput, onSearchChange }: BlogHeroProps) {
           style={introStyle(ready, 90, reduced)}
         >
           <span className="block">Guides to planning,</span>
-          <span className="block bg-gradient-to-br from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
+          <span className="block bg-linear-to-br from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent">
             done right.
           </span>
         </h1>
@@ -85,13 +85,13 @@ export function BlogHero({ searchInput, onSearchChange }: BlogHeroProps) {
             placeholder="Search articles"
             value={searchInput}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="h-12 w-full rounded-xl border border-border/80 bg-background/80 pl-11 pr-11 text-[15px] shadow-[0_1px_0_0_hsl(var(--foreground)/0.03),0_12px_32px_-16px_hsl(var(--shadow-color)/0.25)] outline-none backdrop-blur transition-[border-color,box-shadow] placeholder:text-muted-foreground/80 focus:border-primary/50 focus:ring-4 focus:ring-primary/15 dark:border-white/10 dark:bg-white/[0.03] [&::-webkit-search-cancel-button]:hidden"
+            className="h-12 w-full rounded-xl border border-border/80 bg-background/80 pl-11 pr-11 text-[15px] shadow-[0_1px_0_0_hsl(var(--foreground)/0.03),0_12px_32px_-16px_hsl(var(--shadow-color)/0.25)] outline-hidden backdrop-blur-sm transition-[border-color,box-shadow] placeholder:text-muted-foreground/80 focus:border-primary/50 focus:ring-4 focus:ring-primary/15 dark:border-white/10 dark:bg-white/3 [&::-webkit-search-cancel-button]:hidden"
           />
           {searchInput && (
             <button
               type="button"
               onClick={() => onSearchChange("")}
-              className="absolute right-3 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="absolute right-3 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Clear search"
             >
               <X className="h-4 w-4" />

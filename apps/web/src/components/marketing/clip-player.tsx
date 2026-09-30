@@ -125,7 +125,7 @@ export function ClipPlayer({
           type="button"
           onClick={() => setChoice(playing ? "pause" : "play")}
           aria-label={playing ? "Pause clip" : "Play clip"}
-          className="absolute bottom-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-background/85 text-foreground shadow-sm ring-1 ring-border/60 backdrop-blur transition-colors hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="absolute bottom-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-background/85 text-foreground shadow-xs ring-1 ring-border/60 backdrop-blur-sm transition-colors hover:bg-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
         >
           {playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5 translate-x-px" />}
         </button>

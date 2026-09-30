@@ -10,7 +10,7 @@ export function Steps({ steps }: { steps: Array<{ title: string; body: string }>
     <ol className={cn("grid gap-4", steps.length >= 3 ? "md:grid-cols-3" : "md:grid-cols-2")}>
       {steps.map((step, i) => (
         <Reveal as="li" key={step.title} delay={i * 100} className={cn(CARD, "relative p-6 md:p-7")}>
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] text-[14px] font-semibold text-white shadow-[0_6px_16px_-6px_hsl(var(--primary)/0.7)]">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-linear-to-br from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] text-[14px] font-semibold text-white shadow-[0_6px_16px_-6px_hsl(var(--primary)/0.7)]">
             {i + 1}
           </span>
           <h3 className="mt-5 text-[17px] font-semibold tracking-[-0.01em]">{step.title}</h3>

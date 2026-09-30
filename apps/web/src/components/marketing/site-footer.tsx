@@ -48,7 +48,7 @@ const FOOTER_COLUMNS: Array<{ title: string; links: Array<[string, string]> }> =
 ];
 
 const LINK =
-  "rounded-sm text-[13px] text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "rounded-sm text-[13px] text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring";
 
 /** The one footer for every public page. */
 export function SiteFooter() {

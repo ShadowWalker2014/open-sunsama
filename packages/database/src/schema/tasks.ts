@@ -17,6 +17,7 @@ import { users } from "./users";
 import { timeBlocks } from "./time-blocks";
 import { attachments } from "./attachments";
 import { taskSeries } from "./task-series";
+import { taskExternalLinks } from "./task-external-links";
 
 export const tasks = pgTable(
   "tasks",
@@ -92,6 +93,7 @@ export const tasksRelations = relations(tasks, ({ one, many }) => ({
   }),
   timeBlocks: many(timeBlocks),
   attachments: many(attachments),
+  externalLinks: many(taskExternalLinks),
   series: one(taskSeries, {
     fields: [tasks.seriesId],
     references: [taskSeries.id],

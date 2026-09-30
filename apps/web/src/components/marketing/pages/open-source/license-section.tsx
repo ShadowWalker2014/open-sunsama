@@ -49,7 +49,7 @@ export function LicenseSection({ section }: { section: CustomSection }) {
 
         <Reveal delay={100} y={24} className="min-w-0">
           <figure className={cn(CARD, "overflow-hidden shadow-[0_24px_64px_-32px_hsl(var(--shadow-color)/0.35)]")}>
-            <div className="flex items-center justify-between gap-3 border-b border-border/60 bg-muted/40 px-4 py-2.5 dark:border-white/[0.06]">
+            <div className="flex items-center justify-between gap-3 border-b border-border/60 bg-muted/40 px-4 py-2.5 dark:border-white/6">
               <span className="flex min-w-0 items-center gap-2 font-jetbrains text-[12px] text-muted-foreground">
                 <FileText className="h-3.5 w-3.5 shrink-0" aria-hidden />
                 <span className="truncate">open-sunsama / LICENSE</span>
@@ -61,7 +61,7 @@ export function LicenseSection({ section }: { section: CustomSection }) {
 
             <div className="grid sm:grid-cols-2">
               <div className="p-5 md:p-6">
-                <p className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-emerald-700 dark:text-emerald-400">
+                <p className="text-[11.5px] font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
                   Yours to use
                 </p>
                 <ul className="mt-4 space-y-3">
@@ -75,8 +75,8 @@ export function LicenseSection({ section }: { section: CustomSection }) {
                   ))}
                 </ul>
               </div>
-              <div className="border-t border-border/60 bg-muted/25 p-5 dark:border-white/[0.06] sm:border-l sm:border-t-0 md:p-6">
-                <p className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-amber-700 dark:text-amber-400">
+              <div className="border-t border-border/60 bg-muted/25 p-5 dark:border-white/6 sm:border-l sm:border-t-0 md:p-6">
+                <p className="text-[11.5px] font-semibold uppercase tracking-widest text-amber-700 dark:text-amber-400">
                   Needs a company license
                 </p>
                 <ul className="mt-4 space-y-3">
@@ -92,11 +92,11 @@ export function LicenseSection({ section }: { section: CustomSection }) {
               </div>
             </div>
 
-            <figcaption className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 px-4 py-3 text-[12.5px] text-muted-foreground dark:border-white/[0.06] md:px-6">
+            <figcaption className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 px-4 py-3 text-[12.5px] text-muted-foreground dark:border-white/6 md:px-6">
               <span>Summary of the Open Sunsama Non-Commercial License.</span>
               <a
                 href={`mailto:${openSource.licenseContact}`}
-                className="inline-flex items-center gap-1 rounded-sm font-medium text-foreground/80 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="inline-flex items-center gap-1 rounded-sm font-medium text-foreground/80 hover:text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {openSource.licenseContact}
                 <ArrowUpRight className="h-3 w-3" />

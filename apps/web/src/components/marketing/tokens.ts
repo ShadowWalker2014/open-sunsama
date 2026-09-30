@@ -22,14 +22,14 @@ export const BODY = "text-[15px] leading-relaxed text-muted-foreground md:text-[
 
 /** Brand gradient text (the home page's "done right."). */
 export const ACCENT_TEXT =
-  "bg-gradient-to-br from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent";
+  "bg-linear-to-br from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] bg-clip-text text-transparent";
 
 /** Primary CTA button, matching the home page hero. */
 export const PRIMARY_CTA = "h-11 rounded-lg px-5 text-[14px] shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.6)]";
 
 /** Card surface used by steps, related links and panels. */
 export const CARD =
-  "rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_0_hsl(var(--foreground)/0.03)] dark:border-white/[0.08]";
+  "rounded-2xl border border-border/70 bg-card shadow-[0_1px_0_0_hsl(var(--foreground)/0.03)] dark:border-white/8";
 
 /** Media components add their own margin for blog prose; kit layouts set their own. */
 export const MEDIA_WRAP = "min-w-0 [&_figure]:my-0";
@@ -41,4 +41,4 @@ export const SUNRISE_GLOW =
 /** Icon tile colors, in the home page's sunrise order. */
 export const SUNRISE = ["#F59E0B", "#F97316", "#F43F5E", "#EC4899", "#A855F7", "#6366F1"] as const;
 
-export const FOCUS_RING = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+export const FOCUS_RING = "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";

@@ -19,6 +19,7 @@ import { WithShortcut } from "@/components/ui/with-shortcut";
 import { EDIT_ESTIMATE_EVENT } from "@/components/task-shortcuts-handler";
 import { PRIORITY_META } from "@/components/ui/priority-badge";
 import { PriorityMenu } from "./priority-menu";
+import { TaskSourceChips } from "./task-source-chip";
 
 interface TaskCardContentProps {
   task: Task;
@@ -147,7 +148,7 @@ export function TaskCardContent({
             onClick={(e) => e.stopPropagation()}
             aria-label={`${task.priority} · ${PRIORITY_META[task.priority].description}`}
             className={cn(
-              "shrink-0 rounded px-1.5 py-px text-[10px] font-semibold transition-[opacity,box-shadow] hover:ring-1 hover:ring-foreground/20 focus:outline-none",
+              "shrink-0 rounded px-1.5 py-px text-[10px] font-semibold transition-[opacity,box-shadow] hover:ring-1 hover:ring-foreground/20 focus:outline-hidden",
               PRIORITY_CHIP[task.priority],
               // Normal is the default, so it only shows on hover.
               task.priority === "P2" &&
@@ -296,6 +297,11 @@ export function TaskCardContent({
             subtasks={subtasks!}
             onToggleSubtask={onToggleSubtask}
           />
+        </div>
+      )}
+      {!!task.externalLinks?.length && (
+        <div className="pl-6">
+          <TaskSourceChips links={task.externalLinks} />
         </div>
       )}
     </div>

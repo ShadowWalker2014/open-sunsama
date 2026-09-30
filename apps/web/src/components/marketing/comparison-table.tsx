@@ -77,7 +77,7 @@ export function ComparisonTable({
         role="region"
         aria-label={caption}
         tabIndex={0}
-        className="overflow-x-auto rounded-2xl border border-border/70 bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/[0.08]"
+        className="overflow-x-auto rounded-2xl border border-border/70 bg-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring dark:border-white/8"
       >
         <table className={cn("w-full border-collapse text-[14px]", wide && "min-w-[680px]")}>
           <caption className="sr-only">{caption}</caption>
@@ -85,7 +85,7 @@ export function ComparisonTable({
             <tr className="border-b border-border/70">
               <th
                 scope="col"
-                className="sticky left-0 z-10 w-[132px] min-w-[132px] bg-muted/60 px-4 py-3.5 text-left text-[11.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground backdrop-blur sm:w-[30%] sm:px-5"
+                className="sticky left-0 z-10 w-[132px] min-w-[132px] bg-muted/60 px-4 py-3.5 text-left text-[11.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground backdrop-blur-sm sm:w-[30%] sm:px-5"
               >
                 Feature
               </th>
@@ -95,7 +95,7 @@ export function ComparisonTable({
                   scope="col"
                   className={cn(
                     "px-3 py-3.5 text-center text-[13px] font-semibold",
-                    i === 0 ? "bg-primary/[0.08] text-primary" : "bg-muted/60 text-foreground/80"
+                    i === 0 ? "bg-primary/8 text-primary" : "bg-muted/60 text-foreground/80"
                   )}
                 >
                   {i === 0 ? (
@@ -120,7 +120,7 @@ export function ComparisonTable({
                   {row.feature}
                 </th>
                 {row.cells.map((cell, i) => (
-                  <td key={`${row.feature}-${columns[i]}`} className={cn("px-3 py-3.5 align-middle", i === 0 && "bg-primary/[0.04]")}>
+                  <td key={`${row.feature}-${columns[i]}`} className={cn("px-3 py-3.5 align-middle", i === 0 && "bg-primary/4")}>
                     <Cell cell={cell} primary={i === 0} />
                   </td>
                 ))}

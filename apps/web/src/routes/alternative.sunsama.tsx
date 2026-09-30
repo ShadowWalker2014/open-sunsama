@@ -230,7 +230,7 @@ function LicenseSection() {
             href={`${GITHUB_URL}/blob/main/LICENSE`}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-4 inline-flex items-center gap-1.5 rounded-sm text-[14px] font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-sm text-[14px] font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           >
             Read the full license
             <ArrowRight className="h-3.5 w-3.5" />

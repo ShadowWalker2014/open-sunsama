@@ -102,7 +102,7 @@ export const SubtaskAddRow = React.forwardRef<
         }}
         onBlur={commit}
         className={cn(
-          "min-w-0 flex-1 border-none bg-transparent p-0 outline-none placeholder:text-muted-foreground/50 focus:ring-0",
+          "min-w-0 flex-1 border-none bg-transparent p-0 outline-hidden placeholder:text-muted-foreground/50 focus:ring-0",
           size.text
         )}
       />

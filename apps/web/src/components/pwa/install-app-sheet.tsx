@@ -63,7 +63,7 @@ export function InstallAppSheet({ open, onOpenChange }: InstallAppSheetProps) {
             It opens full screen like any app, one tap from your day.
           </DialogDescription>
 
-          <div className="relative mx-auto mt-4 flex justify-center overflow-hidden rounded-[28px] bg-gradient-to-b from-orange-50 to-orange-100/40 py-5 dark:from-orange-500/10 dark:to-transparent">
+          <div className="relative mx-auto mt-4 flex justify-center overflow-hidden rounded-[28px] bg-linear-to-b from-orange-50 to-orange-100/40 py-5 dark:from-orange-500/10 dark:to-transparent">
             <div className="pointer-events-none absolute -top-16 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-orange-300/30 blur-3xl dark:bg-orange-500/20" />
             <PhoneDemo guide={guide} phase={phase} scale={0.74} />
           </div>
@@ -79,7 +79,7 @@ export function InstallAppSheet({ open, onOpenChange }: InstallAppSheetProps) {
                   }}
                   className={cn(
                     "flex w-full items-start gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors duration-300",
-                    activeStep === i ? "bg-primary/[0.08]" : "active:bg-muted"
+                    activeStep === i ? "bg-primary/8" : "active:bg-muted"
                   )}
                   aria-current={activeStep === i ? "step" : undefined}
                 >
@@ -120,7 +120,7 @@ export function InstallAppSheet({ open, onOpenChange }: InstallAppSheetProps) {
               <button
                 type="button"
                 onClick={() => void handleInstall()}
-                className="flex h-11 flex-[2] items-center justify-center gap-2 rounded-full bg-primary text-[15px] font-semibold text-primary-foreground shadow-sm shadow-primary/30 active:scale-[0.98]"
+                className="flex h-11 flex-2 items-center justify-center gap-2 rounded-full bg-primary text-[15px] font-semibold text-primary-foreground shadow-xs shadow-primary/30 active:scale-[0.98]"
               >
                 <Download className="h-4 w-4" />
                 Install app
@@ -138,7 +138,7 @@ export function InstallAppSheet({ open, onOpenChange }: InstallAppSheetProps) {
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
-                className="h-11 flex-[2] rounded-full bg-foreground text-[15px] font-semibold text-background active:scale-[0.98]"
+                className="h-11 flex-2 rounded-full bg-foreground text-[15px] font-semibold text-background active:scale-[0.98]"
               >
                 Got it
               </button>

@@ -38,7 +38,7 @@ export function AppearanceSettings() {
                 className={cn(
                   "inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all",
                   isActive
-                    ? "bg-background text-foreground shadow-sm"
+                    ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -82,7 +82,7 @@ export function AppearanceSettings() {
                 >
                   {isActive && (
                     <div className="flex h-full items-center justify-center">
-                      <Check className="h-4 w-4 text-white drop-shadow-sm" />
+                      <Check className="h-4 w-4 text-white drop-shadow-xs" />
                     </div>
                   )}
                 </div>

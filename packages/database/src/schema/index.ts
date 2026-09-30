@@ -169,6 +169,39 @@ export type {
   ReleasePlatform,
 } from "./releases";
 
+export {
+  integrationAccounts,
+  integrationAccountsRelations,
+  insertIntegrationAccountSchema,
+  selectIntegrationAccountSchema,
+  updateIntegrationAccountSchema,
+} from "./integration-accounts";
+export type {
+  IntegrationAccount,
+  NewIntegrationAccount,
+  UpdateIntegrationAccount,
+  IntegrationProvider,
+} from "./integration-accounts";
+
+export {
+  taskExternalLinks,
+  taskExternalLinksRelations,
+  insertTaskExternalLinkSchema,
+  selectTaskExternalLinkSchema,
+  updateTaskExternalLinkSchema,
+  EXTERNAL_LINK_ROLES,
+  EXTERNAL_LINK_STATUSES,
+} from "./task-external-links";
+export type {
+  TaskExternalLink,
+  NewTaskExternalLink,
+  UpdateTaskExternalLink,
+  ExternalLinkKind,
+  ExternalLinkRole,
+  ExternalLinkStatus,
+  ExternalLinkMeta,
+} from "./task-external-links";
+
 export { oauthStates } from "./oauth-states";
 export type { OAuthState, NewOAuthState } from "./oauth-states";
 

@@ -45,7 +45,7 @@ export function MobileUnscheduledSheet({
             variant="outline"
             className={cn(
               "fixed bottom-20 right-4 z-40 h-12 px-4 rounded-full shadow-lg",
-              "bg-background/95 backdrop-blur",
+              "bg-background/95 backdrop-blur-sm",
               "active:scale-95 transition-transform"
             )}
             style={{ marginBottom: "env(safe-area-inset-bottom, 0px)" }}
