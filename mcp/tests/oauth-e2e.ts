@@ -16,15 +16,14 @@
  */
 
 import { createHash, randomBytes } from "node:crypto";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { UnauthorizedError } from "@modelcontextprotocol/sdk/client/auth.js";
-import type { OAuthClientProvider } from "@modelcontextprotocol/sdk/client/auth.js";
+import { Client, StreamableHTTPClientTransport, UnauthorizedError } from "@modelcontextprotocol/client";
+import type { OAuthClientProvider } from "@modelcontextprotocol/client";
 import type {
   OAuthClientInformationMixed,
   OAuthClientMetadata,
+  OAuthDiscoveryState,
   OAuthTokens,
-} from "@modelcontextprotocol/sdk/shared/auth.js";
+} from "@modelcontextprotocol/client";
 
 const API = (process.env.MCP_E2E_API_URL ?? "http://localhost:3101").replace(/\/$/, "");
 const MCP_URL = new URL(`${API}/mcp`);
@@ -190,6 +189,7 @@ class MemoryProvider implements OAuthClientProvider {
   info?: OAuthClientInformationMixed;
   savedTokens?: OAuthTokens;
   verifier?: string;
+  savedDiscoveryState?: OAuthDiscoveryState;
   lastAuthorizationUrl?: URL;
 
   get redirectUrl() {
@@ -225,6 +225,12 @@ class MemoryProvider implements OAuthClientProvider {
   codeVerifier() {
     if (!this.verifier) throw new Error("no verifier");
     return this.verifier;
+  }
+  saveDiscoveryState(state: OAuthDiscoveryState) {
+    this.savedDiscoveryState = state;
+  }
+  discoveryState() {
+    return this.savedDiscoveryState;
   }
 }
 
@@ -276,7 +282,8 @@ async function main() {
   check("callback has code", !!callback.searchParams.get("code"));
   check("callback has iss (RFC 9207)", callback.searchParams.get("iss") === asm.issuer);
   check("callback echoes state", callback.searchParams.get("state") === authUrl.searchParams.get("state"));
-  await transport.finishAuth(callback.searchParams.get("code")!);
+  check("SDK saved discovery state for the callback", provider.savedDiscoveryState?.authorizationServerUrl === asm.issuer);
+  await transport.finishAuth(callback.searchParams);
   check("tokens saved", !!provider.savedTokens?.access_token?.startsWith("osat_"));
   check("refresh token issued", !!provider.savedTokens?.refresh_token?.startsWith("osrt_"));
 
@@ -299,6 +306,15 @@ async function main() {
   );
   check("OAuth grant includes calendar:read", provider.savedTokens?.scope?.split(" ").includes("calendar:read") === true, provider.savedTokens?.scope);
   const createTask = tools.find((t) => t.name === "create_task");
+  check(
+    "create_task exposes a JSON Schema with a required string title",
+    createTask?.inputSchema.type === "object" &&
+      createTask.inputSchema.properties?.title?.type === "string" &&
+      createTask.inputSchema.required?.includes("title") === true,
+    createTask?.inputSchema
+  );
+  const invalidTask = await client.callTool({ name: "create_task", arguments: { title: 42 } });
+  check("invalid tool arguments are rejected by the MCP server", invalidTask.isError === true, invalidTask);
   check("tools carry titles", tools.every((t) => typeof t.title === "string" && t.title.length > 0));
   check(
     "tools carry required annotations",
@@ -705,6 +721,33 @@ async function main() {
   });
   check("X-API-Key works on /mcp", viaHeader.status === 200 && !(await json(viaHeader)).result?.isError);
   check("Bearer os_ API key works on /mcp", (await mcpCall(apiKey, "tools/list")).status === 200);
+  // A second, independent SDK client exercises the deployed HTTP transport
+  // with the traditional API-key header (as in a configured desktop agent).
+  const keyClient = new Client({ name: "api-key-e2e", version: "1.0.0" });
+  try {
+    await keyClient.connect(new StreamableHTTPClientTransport(MCP_URL, {
+      requestInit: { headers: { "X-API-Key": apiKey } },
+    }));
+    const keyTools = (await keyClient.listTools()).tools;
+    check(
+      "API-key SDK client lists the same tools as OAuth",
+      JSON.stringify(keyTools.map((t) => t.name).sort()) === JSON.stringify(tools.map((t) => t.name).sort()),
+      keyTools.length
+    );
+    const keyTasks = await keyClient.callTool({ name: "list_tasks", arguments: { date: today } });
+    check("API-key SDK client lists tasks", !keyTasks.isError, keyTasks.content);
+    const keyProfile = await keyClient.callTool({ name: "get_user_profile", arguments: {} });
+    check("API-key SDK client reads profile", !keyProfile.isError && toolText(keyProfile).includes("mcp-e2e-"), keyProfile.content);
+    const keyBoard = await keyClient.callTool({ name: "create_idea_board", arguments: { name: "SDK API key board" } });
+    const boardId = JSON.parse(toolText(keyBoard))?.id as string | undefined;
+    check("API-key SDK client creates Ideas board", !keyBoard.isError && !!boardId, keyBoard.content);
+    const keyBoards = await keyClient.callTool({ name: "list_idea_boards", arguments: {} });
+    check("API-key SDK client lists Ideas board", !keyBoards.isError && toolText(keyBoards).includes(boardId!), keyBoards.content);
+    const keyDelete = await keyClient.callTool({ name: "delete_idea_board", arguments: { id: boardId } });
+    check("API-key SDK client deletes Ideas board", !keyDelete.isError, keyDelete.content);
+  } finally {
+    await keyClient.close();
+  }
   const keyBoardResult = await mcpCall(apiKey, "tools/call", { name: "create_idea_board", arguments: { name: "API key board" } });
   const keyBoard = JSON.parse(keyBoardResult.body.result?.content?.[0]?.text ?? "null") as { id: string } | null;
   check("API key can create Ideas board", !!keyBoard?.id, keyBoardResult.body);

@@ -26,10 +26,12 @@
     "inspector": "npx @modelcontextprotocol/inspector node build/index.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0",
-    "zod": "^3.25.76"
+    "@modelcontextprotocol/server": "2.1.0",
+    "close-with-grace": "2.5.0",
+    "zod": "4.6.5"
   },
   "devDependencies": {
+    "@modelcontextprotocol/client": "2.1.0",
     "@types/node": "^20.19.43",
     "typescript": "^5.9.3"
   },
