@@ -131,7 +131,7 @@ export function TaskRow({
           type="button"
           onClick={(e) => { e.stopPropagation(); onSelect(); }}
           className={cn(
-            "min-w-0 flex-1 text-left text-sm truncate focus-visible:outline-none focus-visible:underline",
+            "min-w-0 flex-1 text-left text-sm truncate focus-visible:outline-hidden focus-visible:underline",
             isCompleted && "line-through text-muted-foreground"
           )}
         >
@@ -163,7 +163,7 @@ export function TaskRow({
 
       {/* Compact Subtasks List (Linear-style) */}
       {showSubtasks && hasSubtasks && (
-        <div className="ml-[3.25rem] pb-1">
+        <div className="ml-13 pb-1">
           {sortedSubtasks.map((subtask) => (
             <div
               key={subtask.id}

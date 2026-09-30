@@ -96,7 +96,7 @@ export function BoardDialog({
                   <button
                     type="button"
                     title="Choose icon"
-                    className="shrink-0 rounded-lg outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                    className="shrink-0 rounded-lg outline-hidden ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <BoardIcon icon={icon} color={color} size={40} />
                   </button>

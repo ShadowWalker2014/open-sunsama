@@ -64,7 +64,7 @@ export function DocsLayout({ children, doc, sections }: DocsLayoutProps) {
 
       {/* Subtle background */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[400px] bg-primary/[0.03] blur-[100px] rounded-full" />
+        <div className="absolute top-0 right-1/4 w-[500px] h-[400px] bg-primary/3 blur-[100px] rounded-full" />
       </div>
 
       <DocsLayoutHeader sections={sections} currentSlug={doc.slug} />
@@ -72,12 +72,12 @@ export function DocsLayout({ children, doc, sections }: DocsLayoutProps) {
       <div className="flex-1 container mx-auto max-w-6xl px-4">
         <div className="flex gap-8">
           {/* Sidebar - desktop only */}
-          <aside className="hidden lg:block w-64 flex-shrink-0 sticky top-14 h-[calc(100vh-3.5rem)]">
+          <aside className="hidden lg:block w-64 shrink-0 sticky top-14 h-[calc(100vh-3.5rem)]">
             <DocsSidebar sections={sections} currentSlug={doc.slug} />
           </aside>
 
           {/* Main content */}
-          <main id="main" tabIndex={-1} className="flex-1 min-w-0 py-8 focus:outline-none">
+          <main id="main" tabIndex={-1} className="flex-1 min-w-0 py-8 focus:outline-hidden">
             <article className="max-w-3xl">
               {/* Breadcrumbs */}
               <Breadcrumbs items={breadcrumbItems} />
@@ -98,7 +98,7 @@ export function DocsLayout({ children, doc, sections }: DocsLayoutProps) {
 
                 {/* TOC sidebar (desktop only, when enough headings) */}
                 {showTOC && (
-                  <aside className="hidden xl:block w-48 flex-shrink-0">
+                  <aside className="hidden xl:block w-48 shrink-0">
                     <div className="sticky top-24">
                       <TableOfContents headings={headings} />
                     </div>

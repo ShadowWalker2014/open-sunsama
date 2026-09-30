@@ -17,7 +17,7 @@ export function AuthLayout({ children, className }: AuthLayoutProps) {
     <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 relative">
       {/* Subtle background */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-primary/[0.03] blur-[100px] rounded-full" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-primary/3 blur-[100px] rounded-full" />
       </div>
 
       <div className="relative z-10 w-full max-w-sm flex flex-col items-center">
@@ -34,7 +34,7 @@ export function AuthLayout({ children, className }: AuthLayoutProps) {
         {/* Card */}
         <div
           className={cn(
-            "w-full rounded-xl border border-border/40 bg-card/50 p-6 shadow-sm",
+            "w-full rounded-xl border border-border/40 bg-card/50 p-6 shadow-xs",
             className
           )}
         >

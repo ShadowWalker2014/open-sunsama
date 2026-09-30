@@ -34,7 +34,7 @@ function Keys({ keys }: { keys: string[] }) {
           key={key}
           aria-hidden
           className={cn(
-            "inline-flex h-[26px] min-w-[26px] items-center justify-center rounded-md border border-border bg-background px-1.5 font-medium text-foreground shadow-[inset_0_-2px_0_hsl(var(--border))] dark:border-white/[0.12] dark:bg-white/[0.04]",
+            "inline-flex h-[26px] min-w-[26px] items-center justify-center rounded-md border border-border bg-background px-1.5 font-medium text-foreground shadow-[inset_0_-2px_0_hsl(var(--border))] dark:border-white/12 dark:bg-white/4",
             KEY_NAMES[key] && key !== "?" ? "font-sans text-[14px]" : "font-mono text-[12px]"
           )}
         >

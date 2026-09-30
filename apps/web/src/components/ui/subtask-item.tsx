@@ -113,7 +113,7 @@ export function SubtaskItem({
           onKeyDown={handleKeyDown}
           onClick={(e) => e.stopPropagation()}
           className={cn(
-            "flex-1 bg-transparent border-none outline-none focus:ring-0 p-0",
+            "flex-1 bg-transparent border-none outline-hidden focus:ring-0 p-0",
             textSize
           )}
         />

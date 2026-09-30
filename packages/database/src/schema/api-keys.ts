@@ -46,6 +46,8 @@ export const API_KEY_SCOPES = [
   'calendar:read',
   'ideas:read',
   'ideas:write',
+  'integrations:read',
+  'integrations:write',
   'user:read',
   'user:write',
 ] as const;

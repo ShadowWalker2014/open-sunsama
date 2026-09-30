@@ -41,7 +41,8 @@
       "typescript": "^5.9.3",
       "zod": "^4.6.5",
       "@tanstack/react-query": "^5.103.2",
-      "dotenv": "^17.4.2"
+      "dotenv": "^17.4.2",
+      "vitest": "^5.0.1"
     }
   },
   "scripts": {

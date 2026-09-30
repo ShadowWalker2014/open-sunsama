@@ -24,7 +24,7 @@ function CopyUrl() {
           })
           .catch(() => {});
       }}
-      className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md border border-border/70 bg-background px-2 text-[12px] font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md border border-border/70 bg-background px-2 text-[12px] font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
     >
       {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
       {copied ? "Copied" : "Copy"}
@@ -89,7 +89,7 @@ export function AgentPanel({
                   <SmartLink
                     key={link.href}
                     href={link.href}
-                    className="rounded-sm font-medium text-foreground underline decoration-border underline-offset-4 hover:text-primary hover:decoration-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="rounded-sm font-medium text-foreground underline decoration-border underline-offset-4 hover:text-primary hover:decoration-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {link.label}
                   </SmartLink>
@@ -114,7 +114,7 @@ export function AgentPanel({
               </div>
               <div className="overflow-x-auto px-4 py-4 font-mono text-[13px] text-foreground sm:text-[14px]">{MCP_URL}</div>
               <div className="border-t border-border/60 px-4 py-4">
-                <p className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">Then ask</p>
+                <p className="text-[11.5px] font-semibold uppercase tracking-widest text-muted-foreground">Then ask</p>
                 <ul className="mt-3 space-y-2">
                   {prompts.map((prompt) => (
                     <li key={prompt} className="flex gap-2.5 rounded-lg bg-muted/50 px-3 py-2.5 text-[14px] leading-snug">
@@ -126,7 +126,7 @@ export function AgentPanel({
               </div>
               {tools && tools.length > 0 && (
                 <div className="border-t border-border/60 px-4 py-4">
-                  <p className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">Tools it calls</p>
+                  <p className="text-[11.5px] font-semibold uppercase tracking-widest text-muted-foreground">Tools it calls</p>
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {tools.map((tool) => (
                       <code

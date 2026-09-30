@@ -75,7 +75,7 @@ export function ViewSearch({
           if (!value) setOpen(false);
         }}
         placeholder={placeholder}
-        className="w-36 min-w-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground sm:w-48"
+        className="w-36 min-w-0 bg-transparent text-sm outline-hidden placeholder:text-muted-foreground sm:w-48"
       />
       {value && (
         <button

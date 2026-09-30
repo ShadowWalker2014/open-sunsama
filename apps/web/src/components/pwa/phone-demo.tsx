@@ -70,9 +70,9 @@ export function PhoneDemo({ guide, phase, scale = 1, className }: PhoneDemoProps
       {/* Bezel */}
       <div className="absolute inset-0 rounded-[36px] bg-[#111214] shadow-[0_24px_60px_-18px_rgba(0,0,0,0.45),inset_0_0_0_1.5px_rgba(255,255,255,0.08)]" />
       {/* Side buttons */}
-      <div className="absolute -left-[2px] top-[92px] h-[26px] w-[3px] rounded-l bg-[#2a2b2e]" />
-      <div className="absolute -left-[2px] top-[128px] h-[44px] w-[3px] rounded-l bg-[#2a2b2e]" />
-      <div className="absolute -right-[2px] top-[112px] h-[60px] w-[3px] rounded-r bg-[#2a2b2e]" />
+      <div className="absolute left-[-2px] top-[92px] h-[26px] w-[3px] rounded-l bg-[#2a2b2e]" />
+      <div className="absolute left-[-2px] top-[128px] h-[44px] w-[3px] rounded-l bg-[#2a2b2e]" />
+      <div className="absolute right-[-2px] top-[112px] h-[60px] w-[3px] rounded-r bg-[#2a2b2e]" />
 
       {/* Screen */}
       <div
@@ -91,7 +91,7 @@ export function PhoneDemo({ guide, phase, scale = 1, className }: PhoneDemoProps
           {/* Dim behind menus and dialogs */}
           <div
             className={cn(
-              "absolute inset-0 z-[15] bg-black/25 transition-opacity duration-300",
+              "absolute inset-0 z-15 bg-black/25 transition-opacity duration-300",
               phase === 1 || phase === 2 ? "opacity-100" : "opacity-0"
             )}
           />
@@ -116,7 +116,7 @@ export function PhoneDemo({ guide, phase, scale = 1, className }: PhoneDemoProps
                     <div
                       key={item}
                       className={cn(
-                        "flex h-[36px] items-center justify-between border-b border-black/[0.06] px-[10px] text-[9.5px] last:border-0",
+                        "flex h-[36px] items-center justify-between border-b border-black/6 px-[10px] text-[9.5px] last:border-0",
                         isTarget && phase === 1 && "animate-[demo-row-press_2400ms_ease-out]"
                       )}
                     >
@@ -171,7 +171,7 @@ export function PhoneDemo({ guide, phase, scale = 1, className }: PhoneDemoProps
           />
           <span
             key={`dot-${phase}`}
-            className="absolute left-0 top-0 h-[22px] w-[22px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/80 shadow-[0_2px_10px_rgba(0,0,0,0.35)] ring-1 ring-black/10 backdrop-blur animate-[demo-tap_2400ms_ease-in-out]"
+            className="absolute left-0 top-0 h-[22px] w-[22px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/80 shadow-[0_2px_10px_rgba(0,0,0,0.35)] ring-1 ring-black/10 backdrop-blur-sm animate-[demo-tap_2400ms_ease-in-out]"
           />
         </div>
       </div>
@@ -190,12 +190,12 @@ function StatusBar({ dark }: { dark: boolean }) {
     >
       <span>9:41</span>
       <span className="flex items-center gap-[3px]">
-        <span className="flex items-end gap-[1px]">
+        <span className="flex items-end gap-px">
           {[3, 4.5, 6, 7.5].map((h) => (
             <span key={h} className="w-[2px] rounded-[0.5px] bg-current" style={{ height: h }} />
           ))}
         </span>
-        <span className="ml-[2px] h-[7px] w-[14px] rounded-[2.5px] border border-current p-[1px]">
+        <span className="ml-[2px] h-[7px] w-[14px] rounded-[2.5px] border border-current p-px">
           <span className="block h-full w-[70%] rounded-[1px] bg-current" />
         </span>
       </span>
@@ -208,10 +208,10 @@ function AddressBar({ icon, top, pressed }: { icon: React.ReactNode; top?: boole
     <div
       className={cn(
         "absolute inset-x-0 z-10 flex items-center gap-[6px] px-[10px]",
-        top ? "top-[28px] h-[26px]" : "bottom-0 h-[48px] border-t border-black/[0.06] bg-[#f9f9fb]/95 pb-[12px] pt-[6px]"
+        top ? "top-[28px] h-[26px]" : "bottom-0 h-[48px] border-t border-black/6 bg-[#f9f9fb]/95 pb-[12px] pt-[6px]"
       )}
     >
-      <div className="flex h-[26px] flex-1 items-center justify-center rounded-full bg-black/[0.06] text-[8.5px] text-black/70">
+      <div className="flex h-[26px] flex-1 items-center justify-center rounded-full bg-black/6 text-[8.5px] text-black/70">
         <span className="mr-[3px] text-[7px]">🔒</span>opensunsama.com
       </div>
       <div
@@ -329,7 +329,7 @@ function HomeScreen({ show }: { show: boolean }) {
       <div className="absolute inset-x-0 top-[46px] grid grid-cols-4 gap-x-[14px] gap-y-[14px] px-[16px]">
         {Array.from({ length: 11 }, (_, i) => (
           <div key={i} className="flex flex-col items-center gap-[3px]">
-            <div className="h-[32px] w-[32px] rounded-[9px] bg-white/25 ring-1 ring-white/15 backdrop-blur" />
+            <div className="h-[32px] w-[32px] rounded-[9px] bg-white/25 ring-1 ring-white/15 backdrop-blur-sm" />
             <div className="h-[3px] w-[22px] rounded-full bg-white/35" />
           </div>
         ))}
@@ -337,11 +337,11 @@ function HomeScreen({ show }: { show: boolean }) {
           <div className={cn("rounded-[9px] shadow-lg", show && "animate-[demo-icon-pop_700ms_cubic-bezier(0.34,1.56,0.64,1)_300ms_both]")}>
             <AppIcon size={32} />
           </div>
-          <div className="whitespace-nowrap text-[6.5px] font-medium text-white drop-shadow">Open Sunsama</div>
+          <div className="whitespace-nowrap text-[6.5px] font-medium text-white drop-shadow-sm">Open Sunsama</div>
         </div>
       </div>
       {/* Dock */}
-      <div className="absolute inset-x-[10px] bottom-[10px] flex h-[48px] items-center justify-around rounded-[20px] bg-white/25 backdrop-blur">
+      <div className="absolute inset-x-[10px] bottom-[10px] flex h-[48px] items-center justify-around rounded-[20px] bg-white/25 backdrop-blur-sm">
         {Array.from({ length: 4 }, (_, i) => (
           <div key={i} className="h-[32px] w-[32px] rounded-[9px] bg-white/35" />
         ))}

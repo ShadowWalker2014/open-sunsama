@@ -15,7 +15,7 @@ export function StatsStrip({ items, className }: { items: StatItem[]; className?
       <Reveal>
         <ul
           className={cn(
-            "grid gap-px overflow-hidden rounded-2xl border border-border/70 bg-border/70 dark:border-white/[0.08]",
+            "grid gap-px overflow-hidden rounded-2xl border border-border/70 bg-border/70 dark:border-white/8",
             items.length >= 4 ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-1 sm:grid-cols-3"
           )}
         >
@@ -28,7 +28,7 @@ export function StatsStrip({ items, className }: { items: StatItem[]; className?
                 <span className="block text-[30px] font-semibold tabular-nums leading-none tracking-[-0.03em] md:text-[36px]">
                   {/^\d+$/.test(value) ? <CountUp value={value} /> : value}
                 </span>
-                <span className="mt-2 block text-[11.5px] font-medium uppercase tracking-[0.1em] text-muted-foreground">{label}</span>
+                <span className="mt-2 block text-[11.5px] font-medium uppercase tracking-widest text-muted-foreground">{label}</span>
               </>
             );
             return (
@@ -38,7 +38,7 @@ export function StatsStrip({ items, className }: { items: StatItem[]; className?
                     href={GITHUB_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex min-h-[112px] w-full flex-col justify-center px-5 py-6 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:px-7"
+                    className="flex min-h-[112px] w-full flex-col justify-center px-5 py-6 transition-colors hover:bg-muted/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:px-7"
                   >
                     {content}
                   </a>

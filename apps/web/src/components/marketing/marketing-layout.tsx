@@ -21,7 +21,7 @@ export function MarketingLayout({
     <div className="min-h-screen overflow-x-clip bg-background font-sans text-foreground antialiased">
       <SkipLink />
       <SiteHeader />
-      <main id="main" tabIndex={-1} className={cn("relative focus:outline-none", className)}>
+      <main id="main" tabIndex={-1} className={cn("relative focus:outline-hidden", className)}>
         {backdrop && (
           <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[720px] overflow-hidden" aria-hidden>
             <div className="landing-grid absolute inset-0 opacity-70 dark:opacity-40" />

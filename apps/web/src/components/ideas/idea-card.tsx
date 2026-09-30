@@ -335,7 +335,7 @@ export function IdeaCard({
 
         <p
           className={cn(
-            "min-w-0 flex-1 text-sm leading-snug text-foreground break-words line-clamp-3",
+            "min-w-0 flex-1 text-sm leading-snug text-foreground wrap-break-word line-clamp-3",
             isCompleted && "line-through text-muted-foreground"
           )}
         >
@@ -401,7 +401,7 @@ export function IdeaCard({
                 idea.priority === "P2" &&
                   "opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100",
                 "hover:ring-1 hover:ring-primary/30",
-                "focus:outline-none focus:ring-1 focus:ring-primary/50",
+                "focus:outline-hidden focus:ring-1 focus:ring-primary/50",
                 PRIORITY_STYLES[idea.priority]
               )}
             >

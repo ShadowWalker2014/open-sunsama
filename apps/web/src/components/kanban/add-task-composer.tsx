@@ -62,7 +62,7 @@ function dateLabel(date: string | null): string {
 }
 
 const chip =
-  "flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2 text-[13px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-ring data-[state=open]:bg-accent data-[state=open]:text-foreground";
+  "flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2 text-[13px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus:outline-hidden focus-visible:ring-1 focus-visible:ring-ring data-[state=open]:bg-accent data-[state=open]:text-foreground";
 
 /**
  * Sunsama-style quick add: one line for the title and a row of quiet chips
@@ -249,7 +249,7 @@ export function AddTaskComposer({
         placeholder={placeholder}
         aria-label="Task title"
         maxLength={500}
-        className="w-full bg-transparent px-4 pb-2 pt-3.5 text-[15px] outline-none placeholder:text-muted-foreground/60"
+        className="w-full bg-transparent px-4 pb-2 pt-3.5 text-[15px] outline-hidden placeholder:text-muted-foreground/60"
       />
       {lines.length > 0 && (
         <ul className="px-4 pb-1.5" aria-label="Subtasks">
@@ -280,7 +280,7 @@ export function AddTaskComposer({
                 placeholder="Subtask"
                 aria-label={`Subtask ${index + 1}`}
                 maxLength={500}
-                className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
+                className="min-w-0 flex-1 bg-transparent text-sm outline-hidden placeholder:text-muted-foreground/50"
               />
             </li>
           ))}

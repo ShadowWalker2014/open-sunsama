@@ -115,7 +115,7 @@ export function MonthView({
   return (
     <div className="flex h-full w-full min-w-0 flex-1 flex-col">
       {/* Weekday headers */}
-      <div className="grid grid-cols-7 border-b bg-background flex-shrink-0">
+      <div className="grid grid-cols-7 border-b bg-background shrink-0">
         {weekdayLabels.map((label) => (
           <div
             key={label}
@@ -208,7 +208,7 @@ export function MonthView({
                 role="button"
                 tabIndex={0}
                 className={cn(
-                  "border-r border-b last:border-r-0 flex flex-col items-stretch text-left p-1.5 hover:bg-accent/30 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-inset",
+                  "border-r border-b last:border-r-0 flex flex-col items-stretch text-left p-1.5 hover:bg-accent/30 transition-colors cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-inset",
                   !inCurrentMonth && "bg-muted/20",
                   weekend && inCurrentMonth && "bg-muted/10"
                 )}

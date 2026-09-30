@@ -106,8 +106,13 @@ const persistOptions = persister
       persister,
       maxAge: 24 * 60 * 60 * 1000, // 24h
       // Bump this when the cache shape changes to invalidate stored data.
-      // v2: drops the kanban range prefetch that v1 stored under
-      // ["tasks", "list", "range", …], where it broke task mutations.
+      // v2: the kanban range prefetch moved from `["tasks","list","range",…]`
+      // to `["tasks","range",…]`, and its `subtasksByTaskId` went from a Map
+      // (which rehydrated as `{}`) to a plain record. A cache persisted by v1
+      // still holds that entry under the old key, where every
+      // `getQueriesData(taskKeys.lists())` consumer treats it as a `Task[]`
+      // and throws "not iterable". Changing the code cannot evict what is
+      // already in localStorage — only this buster can.
       buster: "v2",
       dehydrateOptions: {
         shouldDehydrateQuery: ({

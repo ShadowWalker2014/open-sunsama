@@ -58,7 +58,7 @@ export function FaqSection({
                     {" "}
                     <SmartLink
                       href={item.link.href}
-                      className="whitespace-nowrap rounded-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="whitespace-nowrap rounded-sm font-medium text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {item.link.label} →
                     </SmartLink>

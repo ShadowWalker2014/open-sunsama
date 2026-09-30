@@ -7,6 +7,7 @@ import {
   CalendarDays,
   Columns3,
   Square,
+  Download,
 } from "lucide-react";
 import { format, isToday } from "date-fns";
 import type { BoardMode } from "./kanban-board";
@@ -24,6 +25,7 @@ import { WithShortcut, KeyCaps } from "@/components/ui/with-shortcut";
 import { MonthGrid } from "@/components/ui/month-grid";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SHORTCUTS, formatShortcut } from "@/hooks/useKeyboardShortcuts";
+import { useIntegrationProviders } from "@/hooks/useIntegrations";
 
 // Extended sort option that includes direction
 export type SortOption = "position" | "priority-desc" | "priority-asc" | "createdAt-desc" | "createdAt-asc";
@@ -67,6 +69,7 @@ interface KanbanBoardToolbarProps {
   /** Board (several days) or Today (one day). */
   mode: BoardMode;
   onModeChange: (mode: BoardMode) => void;
+  onImportTask: () => void;
   sortBy: SortOption;
   onSortChange: (sort: SortOption) => void;
   /** Substring filter applied to task titles/notes across the day columns. */
@@ -105,11 +108,13 @@ export function KanbanBoardToolbar({
   firstVisibleDate,
   mode,
   onModeChange,
+  onImportTask,
   sortBy,
   onSortChange,
   searchQuery,
   onSearchQueryChange,
 }: KanbanBoardToolbarProps) {
+  const { data: providers = [] } = useIntegrationProviders();
   const [goToOpen, setGoToOpen] = React.useState(false);
   const go = (action: () => void) => {
     action();
@@ -214,7 +219,7 @@ export function KanbanBoardToolbar({
                 className={cn(
                   "flex h-6 items-center gap-1.5 rounded px-2 text-xs transition-colors",
                   mode === value
-                    ? "bg-background text-foreground shadow-sm"
+                    ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -231,6 +236,17 @@ export function KanbanBoardToolbar({
           onChange={onSearchQueryChange}
           placeholder="Search tasks…"
         />
+
+        {providers.length > 0 && <Button
+          onClick={onImportTask}
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1.5 px-2.5"
+          title="Import a task by pasting its link"
+        >
+          <Download className="h-4 w-4" />
+          <span className="hidden sm:inline">Import</span>
+        </Button>}
 
         {/* Sort Dropdown */}
         <DropdownMenu>

@@ -128,6 +128,8 @@ export function useCreateTaskSeries() {
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: taskSeriesKeys.lists() });
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      // The kanban range prefetch lives outside lists(); refresh it too.
+      queryClient.invalidateQueries({ queryKey: taskKeys.rangeAll() });
 
       toast({
         title: "Recurring task created",
@@ -199,6 +201,8 @@ export function useStopTaskSeries() {
       queryClient.invalidateQueries({ queryKey: taskSeriesKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: taskSeriesKeys.lists() });
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      // The kanban range prefetch lives outside lists(); refresh it too.
+      queryClient.invalidateQueries({ queryKey: taskKeys.rangeAll() });
 
       toast({
         title: "Stopped repeating",
@@ -233,6 +237,8 @@ export function useDeleteTaskSeriesInstances() {
       queryClient.invalidateQueries({ queryKey: taskSeriesKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: taskSeriesKeys.lists() });
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      // The kanban range prefetch lives outside lists(); refresh it too.
+      queryClient.invalidateQueries({ queryKey: taskKeys.rangeAll() });
 
       toast({
         title: "Stopped and deleted",
@@ -266,6 +272,8 @@ export function useSyncTaskSeriesInstances() {
     onSuccess: (data, id) => {
       queryClient.invalidateQueries({ queryKey: taskSeriesKeys.instances(id) });
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
+      // The kanban range prefetch lives outside lists(); refresh it too.
+      queryClient.invalidateQueries({ queryKey: taskKeys.rangeAll() });
 
       toast({
         title: "Instances updated",

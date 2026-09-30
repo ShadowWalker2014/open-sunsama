@@ -27,7 +27,7 @@ export function BlogArticleMeta({ post, canonicalUrl }: BlogArticleMetaProps) {
         <Link
           to="/blog"
           search={{ tag: topic.id, page: undefined, q: undefined }}
-          className="inline-block rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="inline-block rounded-full focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
         >
           <TopicPill
             label={topic.label}
@@ -89,7 +89,7 @@ export function BlogArticleMeta({ post, canonicalUrl }: BlogArticleMetaProps) {
             className="pointer-events-none absolute -inset-x-6 -bottom-6 top-6 -z-10 rounded-[36px] bg-[radial-gradient(60%_60%_at_50%_50%,hsl(var(--primary)/0.22),transparent_72%)] blur-2xl"
           />
           {/* Covers come in several aspect ratios; a fixed 2:1 box stops the layout shifting as they load */}
-          <div className="aspect-[2/1] overflow-hidden rounded-2xl border border-border/70 bg-muted/40 shadow-[0_1px_0_0_hsl(var(--foreground)/0.04),0_24px_80px_-24px_hsl(var(--shadow-color)/0.35),0_12px_32px_-12px_rgb(0_0_0/0.18)] dark:border-white/10">
+          <div className="aspect-2/1 overflow-hidden rounded-2xl border border-border/70 bg-muted/40 shadow-[0_1px_0_0_hsl(var(--foreground)/0.04),0_24px_80px_-24px_hsl(var(--shadow-color)/0.35),0_12px_32px_-12px_rgb(0_0_0/0.18)] dark:border-white/10">
             <BlogCover src={post.image} alt={post.title} priority />
           </div>
         </div>

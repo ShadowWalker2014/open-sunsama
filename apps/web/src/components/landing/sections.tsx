@@ -177,7 +177,7 @@ export function OpenSourceSection() {
             </Reveal>
 
             <Reveal delay={150} y={24} className="min-w-0">
-              <div className="overflow-hidden rounded-xl border border-white/10 bg-black/40 shadow-2xl backdrop-blur">
+              <div className="overflow-hidden rounded-xl border border-white/10 bg-black/40 shadow-2xl backdrop-blur-sm">
                 <div className="flex items-center gap-1 border-b border-white/10 px-2 py-1.5">
                   {SNIPPETS.map((s) => (
                     <button

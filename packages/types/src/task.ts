@@ -3,6 +3,8 @@
  * @module @open-sunsama/types/task
  */
 
+import type { TaskExternalLink } from "./integration.js";
+
 /**
  * Task priority levels.
  * P0 = Critical/Urgent, P1 = High, P2 = Medium (default), P3 = Low
@@ -93,6 +95,13 @@ export interface Task {
    * Resets to 0 when the timer is stopped and actualMins is saved.
    */
   timerAccumulatedSeconds: number;
+
+  /**
+    * External objects this task is linked to — the external task it was
+   * imported from, a pull request attached by hand, and so on. Only
+   * present on endpoints that ask for links.
+   */
+  externalLinks?: TaskExternalLink[];
 
   /** Timestamp when the task was created */
   createdAt: Date;

@@ -35,7 +35,7 @@ export function MediaRow({ row, flip = false }: { row: MediaRowData; flip?: bool
         {row.link && (
           <SmartLink
             href={row.link.href}
-            className="mt-5 inline-flex items-center gap-1.5 rounded-sm text-[14px] font-medium text-foreground/80 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="mt-5 inline-flex items-center gap-1.5 rounded-sm text-[14px] font-medium text-foreground/80 transition-colors hover:text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           >
             {row.link.label}
             <ArrowRight className="h-3.5 w-3.5" />

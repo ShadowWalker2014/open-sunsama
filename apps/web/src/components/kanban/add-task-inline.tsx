@@ -51,7 +51,7 @@ export function AddTaskInline({
         setOpen(true);
       }}
       className={cn(
-        "group/add flex w-full items-center gap-2 text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        "group/add flex w-full items-center gap-2 text-muted-foreground transition-colors hover:text-foreground focus:outline-hidden focus-visible:ring-1 focus-visible:ring-ring",
         isBar
           ? "h-full min-w-0 flex-1 rounded-md px-3 text-sm"
           : compact
