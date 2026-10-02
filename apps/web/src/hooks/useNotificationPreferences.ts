@@ -5,6 +5,11 @@ import type {
 } from "@open-sunsama/types";
 import { getApi } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
+import {
+  getDesktopNotificationPermission,
+  isDesktop,
+  requestDesktopNotificationPermission,
+} from "@/lib/desktop";
 
 // API base URL for direct fetch calls (push subscription doesn't go through api-client)
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
@@ -14,7 +19,8 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
  */
 export const notificationPreferencesKeys = {
   all: ["notificationPreferences"] as const,
-  preferences: () => [...notificationPreferencesKeys.all, "preferences"] as const,
+  preferences: () =>
+    [...notificationPreferencesKeys.all, "preferences"] as const,
 };
 
 /**
@@ -39,7 +45,9 @@ export function useUpdateNotificationPreferences() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: UpdateNotificationPreferencesInput): Promise<NotificationPreferences> => {
+    mutationFn: async (
+      data: UpdateNotificationPreferencesInput
+    ): Promise<NotificationPreferences> => {
       const api = getApi();
       return await api.notifications.updatePreferences(data);
     },
@@ -61,9 +69,16 @@ export function useUpdateNotificationPreferences() {
 }
 
 /**
- * Request browser notification permission
+ * Request notification permission using the platform's native API on desktop,
+ * while preserving browser permission behavior on the web.
  */
 export async function requestNotificationPermission(): Promise<NotificationPermission> {
+  if (isDesktop()) {
+    return (await requestDesktopNotificationPermission())
+      ? "granted"
+      : "denied";
+  }
+
   if (!("Notification" in window)) {
     toast({
       variant: "destructive",
@@ -105,6 +120,11 @@ export function getNotificationPermissionStatus(): {
     return { supported: false, permission: null };
   }
   return { supported: true, permission: Notification.permission };
+}
+
+export async function getPlatformNotificationPermission(): Promise<NotificationPermission> {
+  if (isDesktop()) return getDesktopNotificationPermission();
+  return getNotificationPermissionStatus().permission ?? "denied";
 }
 
 // ============================================================================
@@ -150,7 +170,7 @@ async function getVapidPublicKey(): Promise<string | null> {
   try {
     const response = await fetch(`${API_BASE_URL}/push/vapid-public-key`);
     const data = await response.json();
-    
+
     if (data.success && data.data?.publicKey) {
       return data.data.publicKey;
     }
@@ -166,14 +186,12 @@ async function getVapidPublicKey(): Promise<string | null> {
  */
 function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding)
-    .replace(/-/g, "+")
-    .replace(/_/g, "/");
-  
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+
   const rawData = window.atob(base64);
   const buffer = new ArrayBuffer(rawData.length);
   const outputArray = new Uint8Array(buffer);
-  
+
   for (let i = 0; i < rawData.length; ++i) {
     outputArray[i] = rawData.charCodeAt(i);
   }
@@ -187,7 +205,7 @@ async function sendSubscriptionToServer(
   subscription: PushSubscription
 ): Promise<boolean> {
   const token = localStorage.getItem("open_sunsama_token");
-  
+
   if (!token) {
     console.error("[Push] No auth token available");
     return false;
@@ -196,7 +214,7 @@ async function sendSubscriptionToServer(
   try {
     const p256dh = subscription.getKey("p256dh");
     const auth = subscription.getKey("auth");
-    
+
     if (!p256dh || !auth) {
       console.error("[Push] Missing subscription keys");
       return false;
@@ -206,7 +224,7 @@ async function sendSubscriptionToServer(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         endpoint: subscription.endpoint,
@@ -229,9 +247,11 @@ async function sendSubscriptionToServer(
 /**
  * Remove push subscription from the backend
  */
-async function removeSubscriptionFromServer(endpoint: string): Promise<boolean> {
+async function removeSubscriptionFromServer(
+  endpoint: string
+): Promise<boolean> {
   const token = localStorage.getItem("open_sunsama_token");
-  
+
   if (!token) {
     return false;
   }
@@ -241,7 +261,7 @@ async function removeSubscriptionFromServer(endpoint: string): Promise<boolean> 
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ endpoint }),
     });
@@ -264,7 +284,10 @@ export async function subscribeToPush(): Promise<{
 }> {
   // Check browser support
   if (!isPushSupported()) {
-    return { success: false, error: "Push notifications not supported in this browser" };
+    return {
+      success: false,
+      error: "Push notifications not supported in this browser",
+    };
   }
 
   // Request permission
@@ -282,13 +305,16 @@ export async function subscribeToPush(): Promise<{
   // Get VAPID public key
   const vapidPublicKey = await getVapidPublicKey();
   if (!vapidPublicKey) {
-    return { success: false, error: "Push notifications not configured on server" };
+    return {
+      success: false,
+      error: "Push notifications not configured on server",
+    };
   }
 
   try {
     // Check for existing subscription
     let subscription = await registration.pushManager.getSubscription();
-    
+
     if (!subscription) {
       // Create new subscription
       subscription = await registration.pushManager.subscribe({
@@ -327,11 +353,11 @@ export async function unsubscribeFromPush(): Promise<{
   try {
     const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.getSubscription();
-    
+
     if (subscription) {
       // Remove from server first
       await removeSubscriptionFromServer(subscription.endpoint);
-      
+
       // Then unsubscribe locally
       await subscription.unsubscribe();
     }
@@ -375,23 +401,31 @@ export function useUpdatePushSubscription() {
       if (enabled) {
         const result = await subscribeToPush();
         if (!result.success) {
-          throw new Error(result.error || "Failed to enable push notifications");
+          throw new Error(
+            result.error || "Failed to enable push notifications"
+          );
         }
       } else {
         const result = await unsubscribeFromPush();
         if (!result.success) {
-          throw new Error(result.error || "Failed to disable push notifications");
+          throw new Error(
+            result.error || "Failed to disable push notifications"
+          );
         }
       }
-      
+
       // Update preferences on server
-      await updatePreferences.mutateAsync({ pushNotificationsEnabled: enabled });
-      
+      await updatePreferences.mutateAsync({
+        pushNotificationsEnabled: enabled,
+      });
+
       return enabled;
     },
     onSuccess: (enabled) => {
       toast({
-        title: enabled ? "Push notifications enabled" : "Push notifications disabled",
+        title: enabled
+          ? "Push notifications enabled"
+          : "Push notifications disabled",
         description: enabled
           ? "You will receive push notifications for task reminders."
           : "Push notifications have been turned off.",

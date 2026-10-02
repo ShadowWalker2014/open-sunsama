@@ -54,6 +54,8 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             commands::show_notification,
+            commands::request_notification_permission,
+            commands::get_notification_permission,
             commands::get_auto_launch,
             commands::set_auto_launch,
             commands::get_settings,
