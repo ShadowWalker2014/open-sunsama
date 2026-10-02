@@ -46,6 +46,7 @@ import {
 import { initWebSocket, initRedisSubscriber } from "./lib/websocket/index.js";
 import { closeRedisConnections } from "./lib/redis.js";
 import { migrateDatabase } from "./lib/migrations.js";
+import { APP_VERSION } from "./version.js";
 
 // Create Hono app
 const app = new Hono();
@@ -105,7 +106,7 @@ app.get("/health", async (c) => {
   const healthData: Record<string, unknown> = {
     status: isHealthy ? "ok" : "degraded",
     timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version || "0.0.0",
+    version: APP_VERSION,
     uptimeSeconds: Math.floor(uptimeMs / 1000),
     inGracePeriod,
   };
@@ -150,7 +151,7 @@ app.get("/health", async (c) => {
 app.get("/", (c) => {
   return c.json({
     name: "Open Sunsama API",
-    version: process.env.npm_package_version || "0.0.0",
+    version: APP_VERSION,
     docs: "/docs",
     health: "/health",
     endpoints: {
