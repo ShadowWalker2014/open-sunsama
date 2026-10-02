@@ -16,6 +16,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useSearch, useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import { isDesktop } from "@/lib/desktop";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { calendarKeys } from "@/hooks/useCalendars";
 import { trackGoal } from "@/lib/analytics";
@@ -66,6 +67,10 @@ const TABS: { id: SettingsTab; label: string; icon: React.ElementType }[] = [
   { id: "mcp", label: "MCP", icon: Terminal },
 ];
 
+function getVisibleTabs(): typeof TABS {
+  return isDesktop() ? TABS.filter((tab) => tab.id !== "desktop") : TABS;
+}
+
 function SettingsContent({ tab }: { tab: SettingsTab }) {
   switch (tab) {
     case "profile":
@@ -95,6 +100,7 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
 
 export default function SettingsPage() {
   const isMobile = useIsMobile();
+  const visibleTabs = React.useMemo(getVisibleTabs, []);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -110,19 +116,19 @@ export default function SettingsPage() {
   const initialTab = React.useMemo(() => {
     const tabParam = searchParams.tab as SettingsTab | undefined;
     const validTab =
-      tabParam && TABS.some((t) => t.id === tabParam) ? tabParam : null;
+      tabParam && visibleTabs.some((t) => t.id === tabParam) ? tabParam : null;
     return validTab || (isCalendarRedirect ? "calendars" : "profile");
-  }, [searchParams.tab, isCalendarRedirect]);
+  }, [searchParams.tab, isCalendarRedirect, visibleTabs]);
 
   const [activeTab, setActiveTab] = React.useState<SettingsTab>(initialTab);
   // Open a tab's sheet directly when deep-linked (e.g. mobile "More → Profile")
   // — for ANY valid tab, profile included. Bare /app/settings shows the list.
   const explicitTab =
-    searchParams.tab && TABS.some((t) => t.id === searchParams.tab)
+    searchParams.tab && visibleTabs.some((t) => t.id === searchParams.tab)
       ? (searchParams.tab as SettingsTab)
       : null;
   const [openSheet, setOpenSheet] = React.useState<SettingsTab | null>(
-    isMobile ? explicitTab ?? (isCalendarRedirect ? "calendars" : null) : null
+    isMobile ? (explicitTab ?? (isCalendarRedirect ? "calendars" : null)) : null
   );
 
   // Did we land here via a deep link (mobile "More → …")? If so, the settings
@@ -158,7 +164,9 @@ export default function SettingsPage() {
     // Handle OAuth redirect - set tab to calendars and force refetch
     if (isCalendarRedirect && !hasHandledRedirect.current) {
       hasHandledRedirect.current = true;
-      trackGoal("connect_calendar", { provider: searchParams.provider ?? "unknown" });
+      trackGoal("connect_calendar", {
+        provider: searchParams.provider ?? "unknown",
+      });
 
       // Force set the active tab to calendars
       setActiveTab("calendars");
@@ -186,7 +194,7 @@ export default function SettingsPage() {
     return (
       <div className="h-full overflow-y-auto">
         <div className="divide-y divide-border/40">
-          {TABS.map((tab) => {
+          {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
@@ -212,7 +220,7 @@ export default function SettingsPage() {
           >
             <SheetHeader className="mb-4">
               <SheetTitle>
-                {TABS.find((t) => t.id === openSheet)?.label}
+                {visibleTabs.find((t) => t.id === openSheet)?.label}
               </SheetTitle>
             </SheetHeader>
             {openSheet && <SettingsContent tab={openSheet} />}
@@ -228,7 +236,7 @@ export default function SettingsPage() {
       {/* Left Navigation - Linear style */}
       <nav className="w-48 shrink-0 border-r border-border/40 bg-background/50 p-2">
         <div className="space-y-0.5">
-          {TABS.map((tab) => {
+          {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (

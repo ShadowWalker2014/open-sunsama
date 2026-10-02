@@ -3,7 +3,7 @@ mod menu;
 mod recovery;
 mod tray;
 
-use tauri::{Emitter, Manager};
+use tauri::{Emitter, Manager, WindowEvent};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
@@ -46,8 +46,16 @@ pub fn run() {
 
             Ok(())
         })
+        .on_window_event(|window, event| {
+            if let WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                let _ = window.hide();
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             commands::show_notification,
+            commands::request_notification_permission,
+            commands::get_notification_permission,
             commands::get_auto_launch,
             commands::set_auto_launch,
             commands::get_settings,
@@ -60,11 +68,19 @@ pub fn run() {
             // An updater restart launches the executable directly. macOS can
             // leave that process behind other apps unless we activate it once
             // the event loop and main window are ready.
-            tauri::RunEvent::Ready => show_main_window(app),
+            tauri::RunEvent::Ready => {
+                if !launched_minimized() {
+                    show_main_window(app);
+                }
+            }
             #[cfg(target_os = "macos")]
             tauri::RunEvent::Reopen { .. } => show_main_window(app),
             _ => {}
         });
+}
+
+fn launched_minimized() -> bool {
+    std::env::args().any(|argument| argument == "--minimized")
 }
 
 fn show_main_window(app: &tauri::AppHandle) {
