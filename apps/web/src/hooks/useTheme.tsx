@@ -137,7 +137,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [preferences, setPreferences] = React.useState<UserPreferences>(getStoredPreferences);
   const [resolvedTheme, setResolvedTheme] = React.useState<"light" | "dark">(getInitialResolvedTheme);
   const [isLoading] = React.useState(false);
-  const [hasLoadedFromUser, setHasLoadedFromUser] = React.useState(false);
   
   // Get user and save mutation for DB sync
   const { user } = useAuth();
@@ -156,24 +155,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     applyTheme(stored.themeMode, stored.colorTheme, stored.fontFamily);
   }, []);
 
-  // Load preferences from user when they log in
+  // Reconcile local bootstrap state with the canonical server user. This also
+  // handles the cached user changing after /auth/me finishes loading.
   React.useEffect(() => {
-    if (user?.preferences && !hasLoadedFromUser) {
+    if (user?.preferences) {
       const prefs = user.preferences as UserPreferences;
       setPreferences(prefs);
       savePreferences(prefs); // Cache to localStorage
       const resolved = applyTheme(prefs.themeMode, prefs.colorTheme, prefs.fontFamily as FontFamily);
       setResolvedTheme(resolved);
-      setHasLoadedFromUser(true);
     }
-  }, [user?.preferences, hasLoadedFromUser]);
-
-  // Reset hasLoadedFromUser when user logs out
-  React.useEffect(() => {
-    if (!user) {
-      setHasLoadedFromUser(false);
-    }
-  }, [user]);
+  }, [user?.preferences]);
 
   // Subscribe to realtime preference updates from WebSocket
   // This syncs theme/settings across all connected devices/tabs
