@@ -60,6 +60,9 @@ export interface UserPreferences {
    * across accounts, devices, and logins.
    */
   addTaskPosition?: "top" | "bottom";
+
+  /** Whether the timezone was explicitly selected by the user */
+  timezoneManuallySet?: boolean;
 }
 
 /**
@@ -144,6 +147,9 @@ export interface UpdateUserInput {
 
   /** Updated timezone preference */
   timezone?: string;
+
+  /** Identifies an automatic device sync versus an explicit profile choice */
+  timezoneManuallySet?: boolean;
 
   /** Update user preferences */
   preferences?: UserPreferences;
