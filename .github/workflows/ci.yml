@@ -43,6 +43,9 @@ jobs:
       - name: Install (lockfile must match package.json)
         run: bun install --frozen-lockfile
 
+      - name: Check package versions
+        run: bun run version:check
+
       - name: Typecheck
         run: bun run typecheck
 
