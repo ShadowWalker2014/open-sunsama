@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { Loader2, Camera } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUploadAvatar, validateAvatarFile } from "@/hooks/useUploadAvatar";
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui";
 import { toast } from "@/hooks/use-toast";
 import { cn, getAvatarUrl } from "@/lib/utils";
+import { TimezoneSelector } from "./timezone-selector";
 
 interface ProfileForm {
   name: string;
@@ -37,8 +38,9 @@ export function ProfileSettings() {
 
   const {
     register,
+    control,
     handleSubmit,
-    formState: { errors, isDirty },
+    formState: { errors, isDirty, dirtyFields },
   } = useForm<ProfileForm>({
     defaultValues: {
       name: user?.name ?? "",
@@ -96,9 +98,10 @@ export function ProfileSettings() {
   const onSubmit = async (data: ProfileForm) => {
     setIsLoading(true);
     try {
-      await updateUser({
-        name: data.name,
-        timezone: data.timezone,
+        await updateUser({
+          name: data.name,
+          timezone: data.timezone,
+          timezoneManuallySet: dirtyFields.timezone === true,
       });
       toast({
         title: "Profile updated",
@@ -224,20 +227,18 @@ export function ProfileSettings() {
 
             <div className="grid gap-2">
               <Label htmlFor="timezone">Timezone</Label>
-              <select
-                id="timezone"
-                {...register("timezone")}
-                disabled={isLoading}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="America/New_York">Eastern Time (ET)</option>
-                <option value="America/Chicago">Central Time (CT)</option>
-                <option value="America/Denver">Mountain Time (MT)</option>
-                <option value="America/Los_Angeles">Pacific Time (PT)</option>
-                <option value="Europe/London">London (GMT)</option>
-                <option value="Europe/Paris">Paris (CET)</option>
-                <option value="Asia/Tokyo">Tokyo (JST)</option>
-              </select>
+              <Controller
+                name="timezone"
+                control={control}
+                render={({ field }) => (
+                  <TimezoneSelector
+                    id="timezone"
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isLoading}
+                  />
+                )}
+              />
             </div>
           </div>
 
