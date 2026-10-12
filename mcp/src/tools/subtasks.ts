@@ -3,7 +3,7 @@
  * Provides tools for listing, creating, updating, toggling, and deleting subtasks
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import type { ApiClient, Subtask } from "../lib/api-client.js";
 import { defineTool } from "../lib/define-tool.js";

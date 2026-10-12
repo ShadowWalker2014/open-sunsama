@@ -1,0 +1,35 @@
+name: Issue triage
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  label-area:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add an area label from the form answer
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const areas = {
+              'Web app (opensunsama.com)': 'area: web',
+              'Desktop app': 'area: desktop',
+              'Mobile app': 'area: mobile',
+              'Calendar sync (Google, Outlook, iCloud)': 'area: calendar',
+              'AI connector / MCP': 'area: mcp',
+              'API': 'area: api',
+              'Self-hosting': 'area: self-hosting',
+            };
+            const body = context.payload.issue.body || '';
+            const match = body.match(/###\s+(?:Where did it happen\?|Which part is it about\?)\s+([^\n]+)/);
+            const label = match && areas[match[1].trim()];
+            if (!label) return;
+            await github.rest.issues.addLabels({
+              ...context.repo,
+              issue_number: context.issue.number,
+              labels: [label],
+            });

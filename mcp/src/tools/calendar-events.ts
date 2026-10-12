@@ -6,7 +6,7 @@
  * around. Read-only; attendees and descriptions are never returned.
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import type { ApiClient, ApiResponse, CalendarEvent, CalendarEventsMeta } from "../lib/api-client.js";
 import { defineTool } from "../lib/define-tool.js";

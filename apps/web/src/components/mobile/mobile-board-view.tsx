@@ -83,8 +83,6 @@ export function MobileBoardView({
           onTouchStart={settle.onTouchStart}
           onTouchEnd={settle.onTouchEnd}
           className="flex min-h-0 flex-1 snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain scrollbar-none [&::-webkit-scrollbar]:hidden"
-          // Clear the bottom tab bar, including the iPhone home-indicator area.
-          style={{ paddingBottom: "calc(72px + env(safe-area-inset-bottom, 0px))" }}
         >
           {[-1, 0, 1].map((offset) => {
             const date = addDays(selectedDate, offset);

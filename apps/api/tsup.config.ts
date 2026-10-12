@@ -13,5 +13,7 @@ export default defineConfig({
     '@open-sunsama/types',
     '@open-sunsama/utils',
     '@open-sunsama/mcp',
+    // Bundle the MCP SDK's Zod schemas with the standalone API build.
+    'zod',
   ],
 });

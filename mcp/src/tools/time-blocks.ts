@@ -5,7 +5,7 @@
  * They can optionally be linked to tasks to track what you're working on.
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import type { ApiClient, TimeBlock } from "../lib/api-client.js";
 import { defineTool } from "../lib/define-tool.js";

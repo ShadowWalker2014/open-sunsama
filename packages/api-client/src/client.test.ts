@@ -8,6 +8,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { createServer, type Server } from "node:http";
 import { createOpenSunsamaClient } from "./client.js";
+import { createAuthApi } from "./auth.js";
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -86,6 +87,45 @@ describe("createOpenSunsamaClient — 401 auto-refresh", () => {
     });
 
     await expect(client.post("things", {})).rejects.toBeDefined();
+    expect(customFetch).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("createAuthApi — profile updates", () => {
+  it("sends preference updates through the configured fetch transport", async () => {
+    const customFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const request = new Request(input, init);
+      expect(request.method).toBe("PATCH");
+      expect(request.url).toBe("https://api.test/auth/me");
+      expect(request.headers.get("Authorization")).toBe("Bearer token");
+      expect(await request.json()).toEqual({
+        preferences: {
+          themeMode: "dark",
+          colorTheme: "default",
+          fontFamily: "geist",
+        },
+      });
+      return jsonResponse(200, {
+        success: true,
+        data: { id: "user-1", preferences: { themeMode: "dark" } },
+      });
+    }) as unknown as typeof fetch;
+
+    const client = createOpenSunsamaClient({
+      baseUrl: "https://api.test",
+      token: "token",
+      customFetch,
+    });
+
+    const user = await createAuthApi(client).updateMe({
+      preferences: {
+        themeMode: "dark",
+        colorTheme: "default",
+        fontFamily: "geist",
+      },
+    });
+
+    expect(user.preferences).toEqual({ themeMode: "dark" });
     expect(customFetch).toHaveBeenCalledTimes(1);
   });
 });

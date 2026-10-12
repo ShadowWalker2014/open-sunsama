@@ -1,0 +1,48 @@
+name: Feature request
+description: Tell us what you are trying to do and cannot
+labels: [enhancement, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please search [existing requests](https://github.com/ShadowWalker2014/open-sunsama/issues?q=label%3Aenhancement) first. If one exists, add a 👍 and a comment with your use case instead of opening a new issue.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: Describe your day or workflow, not the solution.
+      placeholder: "Every Monday I plan the whole week, but I can only time-block one day at a time."
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: What would you like to happen?
+      placeholder: "Let me copy a day's time blocks onto the next day."
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What do you do today instead?
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part is it about?
+      options:
+        - Web app (opensunsama.com)
+        - Desktop app
+        - Mobile app
+        - Calendar sync (Google, Outlook, iCloud)
+        - AI connector / MCP
+        - API
+        - Self-hosting
+        - Not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: contribute
+    attributes:
+      label: Would you like to build it?
+      options:
+        - "No, I am just suggesting it"
+        - "Yes, but I would need guidance"
+        - "Yes, I would like to build it"

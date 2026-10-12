@@ -23,8 +23,8 @@ This project and everyone participating in it is governed by our [Code of Conduc
 
 There are many ways to contribute:
 
-- **Bug Reports**: Found a bug? Open an issue with detailed reproduction steps
-- **Feature Requests**: Have an idea? Start a discussion in GitHub Discussions
+- **Bug Reports**: Found a bug? [Open a bug report](https://github.com/ShadowWalker2014/open-sunsama/issues/new?template=bug.yml) with reproduction steps
+- **Feature Requests**: Have an idea? [Open a feature request](https://github.com/ShadowWalker2014/open-sunsama/issues/new?template=feature.yml). Issues are our single place for feedback; Discussions are for questions
 - **Code Contributions**: Fix bugs, add features, improve performance
 - **Documentation**: Improve README, add tutorials, fix typos
 - **Testing**: Write tests, improve coverage, report edge cases

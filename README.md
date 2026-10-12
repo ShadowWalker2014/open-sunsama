@@ -382,7 +382,7 @@ open-sunsama/
 - [ ] Analytics dashboard
 - [ ] AI auto-scheduling
 
-Have an idea? [Start a discussion](https://github.com/ShadowWalker2014/open-sunsama/discussions/new?category=ideas).
+Have an idea? [Open a feature request](https://github.com/ShadowWalker2014/open-sunsama/issues/new?template=feature.yml). Found a bug? [Report it](https://github.com/ShadowWalker2014/open-sunsama/issues/new?template=bug.yml).
 
 <br />
 
@@ -428,7 +428,7 @@ Yes. Use the one-click buttons above for Cursor and VS Code, or run <code>claude
 
 ## 🤝 Contributing
 
-Contributions are welcome! [Open an issue](https://github.com/ShadowWalker2014/open-sunsama/issues), [start a discussion](https://github.com/ShadowWalker2014/open-sunsama/discussions), or send a PR. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions are welcome! [Open an issue](https://github.com/ShadowWalker2014/open-sunsama/issues/new/choose), [ask in Discussions](https://github.com/ShadowWalker2014/open-sunsama/discussions), or send a PR. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```bash
 git checkout -b feature/amazing-feature
@@ -447,6 +447,14 @@ Open Sunsama uses a custom **non-commercial license**. It covers personal, educa
 **If Open Sunsama helps you plan better days, please give it a ⭐. It helps others find it.**
 
 [![Star on GitHub](https://img.shields.io/github/stars/ShadowWalker2014/open-sunsama?style=for-the-badge&logo=github&color=yellow)](https://github.com/ShadowWalker2014/open-sunsama/stargazers)
+
+<a href="https://star-history.com/#ShadowWalker2014/open-sunsama&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ShadowWalker2014/open-sunsama&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ShadowWalker2014/open-sunsama&type=Date" />
+    <img alt="Star history chart for Open Sunsama" src="https://api.star-history.com/svg?repos=ShadowWalker2014/open-sunsama&type=Date" width="600" />
+  </picture>
+</a>
 
 <sub>Made by <a href="https://circo.so">Circo</a> · <a href="https://opensunsama.com">opensunsama.com</a></sub>
 

@@ -22,7 +22,7 @@ const PENDING_RESET_FLAG = "open_sunsama_pending_cache_reset";
 const RECOVERY_WINDOW_MS = 60_000;
 const CACHE_KEY_PREFIX = "open_sunsama_rq_cache";
 const SESSION_KEYS = ["open_sunsama_token", "open_sunsama_user"];
-const ISSUES_URL = "https://github.com/ShadowWalker2014/open-sunsama/issues/new";
+const ISSUES_URL = "https://github.com/ShadowWalker2014/open-sunsama/issues/new?template=bug.yml";
 
 function removeLocalKeys(match: (key: string) => boolean) {
   try {

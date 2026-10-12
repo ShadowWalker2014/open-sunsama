@@ -3,7 +3,7 @@
  * Provides AI agents with tools to create, read, update, and delete tasks
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import type { ApiClient, Task } from "../lib/api-client.js";
 import { defineTool } from "../lib/define-tool.js";
