@@ -113,9 +113,17 @@ authRouter.patch('/me', auth, zValidator('json', updateProfileSchema), async (c)
 
   // Get current user to check for avatar changes
   let oldAvatarUrl: string | null = null;
-  if (updates.avatarUrl !== undefined) {
-    const [currentUser] = await db.select({ avatarUrl: users.avatarUrl }).from(users).where(eq(users.id, userId)).limit(1);
+  let timezoneManuallySet = false;
+  let currentPreferences: typeof users.$inferSelect.preferences = null;
+  if (updates.avatarUrl !== undefined || updates.timezone !== undefined) {
+    const [currentUser] = await db
+      .select({ avatarUrl: users.avatarUrl, preferences: users.preferences })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
     oldAvatarUrl = currentUser?.avatarUrl ?? null;
+    timezoneManuallySet = currentUser?.preferences?.timezoneManuallySet ?? false;
+    currentPreferences = currentUser?.preferences ?? null;
   }
 
   const updateData: Record<string, unknown> = { updatedAt: new Date() };
@@ -129,8 +137,20 @@ authRouter.patch('/me', auth, zValidator('json', updateProfileSchema), async (c)
     changedFields.push('avatarUrl');
   }
   if (updates.timezone !== undefined) {
-    updateData.timezone = updates.timezone;
-    changedFields.push('timezone');
+    if (!updates.timezoneManuallySet && timezoneManuallySet) {
+      // Automatic device detection must not replace an explicit profile choice.
+    } else {
+      updateData.timezone = updates.timezone;
+      const manuallySet = updates.timezoneManuallySet ?? true;
+      if (manuallySet) {
+        updateData.preferences = {
+          ...currentPreferences,
+          timezoneManuallySet: true,
+        };
+        changedFields.push('timezoneManuallySet');
+      }
+      changedFields.push('timezone');
+    }
   }
   if (updates.preferences !== undefined) {
     updateData.preferences = updates.preferences;
