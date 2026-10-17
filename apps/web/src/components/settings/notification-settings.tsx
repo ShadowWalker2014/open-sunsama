@@ -18,6 +18,7 @@ import {
   requestNotificationPermission,
   getNotificationPermissionStatus,
 } from "@/hooks/useNotificationPreferences";
+import { getAutoLaunch, isDesktop, setAutoLaunch } from "@/lib/desktop";
 
 /** Get task reminders status text */
 function getTaskReminderStatus(preferences: { taskRemindersEnabled: boolean; reminderTiming: number } | undefined) {
@@ -46,7 +47,14 @@ export function NotificationSettings() {
   const [taskReminderDialogOpen, setTaskReminderDialogOpen] = React.useState(false);
   const [emailDialogOpen, setEmailDialogOpen] = React.useState(false);
   const [pushLoading, setPushLoading] = React.useState(false);
+  const [autoLaunch, setAutoLaunchState] = React.useState<boolean | null>(null);
+  const [autoLaunchLoading, setAutoLaunchLoading] = React.useState(false);
   const permissionStatus = React.useMemo(() => getNotificationPermissionStatus(), []);
+
+  React.useEffect(() => {
+    if (!isDesktop()) return;
+    void getAutoLaunch().then(setAutoLaunchState);
+  }, []);
 
   const handleTaskReminderSave = async (taskRemindersEnabled: boolean, reminderTiming: number) => {
     await updatePreferences.mutateAsync({ taskRemindersEnabled, reminderTiming });
@@ -80,6 +88,29 @@ export function NotificationSettings() {
       }
     } finally {
       setPushLoading(false);
+    }
+  };
+
+  const handleAutoLaunchToggle = async (enabled: boolean) => {
+    setAutoLaunchLoading(true);
+    try {
+      if (await setAutoLaunch(enabled)) {
+        setAutoLaunchState(enabled);
+        toast({
+          title: enabled ? "Launch at login enabled" : "Launch at login disabled",
+          description: enabled
+            ? "Open Sunsama will start minimized when you sign in."
+            : "Open Sunsama will no longer start when you sign in.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Could not update launch setting",
+          description: "Please try again.",
+        });
+      }
+    } finally {
+      setAutoLaunchLoading(false);
     }
   };
 
@@ -165,6 +196,29 @@ export function NotificationSettings() {
                 />
               )}
             </div>
+            {isDesktop() && (
+              <>
+                <Separator />
+                {/* Launch at login */}
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-medium">Launch at login</p>
+                    <p className="text-xs text-muted-foreground">
+                      Start Open Sunsama minimized to the system tray
+                    </p>
+                  </div>
+                  {autoLaunch === null ? (
+                    <Skeleton className="h-5 w-9" />
+                  ) : (
+                    <Switch
+                      checked={autoLaunch}
+                      onCheckedChange={handleAutoLaunchToggle}
+                      disabled={autoLaunchLoading}
+                    />
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>
