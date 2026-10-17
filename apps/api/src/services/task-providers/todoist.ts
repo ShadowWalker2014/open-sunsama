@@ -63,10 +63,12 @@ export class TodoistProvider implements TaskProvider {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (response.status === 401 || response.status === 403) {
-      throw new ProviderCredentialError(this.displayName, await safeText(response));
+      // Todoist's error body is raw JSON; the user only needs to know the token was rejected.
+      throw new ProviderCredentialError(this.displayName);
     }
     if (response.status === 404) {
-      throw new ProviderTaskNotFoundError(this.displayName, path);
+      throw new ProviderTaskNotFoundError(this.displayName,
+        decodeURIComponent(path.slice(path.lastIndexOf("/") + 1)));
     }
     if (response.status === 429) {
       const header = response.headers.get("retry-after");
