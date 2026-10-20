@@ -136,6 +136,7 @@ export function registerUserTools(
         const updateData: {
           name?: string;
           timezone?: string;
+          timezoneManuallySet?: boolean;
           avatarUrl?: string | null;
           preferences?: Partial<UserPreferences>;
         } = {};
@@ -146,6 +147,7 @@ export function registerUserTools(
         }
         if (input.timezone !== undefined) {
           updateData.timezone = input.timezone;
+          updateData.timezoneManuallySet = true;
         }
         if (input.avatarUrl !== undefined) {
           updateData.avatarUrl = input.avatarUrl;
