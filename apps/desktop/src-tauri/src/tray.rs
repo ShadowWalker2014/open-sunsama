@@ -38,10 +38,18 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         ],
     )?;
 
+    // macOS tints template icons for the menu bar. Other platforms use the
+    // colored app icon so it remains visible against light taskbars.
+    #[cfg(target_os = "macos")]
     let tray_icon = tauri::image::Image::from_bytes(include_bytes!("../icons/tray-icon.png"))?;
-    let _tray = TrayIconBuilder::new()
-        .icon(tray_icon)
-        .icon_as_template(true)
+    #[cfg(not(target_os = "macos"))]
+    let tray_icon = tauri::image::Image::from_bytes(include_bytes!("../icons/icon.png"))?;
+
+    let tray = TrayIconBuilder::new().icon(tray_icon);
+    #[cfg(target_os = "macos")]
+    let tray = tray.icon_as_template(true);
+
+    let _tray = tray
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id.as_ref() {
