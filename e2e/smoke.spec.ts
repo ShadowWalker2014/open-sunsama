@@ -496,6 +496,8 @@ test("view shortcuts and priority shortcuts work without changing typed text", a
   await expect(taskCard).toBeVisible();
   await taskCard.click();
   await expect(page.getByRole("dialog", { name: "Priority keyboard test" })).toBeVisible();
+  await page.getByRole("button", { name: "Edit task title" }).click();
+  await expect(title).toBeVisible();
   await title.press("Alt+Shift+0");
   await expect(page.getByRole("button", { name: "Priority: P0 Urgent", exact: true })).toBeVisible();
   await expect(title).toHaveValue("Priority keyboard test");
