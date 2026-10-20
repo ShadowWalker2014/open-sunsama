@@ -1,5 +1,6 @@
 import { pgTable, uuid, varchar, timestamp, index } from "drizzle-orm/pg-core";
 import { users } from "./users";
+import { calendarAccounts } from "./calendar-accounts";
 
 /**
  * OAuth states table for CSRF protection during OAuth flows
@@ -14,6 +15,10 @@ export const oauthStates = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     provider: varchar("provider", { length: 20 }).notNull(), // 'google' | 'outlook'
+    // Set for a reconnect flow so the callback can only refresh this account.
+    accountId: uuid("account_id").references(() => calendarAccounts.id, {
+      onDelete: "cascade",
+    }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     expiresAt: timestamp("expires_at").notNull(), // Auto-cleanup expired states
   },

@@ -36,9 +36,15 @@ export const updateIntegrationAccountSchema = z.object({
  * by asking each connected provider to parse it, so nothing here needs
  * to know the URL shapes.
  */
-export const importTaskSchema = z.object({
-  reference: z.string().trim().min(1, "Paste a task link or id").max(2000),
-});
+export const importTaskSchema = z.union([
+  z.object({
+    reference: z.string().trim().min(1, "Paste a task link or id").max(2000),
+  }),
+  z.object({
+    accountId: z.string().uuid("Invalid account id"),
+    externalId: z.string().trim().min(1).max(255),
+  }),
+]);
 
 /**
  * Attaching a reference link by hand — a Gitea pull request, a GitHub

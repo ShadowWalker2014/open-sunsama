@@ -3,7 +3,7 @@
  * Automatically generates task instances from recurring task series
  * Runs timezone-aware to handle scheduling in each user's timezone
  */
-import type PgBoss from "pg-boss";
+import type { Job } from "pg-boss";
 import { getPgBoss, JOBS } from "../../lib/pgboss.js";
 import type {
   RecurringCheckPayload,
@@ -49,7 +49,7 @@ export async function registerRecurringWorkers(): Promise<void> {
   // Register the recurring check handler
   await boss.work(
     JOBS.RECURRING_TASK_CHECK,
-    async (jobs: PgBoss.Job<RecurringCheckPayload>[]) => {
+    async (jobs: Job<RecurringCheckPayload>[]) => {
       for (const job of jobs) {
         await processRecurringTaskCheck(job);
       }
@@ -60,7 +60,7 @@ export async function registerRecurringWorkers(): Promise<void> {
   await boss.work(
     JOBS.GENERATE_RECURRING_TASK,
     { batchSize: 10 }, // Process 10 tasks concurrently
-    async (jobs: PgBoss.Job<GenerateRecurringTaskPayload>[]) => {
+    async (jobs: Job<GenerateRecurringTaskPayload>[]) => {
       await Promise.all(jobs.map((job) => processGenerateRecurringTask(job)));
     }
   );

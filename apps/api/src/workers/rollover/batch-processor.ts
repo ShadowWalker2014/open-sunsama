@@ -3,7 +3,7 @@
  * Handles updating tasks and creating rollover logs for batches of users
  * Respects user rollover settings (destination and position)
  */
-import type PgBoss from "pg-boss";
+import type { Job } from "pg-boss";
 import {
   getDb,
   and,
@@ -135,7 +135,7 @@ async function getPositionBounds(
  * Uses transaction to ensure atomicity
  */
 export async function processUserBatchRollover(
-  job: PgBoss.Job<UserBatchRolloverPayload>
+  job: Job<UserBatchRolloverPayload>
 ): Promise<void> {
   const { timezone, targetDate, userIds, batchNumber, totalBatches } = job.data;
   const db = getDb();

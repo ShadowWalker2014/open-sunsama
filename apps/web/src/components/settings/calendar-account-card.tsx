@@ -28,7 +28,7 @@ import { PROVIDER_CONFIG } from "./calendar-provider-icons";
  */
 function formatSyncTime(dateString: string | null): string {
   if (!dateString) return "Never";
-  
+
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -40,7 +40,7 @@ function formatSyncTime(dateString: string | null): string {
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 7) return `${diffDays}d ago`;
-  
+
   return date.toLocaleDateString();
 }
 
@@ -196,6 +196,7 @@ export function AccountCard({
   calendars,
   onSync,
   onForceResync,
+  onReconnect,
   onRemove,
   onUpdateCalendar,
   isSyncing,
@@ -210,6 +211,7 @@ export function AccountCard({
    * bugs where events landed under the wrong calendar.
    */
   onForceResync: () => void;
+  onReconnect?: () => void;
   onRemove: () => void;
   onUpdateCalendar: (
     calendarId: string,
@@ -264,6 +266,11 @@ export function AccountCard({
             lastSyncedAt={account.lastSyncedAt}
             syncError={account.syncError}
           />
+          {onReconnect && (
+            <Button variant="outline" size="sm" onClick={onReconnect}>
+              Reconnect
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"

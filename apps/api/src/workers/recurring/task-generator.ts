@@ -2,7 +2,7 @@
  * Recurring task generator
  * Creates new task instances from a series template
  */
-import type PgBoss from "pg-boss";
+import type { Job } from "pg-boss";
 import { getDb, eq, and, sql, type DbClient } from "@open-sunsama/database";
 import { taskSeries, tasks, users } from "@open-sunsama/database/schema";
 import { toZonedTime } from "date-fns-tz";
@@ -36,7 +36,7 @@ export function insertSeriesInstance(
  * Generate a single recurring task instance
  */
 export async function processGenerateRecurringTask(
-  job: PgBoss.Job<GenerateRecurringTaskPayload>
+  job: Job<GenerateRecurringTaskPayload>
 ): Promise<void> {
   const { seriesId, targetDate, instanceNumber } = job.data;
   const db = getDb();

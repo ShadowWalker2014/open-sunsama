@@ -96,7 +96,7 @@ export function useCalendars() {
     queryFn: async (): Promise<Calendar[]> => {
       const client = getApiClient();
       const response = await client.get<CalendarsApiResponse>("calendars");
-      
+
       // Flatten the nested structure and add accountId to each calendar
       return response.data.flatMap((account) =>
         account.calendars.map((cal) => ({
@@ -628,12 +628,18 @@ export function useDeleteCalendarEvent() {
  */
 export function useInitiateOAuth() {
   return useMutation({
-    mutationFn: async (provider: "google" | "outlook"): Promise<string> => {
+    mutationFn: async ({
+      provider,
+      accountId,
+    }: {
+      provider: "google" | "outlook";
+      accountId?: string;
+    }): Promise<string> => {
       const client = getApiClient();
       const response = await client.get<{
         success: boolean;
         data: { authUrl: string; state: string };
-      }>(`calendar/oauth/${provider}/initiate`);
+      }>(`calendar/oauth/${provider}/initiate${accountId ? `?accountId=${encodeURIComponent(accountId)}` : ""}`);
       return response.data.authUrl;
     },
     onSuccess: (authUrl) => {

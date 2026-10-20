@@ -33,6 +33,20 @@ export interface IntegrationAccount {
   updatedAt: string;
 }
 
+/** A remote task shown in the integration picker before it is imported. */
+export interface ExternalTaskSummary {
+  externalId: string;
+  title: string;
+  priority: 'P0' | 'P1' | 'P2' | 'P3' | null;
+  isCompleted: boolean;
+  statusName: string | null;
+  dueDate: string | null;
+  url: string;
+  containerName: string | null;
+  projectName?: string | null;
+  sectionName?: string | null;
+}
+
 /** Providers may expose object kinds beyond the initial task/issue/PR set. */
 export type ExternalLinkKind = string;
 
@@ -75,7 +89,9 @@ export interface ConnectIntegrationRequest {
 
 /** A pasted task link or bare id. */
 export interface ImportTaskRequest {
-  reference: string;
+  reference?: string;
+  accountId?: string;
+  externalId?: string;
 }
 
 export interface CreateTaskLinkRequest {

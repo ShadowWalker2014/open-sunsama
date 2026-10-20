@@ -11,11 +11,17 @@ import {
   parseTodoistReference,
   todoistCredentialSchema,
   type TodoistProject,
+  type TodoistSection,
   type TodoistTask,
   type TodoistUser,
 } from "./todoist-helpers.js";
 
 const TODOIST_API = "https://api.todoist.com/api/v1";
+
+interface TodoistPage<T> {
+  results: T[];
+  next_cursor?: string | null;
+}
 
 export class TodoistProvider implements TaskProvider {
   readonly id = "todoist";
@@ -49,13 +55,59 @@ export class TodoistProvider implements TaskProvider {
     const { token } = todoistCredentialSchema.parse(credentials);
     const task = await this.request<TodoistTask>(token, `/tasks/${encodeURIComponent(externalId)}`);
     let project: TodoistProject | null = null;
+    let section: TodoistSection | null = null;
     try {
       project = await this.request<TodoistProject>(token, `/projects/${encodeURIComponent(task.project_id)}`);
     } catch (error) {
       // Missing project metadata should not prevent importing a valid task.
       if (!(error instanceof ProviderTaskNotFoundError)) throw error;
     }
-    return normalizeTask(task, project);
+    if (task.section_id) {
+      try {
+        section = await this.request<TodoistSection>(token, `/sections/${encodeURIComponent(task.section_id)}`);
+      } catch (error) {
+        // Sections can be removed while their task is still being read.
+        if (!(error instanceof ProviderTaskNotFoundError)) throw error;
+      }
+    }
+    return normalizeTask(task, project, section);
+  }
+
+  async listTasks(credentials: unknown): Promise<ExternalTask[]> {
+    const { token } = todoistCredentialSchema.parse(credentials);
+    const [tasks, projects, sections] = await Promise.all([
+      this.listAll<TodoistTask>(token, "/tasks"),
+      this.listAll<TodoistProject>(token, "/projects"),
+      this.listAll<TodoistSection>(token, "/sections"),
+    ]);
+    const projectsById = new Map(projects.map((project) => [project.id, project]));
+    const sectionsById = new Map(sections.map((section) => [section.id, section]));
+
+    return tasks.map((task) =>
+      normalizeTask(
+        task,
+        projectsById.get(task.project_id) ?? null,
+        task.section_id ? sectionsById.get(task.section_id) ?? null : null
+      )
+    );
+  }
+
+  private async listAll<T>(token: string, path: string): Promise<T[]> {
+    const results: T[] = [];
+    let cursor: string | null | undefined;
+
+    do {
+      const params = new URLSearchParams({ limit: "200" });
+      if (cursor) params.set("cursor", cursor);
+      const page = await this.request<TodoistPage<T>>(token, `${path}?${params}`);
+      if (!Array.isArray(page.results)) {
+        throw new ProviderRequestError(this.displayName, 200, "Unexpected list response");
+      }
+      results.push(...page.results);
+      cursor = page.next_cursor;
+    } while (cursor);
+
+    return results;
   }
 
   private async request<T>(token: string, path: string): Promise<T> {
@@ -63,12 +115,10 @@ export class TodoistProvider implements TaskProvider {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (response.status === 401 || response.status === 403) {
-      // Todoist's error body is raw JSON; the user only needs to know the token was rejected.
-      throw new ProviderCredentialError(this.displayName);
+      throw new ProviderCredentialError(this.displayName, await safeText(response));
     }
     if (response.status === 404) {
-      throw new ProviderTaskNotFoundError(this.displayName,
-        decodeURIComponent(path.slice(path.lastIndexOf("/") + 1)));
+      throw new ProviderTaskNotFoundError(this.displayName, path);
     }
     if (response.status === 429) {
       const header = response.headers.get("retry-after");

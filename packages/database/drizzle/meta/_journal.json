@@ -29,6 +29,13 @@
       "when": 1790637581279,
       "tag": "0003_futuristic_mimic",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791430270930,
+      "tag": "0004_left_dragon_lord",
+      "breakpoints": true
     }
   ]
 }

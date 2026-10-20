@@ -2,7 +2,7 @@
  * Email Workers
  * Handles scheduled email notifications (daily summary, task reminders, etc.)
  */
-import type PgBoss from 'pg-boss';
+import type { Job } from 'pg-boss';
 import { getPgBoss, JOBS } from '../../lib/pgboss.js';
 import { 
   type DailySummaryCheckPayload, 
@@ -57,7 +57,7 @@ export async function registerEmailWorkers(): Promise<void> {
   // Register the daily summary check handler
   await boss.work(
     JOBS.DAILY_SUMMARY_CHECK,
-    async (jobs: PgBoss.Job<DailySummaryCheckPayload>[]) => {
+    async (jobs: Job<DailySummaryCheckPayload>[]) => {
       for (const job of jobs) {
         await processDailySummaryCheck(job);
       }
@@ -69,7 +69,7 @@ export async function registerEmailWorkers(): Promise<void> {
   await boss.work(
     JOBS.SEND_DAILY_SUMMARY,
     { batchSize: 10 }, // Process 10 emails concurrently
-    async (jobs: PgBoss.Job<SendDailySummaryPayload>[]) => {
+    async (jobs: Job<SendDailySummaryPayload>[]) => {
       // Process jobs concurrently within the batch
       await Promise.all(jobs.map(job => processSendDailySummary(job)));
     }
@@ -78,7 +78,7 @@ export async function registerEmailWorkers(): Promise<void> {
   // Register the task reminder check handler
   await boss.work(
     JOBS.TASK_REMINDER_CHECK,
-    async (jobs: PgBoss.Job<TaskReminderCheckPayload>[]) => {
+    async (jobs: Job<TaskReminderCheckPayload>[]) => {
       for (const job of jobs) {
         await processTaskReminderCheck(job);
       }
@@ -89,7 +89,7 @@ export async function registerEmailWorkers(): Promise<void> {
   await boss.work(
     JOBS.SEND_TASK_REMINDER,
     { batchSize: 10 }, // Process 10 reminders concurrently
-    async (jobs: PgBoss.Job<SendTaskReminderPayload>[]) => {
+    async (jobs: Job<SendTaskReminderPayload>[]) => {
       await Promise.all(jobs.map(job => processSendTaskReminder(job)));
     }
   );

@@ -68,7 +68,7 @@ export function NotesField({
       style={{ minHeight }}
     >
       {notes ? (
-        <HtmlContent html={notes} className="text-[15px]" />
+        <HtmlContent html={notes} markdown className="text-[15px]" />
       ) : (
         <span className="text-[15px] text-muted-foreground">{placeholder}</span>
       )}

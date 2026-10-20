@@ -2,9 +2,8 @@
  * Task-source provider contract.
  *
  * Providers supply *work* — a task, an issue, a pull request — that the
- * user pulls in one item at a time by pasting a link or an id. There is
- * no background sync and nothing is ever written back upstream: a
- * provider only has to recognize a reference and fetch it.
+ * user pulls in one item at a time from the picker or a pasted link. There
+ * is no background sync and nothing is ever written back upstream.
  */
 import type { z } from "zod";
 import type { TaskPriority } from "@open-sunsama/database";
@@ -42,6 +41,10 @@ export interface ExternalTask {
   url: string;
   /** External project or list, rendered on the card's source chip. */
   containerName: string | null;
+  /** Provider-specific project/list name, when separately available. */
+  projectName?: string | null;
+  /** Provider-specific section name, when separately available. */
+  sectionName?: string | null;
   remoteUpdatedAt: Date;
   subtasks: ExternalSubtask[];
 }
@@ -93,6 +96,9 @@ export interface TaskProvider {
 
   /** Fetch one task by the id `parseReference` produced. */
   fetchTask(credentials: unknown, externalId: string): Promise<ExternalTask>;
+
+  /** List tasks the user can choose from before importing one. */
+  listTasks(credentials: unknown): Promise<ExternalTask[]>;
 }
 
 /**

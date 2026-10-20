@@ -24,7 +24,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-opensunsama}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-opensunsama}" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -38,7 +38,7 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -48,17 +48,17 @@ services:
       context: .
       dockerfile: Dockerfile.api
     # Generates JWT_SECRET and CALENDAR_ENCRYPTION_KEY on first start unless .env sets them
-    command: ["sh", "docker-start.sh"]
+    command: [ "sh", "docker-start.sh" ]
     # Optional integrations (Google/Microsoft calendar, Resend email, S3 uploads,
     # VAPID push) are read from .env as-is
     env_file:
       - path: .env
         required: false
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-opensunsama}:${POSTGRES_PASSWORD:-opensunsama}@postgres:5432/${POSTGRES_DB:-opensunsama}
-      REDIS_URL: redis://redis:6379
+      DATABASE_URL: ${DATABASE_URL:postgresql://${POSTGRES_USER:-opensunsama}:${POSTGRES_PASSWORD:-opensunsama}@postgres:5432/${POSTGRES_DB:-opensunsama}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       MIGRATE_ON_START: "true"
-      PORT: "3001"
+      PORT: ${PORT:-3001}
       # Public URLs: OAuth redirects, email links, CORS and the MCP connector use them
       API_URL: ${API_URL:-http://localhost:3001}
       WEB_APP_URL: ${WEB_APP_URL:-http://localhost:3000}

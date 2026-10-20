@@ -35,6 +35,8 @@ export {
   addMinutes,
   getStartOfDay,
   createDateTime,
+  parseTaskSchedule,
+  type ParsedTaskSchedule,
 } from './date.js';
 
 // Validation schemas

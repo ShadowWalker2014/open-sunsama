@@ -2,7 +2,7 @@
  * Calendar sync check handler
  * Runs every 5 minutes to find accounts needing sync and queue sync jobs
  */
-import type PgBoss from 'pg-boss';
+import type { Job } from 'pg-boss';
 import { getDb, and, lt, eq, or, isNull } from '@open-sunsama/database';
 import { calendarAccounts } from '@open-sunsama/database/schema';
 import { subMinutes } from 'date-fns';
@@ -36,7 +36,7 @@ const ERROR_RETRY_MINUTES = 30;
  * Runs every 5 minutes
  */
 export async function processCalendarSyncCheck(
-  _job: PgBoss.Job<CalendarSyncCheckPayload>
+  _job: Job<CalendarSyncCheckPayload>
 ): Promise<void> {
   const db = getDb();
   const boss = await getPgBoss();

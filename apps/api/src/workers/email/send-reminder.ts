@@ -2,7 +2,7 @@
  * Send task reminder email handler
  * Fetches time block details and sends the reminder email
  */
-import type PgBoss from 'pg-boss';
+import type { Job } from 'pg-boss';
 import { getDb, eq } from '@open-sunsama/database';
 import { users, timeBlocks } from '@open-sunsama/database/schema';
 import type { SendTaskReminderPayload } from './task-reminder.js';
@@ -30,7 +30,7 @@ function formatTimeForEmail(time: string): string {
  * Process a single task reminder email
  */
 export async function processSendTaskReminder(
-  job: PgBoss.Job<SendTaskReminderPayload>
+  job: Job<SendTaskReminderPayload>
 ): Promise<void> {
   const { timeBlockId, userId } = job.data;
   const db = getDb();

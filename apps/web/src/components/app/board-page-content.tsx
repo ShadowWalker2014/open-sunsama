@@ -6,6 +6,7 @@ import { useBoardMode } from "@/components/kanban/kanban-board";
 import { KanbanCalendarPanel } from "@/components/kanban/kanban-calendar-panel";
 import { BacklogPanel } from "@/components/layout/backlog-panel";
 import { RightPanel } from "./right-panel";
+import { IntegrationTaskSidebar } from "@/components/kanban/integration-task-sidebar";
 import { MobileBacklogSheet } from "@/components/layout/mobile-backlog-sheet";
 import { MobileTasksView } from "@/components/mobile";
 import { TasksDndProvider } from "@/lib/dnd/tasks-dnd-context";
@@ -25,20 +26,23 @@ export function BoardPageContent() {
   const [mode, setMode] = useBoardMode();
 
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
-  const [selectedTaskId, setSelectedTaskId] = React.useState<string | null>(null);
-  const [taskPanelOpen, setTaskPanelOpen] = React.useState(false);
-
-  const [selectedTimeBlock, setSelectedTimeBlock] = React.useState<TimeBlock | null>(
+  const [selectedTaskId, setSelectedTaskId] = React.useState<string | null>(
     null
   );
+  const [taskPanelOpen, setTaskPanelOpen] = React.useState(false);
+
+  const [selectedTimeBlock, setSelectedTimeBlock] =
+    React.useState<TimeBlock | null>(null);
   const [timeBlockSheetOpen, setTimeBlockSheetOpen] = React.useState(false);
 
-  const [createAnchor, setCreateAnchor] = React.useState<CalendarCreateAnchor>();
+  const [createAnchor, setCreateAnchor] =
+    React.useState<CalendarCreateAnchor>();
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
-  const [createDialogDate, setCreateDialogDate] = React.useState<Date>(new Date());
-  const [createDialogStartTime, setCreateDialogStartTime] = React.useState<Date>(
+  const [createDialogDate, setCreateDialogDate] = React.useState<Date>(
     new Date()
   );
+  const [createDialogStartTime, setCreateDialogStartTime] =
+    React.useState<Date>(new Date());
   const [createDialogEndTime, setCreateDialogEndTime] = React.useState<Date>(
     new Date()
   );
@@ -104,18 +108,29 @@ export function BoardPageContent() {
               mode={mode}
               onModeChange={setMode}
               // Today puts the calendar beside the day, in the middle.
-              dayAside={mode === "day" ? <RightPanel calendar={calendarPanel} backlog={<BacklogPanel />} /> : undefined}
+              dayAside={
+                mode === "day" ? (
+                  <RightPanel
+                    calendar={calendarPanel}
+                    backlog={<BacklogPanel />}
+                    todoist={<IntegrationTaskSidebar />}
+                  />
+                ) : undefined
+              }
             >
               <TasksKeyboardShortcuts />
             </KanbanBoard>
           </div>
 
-          {mode !== "day" && <div className="hidden lg:flex">
-            <RightPanel
-              calendar={calendarPanel}
-              backlog={<BacklogPanel />}
-            />
-          </div>}
+          {mode !== "day" && (
+            <div className="hidden lg:flex">
+              <RightPanel
+                calendar={calendarPanel}
+                backlog={<BacklogPanel />}
+                todoist={<IntegrationTaskSidebar />}
+              />
+            </div>
+          )}
         </div>
       </div>
 

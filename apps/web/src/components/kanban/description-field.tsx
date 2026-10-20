@@ -46,7 +46,7 @@ export function DescriptionField({
           )}
         >
           {description ? (
-            <HtmlContent html={description} />
+            <HtmlContent html={description} markdown />
           ) : (
             <span className="text-sm">Notes...</span>
           )}

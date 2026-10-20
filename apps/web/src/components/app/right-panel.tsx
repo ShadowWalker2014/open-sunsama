@@ -18,8 +18,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui";
 import { shouldIgnoreShortcut } from "@/hooks/useKeyboardShortcuts";
+import { TodoistIcon } from "@/components/ui/todoist-icon";
 
-export type RightPanelTab = "calendar" | "backlog" | "ideas";
+export type RightPanelTab = "calendar" | "backlog" | "ideas" | "todoist";
 
 const STORAGE_KEY = "open-sunsama-right-panel";
 
@@ -30,7 +31,8 @@ function readState(): { open: boolean; tab: RightPanelTab } {
       saved &&
       (saved.tab === "calendar" ||
         saved.tab === "backlog" ||
-        saved.tab === "ideas")
+        saved.tab === "ideas" ||
+        saved.tab === "todoist")
     ) {
       return { open: saved.open !== false, tab: saved.tab };
     }
@@ -48,10 +50,12 @@ function readState(): { open: boolean; tab: RightPanelTab } {
 export function RightPanel({
   calendar,
   backlog,
+  todoist,
 }: {
   /** Left out when the page already shows the calendar (Today view). */
   calendar?: React.ReactNode;
   backlog: React.ReactNode;
+  todoist?: React.ReactNode;
 }) {
   const [saved, setState] = React.useState(readState);
   // Without a calendar here, only the backlog can open.
@@ -106,6 +110,8 @@ export function RightPanel({
               calendar
             ) : state.tab === "ideas" ? (
               <IdeasPlannerTray />
+            ) : state.tab === "todoist" ? (
+              todoist
             ) : (
               backlog
             )}
@@ -152,6 +158,15 @@ export function RightPanel({
           >
             <Lightbulb className="h-4 w-4" />
           </RailButton>
+          {todoist !== undefined && (
+            <RailButton
+              label="Todoist"
+              active={state.open && state.tab === "todoist"}
+              onClick={() => selectTab("todoist")}
+            >
+              <TodoistIcon className="h-4 w-4" />
+            </RailButton>
+          )}
           <div className="my-1 h-px w-6 bg-border/60" />
           <Tooltip>
             <TooltipTrigger asChild>

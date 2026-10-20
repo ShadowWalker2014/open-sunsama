@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useUpdateTask } from "@/hooks/useTasks";
 import { EDIT_ESTIMATE_EVENT } from "@/components/task-shortcuts-handler";
 import { WithShortcut } from "@/components/ui/with-shortcut";
+import { renderInlineMarkdown } from "@/components/ui/inline-markdown";
 
 export interface TaskRowProps {
   task: Task;
@@ -135,7 +136,7 @@ export function TaskRow({
             isCompleted && "line-through text-muted-foreground"
           )}
         >
-          {task.title}
+          {renderInlineMarkdown(task.title)}
         </button>
 
         {/* Subtask Progress Indicator */}

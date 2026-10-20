@@ -1,6 +1,6 @@
 {
   "name": "@open-sunsama/web",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "private": true,
   "type": "module",
   "scripts": {
@@ -44,7 +44,7 @@
     "@tanstack/react-query-persist-client": "^5.103.2",
     "@tanstack/react-router": "^1.170.38",
     "@tanstack/react-virtual": "^3.14.13",
-    "@tauri-apps/api": "^2.11.1",
+    "@tauri-apps/api": "catalog:",
     "@tauri-apps/plugin-http": "^2.6.1",
     "@tauri-apps/plugin-notification": "^2.4.0",
     "@tauri-apps/plugin-process": "^2.3.1",

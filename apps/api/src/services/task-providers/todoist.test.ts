@@ -25,7 +25,7 @@ describe("Todoist API v1 adapter", () => {
   it("fetches a task and project using the parsed ID from a slugged URL", async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(new Response(JSON.stringify({
-        id, project_id: "1234567890", content: "Ship the thing", description: "Remote notes",
+        id, project_id: "1234567890", section_id: null, content: "Ship the thing", description: "Remote notes",
         priority: 3, checked: false, completed_at: null,
         updated_at: "2026-09-01T10:00:00Z", due: null, duration: null,
       }), { status: 200 }))
@@ -42,6 +42,41 @@ describe("Todoist API v1 adapter", () => {
       `https://api.todoist.com/api/v1/tasks/${id}`,
       "https://api.todoist.com/api/v1/projects/1234567890",
     ]);
+  });
+
+  it("lists open tasks for the source picker", async () => {
+    const fetchMock = vi.fn((url: string) => {
+      if (url.includes("/projects?")) {
+        return Promise.resolve(new Response(JSON.stringify({ results: [{
+          id: "1234567890", name: "Engineering",
+        }], next_cursor: null }), { status: 200 }));
+      }
+      if (url.includes("/sections?")) {
+        return Promise.resolve(new Response(JSON.stringify({ results: [{
+          id: "9876543210", project_id: "1234567890", name: "Current sprint",
+        }], next_cursor: null }), { status: 200 }));
+      }
+      return Promise.resolve(new Response(JSON.stringify({ results: [{
+        id, project_id: "1234567890", section_id: "9876543210", content: "Pick me", description: "",
+        priority: 1, checked: false, completed_at: null,
+        updated_at: "2026-09-01T10:00:00Z", due: null, duration: null,
+      }], next_cursor: null }), { status: 200 }));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(new TodoistProvider().listTasks(credentials)).resolves.toMatchObject([{
+      externalId: id, title: "Pick me", statusName: "open",
+      projectName: "Engineering", sectionName: "Current sprint",
+      containerName: "Engineering / Current sprint",
+    }]);
+    expect(fetchMock.mock.calls.map((call) => call[0])).toEqual([
+      "https://api.todoist.com/api/v1/tasks?limit=200",
+      "https://api.todoist.com/api/v1/projects?limit=200",
+      "https://api.todoist.com/api/v1/sections?limit=200",
+    ]);
+    expect(fetchMock).toHaveBeenCalledWith(expect.any(String), {
+      headers: { Authorization: `Bearer ${credentials.token}` },
+    });
   });
 
   it("maps rejected tokens and unavailable tasks to provider errors", async () => {

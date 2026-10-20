@@ -84,6 +84,7 @@ import {
   useTaskTimerToggle,
 } from "@/hooks/useTaskTimerToggle";
 import { useTaskTimerDisplay } from "./task-time-badge";
+import { renderInlineMarkdown } from "@/components/ui/inline-markdown";
 
 // ============================================
 // TaskModal Component
@@ -110,6 +111,7 @@ export function TaskModal({
   const isMobile = useIsMobile();
   const isCompose = !!createDefaults && !task;
   const [title, setTitle] = React.useState("");
+  const [isEditingTitle, setIsEditingTitle] = React.useState(isCompose);
   const [description, setDescription] = React.useState("");
   const [plannedMins, setPlannedMins] = React.useState<number | null>(null);
   const subtaskInputRef = React.useRef<HTMLInputElement>(null);
@@ -118,13 +120,14 @@ export function TaskModal({
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
   const [priorityOpen, setPriorityOpen] = React.useState(false);
 
-  // Grow the title field to fit long titles.
+  // Grow and focus the title field only while editing its Markdown source.
   React.useLayoutEffect(() => {
     const el = titleRef.current;
-    if (!el) return;
+    if (!el || !isEditingTitle) return;
     el.style.height = "auto";
     el.style.height = `${el.scrollHeight}px`;
-  }, [title, open]);
+    el.focus({ preventScroll: true });
+  }, [title, open, isEditingTitle]);
   const titleRef = React.useRef<HTMLTextAreaElement>(null);
 
   // Composer-only state: everything a new task carries before it exists.
@@ -146,6 +149,10 @@ export function TaskModal({
     setDraftDate(createDefaults?.scheduledDate ?? null);
     setDraftSubtasks([]);
   }, [open, isCompose]);
+
+  React.useEffect(() => {
+    setIsEditingTitle(isCompose);
+  }, [open, isCompose, task?.id]);
 
   // Keep a ref to the last non-null task so the Dialog can still render content
   // during its close animation (after task prop becomes null)
@@ -811,31 +818,48 @@ export function TaskModal({
         </WithShortcut>
       )}
 
-      <textarea
-        ref={titleRef}
-        autoFocus={isCompose}
-        value={title}
-        // Titles are one line; pasted line breaks become spaces.
-        onChange={(e) => setTitle(e.target.value.replace(/[\r\n]+/g, " "))}
-        onBlur={() => !isCompose && title !== renderTask.title && handleSave()}
-        onKeyDown={(e) => {
-          // Enter creates (composer) or saves and closes (editor).
-          if (e.key === "Enter" && !e.nativeEvent.isComposing) {
-            e.preventDefault();
-            if (isCompose) void handleCreate();
-            else handleOpenChange(false);
-          }
-        }}
-        enterKeyHint={isCompose ? "send" : "done"}
-        rows={1}
-        className={cn(
-          "min-w-0 flex-1 resize-none overflow-hidden border-none bg-transparent p-0 font-medium tracking-tight leading-snug shadow-none placeholder:text-muted-foreground/45 focus:outline-hidden focus:ring-0",
-          isMobile ? "text-xl" : "text-2xl leading-8",
-          isCompleted && "text-muted-foreground line-through"
-        )}
-        placeholder={isCompose ? "What needs to be done?" : "Task title"}
-        aria-label="Task title"
-      />
+      {isEditingTitle ? (
+        <textarea
+          ref={titleRef}
+          value={title}
+          // Titles are one line; pasted line breaks become spaces.
+          onChange={(e) => setTitle(e.target.value.replace(/[\r\n]+/g, " "))}
+          onBlur={() => {
+            if (!isCompose && title !== renderTask.title) void handleSave();
+            if (!isCompose) setIsEditingTitle(false);
+          }}
+          onKeyDown={(e) => {
+            // Enter creates (composer) or saves and closes (editor).
+            if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+              e.preventDefault();
+              if (isCompose) void handleCreate();
+              else handleOpenChange(false);
+            }
+          }}
+          enterKeyHint={isCompose ? "send" : "done"}
+          rows={1}
+          className={cn(
+            "min-w-0 flex-1 resize-none overflow-hidden border-none bg-transparent p-0 font-medium tracking-tight leading-snug shadow-none placeholder:text-muted-foreground/45 focus:outline-hidden focus:ring-0",
+            isMobile ? "text-xl" : "text-2xl leading-8",
+            isCompleted && "text-muted-foreground line-through"
+          )}
+          placeholder={isCompose ? "What needs to be done?" : "Task title"}
+          aria-label="Task title"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => setIsEditingTitle(true)}
+          className={cn(
+            "min-w-0 flex-1 break-words text-left font-medium tracking-tight leading-snug focus:outline-hidden focus-visible:underline",
+            isMobile ? "text-xl" : "text-2xl leading-8",
+            isCompleted && "text-muted-foreground line-through"
+          )}
+          aria-label="Edit task title"
+        >
+          {renderInlineMarkdown(title)}
+        </button>
+      )}
 
       {!isMobile && <div className="pt-0.5">{times}</div>}
     </div>

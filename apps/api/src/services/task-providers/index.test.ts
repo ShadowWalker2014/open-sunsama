@@ -23,6 +23,7 @@ describe("task-provider registry", () => {
       },
       parseReference: (input) => input.startsWith("example:") ? input.slice(8) : null,
       async fetchTask() { throw new Error("Not needed for registry test"); },
+      async listTasks() { return []; },
     };
 
     registerTaskProvider(provider);

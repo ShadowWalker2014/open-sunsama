@@ -44,7 +44,7 @@ import {
   refreshLinkedTask,
   resolveReference,
 } from "../services/task-import.js";
-import { encrypt } from "../services/encryption.js";
+import { decrypt, encrypt } from "../services/encryption.js";
 import { publishEvent } from "../lib/websocket/index.js";
 import type { IntegrationAccount } from "@open-sunsama/database/schema";
 
@@ -114,6 +114,64 @@ integrationsRouter.get(
       .orderBy(desc(integrationAccounts.createdAt));
 
     return c.json({ success: true, data: accounts.map(toPublicAccount) });
+  }
+);
+
+/**
+ * GET /integrations/accounts/:id/tasks
+ *
+ * Browse the connected account without exposing its credentials. Providers
+ * decide which remote tasks are suitable for their picker.
+ */
+integrationsRouter.get(
+  "/accounts/:id/tasks",
+  requireScopes("integrations:read"),
+  zValidator("param", integrationAccountIdParamSchema),
+  async (c) => {
+    const userId = c.get("userId");
+    const { id } = c.req.valid("param");
+    const db = getDb();
+    const [account] = await db
+      .select()
+      .from(integrationAccounts)
+      .where(and(eq(integrationAccounts.id, id), eq(integrationAccounts.userId, userId)))
+      .limit(1);
+
+    if (!account) throw new NotFoundError("Integration account not found");
+    if (!account.isActive) {
+      return c.json({ success: true, data: [] });
+    }
+
+    try {
+      const provider = getTaskProvider(account.provider);
+      const tasks = await provider.listTasks(
+        JSON.parse(decrypt(account.credentialsEncrypted))
+      );
+      return c.json({
+        success: true,
+        data: tasks.map((task) => ({
+          externalId: task.externalId,
+          title: task.title,
+          priority: task.priority,
+          isCompleted: task.isCompleted,
+          statusName: task.statusName,
+          dueDate: task.dueDate?.toISOString().slice(0, 10) ?? null,
+          url: task.url,
+          containerName: task.containerName,
+          projectName: task.projectName ?? null,
+          sectionName: task.sectionName ?? null,
+        })),
+      });
+    } catch (error) {
+      const mapped = providerErrorResponse(error);
+      if (mapped) {
+        return c.json(
+          { success: false, error: { code: mapped.code, message: mapped.message } },
+          mapped.status
+        );
+      }
+      throw error;
+    }
   }
 );
 
@@ -324,9 +382,22 @@ integrationsRouter.post(
   zValidator("json", importTaskSchema),
   async (c) => {
     const userId = c.get("userId");
-    const { reference } = c.req.valid("json");
-
-    const resolved = await resolveReference(userId, reference);
+    const input = c.req.valid("json");
+    const resolved = "reference" in input
+      ? await resolveReference(userId, input.reference)
+      : await (async () => {
+          const db = getDb();
+          const [account] = await db.select().from(integrationAccounts).where(
+            and(
+              eq(integrationAccounts.id, input.accountId),
+              eq(integrationAccounts.userId, userId),
+              eq(integrationAccounts.isActive, true)
+            )
+          ).limit(1);
+          return account && hasTaskProvider(account.provider)
+            ? { account, externalId: input.externalId }
+            : null;
+        })();
     if (!resolved) {
       return c.json(
         {

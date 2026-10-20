@@ -3,7 +3,7 @@
  * Automatically moves incomplete tasks from past dates to today
  * Runs timezone-aware to handle midnight in each user's timezone
  */
-import type PgBoss from 'pg-boss';
+import type { Job } from 'pg-boss';
 import { getPgBoss, JOBS } from '../../lib/pgboss.js';
 import { type RolloverCheckPayload, type UserBatchRolloverPayload } from './utils.js';
 import { processTimezoneRolloverCheck } from './timezone-check.js';
@@ -42,7 +42,7 @@ export async function registerRolloverWorkers(): Promise<void> {
   // In PG Boss v10, work() handler receives an array of jobs
   await boss.work(
     JOBS.TIMEZONE_ROLLOVER_CHECK,
-    async (jobs: PgBoss.Job<RolloverCheckPayload>[]) => {
+    async (jobs: Job<RolloverCheckPayload>[]) => {
       for (const job of jobs) {
         await processTimezoneRolloverCheck(job);
       }
@@ -54,7 +54,7 @@ export async function registerRolloverWorkers(): Promise<void> {
   await boss.work(
     JOBS.USER_BATCH_ROLLOVER,
     { batchSize: 5 }, // Process 5 batches concurrently
-    async (jobs: PgBoss.Job<UserBatchRolloverPayload>[]) => {
+    async (jobs: Job<UserBatchRolloverPayload>[]) => {
       // Process jobs concurrently within the batch
       await Promise.all(jobs.map(job => processUserBatchRollover(job)));
     }

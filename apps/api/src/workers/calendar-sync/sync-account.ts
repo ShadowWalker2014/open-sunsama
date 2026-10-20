@@ -2,7 +2,7 @@
  * Calendar account sync handler
  * Syncs events for a single calendar account
  */
-import type PgBoss from 'pg-boss';
+import type { Job } from 'pg-boss';
 import { getDb, eq } from '@open-sunsama/database';
 import { calendarAccounts, calendars } from '@open-sunsama/database/schema';
 import { subDays, addDays, startOfDay, endOfDay } from 'date-fns';
@@ -34,7 +34,7 @@ const SYNC_DAYS_FUTURE = 30;
  * Process a single calendar account sync job
  */
 export async function processSyncAccount(
-  job: PgBoss.Job<SyncAccountPayload>
+  job: Job<SyncAccountPayload>
 ): Promise<void> {
   const { accountId, userId, provider: providerName } = job.data;
   const db = getDb();

@@ -38,8 +38,18 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         ],
     )?;
 
-    let _tray = TrayIconBuilder::new()
-        .icon(app.default_window_icon().unwrap().clone())
+    // macOS tints template icons for the menu bar. Other platforms use the
+    // colored app icon so it remains visible against light taskbars.
+    #[cfg(target_os = "macos")]
+    let tray_icon = tauri::image::Image::from_bytes(include_bytes!("../icons/tray-icon.png"))?;
+    #[cfg(not(target_os = "macos"))]
+    let tray_icon = tauri::image::Image::from_bytes(include_bytes!("../icons/icon.png"))?;
+
+    let tray = TrayIconBuilder::new().icon(tray_icon);
+    #[cfg(target_os = "macos")]
+    let tray = tray.icon_as_template(true);
+
+    let _tray = tray
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id.as_ref() {
@@ -84,7 +94,7 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
             "tray_check_updates" => crate::recovery::check_for_updates(app),
             "tray_reset_local_data" => crate::recovery::reset_local_data(app),
             "quit" => {
-                std::process::exit(0);
+                app.exit(0);
             }
             _ => {}
         })

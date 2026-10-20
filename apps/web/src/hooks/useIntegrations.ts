@@ -3,6 +3,7 @@ import type {
   ConnectIntegrationRequest,
   IntegrationAccount,
   IntegrationProviderInfo,
+  ExternalTaskSummary,
   Task,
   TaskExternalLink,
 } from "@open-sunsama/types";
@@ -18,6 +19,10 @@ export interface ImportTaskResult {
   link: TaskExternalLink;
   alreadyExisted: boolean;
 }
+
+export type ImportTaskInput =
+  | string
+  | { accountId: string; externalId: string };
 
 /**
  * Turn a provider failure into something a person can act on. "It didn't
@@ -85,6 +90,21 @@ export function useIntegrationAccounts() {
   });
 }
 
+/** Tasks available from one connected account for the board picker. */
+export function useIntegrationTasks(accountId: string | null) {
+  return useQuery({
+    queryKey: integrationKeys.tasks(accountId ?? "none"),
+    enabled: Boolean(accountId),
+    queryFn: async (): Promise<ExternalTaskSummary[]> => {
+      const client = getApiClient();
+      const response = await client.get<{ success: boolean; data: ExternalTaskSummary[] }>(
+        `integrations/accounts/${accountId}/tasks`
+      );
+      return response.data;
+    },
+  });
+}
+
 export function useConnectIntegration() {
   const queryClient = useQueryClient();
 
@@ -141,17 +161,17 @@ export function useDisconnectIntegration() {
   });
 }
 
-/** Import one task from a pasted link or id. */
+/** Import one task from a pasted link/id or selected account task. */
 export function useImportTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (reference: string): Promise<ImportTaskResult> => {
+    mutationFn: async (input: ImportTaskInput): Promise<ImportTaskResult> => {
       const client = getApiClient();
       const response = await client.post<{
         success: boolean;
         data: ImportTaskResult;
-      }>("integrations/import", { reference });
+      }>("integrations/import", typeof input === "string" ? { reference: input } : input);
       return response.data;
     },
     onSuccess: (result) => {
@@ -161,8 +181,8 @@ export function useImportTask() {
           ? "Already imported"
           : "Task imported",
         description: result.alreadyExisted
-          ? `"${result.task.title}" is already in your backlog.`
-          : `"${result.task.title}" is in your backlog.`,
+          ? `"${result.task.title}" is already in your tasks.`
+          : `"${result.task.title}" is ready to plan.`,
       });
     },
     onError: (error) => {

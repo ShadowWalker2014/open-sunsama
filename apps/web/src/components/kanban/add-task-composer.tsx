@@ -14,6 +14,8 @@ import { PriorityIcon, PRIORITY_META } from "@/components/ui/priority-badge";
 import { PriorityMenu } from "./priority-menu";
 import { DatePickerPopover } from "./task-date-picker";
 import { parseSubtaskTitles } from "./subtask-add-row";
+import { addMinutes, parseDate, parseTaskSchedule, parseTime } from "@open-sunsama/utils/date";
+import { useCreateTimeBlock } from "@/hooks/useTimeBlockMutations";
 
 interface DraftLine {
   id: number;
@@ -26,6 +28,7 @@ const IS_MAC =
   typeof navigator !== "undefined" && navigator.platform.includes("Mac");
 const MOD_KEY = IS_MAC ? "⌘" : "Ctrl";
 const ALT_KEY = IS_MAC ? "Option" : "Alt";
+const DEFAULT_TIME_BLOCK_MINS = 30;
 
 export interface ComposerValues {
   title: string;
@@ -109,40 +112,57 @@ export function AddTaskComposer({
   });
 
   const { addPosition, setAddPosition } = useAddTaskPosition();
-  const createTask = useCreateTask();
-  const createSubtask = useCreateSubtask();
+    const createTask = useCreateTask();
+    const createSubtask = useCreateSubtask();
+    const createTimeBlock = useCreateTimeBlock();
   const placeNewTask = usePlaceNewTask(date);
 
   const refocus = () => requestAnimationFrame(() => inputRef.current?.focus());
 
   const submit = () => {
-    const trimmed = title.trim();
-    if (!trimmed) return;
-    onDone();
-    const subtaskTitles = lines.map((l) => l.title.trim()).filter(Boolean);
+      const trimmed = title.trim();
+      if (!trimmed) return;
+      onDone();
+      const subtaskTitles = lines.map((l) => l.title.trim()).filter(Boolean);
     if (onSubmit) {
       onSubmit({ title: trimmed, subtasks: subtaskTitles, estimatedMins: planned, priority });
       return;
-    }
-    // The create is optimistic: the card shows at once, so nothing waits here.
-    void createTask
-      .mutateAsync({
-        title: trimmed,
-        scheduledDate: date ?? undefined,
+      }
+      const parsedSchedule = parseTaskSchedule(trimmed);
+      const taskTitle = parsedSchedule.title;
+      const taskDate = parsedSchedule.scheduledDate ?? date ?? undefined;
+      // The create is optimistic: the card shows at once, so nothing waits here.
+      void createTask
+        .mutateAsync({
+          title: taskTitle,
+          scheduledDate: taskDate,
         estimatedMins: planned ?? undefined,
         priority,
       })
       .then(async (task) => {
         // Explicit positions keep the typed order; the requests run in parallel.
-        await Promise.all(
+          await Promise.all(
           subtaskTitles.map((title, position) =>
             createSubtask.mutateAsync({
               taskId: task.id,
               data: { title: title.slice(0, 500), position },
             })
           )
-        );
-        await placeNewTask(task.id, addPosition);
+          );
+          if (parsedSchedule.time && taskDate) {
+            const startTime = parseTime(parsedSchedule.time, parseDate(taskDate));
+            await createTimeBlock.mutateAsync({
+              taskId: task.id,
+              title: taskTitle,
+              startTime,
+              endTime: addMinutes(startTime, planned ?? DEFAULT_TIME_BLOCK_MINS),
+            });
+          }
+          // The inferred date can differ from the column that opened the composer.
+          // Reordering that original column would otherwise move the task back.
+          if (taskDate === (date ?? undefined)) {
+            await placeNewTask(task.id, addPosition);
+          }
       })
       .catch(() => {
         // useCreateTask already shows the error and rolls back.

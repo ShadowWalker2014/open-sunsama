@@ -5,6 +5,7 @@ import { cn, formatDuration } from "@/lib/utils";
 import { useCompleteTask } from "@/hooks/useTasks";
 import { useSubtasks, useUpdateSubtask } from "@/hooks/useSubtasks";
 import { useTaskTimerDisplay } from "@/components/kanban/task-time-badge";
+import { renderInlineMarkdown } from "@/components/ui/inline-markdown";
 
 const PRIORITY_CHECKBOX_BORDER: Record<TaskPriority, string> = {
   P0: "border-red-500",
@@ -129,7 +130,7 @@ function MobileTaskCardBase({
             isCompleted && "line-through text-muted-foreground"
           )}
         >
-          {task.title}
+          {renderInlineMarkdown(task.title)}
         </p>
 
         {/* Right side: metadata chips */}

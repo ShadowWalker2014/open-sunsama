@@ -69,10 +69,14 @@ const DEFAULT_TASK_BLOCK_MINS = 30;
  */
 const VIEW_MODE_STORAGE_KEY = "open_sunsama_calendar_view_mode";
 
+function isCalendarViewMode(value: unknown): value is CalendarViewMode {
+  return value === "day" || value === "3-day" || value === "week" || value === "month";
+}
+
 function getStoredViewMode(): CalendarViewMode | null {
   if (typeof window === "undefined") return null;
   const v = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
-  if (v === "day" || v === "3-day" || v === "week" || v === "month") return v;
+  if (isCalendarViewMode(v)) return v;
   return null;
 }
 
@@ -129,6 +133,11 @@ function computeRange(
       const end = endOfWeek(endOfMonth(selectedDate), { weekStartsOn });
       return { start, end, days: [] /* not used by month grid */ };
     }
+    default: {
+      // Older clients can leave unsupported values (e.g. "hours") in preferences.
+      const start = startOfDay(selectedDate);
+      return { start, end: endOfDay(selectedDate), days: [start] };
+    }
   }
 }
 
@@ -165,9 +174,8 @@ export function CalendarView({
   // View mode: prefer server-synced preference; fall back to localStorage,
   // then to "day".
   const [viewMode, setViewModeRaw] = React.useState<CalendarViewMode>(() => {
-    return (
-      user?.preferences?.calendarViewMode ?? getStoredViewMode() ?? "day"
-    );
+    const remote = user?.preferences?.calendarViewMode;
+    return isCalendarViewMode(remote) ? remote : getStoredViewMode() ?? "day";
   });
   // If the server preference loads *after* mount (typical: /auth/me
   // resolves shortly after the first paint), seed it into local state
@@ -197,7 +205,7 @@ export function CalendarView({
     if (didSeedFromServerRef.current) return;
     if (userInteractedRef.current) return;
     const remote = user?.preferences?.calendarViewMode;
-    if (!remote) return;
+    if (!isCalendarViewMode(remote)) return;
     didSeedFromServerRef.current = true;
     if (remote !== viewModeRef.current) {
       setViewModeRaw(remote);

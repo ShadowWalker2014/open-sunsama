@@ -24,7 +24,7 @@ interface ImportTaskDialogProps {
 }
 
 /**
- * Paste a task link or id from a connected source and pull it in.
+ * Fallback for a task that is not available in the source picker.
  *
  * The provider is worked out from the reference itself, so there is no
  * source picker to get wrong.
@@ -84,10 +84,10 @@ export function ImportTaskDialog({
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Import a task</DialogTitle>
+            <DialogTitle>Paste a task link</DialogTitle>
             <DialogDescription>
-              Paste a link or id from a connected source. The task lands in
-              your backlog — nothing is written back.
+              Can&apos;t find it in the source sidebar? Paste a link or id. The
+              task lands in your backlog — nothing is written back.
             </DialogDescription>
           </DialogHeader>
 

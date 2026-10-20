@@ -2,7 +2,7 @@
  * Timezone rollover check handler
  * Runs every minute to detect timezones hitting midnight and queue batch jobs
  */
-import type PgBoss from 'pg-boss';
+import type { Job } from 'pg-boss';
 import { getDb, eq, and, isNotNull } from '@open-sunsama/database';
 import { users, rolloverLogs } from '@open-sunsama/database/schema';
 import { toZonedTime } from 'date-fns-tz';
@@ -21,7 +21,7 @@ import {
  * Runs every minute to catch timezone midnights
  */
 export async function processTimezoneRolloverCheck(
-  _job: PgBoss.Job<RolloverCheckPayload>
+  _job: Job<RolloverCheckPayload>
 ): Promise<void> {
   const db = getDb();
   const boss = await getPgBoss();

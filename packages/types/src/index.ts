@@ -167,6 +167,7 @@ export type {
   IntegrationCredentialField,
   IntegrationProviderInfo,
   IntegrationAccount,
+  ExternalTaskSummary,
   ExternalLinkKind,
   ExternalLinkRole,
   ExternalLinkStatus,

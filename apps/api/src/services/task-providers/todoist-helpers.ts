@@ -20,9 +20,16 @@ export interface TodoistProject {
   name: string;
 }
 
+export interface TodoistSection {
+  id: string;
+  name: string;
+  project_id: string;
+}
+
 export interface TodoistTask {
   id: string;
   project_id: string;
+  section_id: string | null;
   content: string;
   description: string;
   priority: number;
@@ -49,7 +56,11 @@ function parseDate(value: string | null | undefined): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-export function normalizeTask(raw: TodoistTask, project: TodoistProject | null): ExternalTask {
+export function normalizeTask(
+  raw: TodoistTask,
+  project: TodoistProject | null,
+  section: TodoistSection | null = null
+): ExternalTask {
   const completed = raw.checked || raw.completed_at !== null;
   return {
     externalId: raw.id,
@@ -62,7 +73,9 @@ export function normalizeTask(raw: TodoistTask, project: TodoistProject | null):
     statusName: completed ? "completed" : "open",
     dueDate: parseDate(raw.due?.date),
     url: `https://app.todoist.com/app/task/${encodeURIComponent(raw.id)}`,
-    containerName: project?.name ?? null,
+    containerName: [project?.name, section?.name].filter(Boolean).join(" / ") || null,
+    projectName: project?.name ?? null,
+    sectionName: section?.name ?? null,
     remoteUpdatedAt: parseDate(raw.updated_at) ?? new Date(0),
     // The single-task endpoint does not return child tasks.
     subtasks: [],

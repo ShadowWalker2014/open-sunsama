@@ -2,7 +2,7 @@
  * Daily summary check handler
  * Runs every minute to detect timezones hitting 6 AM and queue daily summary jobs
  */
-import type PgBoss from "pg-boss";
+import type { Job } from "pg-boss";
 import { getDb, eq, and, isNotNull } from "@open-sunsama/database";
 import { users, notificationPreferences } from "@open-sunsama/database/schema";
 import { toZonedTime } from "date-fns-tz";
@@ -23,7 +23,7 @@ export interface SendDailySummaryPayload {
  * Runs every minute to catch 6 AM in each timezone
  */
 export async function processDailySummaryCheck(
-  _job: PgBoss.Job<DailySummaryCheckPayload>
+  _job: Job<DailySummaryCheckPayload>
 ): Promise<void> {
   const db = getDb();
   const boss = await getPgBoss();

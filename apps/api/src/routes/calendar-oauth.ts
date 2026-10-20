@@ -20,6 +20,7 @@ import {
 } from "../services/calendar-providers/index.js";
 import {
   oauthInitiateParamsSchema,
+  oauthInitiateQuerySchema,
   oauthCallbackQuerySchema,
 } from "../validation/calendar.js";
 import {
@@ -64,11 +65,48 @@ calendarOAuthRouter.get(
   "/:provider/initiate",
   auth,
   zValidator("param", oauthInitiateParamsSchema),
+  zValidator("query", oauthInitiateQuerySchema),
   async (c) => {
     const userId = c.get("userId");
     const { provider: providerName } = c.req.valid("param");
+    const { accountId } = c.req.valid("query");
 
-    const state = await createOAuthState(userId, providerName);
+    if (accountId) {
+      if (providerName !== "google") {
+        return c.json(
+          {
+            success: false,
+            error: { message: "Only Google accounts can be reconnected." },
+          },
+          400
+        );
+      }
+
+      const db = getDb();
+      const [account] = await db
+        .select({ id: calendarAccounts.id })
+        .from(calendarAccounts)
+        .where(
+          and(
+            eq(calendarAccounts.id, accountId),
+            eq(calendarAccounts.userId, userId),
+            eq(calendarAccounts.provider, "google")
+          )
+        )
+        .limit(1);
+
+      if (!account) {
+        return c.json(
+          {
+            success: false,
+            error: { message: "Google calendar account not found." },
+          },
+          404
+        );
+      }
+    }
+
+    const state = await createOAuthState(userId, providerName, accountId);
     const provider = getProvider(providerName);
     const redirectUri = getRedirectUri(providerName);
     const authUrl = provider.getAuthUrl(state, redirectUri);
@@ -125,7 +163,7 @@ calendarOAuthRouter.get(
 
     await deleteOAuthState(state);
 
-    const { userId } = storedState;
+    const { userId, accountId: targetAccountId } = storedState;
     const provider = getProvider(providerName);
     const redirectUri = getRedirectUri(providerName);
 
@@ -181,17 +219,39 @@ calendarOAuthRouter.get(
 
       const db = getDb();
 
-      const [existingAccount] = await db
-        .select()
-        .from(calendarAccounts)
-        .where(
-          and(
-            eq(calendarAccounts.userId, userId),
-            eq(calendarAccounts.provider, providerName),
-            eq(calendarAccounts.providerAccountId, providerAccountId)
-          )
-        )
-        .limit(1);
+      const [existingAccount] = targetAccountId
+        ? await db
+            .select()
+            .from(calendarAccounts)
+            .where(
+              and(
+                eq(calendarAccounts.id, targetAccountId),
+                eq(calendarAccounts.userId, userId),
+                eq(calendarAccounts.provider, providerName)
+              )
+            )
+            .limit(1)
+        : await db
+            .select()
+            .from(calendarAccounts)
+            .where(
+              and(
+                eq(calendarAccounts.userId, userId),
+                eq(calendarAccounts.provider, providerName),
+                eq(calendarAccounts.providerAccountId, providerAccountId)
+              )
+            )
+            .limit(1);
+
+      if (
+        targetAccountId &&
+        (!existingAccount ||
+          existingAccount.providerAccountId !== providerAccountId)
+      ) {
+        throw new Error(
+          "Sign in with the same Google account to reconnect this calendar."
+        );
+      }
 
       let accountId: string;
 

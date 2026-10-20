@@ -1,7 +1,7 @@
 {
   "name": "open-sunsama",
   "description": "Open-source, AI agent friendly Sunsama alternative with direct API access",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
   "overrides": {
@@ -42,7 +42,9 @@
       "zod": "^4.6.5",
       "@tanstack/react-query": "^5.103.2",
       "dotenv": "^17.4.2",
-      "vitest": "^5.0.1"
+      "@tauri-apps/api": "^2.12.1",
+      "@tauri-apps/cli": "^2.12.1",
+      "vitest": "^5.0.3"
     }
   },
   "scripts": {
@@ -57,8 +59,9 @@
     "build": "turbo run build",
     "build:mobile:ios": "turbo run build:ios --filter=@open-sunsama/mobile",
     "build:mobile:android": "turbo run build:android --filter=@open-sunsama/mobile",
+    "build:desktop": "turbo run --filter=@open-sunsama/desktop build",
     "lint": "turbo run lint",
-    "lint:fix": "turbo run lint:fix",
+    "lint:fix": "turbo run lint -- --fix",
     "test": "turbo run test",
     "test:watch": "turbo run test:watch",
     "e2e": "playwright test -c e2e",
@@ -79,12 +82,12 @@
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.63.0",
     "@types/node": "^24.0.0",
-    "eslint": "^10.11.0",
-    "globals": "^17.12.0",
+    "eslint": "^10.12.0",
+    "globals": "^17.13.0",
     "prettier": "^3.9.8",
-    "turbo": "^2.11.2",
+    "turbo": "^2.11.7",
     "typescript": "catalog:",
-    "typescript-eslint": "^8.70.1"
+    "typescript-eslint": "^8.71.0"
   },
   "dependencies": {}
 }

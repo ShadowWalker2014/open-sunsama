@@ -3,7 +3,7 @@
  * Periodically syncs calendar events from connected accounts
  * Runs every 5 minutes to check for accounts needing sync
  */
-import type PgBoss from 'pg-boss';
+import type { Job } from 'pg-boss';
 import { getPgBoss, JOBS } from '../../lib/pgboss.js';
 import { type CalendarSyncCheckPayload, processCalendarSyncCheck } from './sync-check.js';
 import { type SyncAccountPayload, processSyncAccount } from './sync-account.js';
@@ -40,7 +40,7 @@ export async function registerCalendarSyncWorkers(): Promise<void> {
   // Register the sync check handler
   await boss.work(
     JOBS.CALENDAR_SYNC_CHECK,
-    async (jobs: PgBoss.Job<CalendarSyncCheckPayload>[]) => {
+    async (jobs: Job<CalendarSyncCheckPayload>[]) => {
       for (const job of jobs) {
         await processCalendarSyncCheck(job);
       }
@@ -52,7 +52,7 @@ export async function registerCalendarSyncWorkers(): Promise<void> {
   await boss.work(
     JOBS.SYNC_CALENDAR_ACCOUNT,
     { batchSize: 5 }, // Process 5 accounts concurrently
-    async (jobs: PgBoss.Job<SyncAccountPayload>[]) => {
+    async (jobs: Job<SyncAccountPayload>[]) => {
       // Process jobs concurrently within the batch
       await Promise.all(jobs.map(job => processSyncAccount(job)));
     }

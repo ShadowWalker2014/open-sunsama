@@ -1,0 +1,63 @@
+# Full stack:  api -> web
+#
+# Self-hosting:  docker compose up -d --build
+#   Then open http://localhost:3000. The API applies database migrations on
+#   every start and generates its own secrets on the first one. Settings go
+#   in .env; see https://opensunsama.com/docs/self-hosting/docker
+#
+# Development:   docker compose up -d postgres
+#   PostgreSQL only, on localhost:5431, for `bun run dev`.
+
+services:
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    # Generates JWT_SECRET and CALENDAR_ENCRYPTION_KEY on first start unless .env sets them
+    command: [ "sh", "docker-start.sh" ]
+    # Optional integrations (Google/Microsoft calendar, Resend email, S3 uploads,
+    # VAPID push) are read from .env as-is
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: ${DATABASE_URL:postgresql://${POSTGRES_USER:-opensunsama}:${POSTGRES_PASSWORD:-opensunsama}@postgres:5432/${POSTGRES_DB:-opensunsama}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      MIGRATE_ON_START: "true"
+      PORT: ${PORT:-3001}
+      # Public URLs: OAuth redirects, email links, CORS and the MCP connector use them
+      API_URL: ${API_URL:-http://localhost:3001}
+      WEB_APP_URL: ${WEB_APP_URL:-http://localhost:3000}
+      FRONTEND_URL: ${WEB_APP_URL:-http://localhost:3000}
+      CORS_ORIGIN: ${WEB_APP_URL:-http://localhost:3000}
+      # Email workers need RESEND_API_KEY; turn them on in .env once it's set
+      EMAIL_WORKERS_ENABLED: ${EMAIL_WORKERS_ENABLED:-false}
+    volumes:
+      - api_secrets:/app/secrets
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        # Baked into the JavaScript at build time: rebuild after changing API_URL
+        VITE_API_URL: ${API_URL:-http://localhost:3001}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  api_secrets:

@@ -11,6 +11,7 @@ import {
   addMinutes,
   getStartOfDay,
   createDateTime,
+  parseTaskSchedule,
 } from './date.js';
 
 describe('date utilities', () => {
@@ -199,6 +200,34 @@ describe('date utilities', () => {
       expect(result.getDate()).toBe(15);
       expect(result.getHours()).toBe(14);
       expect(result.getMinutes()).toBe(30);
+    });
+  });
+
+  describe('parseTaskSchedule', () => {
+    const reference = new Date(2025, 3, 9, 9, 0); // Wednesday
+
+    it('extracts a relative date and 12-hour time', () => {
+      expect(parseTaskSchedule('Plan review tomorrow at 11:30am', reference)).toEqual({
+        title: 'Plan review',
+        scheduledDate: '2025-04-10',
+        time: '11:30',
+      });
+    });
+
+    it('extracts the next weekday and 24-hour time', () => {
+      expect(parseTaskSchedule('Ship release next Monday at 14:00', reference)).toEqual({
+        title: 'Ship release',
+        scheduledDate: '2025-04-14',
+        time: '14:00',
+      });
+    });
+
+    it('leaves titles without scheduling cues unchanged', () => {
+      expect(parseTaskSchedule('Write project brief', reference)).toEqual({
+        title: 'Write project brief',
+        scheduledDate: undefined,
+        time: undefined,
+      });
     });
   });
 });

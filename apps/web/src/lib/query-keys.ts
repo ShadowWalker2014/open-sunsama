@@ -79,6 +79,7 @@ export const integrationKeys = {
   all: ["integrations"] as const,
   providers: () => [...integrationKeys.all, "providers"] as const,
   accounts: () => [...integrationKeys.all, "accounts"] as const,
+  tasks: (accountId: string) => [...integrationKeys.all, "tasks", accountId] as const,
 };
 
 export const ideaBoardKeys = {

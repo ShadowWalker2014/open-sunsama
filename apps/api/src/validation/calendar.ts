@@ -17,6 +17,10 @@ export const oauthInitiateParamsSchema = z.object({
   provider: z.enum(['google', 'outlook']),
 });
 
+export const oauthInitiateQuerySchema = z.object({
+  accountId: uuidSchema.optional(),
+});
+
 /**
  * Schema for OAuth callback query params
  */

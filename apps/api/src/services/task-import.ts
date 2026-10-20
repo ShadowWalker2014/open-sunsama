@@ -1,7 +1,7 @@
 /**
- * Manual task import.
+ * Task-source import.
  *
- * The user pastes a link or an id; we fetch that one task and create a
+ * The user chooses a source task or pastes a link/id; we fetch that task and create a
  * local task linked back to it. Later they may hit refresh on that task
  * to pull current values again.
  *

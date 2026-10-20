@@ -20,6 +20,7 @@ import { EDIT_ESTIMATE_EVENT } from "@/components/task-shortcuts-handler";
 import { PRIORITY_META } from "@/components/ui/priority-badge";
 import { PriorityMenu } from "./priority-menu";
 import { TaskSourceChips } from "./task-source-chip";
+import { renderInlineMarkdown } from "@/components/ui/inline-markdown";
 
 interface TaskCardContentProps {
   task: Task;
@@ -254,7 +255,7 @@ export function TaskCardContent({
             isCompleted && "text-muted-foreground line-through"
           )}
         >
-          {task.title}
+          {renderInlineMarkdown(task.title)}
         </p>
         {timeChip}
       </div>

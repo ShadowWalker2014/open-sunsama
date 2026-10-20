@@ -191,7 +191,8 @@ export function KanbanBoard({
           onSearchQueryChange={setSearchQuery}
         />
 
-        {isDay ? (
+        <div className="flex min-h-0 flex-1">
+          {isDay ? (
           // The day and its calendar sit together in the middle of the page,
           // as in Sunsama's Today.
           <div className="flex min-h-0 flex-1 justify-center gap-5 overflow-hidden px-4">
@@ -208,7 +209,7 @@ export function KanbanBoard({
               <div className="hidden h-full shrink-0 lg:block">{dayAside}</div>
             )}
           </div>
-        ) : (
+          ) : (
         /* Kanban Board - DndContext is provided by TasksDndProvider */
         <div
           ref={containerRef}
@@ -247,7 +248,8 @@ export function KanbanBoard({
             })}
           </div>
         </div>
-        )}
+          )}
+        </div>
 
         {/* Task Detail Modal */}
         <TaskModal

@@ -9,6 +9,7 @@ import { getDb, oauthStates, eq, lt } from "@open-sunsama/database";
 export interface OAuthStateData {
   userId: string;
   provider: "google" | "outlook";
+  accountId: string | null;
   createdAt: Date;
 }
 
@@ -20,7 +21,8 @@ const STATE_TTL_MS = 10 * 60 * 1000;
  */
 export async function createOAuthState(
   userId: string,
-  provider: "google" | "outlook"
+  provider: "google" | "outlook",
+  accountId?: string
 ): Promise<string> {
   const state = randomBytes(32).toString("hex");
   const db = getDb();
@@ -31,6 +33,7 @@ export async function createOAuthState(
     state,
     userId,
     provider,
+    accountId,
     createdAt: now,
     expiresAt,
   });
@@ -67,6 +70,7 @@ export async function validateOAuthState(
   return {
     userId: storedState.userId,
     provider: storedState.provider as "google" | "outlook",
+    accountId: storedState.accountId,
     createdAt: storedState.createdAt,
   };
 }

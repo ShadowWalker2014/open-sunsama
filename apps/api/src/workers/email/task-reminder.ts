@@ -2,7 +2,7 @@
  * Task reminder check handler
  * Runs every minute to check for time blocks starting soon and queue reminder emails
  */
-import type PgBoss from "pg-boss";
+import type { Job } from "pg-boss";
 import { getDb, eq, and, gte, lte } from "@open-sunsama/database";
 import {
   users,
@@ -26,7 +26,7 @@ export interface SendTaskReminderPayload {
  * Runs every minute to catch time blocks within each user's reminder window
  */
 export async function processTaskReminderCheck(
-  _job: PgBoss.Job<TaskReminderCheckPayload>
+  _job: Job<TaskReminderCheckPayload>
 ): Promise<void> {
   const db = getDb();
   const boss = await getPgBoss();

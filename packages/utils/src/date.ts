@@ -3,6 +3,7 @@
  */
 
 import {
+  addDays as addDaysDate,
   format,
   parse,
   isToday as dfIsToday,
@@ -144,4 +145,72 @@ export function getStartOfDay(date: Date): Date {
 export function createDateTime(dateStr: string, timeStr: string): Date {
   const date = parseDate(dateStr);
   return parseTime(timeStr, date);
+}
+
+export interface ParsedTaskSchedule {
+  title: string;
+  scheduledDate?: string;
+  time?: string;
+}
+
+const WEEKDAYS: Record<string, number> = {
+  sunday: 0,
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
+};
+
+/** Extract simple natural-language scheduling cues from a task title. */
+export function parseTaskSchedule(
+  title: string,
+  referenceDate = new Date()
+): ParsedTaskSchedule {
+  let remaining = title;
+  let scheduledDate: Date | undefined;
+
+  const relativeMatch = /\b(?:for\s+)?(today|tomorrow)\b/i.exec(remaining);
+  if (relativeMatch) {
+    scheduledDate = startOfDay(referenceDate);
+    if (relativeMatch[1]!.toLowerCase() === 'tomorrow') {
+      scheduledDate = addDaysDate(scheduledDate, 1);
+    }
+    remaining = remaining.replace(relativeMatch[0], ' ');
+  } else {
+    const weekdayMatch = /\b(?:(next)\s+)?(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i.exec(remaining);
+    if (weekdayMatch) {
+      const targetDay = WEEKDAYS[weekdayMatch[2]!.toLowerCase()]!;
+      let offset = (targetDay - referenceDate.getDay() + 7) % 7;
+      if (offset === 0) offset = 7;
+      scheduledDate = startOfDay(addDaysDate(referenceDate, offset));
+      remaining = remaining.replace(weekdayMatch[0], ' ');
+    }
+  }
+
+  const timeMatch = /\bat\s+(?:(2[0-3]|[01]?\d):([0-5]\d)|(1[0-2]|0?[1-9])(?::([0-5]\d))?\s*(am|pm)?)(?!\w)/i.exec(remaining);
+  let time: string | undefined;
+  if (timeMatch) {
+    let hours: number;
+    let minutes = 0;
+    if (timeMatch[1] !== undefined) {
+      hours = Number(timeMatch[1]);
+      minutes = Number(timeMatch[2]);
+    } else {
+      hours = Number(timeMatch[3]);
+      minutes = Number(timeMatch[4] ?? 0);
+      const meridiem = timeMatch[5]?.toLowerCase();
+      if (meridiem === 'pm' && hours !== 12) hours += 12;
+      if (meridiem === 'am' && hours === 12) hours = 0;
+    }
+    time = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    remaining = remaining.replace(timeMatch[0], ' ');
+  }
+
+  return {
+    title: remaining.replace(/\s+/g, ' ').trim() || title.trim(),
+    ...(scheduledDate ? { scheduledDate: formatDate(scheduledDate) } : {}),
+    ...(time ? { time } : {}),
+  };
 }

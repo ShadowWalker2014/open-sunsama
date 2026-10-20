@@ -160,11 +160,11 @@ export function CalendarSettings() {
   }, [calendars]);
 
   const handleConnectGoogle = () => {
-    initiateOAuthMutation.mutate("google");
+    initiateOAuthMutation.mutate({ provider: "google" });
   };
 
   const handleConnectOutlook = () => {
-    initiateOAuthMutation.mutate("outlook");
+    initiateOAuthMutation.mutate({ provider: "outlook" });
   };
 
   const handleRemoveAccount = () => {
@@ -224,24 +224,24 @@ export function CalendarSettings() {
         <CardContent className="space-y-6">
           {/* Connect buttons */}
           <div className="flex flex-wrap gap-2">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleConnectGoogle}
               disabled={initiateOAuthMutation.isPending}
             >
-              {initiateOAuthMutation.isPending && initiateOAuthMutation.variables === "google" ? (
+              {initiateOAuthMutation.isPending && initiateOAuthMutation.variables?.provider === "google" ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <GoogleIcon className="mr-2 h-4 w-4" />
               )}
               Add Google Calendar
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleConnectOutlook}
               disabled={initiateOAuthMutation.isPending}
             >
-              {initiateOAuthMutation.isPending && initiateOAuthMutation.variables === "outlook" ? (
+              {initiateOAuthMutation.isPending && initiateOAuthMutation.variables?.provider === "outlook" ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <OutlookIcon className="mr-2 h-4 w-4" />
@@ -269,6 +269,15 @@ export function CalendarSettings() {
                       accountId: account.id,
                       force: true,
                     })
+                  }
+                  onReconnect={
+                    account.provider === "google" && account.syncStatus === "error"
+                      ? () =>
+                          initiateOAuthMutation.mutate({
+                            provider: "google",
+                            accountId: account.id,
+                          })
+                      : undefined
                   }
                   onRemove={() => {
                     setAccountToRemove(account);

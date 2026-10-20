@@ -3,18 +3,20 @@
 import DOMPurify from "dompurify";
 import { useMemo } from "react";
 import { cn, resolveUploadUrl } from "@/lib/utils";
+import { descriptionToHtml } from "@/lib/markdown";
 import { useLightbox } from "./lightbox";
 
 interface HtmlContentProps {
   html: string;
   className?: string;
+  markdown?: boolean;
 }
 
-export function HtmlContent({ html, className }: HtmlContentProps) {
+export function HtmlContent({ html, className, markdown = false }: HtmlContentProps) {
   const lightbox = useLightbox();
   const sanitizedHtml = useMemo(() => {
     if (!html) return null;
-    const clean = DOMPurify.sanitize(html, {
+    const clean = DOMPurify.sanitize(markdown ? descriptionToHtml(html) : html, {
       ALLOWED_TAGS: [
         "p", "br", "strong", "b", "em", "i", "u", "s", "a",
         "ul", "ol", "li", "blockquote", "pre", "code", "span", "div", "img",
@@ -29,7 +31,7 @@ export function HtmlContent({ html, className }: HtmlContentProps) {
       /src="(\/uploads\/[^"]*)"/g,
       (_m, p1) => `src="${resolveUploadUrl(p1)}"`
     );
-  }, [html]);
+  }, [html, markdown]);
 
   if (!sanitizedHtml) {
     return null;

@@ -7,6 +7,7 @@ function rawTask(overrides: Partial<TodoistTask> = {}): TodoistTask {
   return {
     id,
     project_id: "1234567890",
+    section_id: null,
     content: "Ship the thing",
     description: "Do the work",
     priority: 4,
