@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { updateProfileSchema } from "./auth";
+import { preserveTimezoneManuallySet } from "../routes/auth";
 
 describe("updateProfileSchema timezone", () => {
   it("accepts IANA zones and UTC", () => {
@@ -13,5 +14,16 @@ describe("updateProfileSchema timezone", () => {
     expect(() =>
       updateProfileSchema.parse({ timezone: "Not/A_Timezone" })
     ).toThrow("valid IANA timezone");
+  });
+});
+
+describe("preserveTimezoneManuallySet", () => {
+  it("keeps the manual timezone marker when a client updates theme preferences", () => {
+    expect(
+      preserveTimezoneManuallySet(
+        { themeMode: "dark", colorTheme: "blue", fontFamily: "inter" },
+        true,
+      ),
+    ).toMatchObject({ timezoneManuallySet: true });
   });
 });

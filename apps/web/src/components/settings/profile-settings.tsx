@@ -98,10 +98,10 @@ export function ProfileSettings() {
   const onSubmit = async (data: ProfileForm) => {
     setIsLoading(true);
     try {
-        await updateUser({
-          name: data.name,
-          timezone: data.timezone,
-          timezoneManuallySet: dirtyFields.timezone === true,
+      await updateUser({
+        name: data.name,
+        timezone: data.timezone,
+        timezoneManuallySet: dirtyFields.timezone === true,
       });
       toast({
         title: "Profile updated",
