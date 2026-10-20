@@ -31,14 +31,15 @@ export function isDesktop(): boolean {
  */
 export async function showNotification(
   options: NotificationOptions
-): Promise<void> {
+): Promise<boolean> {
   if (isDesktop()) {
     try {
       const { invoke } = await import("@tauri-apps/api/core");
       await invoke("show_notification", { options });
-      return;
+      return true;
     } catch (error) {
-      console.error("Desktop notification failed, falling back to web:", error);
+      console.error("Desktop notification failed:", error);
+      return false;
     }
   }
 
@@ -46,12 +47,43 @@ export async function showNotification(
   if ("Notification" in window) {
     if (Notification.permission === "granted") {
       new Notification(options.title, { body: options.body });
+      return true;
     } else if (Notification.permission !== "denied") {
       const permission = await Notification.requestPermission();
       if (permission === "granted") {
         new Notification(options.title, { body: options.body });
+        return true;
       }
     }
+  }
+  return false;
+}
+
+/** Request native notification permission without using browser permission APIs. */
+export async function requestDesktopNotificationPermission(): Promise<boolean> {
+  if (!isDesktop()) return false;
+
+  try {
+    const { invoke } = await import("@tauri-apps/api/core");
+    return await invoke<boolean>("request_notification_permission");
+  } catch (error) {
+    console.error("Failed to request desktop notification permission:", error);
+    return false;
+  }
+}
+
+/** Read native notification permission without using browser permission APIs. */
+export async function getDesktopNotificationPermission(): Promise<NotificationPermission> {
+  if (!isDesktop()) return "denied";
+
+  try {
+    const { invoke } = await import("@tauri-apps/api/core");
+    const permission = await invoke<string>("get_notification_permission");
+    if (permission === "granted") return "granted";
+    if (permission === "denied") return "denied";
+    return "default";
+  } catch {
+    return "denied";
   }
 }
 
@@ -134,7 +166,9 @@ export async function listenToDesktopEvent<T>(
 /**
  * Hook for listening to quick-add-task event
  */
-export function onQuickAddTask(handler: () => void): Promise<(() => void) | null> {
+export function onQuickAddTask(
+  handler: () => void
+): Promise<(() => void) | null> {
   return listenToDesktopEvent("quick-add-task", handler);
 }
 

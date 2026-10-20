@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/shortcuts-modal.lazy";
 import { GlobalShortcutsHandler } from "@/components/global-shortcuts-handler";
 import { DesktopShortcutsHandler } from "@/components/desktop-shortcuts-handler";
+import { DesktopReminderRunner } from "@/components/desktop-reminder-runner";
+import { isDesktop } from "@/lib/desktop";
 import {
   CommandPalette,
   prefetchCommandPalette,
@@ -112,6 +114,7 @@ function AppLayoutInner() {
   const { isSearchOpen, closeSearch } = useSearch();
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = React.useState(false);
+  const { user } = useAuth();
 
   // Warm the Tiptap chunk during browser idle time. The first time the user
   // hits Cmd+K → Add Task, or opens a task modal, the editor module is
@@ -119,7 +122,10 @@ function AppLayoutInner() {
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     const win = window as Window & {
-      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      requestIdleCallback?: (
+        cb: () => void,
+        opts?: { timeout: number }
+      ) => number;
       cancelIdleCallback?: (id: number) => void;
     };
     let cancelled = false;
@@ -177,6 +183,7 @@ function AppLayoutInner() {
 
       {/* Desktop app global shortcuts, tray and menu actions (Tauri only) */}
       <DesktopShortcutsHandler onAddTask={handleAddTask} />
+      {isDesktop() && user && <DesktopReminderRunner userId={user.id} />}
 
       {/* Shortcuts Modal */}
       <ShortcutsModal
