@@ -24,6 +24,7 @@
     "@open-sunsama/mcp": "workspace:*",
     "@open-sunsama/types": "workspace:*",
     "@open-sunsama/utils": "workspace:*",
+    "@simplewebauthn/server": "^14.0.3",
     "bcrypt": "^6.0.0",
     "date-fns": "^4.4.0",
     "date-fns-tz": "^3.2.0",
