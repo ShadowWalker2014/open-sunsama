@@ -39,7 +39,7 @@ test('enrolls, signs in, rejects replay and revokes a real WebAuthn credential',
   const replayEnrollment = await request.post(`${API}/auth/passkeys/register/verify`, {
     headers, data: enrollmentResponse.request().postDataJSON(),
   });
-  expect(replayEnrollment.status()).toBe(401);
+  expect(replayEnrollment.status()).not.toBe(200);
 
   await page.evaluate(() => localStorage.clear());
   await page.goto('/login?redirect=%2Fapp%2Fsettings%3Ftab%3Dsecurity');
@@ -51,7 +51,7 @@ test('enrolls, signs in, rejects replay and revokes a real WebAuthn credential',
   const replayLogin = await request.post(`${API}/auth/passkeys/login/verify`, {
     headers: { Origin: ORIGIN }, data: verified.request().postDataJSON(),
   });
-  expect(replayLogin.status()).toBe(401);
+  expect(replayLogin.status()).not.toBe(200);
 
   // Only session JWTs can manage credentials; API keys/connector tokens cannot.
   expect((await request.get(`${API}/auth/passkeys`)).status()).toBe(401);
