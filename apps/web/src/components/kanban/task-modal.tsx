@@ -102,13 +102,20 @@ interface TaskModalProps {
 }
 
 export function TaskModal({
-  task,
+  task: openedTask,
   open,
   onOpenChange,
   createDefaults,
 }: TaskModalProps) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+
+  // The prop is a snapshot from when the modal opened and only names the task.
+  // Read everything from the query cache, which mutations and WebSocket keep
+  // current; otherwise the modal ignores its own edits (e.g. completing).
+  const { data: freshTask } = useTask(openedTask?.id ?? "");
+  const task = openedTask ? (freshTask ?? openedTask) : null;
+
   const isCompose = !!createDefaults && !task;
   const [title, setTitle] = React.useState("");
   const [isEditingTitle, setIsEditingTitle] = React.useState(isCompose);
@@ -182,17 +189,12 @@ export function TaskModal({
   const createTaskSeries = useCreateTaskSeries();
   const updateTask = useUpdateTask();
 
-  // Fetch reactive task data from query cache (updates via WebSocket + invalidation)
-  // The prop `task` is a stale snapshot; this gives us live data
-  const { data: freshTask } = useTask(task?.id ?? "");
-  const liveTask = freshTask ?? task;
-
   // Live timer display — ticks every second when timer is active
   const {
     isTimerRunning,
     liveSeconds,
   } = useTaskTimerDisplay(
-    liveTask ??
+    task ??
       ({
         timerStartedAt: null,
         timerAccumulatedSeconds: 0,
@@ -382,6 +384,8 @@ export function TaskModal({
 
   const isCompleted = !!task?.completedAt;
 
+  // Load the form once per opened task. Keyed on the id, not the task, so
+  // cache updates while the modal is open don't overwrite what's being typed.
   React.useEffect(() => {
     if (task) {
       setTitle(task.title);
@@ -390,14 +394,14 @@ export function TaskModal({
       setActualMins(task.actualMins || null);
       setShowDeleteConfirm(false);
     }
-  }, [task]);
+  }, [task?.id]);
 
   // Keep actualMins in sync when live task data updates (e.g., from WebSocket timer stop)
   React.useEffect(() => {
-    if (liveTask && liveTask.actualMins !== undefined) {
-      setActualMins(liveTask.actualMins ?? null);
+    if (task && task.actualMins !== undefined) {
+      setActualMins(task.actualMins ?? null);
     }
-  }, [liveTask?.actualMins]);
+  }, [task?.actualMins]);
 
   // Debounced autosave for notes - saves 1 second after user stops typing
   React.useEffect(() => {
@@ -531,9 +535,9 @@ export function TaskModal({
     }
   };
 
-  // Use the live task for rendering, falling back to lastTaskRef during close animation
+  // Fall back to lastTaskRef during the close animation
   const renderTask: Task | null =
-    liveTask ??
+    task ??
     lastTaskRef.current ??
     (isCompose
       ? ({

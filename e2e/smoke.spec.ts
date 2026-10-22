@@ -250,6 +250,40 @@ test("concurrent timer starts keep one timer and stale stops do not stop another
   await api("POST", `/tasks/${first.id}/timer/stop`, {}, session.token);
 });
 
+test("the task modal's checkbox completes and uncompletes the open task", async ({ page }) => {
+  const session = await register();
+  const title = `Modal complete ${Date.now()}`;
+  await api("POST", "/tasks", { title, scheduledDate: today }, session.token);
+  await signInWithToken(page, session);
+  await page.goto("/app");
+
+  await page.locator("[data-task-id]").filter({ hasText: title }).click();
+  const dialog = page.getByRole("dialog", { name: title });
+  const checkbox = dialog.getByRole("checkbox", { name: /Mark (complete|incomplete)/ });
+  await expect(checkbox).toHaveAttribute("aria-checked", "false");
+
+  // The modal opens from a snapshot of the task; the checkbox must follow
+  // the live task, both ways, while the modal stays open.
+  const completed = page.waitForResponse((r) => /\/complete$/.test(r.url()));
+  await checkbox.click();
+  await expect(checkbox).toHaveAttribute("aria-checked", "true");
+  expect((await completed).ok()).toBe(true);
+  await expect(checkbox).toHaveAttribute("aria-checked", "true");
+
+  const uncompleted = page.waitForResponse((r) => /\/uncomplete$/.test(r.url()));
+  await checkbox.click();
+  await expect(checkbox).toHaveAttribute("aria-checked", "false");
+  expect((await uncompleted).ok()).toBe(true);
+
+  const task = (await api<Array<{ title: string; completedAt: string | null }>>(
+    "GET",
+    `/tasks?from=${today}&to=${today}`,
+    undefined,
+    session.token
+  )).find((t) => t.title === title);
+  expect(task?.completedAt, "task is open again in the database").toBeNull();
+});
+
 test("mobile board fits above compact navigation", async ({ page }) => {
   const session = await register();
   await page.setViewportSize({ width: 390, height: 844 });
