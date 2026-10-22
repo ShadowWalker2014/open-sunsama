@@ -47,7 +47,7 @@ test('enrolls, signs in, rejects replay and revokes a real WebAuthn credential',
   await page.getByRole('button', { name: 'Sign in with a passkey' }).click();
   const verified = await verification;
   expect(verified.ok()).toBe(true);
-  await expect(page).toHaveURL(/\/app\/settings\?tab=security/);
+  await expect(page).toHaveURL(/\/app\/settings$/);
   const replayLogin = await request.post(`${API}/auth/passkeys/login/verify`, {
     headers: { Origin: ORIGIN }, data: verified.request().postDataJSON(),
   });
