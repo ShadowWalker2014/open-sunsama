@@ -18,17 +18,11 @@ import {
 import { publishEvent } from '../lib/websocket/index.js';
 import { deleteFromS3ByUrl } from '../lib/s3.js';
 import { sendPasswordResetEmail, getThemeHexColor } from '../lib/email/index.js';
+import { passkeysRouter } from './passkeys.js';
+import { formatUser } from '../lib/auth-user.js';
 
 const authRouter = new Hono<{ Variables: AuthVariables }>();
-
-/** Format user data for API response (exclude sensitive fields) */
-function formatUser(user: typeof users.$inferSelect): Omit<User, 'passwordHash'> {
-  return {
-    id: user.id, email: user.email, name: user.name, avatarUrl: user.avatarUrl,
-    timezone: user.timezone || 'UTC', createdAt: user.createdAt, updatedAt: user.updatedAt,
-    preferences: user.preferences || null,
-  };
-}
+authRouter.route('/passkeys', passkeysRouter);
 
 /** POST /auth/register - Create a new user account */
 authRouter.post('/register', zValidator('json', registerSchema), async (c) => {

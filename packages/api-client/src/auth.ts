@@ -12,11 +12,28 @@ import type {
   ChangePasswordInput,
 } from "@open-sunsama/types";
 import type { OpenSunsamaClient, RequestOptions } from "./client.js";
+import type {
+  PublicKeyCredentialCreationOptionsJSON, PublicKeyCredentialRequestOptionsJSON,
+  RegistrationResponseJSON, AuthenticationResponseJSON,
+} from "@simplewebauthn/browser";
+
+export interface PasskeySummary {
+  id: string;
+  name: string;
+  createdAt: string;
+  lastUsedAt: string | null;
+}
 
 /**
  * Authentication API interface
  */
 export interface AuthApi {
+  listPasskeys(): Promise<PasskeySummary[]>;
+  deletePasskey(id: string): Promise<void>;
+  passkeyRegistrationOptions(): Promise<{ options: PublicKeyCredentialCreationOptionsJSON; challengeId: string }>;
+  verifyPasskeyRegistration(input: { challengeId: string; response: RegistrationResponseJSON; name: string }): Promise<void>;
+  passkeyLoginOptions(): Promise<{ options: PublicKeyCredentialRequestOptionsJSON; challengeId: string }>;
+  verifyPasskeyLogin(input: { challengeId: string; response: AuthenticationResponseJSON }): Promise<AuthResponse>;
   /**
    * Register a new user account
    * @param input User registration data
@@ -103,6 +120,24 @@ interface ApiResponseWrapper<T> {
 
 export function createAuthApi(client: OpenSunsamaClient): AuthApi {
   return {
+    async listPasskeys() {
+      return (await client.get<ApiResponseWrapper<PasskeySummary[]>>("auth/passkeys")).data;
+    },
+    async deletePasskey(id) {
+      await client.delete(`auth/passkeys/${encodeURIComponent(id)}`);
+    },
+    async passkeyRegistrationOptions() {
+      return (await client.post<ApiResponseWrapper<{ options: PublicKeyCredentialCreationOptionsJSON; challengeId: string }>>("auth/passkeys/register/options", {})).data;
+    },
+    async verifyPasskeyRegistration(input) {
+      await client.post("auth/passkeys/register/verify", input);
+    },
+    async passkeyLoginOptions() {
+      return (await client.post<ApiResponseWrapper<{ options: PublicKeyCredentialRequestOptionsJSON; challengeId: string }>>("auth/passkeys/login/options", {})).data;
+    },
+    async verifyPasskeyLogin(input) {
+      return (await client.post<ApiResponseWrapper<AuthResponse>>("auth/passkeys/login/verify", input)).data;
+    },
     async register(
       input: CreateUserInput,
       options?: RequestOptions

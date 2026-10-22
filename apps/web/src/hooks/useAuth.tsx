@@ -39,6 +39,7 @@ interface AuthState {
 }
 
 interface AuthContextValue extends AuthState {
+  completePasskeyLogin: (data: AuthResponse) => void;
   login: (credentials: LoginInput) => Promise<void>;
   register: (data: CreateUserInput) => Promise<void>;
   logout: () => void;
@@ -205,6 +206,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
+  const completePasskeyLogin = React.useCallback((data: AuthResponse) => {
+    storeAuthData(data.token, data.user);
+    setToken(data.token);
+    setCachedUser(data.user);
+    queryClient.setQueryData(["auth", "me"], data.user);
+  }, [queryClient]);
+
   const registerMutation = useMutation({
     mutationFn: async (data: CreateUserInput): Promise<AuthResponse> => {
       const api = getApi();
@@ -290,11 +298,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAuthenticated,
       isLoading,
       login,
+      completePasskeyLogin,
       register,
       logout,
       updateUser,
     }),
-    [effectiveUser, token, isAuthenticated, isLoading, login, register, logout, updateUser]
+    [effectiveUser, token, isAuthenticated, isLoading, login, completePasskeyLogin, register, logout, updateUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
