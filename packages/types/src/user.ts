@@ -60,6 +60,12 @@ export interface UserPreferences {
    * across accounts, devices, and logins.
    */
   addTaskPosition?: "top" | "bottom";
+
+  /**
+   * Whether meetings the user declined stay on the calendar (faded and
+   * struck through) or are hidden. Defaults to true.
+   */
+  showDeclinedEvents?: boolean;
 }
 
 /**

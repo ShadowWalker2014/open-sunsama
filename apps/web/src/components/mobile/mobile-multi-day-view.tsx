@@ -8,6 +8,7 @@ import {
 } from "date-fns";
 import type { CalendarEvent, TimeBlock } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
+import { declinedEventClass } from "@/lib/declined-event";
 import { ScrollArea } from "@/components/ui";
 import {
   HOUR_HEIGHT,
@@ -196,7 +197,10 @@ export function MobileMultiDayView({
                       key={event.id}
                       onClick={() => onEventClick(event)}
                       style={{ top, height }}
-                      className="absolute inset-x-0.5 z-9 overflow-hidden rounded border-l-2 border-muted-foreground/40 bg-muted/70 px-1 text-left text-[10px] leading-tight text-foreground active:brightness-95"
+                      className={cn(
+                        "absolute inset-x-0.5 z-9 overflow-hidden rounded border-l-2 border-muted-foreground/40 bg-muted/70 px-1 text-left text-[10px] leading-tight text-foreground active:brightness-95",
+                        declinedEventClass(event)
+                      )}
                     >
                       <span className="line-clamp-2">{event.title}</span>
                     </button>

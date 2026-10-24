@@ -17,6 +17,7 @@ import type {
   Task,
 } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
+import { declinedEventClass } from "@/lib/declined-event";
 import { useTasks } from "@/hooks/useTasks";
 import { useAuth } from "@/hooks/useAuth";
 import { DEFAULT_PLANNED_MINS, projectTaskStarts } from "@/lib/task-projection";
@@ -553,7 +554,10 @@ export function KanbanCalendarPanel({
                   e.stopPropagation();
                   handleExternalEventClick(event);
                 }}
-                className="block w-full text-left rounded px-1.5 py-0.5 text-[11px] truncate hover:brightness-90 cursor-pointer"
+                className={cn(
+                  "block w-full text-left rounded px-1.5 py-0.5 text-[11px] truncate hover:brightness-90 cursor-pointer",
+                  declinedEventClass(event)
+                )}
                 style={{
                   backgroundColor: hexToRgba(color, 0.15),
                   borderLeft: `2px solid ${hexToRgba(color, 0.6)}`,

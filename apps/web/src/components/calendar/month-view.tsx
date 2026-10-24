@@ -15,6 +15,7 @@ import {
 } from "date-fns";
 import type { CalendarEvent, TimeBlock } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
+import { declinedEventClass } from "@/lib/declined-event";
 
 interface MonthViewProps {
   /** The "current" month — anchors which days the grid renders */
@@ -166,6 +167,7 @@ export function MonthView({
                   id: e.id,
                   title: e.title,
                   color: e.calendar?.color ?? "#6B7280",
+                  className: declinedEventClass(e),
                   onClick: onExternalEventClick
                     ? () => onExternalEventClick(e)
                     : undefined,
@@ -241,7 +243,10 @@ export function MonthView({
                         e.stopPropagation();
                         item.onClick?.();
                       }}
-                      className="block w-full text-left rounded px-1 py-0.5 text-[10px] sm:text-[11px] truncate cursor-pointer hover:brightness-90"
+                      className={cn(
+                        "block w-full text-left rounded px-1 py-0.5 text-[10px] sm:text-[11px] truncate cursor-pointer hover:brightness-90",
+                        item.kind === "event" && item.className
+                      )}
                       style={
                         item.kind === "event"
                           ? {

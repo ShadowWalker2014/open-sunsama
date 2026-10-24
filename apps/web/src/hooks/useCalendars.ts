@@ -10,6 +10,8 @@ import type {
 import { isApiError } from "@open-sunsama/api-client";
 import { getApiClient } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { isDeclined } from "@/lib/declined-event";
 import { calendarKeys } from "@/lib/query-keys";
 import { trackGoal } from "@/lib/analytics";
 
@@ -110,10 +112,18 @@ export function useCalendars() {
   });
 }
 
+function withoutDeclined(events: CalendarEvent[]): CalendarEvent[] {
+  return events.filter((event) => !isDeclined(event));
+}
+
 /**
- * Fetch calendar events for a date range
+ * Fetch calendar events for a date range. Declined meetings are left out
+ * when the user turned off "Show declined events".
  */
 export function useCalendarEvents(from: string, to: string, enabled = true) {
+  const { user } = useAuth();
+  const showDeclined = user?.preferences?.showDeclinedEvents ?? true;
+
   return useQuery({
     queryKey: calendarKeys.events(from, to),
     queryFn: async (): Promise<CalendarEvent[]> => {
@@ -124,6 +134,7 @@ export function useCalendarEvents(from: string, to: string, enabled = true) {
       );
       return response.data;
     },
+    select: showDeclined ? undefined : withoutDeclined,
     enabled,
   });
 }

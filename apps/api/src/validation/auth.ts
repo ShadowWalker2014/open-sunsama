@@ -42,6 +42,7 @@ export const userPreferencesSchema = z.object({
   weekStartsOn: z.union([z.literal(0), z.literal(1)]).optional(),
   calendarViewMode: z.enum(["day", "3-day", "week", "month"]).optional(),
   addTaskPosition: z.enum(["top", "bottom"]).optional(),
+  showDeclinedEvents: z.boolean().optional(),
 });
 
 /**
