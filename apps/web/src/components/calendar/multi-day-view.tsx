@@ -12,6 +12,7 @@ import {
 } from "date-fns";
 import type { CalendarEvent, TimeBlock } from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
+import { declinedEventClass } from "@/lib/declined-event";
 import { ScrollArea } from "@/components/ui";
 import {
   HOUR_HEIGHT,
@@ -214,7 +215,8 @@ function MultiDayEvent({
       className={cn(
         "absolute z-5 my-0.5 rounded border-l-2 hover:brightness-90 hover:z-15 transition-all overflow-hidden px-1 py-0.5",
         cursor,
-        isDragging && "opacity-50"
+        isDragging && "opacity-50",
+        declinedEventClass(event)
       )}
       style={{
         top: `${top}px`,
@@ -638,7 +640,10 @@ export function MultiDayView({
                       e.stopPropagation();
                       onExternalEventClick?.(span.event);
                     }}
-                    className="absolute text-left rounded px-1.5 py-0.5 text-[11px] truncate hover:brightness-90 cursor-pointer"
+                    className={cn(
+                      "absolute text-left rounded px-1.5 py-0.5 text-[11px] truncate hover:brightness-90 cursor-pointer",
+                      declinedEventClass(span.event)
+                    )}
                     style={{
                       top: `${laneIdx * 22 + 2}px`,
                       left: `calc(${leftPct}% + 2px)`,
