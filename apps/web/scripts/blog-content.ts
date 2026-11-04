@@ -51,10 +51,14 @@ export interface BlogSource {
 }
 
 /** Frontmatter is a JS object literal: `export const frontmatter = {...};` */
-export function readFrontmatter(source: string, file: string): PostFrontmatter {
+export function readMdxMetadata<T>(source: string, file: string): T {
   const match = source.match(/export const frontmatter = (\{[\s\S]*?\n\});/);
   if (!match?.[1]) throw new Error(`No frontmatter export in ${file}`);
-  const data = new Function(`return (${match[1]});`)() as PostFrontmatter;
+  return new Function(`return (${match[1]});`)() as T;
+}
+
+export function readFrontmatter(source: string, file: string): PostFrontmatter {
+  const data = readMdxMetadata<PostFrontmatter>(source, file);
   if (!data.title || !data.description || !data.date) {
     throw new Error(`Frontmatter in ${file} is missing title, description or date`);
   }
@@ -371,13 +375,17 @@ function addHeadingIds() {
  * The post body as HTML, plus the DemoVideo ids it uses (for VideoObject
  * JSON-LD) and its <OssApp>/<OssTable> apps (for ItemList JSON-LD).
  */
-export async function renderBody(source: string) {
+export async function renderBody(source: string, options: { omitTitle?: boolean } = {}) {
   const videosUsed = new Set<string>();
   const oss: OssUsage = { cards: [], tables: [] };
   const file = await unified()
     .use(remarkParse)
     .use(remarkMdx)
     .use(remarkGfm)
+    .use(() => (tree: MdastRoot) => {
+      // The layout owns the article title; older MDX also repeated it as #.
+      if (options.omitTitle) tree.children = tree.children.filter((node) => node.type !== "heading" || node.depth !== 1);
+    })
     .use(mapMdxNodes(videosUsed, oss))
     .use(remarkRehype)
     .use(addHeadingIds)

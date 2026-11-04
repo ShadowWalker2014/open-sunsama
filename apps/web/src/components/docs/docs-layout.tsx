@@ -29,9 +29,6 @@ export function DocsLayout({ children, doc, sections }: DocsLayoutProps) {
   // Build breadcrumb items
   const breadcrumbItems = [
     { label: "Docs", href: "/docs" },
-    ...(sectionMeta
-      ? [{ label: sectionMeta.name, href: `/docs/${doc.section}` }]
-      : []),
     { label: doc.title },
   ];
 
@@ -60,6 +57,7 @@ export function DocsLayout({ children, doc, sections }: DocsLayoutProps) {
         description={doc.description}
         slug={doc.slug}
         section={sectionMeta?.name ?? doc.section}
+        dateModified={doc.updated}
       />
 
       {/* Subtle background */}
