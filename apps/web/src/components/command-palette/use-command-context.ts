@@ -14,10 +14,11 @@ import type { CommandContext } from "./commands";
 
 interface UseCommandContextOptions {
   onAddTask: () => void;
+  onImportTask: () => void;
   closeSearch: () => void;
 }
 
-export function useCommandContext({ onAddTask, closeSearch }: UseCommandContextOptions): CommandContext {
+export function useCommandContext({ onAddTask, onImportTask, closeSearch }: UseCommandContextOptions): CommandContext {
   const navigate = useNavigate();
   const location = useLocation();
   const { themeMode, setThemeMode } = useTheme();
@@ -40,6 +41,7 @@ export function useCommandContext({ onAddTask, closeSearch }: UseCommandContextO
     currentThemeMode: themeMode,
     openAddTask: onAddTask,
     openShortcuts: () => setShowShortcutsModal(true),
+    openImportTask: onImportTask,
     closeSearch,
     
     // Context awareness
@@ -82,6 +84,7 @@ export function useCommandContext({ onAddTask, closeSearch }: UseCommandContextO
     setThemeMode, 
     themeMode, 
     onAddTask, 
+    onImportTask,
     setShowShortcutsModal, 
     closeSearch, 
     hoveredTask, 
