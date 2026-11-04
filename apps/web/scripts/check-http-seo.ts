@@ -15,6 +15,10 @@ try {
   reader.releaseLock();
   const origin = `http://localhost:${port}`;
   const get = (url: string, headers?: HeadersInit) => fetch(origin + url, { redirect: "manual", ...(headers ? { headers } : {}) });
+  const health = await get("/health");
+  assert.equal(health.status, 200);
+  assert.deepEqual(await health.json(), { status: "ok" });
+  assert.match(health.headers.get("x-robots-tag") ?? "", /noindex/);
   for (const pathname of ["/", "/docs", "/docs/mcp/overview", "/alternative/sunsama", "/download"]) {
     const response = await get(pathname);
     assert.equal(response.status, 200, pathname);

@@ -74,6 +74,9 @@ function parseRange(header: string | null, size: number) {
 }
 
 async function respond(req: Request) {
+  if (new URL(req.url).pathname === "/health") {
+    return Response.json({ status: "ok" }, { headers: { "X-Robots-Tag": "noindex" } });
+  }
   let pathname: string;
   try {
     pathname = decodeURIComponent(new URL(req.url).pathname);
