@@ -28,10 +28,12 @@ export function useTimezoneSync(): void {
     const deviceTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     // Only update if different from server
-    if (deviceTimezone && deviceTimezone !== user.timezone) {
+    if (user.preferences?.timezoneManuallySet) {
+      syncAttempted.current = true;
+    } else if (deviceTimezone && deviceTimezone !== user.timezone) {
       syncAttempted.current = true;
       
-      updateUser({ timezone: deviceTimezone }).catch((error) => {
+      updateUser({ timezone: deviceTimezone, timezoneManuallySet: false }).catch((error) => {
         console.error('[Timezone Sync] Failed to update timezone:', error);
         // Reset flag so we can try again later
         syncAttempted.current = false;

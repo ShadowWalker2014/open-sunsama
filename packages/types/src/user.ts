@@ -66,6 +66,9 @@ export interface UserPreferences {
    * struck through) or are hidden. Defaults to true.
    */
   showDeclinedEvents?: boolean;
+
+  /** Whether the timezone was explicitly selected by the user */
+  timezoneManuallySet?: boolean;
 }
 
 /**
@@ -150,6 +153,9 @@ export interface UpdateUserInput {
 
   /** Updated timezone preference */
   timezone?: string;
+
+  /** Identifies an automatic device sync versus an explicit profile choice */
+  timezoneManuallySet?: boolean;
 
   /** Update user preferences */
   preferences?: UserPreferences;
