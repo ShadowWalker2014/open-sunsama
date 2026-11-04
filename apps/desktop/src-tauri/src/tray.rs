@@ -38,8 +38,10 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         ],
     )?;
 
+    let tray_icon = tauri::image::Image::from_bytes(include_bytes!("../icons/tray-icon.png"))?;
     let _tray = TrayIconBuilder::new()
-        .icon(app.default_window_icon().unwrap().clone())
+        .icon(tray_icon)
+        .icon_as_template(true)
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id.as_ref() {
@@ -84,7 +86,7 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
             "tray_check_updates" => crate::recovery::check_for_updates(app),
             "tray_reset_local_data" => crate::recovery::reset_local_data(app),
             "quit" => {
-                std::process::exit(0);
+                app.exit(0);
             }
             _ => {}
         })
