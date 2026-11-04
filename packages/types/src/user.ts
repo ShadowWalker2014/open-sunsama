@@ -61,6 +61,12 @@ export interface UserPreferences {
    */
   addTaskPosition?: "top" | "bottom";
 
+  /**
+   * Whether meetings the user declined stay on the calendar (faded and
+   * struck through) or are hidden. Defaults to true.
+   */
+  showDeclinedEvents?: boolean;
+
   /** Whether the timezone was explicitly selected by the user */
   timezoneManuallySet?: boolean;
 }

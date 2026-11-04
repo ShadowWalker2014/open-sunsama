@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
   Label,
+  Switch,
 } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
@@ -130,6 +131,49 @@ function WorkingHoursCard() {
   );
 }
 
+function CalendarDisplayCard() {
+  const { user, updateUser } = useAuth();
+  const [isSaving, setIsSaving] = React.useState(false);
+
+  const showDeclinedEvents = user?.preferences?.showDeclinedEvents ?? true;
+
+  const handleShowDeclinedChange = async (checked: boolean) => {
+    setIsSaving(true);
+    await updateUser({
+      preferences: {
+        ...(user?.preferences ?? { themeMode: "system" as const, colorTheme: "default", fontFamily: "geist" }),
+        showDeclinedEvents: checked,
+      },
+    });
+    setIsSaving(false);
+    toast({ title: checked ? "Declined events shown" : "Declined events hidden" });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Calendar Display</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-0.5">
+            <Label htmlFor="show-declined-events">Show declined events</Label>
+            <p className="text-sm text-muted-foreground">
+              Keep meetings you declined on your calendar, faded and struck through
+            </p>
+          </div>
+          <Switch
+            id="show-declined-events"
+            checked={showDeclinedEvents}
+            onCheckedChange={handleShowDeclinedChange}
+            disabled={isSaving}
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 /**
  * Calendar Settings Tab
  * Manages calendar account connections and individual calendar settings
@@ -212,6 +256,7 @@ export function CalendarSettings() {
   return (
     <>
       <WorkingHoursCard />
+      <CalendarDisplayCard />
       <Card>
         <CardHeader>
           <CardTitle>Calendar Integration</CardTitle>
