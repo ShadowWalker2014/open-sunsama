@@ -5,6 +5,19 @@
 import { z } from 'zod';
 import { emailSchema, passwordSchema } from '@open-sunsama/utils';
 
+const isIanaTimezone = (timezone: string): boolean => {
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: timezone }).format();
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+export const timezoneSchema = z.string().min(1).max(50).refine(isIanaTimezone, {
+  error: 'Timezone must be a valid IANA timezone identifier',
+});
+
 /**
  * Schema for user registration
  */
@@ -43,6 +56,8 @@ export const userPreferencesSchema = z.object({
   calendarViewMode: z.enum(["day", "3-day", "week", "month"]).optional(),
   addTaskPosition: z.enum(["top", "bottom"]).optional(),
   showProjectedTasks: z.boolean().optional(),
+  showDeclinedEvents: z.boolean().optional(),
+  timezoneManuallySet: z.boolean().optional(),
 });
 
 /**
@@ -51,7 +66,8 @@ export const userPreferencesSchema = z.object({
 export const updateProfileSchema = z.object({
   name: z.string().min(1).max(255).optional().nullable(),
   avatarUrl: z.url().max(500).optional().nullable(),
-  timezone: z.string().max(50).optional(),
+  timezone: timezoneSchema.optional(),
+  timezoneManuallySet: z.boolean().optional(),
   preferences: userPreferencesSchema.optional(),
 });
 
