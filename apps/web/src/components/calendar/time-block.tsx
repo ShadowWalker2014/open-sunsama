@@ -44,6 +44,11 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+/** Hover text for a block: its title, then when it runs. */
+export function blockTooltip(title: string, start: Date, end: Date): string {
+  return `${title}\n${format(start, "h:mm a")} – ${format(end, "h:mm a")}`;
+}
+
 /**
  * Get color classes based on task status or custom color
  * Returns semi-transparent backgrounds for a clean Sunsama-like look
@@ -146,6 +151,8 @@ export function TimeBlock({
         role="button"
         tabIndex={0}
         aria-label={`Time block: ${block.title} from ${format(startTime, "h:mm a")} to ${format(endTime, "h:mm a")}`}
+        // Hover tooltip, so the time is readable on short blocks that hide it.
+        title={blockTooltip(block.title, startTime, endTime)}
       >
         {/* Top resize handle - Larger touch target on mobile */}
         <div
@@ -219,7 +226,8 @@ export function TimeBlockPreview({
   color,
 }: TimeBlockPreviewProps) {
   const baseColor = color || "#3B82F6";
-  
+  const isCompact = height < 48;
+
   return (
     <div
       className="absolute left-1 right-1 z-30 my-0.5 rounded-md border-2 border-dashed pointer-events-none"
@@ -230,11 +238,17 @@ export function TimeBlockPreview({
         backgroundColor: hexToRgba(baseColor, 0.2),
       }}
     >
-      <div className="flex h-full flex-col overflow-hidden px-2 py-1">
-        <p className="truncate text-sm font-medium text-foreground">
+      {/* A short preview puts title and time on one line, so neither is clipped. */}
+      <div
+        className={cn(
+          "flex h-full overflow-hidden px-2",
+          isCompact ? "items-center gap-2 py-0.5" : "flex-col py-1"
+        )}
+      >
+        <p className={cn("truncate font-medium text-foreground", isCompact ? "text-xs" : "text-sm")}>
           {title}
         </p>
-        <p className="truncate text-xs text-muted-foreground">
+        <p className="shrink-0 truncate text-xs text-muted-foreground">
           {format(startTime, "h:mm")} - {format(endTime, "h:mm a")}
         </p>
       </div>
