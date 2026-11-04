@@ -25,6 +25,7 @@ export interface CommandContext {
   currentThemeMode: ThemeMode;
   openAddTask: () => void;
   openShortcuts: () => void;
+  openImportTask: () => void;
   closeSearch: () => void;
 
   // Context awareness
@@ -65,6 +66,19 @@ export const COMMANDS: Command[] = [
     action: (ctx) => {
       ctx.closeSearch();
       ctx.openShortcuts();
+    },
+  },
+
+  {
+    id: "import-task",
+    title: "Import Task from Link",
+    category: "actions",
+    keywords: ["import", "link", "paste", "todoist", "integration", "source"],
+    icon: "Download",
+    priority: 3,
+    action: (ctx) => {
+      ctx.closeSearch();
+      ctx.openImportTask();
     },
   },
 

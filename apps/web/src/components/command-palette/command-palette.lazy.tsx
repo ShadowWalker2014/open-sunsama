@@ -18,6 +18,7 @@ type CommandPaletteProps = {
   onOpenChange: (open: boolean) => void;
   onSelectTask: (task: Task) => void;
   onAddTask: () => void;
+  onImportTask: () => void;
 };
 
 type CommandPaletteModule = typeof CommandPaletteModuleNS;

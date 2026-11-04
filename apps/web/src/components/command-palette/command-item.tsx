@@ -21,6 +21,7 @@ import {
   Bot,
   Code,
   Waves,
+  Download,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -49,6 +50,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Bot,
   Code,
   Waves,
+  Download,
 };
 
 interface CommandItemProps {

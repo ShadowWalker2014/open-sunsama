@@ -1,13 +1,11 @@
 import * as React from "react";
-import { Search, Plus, AlertCircle, Download } from "lucide-react";
+import { Search, Plus, AlertCircle } from "lucide-react";
 import { format, isToday, isTomorrow, parseISO } from "date-fns";
 import type { Task } from "@open-sunsama/types";
 import { useInfiniteSearchTasks } from "@/hooks/useInfiniteSearchTasks";
 import { useCompleteTask, useReorderTasks } from "@/hooks/useTasks";
 import { TaskModal } from "@/components/kanban/task-modal.lazy";
 import { AddTaskModal } from "@/components/kanban/add-task-modal.lazy";
-import { ImportTaskDialog } from "@/components/kanban/import-task-dialog";
-import { useIntegrationProviders } from "@/hooks/useIntegrations";
 import { TaskGroup } from "@/components/tasks/task-group";
 import { TaskShortcutsHandler } from "@/components/task-shortcuts-handler";
 import { Button } from "@/components/ui";
@@ -105,12 +103,10 @@ export default function TasksListPage() {
 }
 
 function TasksListPageDesktop() {
-  const { data: providers = [] } = useIntegrationProviders();
   const [query, setQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>("active");
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
-  const [isImportModalOpen, setIsImportModalOpen] = React.useState(false);
   const [activeTask, setActiveTask] = React.useState<Task | null>(null);
   const completeTask = useCompleteTask();
   const reorderTasks = useReorderTasks();
@@ -387,17 +383,6 @@ function TasksListPageDesktop() {
           {/* Task count */}
           <span className="text-xs text-muted-foreground">{data?.pages[0]?.meta?.total ?? totalTasks} tasks</span>
 
-          {/* Import from a connected source */}
-          {providers.length > 0 && <Button
-            onClick={() => setIsImportModalOpen(true)}
-            size="sm"
-            variant="outline"
-            className="h-7 gap-1 text-xs px-2.5"
-            title="Import a task by pasting its link"
-          >
-            <Download className="h-3.5 w-3.5" />
-            Import
-          </Button>}
 
           {/* New Task */}
           <Button onClick={() => setIsAddModalOpen(true)} size="sm" variant="ghost" className="h-7 gap-1 text-xs px-2.5">
@@ -527,10 +512,6 @@ function TasksListPageDesktop() {
           open={isAddModalOpen}
           onOpenChange={setIsAddModalOpen}
           scheduledDate={todayStr}
-        />
-        <ImportTaskDialog
-          open={isImportModalOpen}
-          onOpenChange={setIsImportModalOpen}
         />
       </div>
 

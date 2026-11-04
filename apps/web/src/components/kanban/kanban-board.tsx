@@ -6,7 +6,6 @@ import { useKanbanRangePrefetch } from "@/hooks/useKanbanRangePrefetch";
 import { useTasksDnd } from "@/lib/dnd/tasks-dnd-context";
 import { DayColumn } from "./day-column";
 import { TaskModal } from "./task-modal.lazy";
-import { ImportTaskDialog } from "./import-task-dialog";
 import { KanbanBoardToolbar, useSortPreference } from "./kanban-board-toolbar";
 import { KanbanNavigationProvider } from "./kanban-navigation-context";
 import { addDays, format, startOfDay, subDays } from "date-fns";
@@ -71,7 +70,6 @@ export function KanbanBoard({
 }: KanbanBoardProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
-  const [isImportTaskOpen, setIsImportTaskOpen] = React.useState(false);
   const [sortBy, onSortChange] = useSortPreference();
   const [searchQuery, setSearchQuery] = React.useState("");
   const { isDragging } = useTasksDnd();
@@ -184,7 +182,6 @@ export function KanbanBoard({
           firstVisibleDate={leadingDate}
           mode={mode}
           onModeChange={switchMode}
-          onImportTask={() => setIsImportTaskOpen(true)}
           sortBy={sortBy}
           onSortChange={onSortChange}
           searchQuery={searchQuery}
@@ -256,11 +253,6 @@ export function KanbanBoard({
           onOpenChange={(open) => {
             if (!open) setSelectedTask(null);
           }}
-        />
-
-        <ImportTaskDialog
-          open={isImportTaskOpen}
-          onOpenChange={setIsImportTaskOpen}
         />
 
       </div>
