@@ -11,6 +11,7 @@ export interface DocMeta {
   order: number; // For sidebar sorting within section
   section: string; // e.g., "getting-started", "api", "mcp"
   icon?: string; // Optional icon name for sidebar
+  updated?: string;
 }
 
 /**

@@ -245,7 +245,7 @@ function LicenseSection() {
 // FAQ
 // ---------------------------------------------------------------------------
 
-const FAQS: MarketingFaq[] = [
+export const FAQS: MarketingFaq[] = [
   {
     question: "What is the best open-source Sunsama alternative?",
     answer:

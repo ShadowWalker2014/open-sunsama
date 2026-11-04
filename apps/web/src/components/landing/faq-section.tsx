@@ -6,7 +6,7 @@
 import { FaqSection as KitFaqSection } from "@/components/marketing/faq-section";
 import type { MarketingFaq } from "@/content/marketing/types";
 
-const FAQS: MarketingFaq[] = [
+export const FAQS: MarketingFaq[] = [
   {
     question: "Is Open Sunsama open source?",
     answer:

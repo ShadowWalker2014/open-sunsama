@@ -41,7 +41,7 @@ import { escapeAttr, formatDate, type PageMeta, readTemplate, writePage } from "
 
 /** Mirrors BlogArticleMeta + the article body + BlogFaqs in blog-layout.tsx */
 async function renderArticle({ slug, source, frontmatter: post }: BlogSource) {
-  const { html: body, videosUsed, oss } = await renderBody(source);
+  const { html: body, videosUsed, oss } = await renderBody(source, { omitTitle: true });
   const updated = post.updated && post.updated !== post.date ? post.updated : null;
 
   const byline = [

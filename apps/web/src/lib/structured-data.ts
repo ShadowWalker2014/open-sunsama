@@ -8,6 +8,34 @@ import { isoDuration, type VideoMedia } from "./blog-media";
 
 export const SITE_URL = "https://opensunsama.com";
 
+export interface DocsArticleInput {
+  title: string;
+  description: string;
+  slug: string;
+  section: string;
+  dateModified?: string;
+}
+
+export function docsArticleJsonLd(doc: DocsArticleInput) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    headline: doc.title,
+    description: doc.description,
+    ...(doc.dateModified ? { dateModified: doc.dateModified } : {}),
+    author: { "@type": "Organization", name: "Open Sunsama", url: SITE_URL },
+    publisher: {
+      "@type": "Organization", name: "Open Sunsama", url: SITE_URL,
+      logo: { "@type": "ImageObject", url: `${SITE_URL}/open-sunsama-logo.png` },
+    },
+    mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE_URL}/docs/${doc.slug}` },
+    articleSection: doc.section,
+    inLanguage: "en",
+    isAccessibleForFree: true,
+    image: `${SITE_URL}/og-image.png`,
+  };
+}
+
 const absolute = (url: string) => (url.startsWith("http") ? url : `${SITE_URL}${url}`);
 
 export interface BlogPostingInput {
