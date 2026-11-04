@@ -62,6 +62,12 @@ export interface UserPreferences {
   addTaskPosition?: "top" | "bottom";
 
   /**
+   * Whether the calendar beside the board draws dotted "projected" blocks
+   * for open tasks that have no time block yet. Defaults to true.
+   */
+  showProjectedTasks?: boolean;
+
+  /**
    * Whether meetings the user declined stay on the calendar (faded and
    * struck through) or are hidden. Defaults to true.
    */

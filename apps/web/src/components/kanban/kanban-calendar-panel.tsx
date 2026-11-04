@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import { declinedEventClass } from "@/lib/declined-event";
 import { useTasks } from "@/hooks/useTasks";
 import { useAuth } from "@/hooks/useAuth";
-import { DEFAULT_PLANNED_MINS, projectTaskStarts } from "@/lib/task-projection";
+import { projectedBlocks } from "@/lib/task-projection";
 import {
   useTimeBlocks,
   useCreateTimeBlock,
@@ -311,33 +311,19 @@ export function KanbanCalendarPanel({
   const workStartHour = user?.preferences?.workStartHour ?? 9;
   const workEndHour = user?.preferences?.workEndHour ?? 17;
   const { data: dayTasks = [] } = useTasks({ scheduledDate: dateString, limit: 200 });
-  const projected = React.useMemo(() => {
-    const open = dayTasks
-      .filter((t) => !t.completedAt)
-      .sort((a, b) => a.position - b.position);
-    const blocked = new Set(
-      dayBlocks.map((b) => b.taskId).filter((id): id is string => !!id)
-    );
-    const busy = [
-      ...dayBlocks.map((b) => ({ start: new Date(b.startTime), end: new Date(b.endTime) })),
-      ...calendarEvents
-        .filter((e) => !e.isAllDay && e.responseStatus !== "declined")
-        .map((e) => ({ start: new Date(e.startTime), end: new Date(e.endTime) })),
-    ];
-    const starts = projectTaskStarts({
-      day: date,
-      tasks: open,
-      blockedTaskIds: blocked,
-      busy,
-      workStartHour,
-    });
-    return open.flatMap((task) => {
-      const start = starts.get(task.id);
-      if (!start) return [];
-      const mins = task.estimatedMins || DEFAULT_PLANNED_MINS;
-      return [{ task, start, end: addMinutes(start, mins) }];
-    });
-  }, [dayTasks, dayBlocks, calendarEvents, date, workStartHour]);
+  const showProjectedTasks = user?.preferences?.showProjectedTasks ?? true;
+  const projected = React.useMemo(
+    () =>
+      projectedBlocks({
+        enabled: showProjectedTasks,
+        tasks: dayTasks,
+        blocks: dayBlocks,
+        events: calendarEvents,
+        day: date,
+        workStartHour,
+      }),
+    [showProjectedTasks, dayTasks, dayBlocks, calendarEvents, date, workStartHour]
+  );
 
   // Bucket the visible-range events into timed (drawn on the timeline)
   // and all-day (drawn in the banner above). Same shape as the main
