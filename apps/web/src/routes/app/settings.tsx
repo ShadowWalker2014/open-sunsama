@@ -1,4 +1,5 @@
 import * as React from "react";
+import { PasskeySettings } from "@/components/settings/passkey-settings";
 import {
   User,
   Lock,
@@ -71,7 +72,7 @@ function SettingsContent({ tab }: { tab: SettingsTab }) {
     case "profile":
       return <ProfileSettings />;
     case "security":
-      return <PasswordSettings />;
+      return <div className="space-y-4"><PasskeySettings /><PasswordSettings /></div>;
     case "appearance":
       return <AppearanceSettings />;
     case "tasks":

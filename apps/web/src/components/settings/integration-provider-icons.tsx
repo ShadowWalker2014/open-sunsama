@@ -4,7 +4,7 @@
  * Mirrors `calendar-provider-icons.tsx`: adding a provider is a single
  * entry here plus its backend implementation.
  */
-import * as React from "react";
+import type * as React from "react";
 import { Plug } from "lucide-react";
 
 export interface IntegrationProviderConfig {
