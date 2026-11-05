@@ -62,7 +62,7 @@ export default function DocsPage() {
               )}
               <Button variant="outline" asChild>
                 <a
-                  href="https://github.com/ShadowWalker2014/open-sunsama"
+                  href="https://github.com/kaijiabo/open-sunsama"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

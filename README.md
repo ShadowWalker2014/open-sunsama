@@ -14,7 +14,7 @@ The open-source daily planner for time-blocking, focused work, and seamless AI i
 [![Open the app](https://img.shields.io/badge/Open_the_app-opensunsama.com-F97316?style=for-the-badge)](https://opensunsama.com)
 [![Connect Claude](https://img.shields.io/badge/Claude-Add_connector-D97757?style=for-the-badge&logo=claude&logoColor=white)](#-connect-claude-or-chatgpt-in-30-seconds)
 [![Connect ChatGPT](https://img.shields.io/badge/ChatGPT-Add_app-10A37F?style=for-the-badge)](#-connect-claude-or-chatgpt-in-30-seconds)
-[![GitHub stars](https://img.shields.io/github/stars/ShadowWalker2014/open-sunsama?style=for-the-badge&logo=github&color=yellow)](https://github.com/ShadowWalker2014/open-sunsama/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/kaijiabo/open-sunsama?style=for-the-badge&logo=github&color=yellow)](https://github.com/kaijiabo/open-sunsama/stargazers)
 
 [**Website**](https://opensunsama.com) · [**Docs**](https://opensunsama.com/docs) · [**Connect your AI**](https://opensunsama.com/docs/mcp/overview) · [**Self-host**](#-get-started) · [**Download apps**](https://opensunsama.com/download)
 
@@ -291,7 +291,7 @@ Scopes: `tasks:read` `tasks:write` `time-blocks:read` `time-blocks:write` `ideas
 **Self-host with Docker:**
 
 ```bash
-git clone https://github.com/ShadowWalker2014/open-sunsama.git
+git clone https://github.com/kaijiabo/open-sunsama.git
 cd open-sunsama
 docker compose up -d --build   # PostgreSQL, Redis, API on :3001, web app on :3000
 ```
@@ -306,7 +306,7 @@ Open http://localhost:3000 and create your account. The API creates the database
 Prerequisites: [Bun](https://bun.sh) 1.4.2 (run `mise install` when using mise) and PostgreSQL 15+ (Homebrew's `postgresql@17`, or a hosted database such as Neon or Supabase). S3-compatible storage is optional, for file uploads.
 
 ```bash
-git clone https://github.com/ShadowWalker2014/open-sunsama.git
+git clone https://github.com/kaijiabo/open-sunsama.git
 cd open-sunsama
 mise install
 bun install
@@ -382,7 +382,7 @@ open-sunsama/
 - [ ] Analytics dashboard
 - [ ] AI auto-scheduling
 
-Have an idea? [Open a feature request](https://github.com/ShadowWalker2014/open-sunsama/issues/new?template=feature.yml). Found a bug? [Report it](https://github.com/ShadowWalker2014/open-sunsama/issues/new?template=bug.yml).
+Have an idea? [Open a feature request](https://github.com/kaijiabo/open-sunsama/issues/new?template=feature.yml). Found a bug? [Report it](https://github.com/kaijiabo/open-sunsama/issues/new?template=bug.yml).
 
 <br />
 
@@ -428,7 +428,7 @@ Yes. Use the one-click buttons above for Cursor and VS Code, or run <code>claude
 
 ## 🤝 Contributing
 
-Contributions are welcome! [Open an issue](https://github.com/ShadowWalker2014/open-sunsama/issues/new/choose), [ask in Discussions](https://github.com/ShadowWalker2014/open-sunsama/discussions), or send a PR. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions are welcome! [Open an issue](https://github.com/kaijiabo/open-sunsama/issues/new/choose), [ask in Discussions](https://github.com/kaijiabo/open-sunsama/discussions), or send a PR. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ```bash
 git checkout -b feature/amazing-feature
@@ -446,13 +446,13 @@ Open Sunsama uses a custom **non-commercial license**. It covers personal, educa
 
 **If Open Sunsama helps you plan better days, please give it a ⭐. It helps others find it.**
 
-[![Star on GitHub](https://img.shields.io/github/stars/ShadowWalker2014/open-sunsama?style=for-the-badge&logo=github&color=yellow)](https://github.com/ShadowWalker2014/open-sunsama/stargazers)
+[![Star on GitHub](https://img.shields.io/github/stars/kaijiabo/open-sunsama?style=for-the-badge&logo=github&color=yellow)](https://github.com/kaijiabo/open-sunsama/stargazers)
 
-<a href="https://star-history.com/#ShadowWalker2014/open-sunsama&Date">
+<a href="https://star-history.com/#kaijiabo/open-sunsama&Date">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ShadowWalker2014/open-sunsama&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ShadowWalker2014/open-sunsama&type=Date" />
-    <img alt="Star history chart for Open Sunsama" src="https://api.star-history.com/svg?repos=ShadowWalker2014/open-sunsama&type=Date" width="600" />
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=kaijiabo/open-sunsama&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=kaijiabo/open-sunsama&type=Date" />
+    <img alt="Star history chart for Open Sunsama" src="https://api.star-history.com/svg?repos=kaijiabo/open-sunsama&type=Date" width="600" />
   </picture>
 </a>
 

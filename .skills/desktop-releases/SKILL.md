@@ -11,7 +11,7 @@ Guide for building and releasing the Open Sunsama desktop app across all platfor
 | **Release** | `bun run release` (patch), `bun run release minor`, or `bun run release 1.2.3` |
 | **Rebuild a version** | GitHub → Actions → Desktop Release → Run workflow → version `1.x.x` |
 | **Re-run one platform** | Open the failed run → **Re-run failed jobs** (the API upserts, so re-runs are safe) |
-| **Check Status** | https://github.com/ShadowWalker2014/open-sunsama/actions/workflows/desktop-release.yml |
+| **Check Status** | https://github.com/kaijiabo/open-sunsama/actions/workflows/desktop-release.yml |
 | **Downloads Page** | https://opensunsama.com/download |
 
 ---

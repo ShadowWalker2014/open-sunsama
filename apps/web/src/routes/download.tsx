@@ -490,7 +490,7 @@ export default function DownloadPage() {
             asChild
           >
             <a
-              href="https://github.com/ShadowWalker2014/open-sunsama"
+              href="https://github.com/kaijiabo/open-sunsama"
               target="_blank"
               rel="noopener noreferrer"
             >
