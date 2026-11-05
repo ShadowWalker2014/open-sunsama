@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Loader2, Plug, Plus } from "lucide-react";
+import { Download, Loader2, Plug, Plus } from "lucide-react";
 import {
   Button,
   Card,
@@ -14,6 +14,7 @@ import {
   useIntegrationAccounts,
   useIntegrationProviders,
 } from "@/hooks/useIntegrations";
+import { ImportTaskDialog } from "@/components/kanban/import-task-dialog";
 import { ConnectIntegrationDialog } from "./connect-integration-dialog";
 import { IntegrationAccountCard } from "./integration-account-card";
 import { getIntegrationProviderConfig } from "./integration-provider-icons";
@@ -25,6 +26,7 @@ export function IntegrationsSettings() {
 
   const [connectProvider, setConnectProvider] =
     React.useState<IntegrationProviderInfo | null>(null);
+  const [isImportOpen, setIsImportOpen] = React.useState(false);
 
   const handleDisconnect = (accountId: string, label: string) => {
     // Disconnecting keeps every imported task, so a plain confirm is
@@ -48,9 +50,11 @@ export function IntegrationsSettings() {
             Task sources
           </CardTitle>
           <CardDescription>
-            Connect a tool, then pull individual tasks in with{" "}
-            <span className="font-medium">Import</span> on the Tasks or Board
-            page. Nothing syncs automatically and nothing is written back.
+            Connect a tool, then pull individual tasks in by pasting their
+            link: press <span className="font-medium">⌘K</span> and choose{" "}
+            <span className="font-medium">Import Task from Link</span>, or use
+            the button below. Nothing syncs automatically and nothing is
+            written back.
           </CardDescription>
         </CardHeader>
 
@@ -78,6 +82,12 @@ export function IntegrationsSettings() {
           )}
 
           <div className="flex flex-wrap gap-2 border-t pt-4">
+            {accounts.length > 0 && (
+              <Button onClick={() => setIsImportOpen(true)}>
+                <Download className="mr-2 h-4 w-4" />
+                Import a task
+              </Button>
+            )}
             {providers.map((provider) => {
               const config = getIntegrationProviderConfig(provider.id);
               const Icon = config.icon;
@@ -96,6 +106,8 @@ export function IntegrationsSettings() {
           </div>
         </CardContent>
       </Card>
+
+      <ImportTaskDialog open={isImportOpen} onOpenChange={setIsImportOpen} />
 
       <ConnectIntegrationDialog
         provider={connectProvider}

@@ -31,7 +31,7 @@ Research inputs:
 ## 3. Facts
 
 ### Open Sunsama (only claim these)
-- Code on GitHub: https://github.com/ShadowWalker2014/open-sunsama. Self-host with Docker: /docs/self-hosting/docker.
+- Code on GitHub: https://github.com/kaijiabo/open-sunsama. Self-host with Docker: /docs/self-hosting/docker.
 - **License:** the "Open Sunsama Non-Commercial License", not an OSI license like MIT or GPL. Keep the brand line "open-source daily planner", but in any post about open source, self-hosting or licenses, and in one FAQ there, say plainly: "The code is public on GitHub. It uses a non-commercial license: you can read it, run it and self-host it for personal use. Companies need a commercial license." Never call it MIT, GPL or OSI-approved.
 - Daily planning on a kanban board of days (Today, Tomorrow, backlog). Drag tasks between days.
 - Time blocking: drag tasks onto the calendar and resize blocks, in day and week views. (In week view only external calendar events can be dragged today.)

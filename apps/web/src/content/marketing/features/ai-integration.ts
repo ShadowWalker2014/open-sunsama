@@ -353,7 +353,7 @@ export default defineMarketingPage({
 
   faqs: {
     heading: "Questions about AI and MCP",
-    lead: "Something missing? Read the [MCP docs](/docs/mcp/overview) or ask on [GitHub](https://github.com/ShadowWalker2014/open-sunsama/issues).",
+    lead: "Something missing? Read the [MCP docs](/docs/mcp/overview) or ask on [GitHub](https://github.com/kaijiabo/open-sunsama/issues).",
     items: [
       {
         question: "What is the best AI daily planner?",

@@ -64,6 +64,7 @@ export function getAllDocs(): DocPost[] {
       order: frontmatter.order ?? 999,
       section: pathInfo.section,
       icon: frontmatter.icon,
+      updated: frontmatter.updated,
     });
   }
 
@@ -110,6 +111,7 @@ export function getDocBySlug(slug: string): DocPostWithComponent | null {
         order: frontmatter.order ?? 999,
         section,
         icon: frontmatter.icon,
+        updated: frontmatter.updated,
         Component: module.default,
       };
     }

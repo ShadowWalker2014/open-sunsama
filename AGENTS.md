@@ -4,6 +4,8 @@ AI-agent-friendly task management + time blocking app. TypeScript monorepo with 
 
 Follow [DESIGN.md](DESIGN.md) for the compact workspace design tokens, component measurements, themes, and interaction rules.
 
+Keep [docs/STATUS.md](docs/STATUS.md) current for ongoing company-building work; log SEO/AEO actions in [docs/marketing/seo-aeo.md](docs/marketing/seo-aeo.md), with private analytics kept out of this public repository.
+
 ## Testing
 
 **Use Cursor browser tool for UI testing.**
@@ -200,7 +202,7 @@ Quick reference:
 
 - **Source of truth:** `package.json` (root)
 - **Sync command:** `bun run version:sync`
-- **Current version:** v1.2.5
+- **Current version:** v1.2.6
 
 ---
 

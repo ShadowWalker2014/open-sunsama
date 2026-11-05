@@ -161,7 +161,7 @@ export function renderPage(template: string, page: PageMeta): string {
 
 /** Writes dist/<page.path>.html, creating folders for nested paths like /features/time-blocking. */
 export function writePage(template: string, page: PageMeta) {
-  const out = path.join(DIST_DIR, `${page.path}.html`);
+  const out = path.join(DIST_DIR, page.path === "/" ? "index.html" : `${page.path}.html`);
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, renderPage(template, page), "utf-8");
   return out;

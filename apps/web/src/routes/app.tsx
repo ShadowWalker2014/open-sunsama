@@ -33,6 +33,7 @@ import {
   TaskModal,
   prefetchTaskModal,
 } from "@/components/kanban/task-modal.lazy";
+import { ImportTaskDialog } from "@/components/kanban/import-task-dialog";
 import { AppUpdateBanner } from "@/components/app-update-banner.lazy";
 import { prefetchRichTextEditor } from "@/components/ui/rich-text-editor.lazy";
 
@@ -112,6 +113,7 @@ function AppLayoutInner() {
   const { isSearchOpen, closeSearch } = useSearch();
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = React.useState(false);
+  const [isImportTaskOpen, setIsImportTaskOpen] = React.useState(false);
 
   // Warm the Tiptap chunk during browser idle time. The first time the user
   // hits Cmd+K → Add Task, or opens a task modal, the editor module is
@@ -195,7 +197,11 @@ function AppLayoutInner() {
           setSelectedTask(task);
         }}
         onAddTask={handleAddTask}
+        onImportTask={() => setIsImportTaskOpen(true)}
       />
+
+      {/* ⌘K → Import Task from Link */}
+      <ImportTaskDialog open={isImportTaskOpen} onOpenChange={setIsImportTaskOpen} />
 
       {/* Add Task Modal triggered by global shortcut */}
       <AddTaskModal

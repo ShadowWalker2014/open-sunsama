@@ -20,7 +20,7 @@ Research date: 24 September 2026. Sources: 33 Reddit threads (about 700 comments
 - **Price is the most common complaint by a wide margin.** The positioning rule says not to sell on price, and the evidence gives a better angle anyway. Behind "too expensive" people say three other things: "I'm paying for a list-with-a-calendar", "I can't get my data out", and "they don't build what I ask for". Answer those instead. Lead with **ownership, no lock-in and a roadmap you can change yourself.**
 - **The daily planning ritual is both the most-loved feature and a named reason people cancel.** Offer it as a choice. Better still, let the user's agent run it.
 - **Mobile is the second most common complaint about Sunsama and Akiflow.** A good mobile app is a real reason to switch, if Open Sunsama's is good.
-- **The license will draw objections from self-hosters.** Open Sunsama uses a custom non-commercial license, not an OSI license ([repo README](https://github.com/ShadowWalker2014/open-sunsama)). r/selfhosted readers praise projects like Immich and mock paid tiers. Expect "is it really open source?" and have a plain answer ready.
+- **The license will draw objections from self-hosters.** Open Sunsama uses a custom non-commercial license, not an OSI license ([repo README](https://github.com/kaijiabo/open-sunsama)). r/selfhosted readers praise projects like Immich and mock paid tiers. Expect "is it really open source?" and have a plain answer ready.
 
 ---
 

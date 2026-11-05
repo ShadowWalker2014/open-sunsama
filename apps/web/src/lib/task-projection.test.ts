@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { projectTaskStarts } from "./task-projection";
+import { projectTaskStarts, projectedBlocks } from "./task-projection";
 
 const at = (h: number, m = 0) => new Date(2026, 8, 29, h, m);
 const hhmm = (d?: Date) =>
@@ -50,5 +50,59 @@ describe("projectTaskStarts", () => {
       tasks: [{ id: "a" }],
     });
     expect(starts.size).toBe(0);
+  });
+});
+
+describe("projectedBlocks", () => {
+  const task = (id: string, position: number, extra = {}) => ({ id, position, ...extra });
+  const base = {
+    enabled: true,
+    day: at(0),
+    workStartHour: 9,
+    now: new Date(2026, 8, 28, 15, 0), // the day before
+    blocks: [] as { taskId?: string | null; startTime: Date; endTime: Date }[],
+    events: [] as { isAllDay?: boolean; responseStatus?: string | null; startTime: Date; endTime: Date }[],
+  };
+
+  it("draws open tasks in list order, as long as their estimate", () => {
+    const blocks = projectedBlocks({
+      ...base,
+      tasks: [task("b", 2, { estimatedMins: 30 }), task("a", 1, { estimatedMins: 60 })],
+    });
+    expect(blocks.map((b) => [b.task.id, hhmm(b.start), hhmm(b.end)])).toEqual([
+      ["a", "09:00", "10:00"],
+      ["b", "10:00", "10:30"],
+    ]);
+  });
+
+  it("draws nothing when projected tasks are turned off", () => {
+    const blocks = projectedBlocks({
+      ...base,
+      enabled: false,
+      tasks: [task("a", 1), task("b", 2)],
+    });
+    expect(blocks).toEqual([]);
+  });
+
+  it("skips done tasks and tasks that already have a block", () => {
+    const blocks = projectedBlocks({
+      ...base,
+      tasks: [task("done", 1, { completedAt: at(8) }), task("planned", 2), task("open", 3)],
+      blocks: [{ taskId: "planned", startTime: at(9), endTime: at(9, 30) }],
+    });
+    expect(blocks.map((b) => [b.task.id, hhmm(b.start)])).toEqual([["open", "09:30"]]);
+  });
+
+  it("steps over meetings, but not declined or all-day ones", () => {
+    const blocks = projectedBlocks({
+      ...base,
+      tasks: [task("a", 1, { estimatedMins: 30 })],
+      events: [
+        { startTime: at(9), endTime: at(9, 30), responseStatus: "declined" },
+        { startTime: at(0), endTime: at(23, 59), isAllDay: true },
+        { startTime: at(9, 15), endTime: at(10) },
+      ],
+    });
+    expect(hhmm(blocks[0]?.start)).toBe("10:00");
   });
 });

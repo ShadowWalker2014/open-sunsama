@@ -16,11 +16,13 @@ User-agent: Claude-SearchBot
 User-agent: PerplexityBot
 User-agent: Perplexity-User
 Allow: /
+Disallow: /app$
 Disallow: /app/
 Disallow: /app/*
 Disallow: /login
 Disallow: /register
 Disallow: /forgot-password
+Disallow: /oauth/consent
 Disallow: /reset-password
 
 # Sitemap

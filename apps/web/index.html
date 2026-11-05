@@ -7,13 +7,12 @@
     <title>Open Sunsama - Open Source Daily Planner & Time Blocking App</title>
     <meta name="title" content="Open Sunsama - Open Source Daily Planner & Time Blocking App" />
     <meta name="description" content="The open-source daily planner. Time-block your day, manage tasks on a visual kanban board, sync Google Calendar, Outlook, and iCloud, and control it from any AI agent." />
-    <meta name="keywords" content="daily planner, time blocking, task management, kanban board, focus mode, calendar sync, productivity app, open source, MCP, AI integration, sunsama alternative" />
     <meta name="author" content="Open Sunsama" />
     <meta name="robots" content="index, follow" />
     <meta name="googlebot" content="index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1" />
     
     <!-- Viewport & Theme -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#f97316" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#fb923c" media="(prefers-color-scheme: dark)" />
     <meta name="color-scheme" content="light dark" />
@@ -56,7 +55,6 @@
     <!-- Preconnect to external resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     
     <!-- DNS Prefetch for API -->
     <link rel="dns-prefetch" href="https://api.opensunsama.com" />
@@ -78,32 +76,35 @@
     <!-- Font imports -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     
+    <link rel="preload" href="/fonts/geist-regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/geist-medium.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/geist-semibold.woff2" as="font" type="font/woff2" crossorigin />
     <!-- Geist Font (Vercel) -->
     <style>
       @font-face {
         font-family: 'Geist';
-        src: url('https://cdn.jsdelivr.net/npm/geist@1.1.0/dist/fonts/geist-sans/Geist-Regular.woff2') format('woff2');
+        src: url('/fonts/geist-regular.woff2') format('woff2');
         font-weight: 400;
         font-style: normal;
         font-display: swap;
       }
       @font-face {
         font-family: 'Geist';
-        src: url('https://cdn.jsdelivr.net/npm/geist@1.1.0/dist/fonts/geist-sans/Geist-Medium.woff2') format('woff2');
+        src: url('/fonts/geist-medium.woff2') format('woff2');
         font-weight: 500;
         font-style: normal;
         font-display: swap;
       }
       @font-face {
         font-family: 'Geist';
-        src: url('https://cdn.jsdelivr.net/npm/geist@1.1.0/dist/fonts/geist-sans/Geist-SemiBold.woff2') format('woff2');
+        src: url('/fonts/geist-semibold.woff2') format('woff2');
         font-weight: 600;
         font-style: normal;
         font-display: swap;
       }
       @font-face {
         font-family: 'Geist';
-        src: url('https://cdn.jsdelivr.net/npm/geist@1.1.0/dist/fonts/geist-sans/Geist-Bold.woff2') format('woff2');
+        src: url('/fonts/geist-bold.woff2') format('woff2');
         font-weight: 700;
         font-style: normal;
         font-display: swap;
@@ -116,14 +117,14 @@
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "Open Sunsama",
+      "@id": "https://opensunsama.com/#software",
+      "license": "https://github.com/kaijiabo/open-sunsama/blob/main/LICENSE",
       "applicationCategory": "ProductivityApplication",
       "operatingSystem": "Windows, macOS, Linux, Web",
       "description": "The open-source daily planner for time-blocking, focused work, and AI integration. Alternative to Sunsama.",
       "url": "https://opensunsama.com",
       "downloadUrl": "https://opensunsama.com/download",
       "screenshot": "https://opensunsama.com/og-image.png",
-      "softwareVersion": "1.0.0",
-      "datePublished": "2026-01-01",
       "author": {
         "@type": "Organization",
         "name": "Open Sunsama",
@@ -153,7 +154,7 @@
       "url": "https://opensunsama.com",
       "logo": "https://opensunsama.com/open-sunsama-logo.png",
       "sameAs": [
-        "https://github.com/ShadowWalker2014/open-sunsama"
+        "https://github.com/kaijiabo/open-sunsama"
       ]
     }
     </script>

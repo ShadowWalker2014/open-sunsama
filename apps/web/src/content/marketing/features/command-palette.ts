@@ -310,7 +310,7 @@ export default defineMarketingPage({
 
   faqs: {
     heading: "Questions about the command palette and shortcuts",
-    lead: "Something missing? Read the [docs](/docs) or ask on [GitHub](https://github.com/ShadowWalker2014/open-sunsama/issues).",
+    lead: "Something missing? Read the [docs](/docs) or ask on [GitHub](https://github.com/kaijiabo/open-sunsama/issues).",
     items: [
       {
         question: "What is the best keyboard-first task manager?",

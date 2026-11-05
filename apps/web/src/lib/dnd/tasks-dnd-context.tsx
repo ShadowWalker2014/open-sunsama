@@ -13,6 +13,7 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { snapCenterToCursor } from "@dnd-kit/modifiers";
+import { liftAboveCursor } from "./lift-above-cursor";
 import type { Task, Idea } from "@open-sunsama/types";
 import { addMinutes } from "date-fns";
 import { useMoveTask, useReorderTasks, taskKeys } from "@/hooks/useTasks";
@@ -83,6 +84,9 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
   const [activeOverColumn, setActiveOverColumn] = React.useState<string | null>(
     null
   );
+  // True while a card is over the board's calendar, where the drop preview
+  // shows the block it will make.
+  const [overCalendar, setOverCalendar] = React.useState(false);
 
   const [activeIdea, setActiveIdea] = React.useState<Idea | null>(null);
   const promoteIdea = usePromoteIdea(activeIdea?.boardId);
@@ -162,6 +166,7 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
   const handleDragOver = React.useCallback(
     (event: DragOverEvent) => {
       const { over } = event;
+      setOverCalendar(over?.data.current?.type === "calendar");
       if (!over) {
         setActiveOverColumn(null);
         return;
@@ -190,6 +195,7 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
         : null;
 
       setActiveTask(null);
+      setOverCalendar(false);
       setActiveIdea(null);
       setActiveOverColumn(null);
 
@@ -448,6 +454,7 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
   const handleDragCancel = React.useCallback(() => {
     setActiveIdea(null);
     setActiveTask(null);
+    setOverCalendar(false);
     setActiveOverColumn(null);
   }, []);
 
@@ -479,13 +486,23 @@ export function TasksDndProvider({ children }: TasksDndProviderProps) {
         {children}
 
         {/* Drag Overlay - follows cursor with fixed width matching column */}
-        <DragOverlay modifiers={[snapCenterToCursor]} dropAnimation={null}>
+        <DragOverlay
+          modifiers={overCalendar ? [snapCenterToCursor, liftAboveCursor] : [snapCenterToCursor]}
+          dropAnimation={null}
+        >
           {activeIdea && (
             <div className="pointer-events-none w-[264px] rounded-lg bg-card p-3 text-sm shadow-lg">
               {activeIdea.title}
             </div>
           )}
-          {activeTask && (
+          {activeTask && overCalendar && (
+            // Over the calendar the full card would hide the drop preview, so
+            // show just the title, above the cursor.
+            <div className="pointer-events-none max-w-[220px] truncate rounded-md border bg-card px-2.5 py-1 text-xs font-medium shadow-lg">
+              {activeTask.title}
+            </div>
+          )}
+          {activeTask && !overCalendar && (
             <div className="w-[264px] pointer-events-none">
               <TaskCard task={activeTask} onSelect={() => {}} isDragging />
             </div>

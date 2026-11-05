@@ -34,7 +34,7 @@ export interface AlternativeExtras {
   giveUps: GiveUp[];
 }
 
-export const GITHUB_LICENSE_URL = "https://github.com/ShadowWalker2014/open-sunsama/blob/main/LICENSE";
+export const GITHUB_LICENSE_URL = "https://github.com/kaijiabo/open-sunsama/blob/main/LICENSE";
 
 /** Said the same way on every page (playbook, section 3). */
 export const LICENSE_GIVE_UP: GiveUp = {
@@ -47,7 +47,7 @@ export const LICENSE_FAQ = {
   question: "Is Open Sunsama really open source?",
   answer:
     "The code is public on GitHub. It uses a non-commercial license: you can read it, run it and self-host it for personal use. Companies need a commercial license.",
-  link: { label: "See the code", href: "https://github.com/ShadowWalker2014/open-sunsama" },
+  link: { label: "See the code", href: "https://github.com/kaijiabo/open-sunsama" },
 };
 
 /** "You want X." -> "you want X." so it reads after "Switch to Open Sunsama if". */

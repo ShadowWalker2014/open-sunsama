@@ -12,6 +12,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Switch,
   Label,
 } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
@@ -130,6 +131,80 @@ function WorkingHoursCard() {
   );
 }
 
+function CalendarDisplayCard() {
+  const { user, updateUser } = useAuth();
+  const [isSaving, setIsSaving] = React.useState(false);
+
+  const showDeclinedEvents = user?.preferences?.showDeclinedEvents ?? true;
+  const showProjectedTasks = user?.preferences?.showProjectedTasks ?? true;
+
+  const savePreference = async (
+    key: "showDeclinedEvents" | "showProjectedTasks",
+    checked: boolean,
+    toastTitle: string
+  ) => {
+    setIsSaving(true);
+    await updateUser({
+      preferences: {
+        ...(user?.preferences ?? { themeMode: "system" as const, colorTheme: "default", fontFamily: "geist" }),
+        [key]: checked,
+      },
+    });
+    setIsSaving(false);
+    toast({ title: toastTitle });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Calendar Display</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-0.5">
+            <Label htmlFor="show-declined-events">Show declined events</Label>
+            <p className="text-sm text-muted-foreground">
+              Keep meetings you declined on your calendar, faded and struck through
+            </p>
+          </div>
+          <Switch
+            id="show-declined-events"
+            checked={showDeclinedEvents}
+            onCheckedChange={(checked) =>
+              savePreference(
+                "showDeclinedEvents",
+                checked,
+                checked ? "Declined events shown" : "Declined events hidden"
+              )
+            }
+            disabled={isSaving}
+          />
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-0.5">
+            <Label htmlFor="show-projected-tasks">Show projected tasks</Label>
+            <p className="text-sm text-muted-foreground">
+              Draw dotted blocks on the board's calendar for tasks with no time block yet
+            </p>
+          </div>
+          <Switch
+            id="show-projected-tasks"
+            checked={showProjectedTasks}
+            onCheckedChange={(checked) =>
+              savePreference(
+                "showProjectedTasks",
+                checked,
+                checked ? "Projected tasks shown" : "Projected tasks hidden"
+              )
+            }
+            disabled={isSaving}
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 /**
  * Calendar Settings Tab
  * Manages calendar account connections and individual calendar settings
@@ -212,6 +287,7 @@ export function CalendarSettings() {
   return (
     <>
       <WorkingHoursCard />
+      <CalendarDisplayCard />
       <Card>
         <CardHeader>
           <CardTitle>Calendar Integration</CardTitle>

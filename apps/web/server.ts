@@ -17,7 +17,10 @@ import path from "node:path";
 import { trackAICrawlerResponse } from "@datafast/ai-crawl";
 
 const DIST_DIR = path.resolve(import.meta.dir, "dist");
-const PORT = 3000;
+const PORT = Number(process.env.PORT || 3000);
+
+const PRIVATE_PAGE = /^(?:\/app(?:\/|$)|\/(?:login|register|forgot-password|reset-password|oauth\/consent)$)/;
+const AUTH_PAGE = /^\/(?:login|register|forgot-password|reset-password|oauth\/consent)$/;
 
 const COMPRESSIBLE = /\.(html|js|mjs|css|json|svg|xml|txt|vtt|webmanifest|map)$/;
 const IMMUTABLE_DIRS = ["assets", "blog-media"].map((dir) => path.join(DIST_DIR, dir) + path.sep);
@@ -71,19 +74,35 @@ function parseRange(header: string | null, size: number) {
 }
 
 async function respond(req: Request) {
+  if (new URL(req.url).pathname === "/health") {
+    return Response.json({ status: "ok" }, { headers: { "X-Robots-Tag": "noindex" } });
+  }
   let pathname: string;
   try {
     pathname = decodeURIComponent(new URL(req.url).pathname);
   } catch {
     return new Response("Bad Request", { status: 400 });
   }
+  if (pathname === "/free-time-blocking-app") {
+    return new Response(null, { status: 301, headers: { Location: "/features/time-blocking" + new URL(req.url).search } });
+  }
+
+  // One public URL per document; preserve query strings through redirects.
+  const canonicalPath = pathname === "/index.html" ? "/" : pathname.replace(/\.html$/, "").replace(/\/+$/, "") || "/";
+  if (pathname !== canonicalPath && await findFile(canonicalPath)) {
+    const url = new URL(req.url);
+    url.pathname = canonicalPath;
+    return new Response(null, { status: 308, headers: { Location: url.pathname + url.search } });
+  }
 
   let found = await findFile(pathname);
+  let status = 200;
   if (!found) {
-    // Missing media must 404, not fall back to the SPA's index.html
-    if (pathname.startsWith("/blog-media/")) {
-      return new Response("Not Found", { status: 404 });
-    }
+    // Known client-side routes still boot the app. Unknown public pages and
+    // missing assets must not look like successful homepage documents.
+    const appPage = pathname === "/app" || pathname.startsWith("/app/");
+    if (!appPage && !AUTH_PAGE.test(pathname)) status = 404;
+    if (status === 404 && /\.[a-z0-9]+$/i.test(pathname)) return new Response("Not Found", { status, headers: { "X-Robots-Tag": "noindex" } });
     found = (await findFile("/index.html"))!;
   }
   const { file, filePath } = found;
@@ -91,6 +110,8 @@ async function respond(req: Request) {
     "Content-Type": contentType(file, filePath),
     "Cache-Control": cacheControl(filePath),
   });
+  if (status === 404 || PRIVATE_PAGE.test(pathname)) headers.set("X-Robots-Tag", "noindex, nofollow");
+  if (status === 404) headers.set("Cache-Control", "no-store");
 
   const acceptsGzip = req.headers.get("accept-encoding")?.includes("gzip");
   if (acceptsGzip && COMPRESSIBLE.test(filePath)) {
@@ -102,11 +123,11 @@ async function respond(req: Request) {
     }
     headers.set("Content-Encoding", "gzip");
     headers.set("Vary", "Accept-Encoding");
-    return new Response(cached.body, { headers });
+    return new Response(cached.body, { status, headers });
   }
 
   headers.set("Accept-Ranges", "bytes");
-  const range = parseRange(req.headers.get("range"), file.size);
+  const range = status === 200 ? parseRange(req.headers.get("range"), file.size) : null;
   if (range === "unsatisfiable") {
     headers.set("Content-Range", `bytes */${file.size}`);
     return new Response(null, { status: 416, headers });
@@ -115,7 +136,7 @@ async function respond(req: Request) {
     headers.set("Content-Range", `bytes ${range.start}-${range.end}/${file.size}`);
     return new Response(file.slice(range.start, range.end + 1), { status: 206, headers });
   }
-  return new Response(file, { headers });
+  return new Response(file, { status, headers });
 }
 
 // Only the hosted site reports bots, so self-hosted copies send nothing
@@ -126,7 +147,7 @@ const BOT_TRACKING = {
   publicOrigin: `https://${PUBLIC_HOST}`,
 };
 
-Bun.serve({
+const server = Bun.serve({
   port: PORT,
   async fetch(req) {
     const res = await respond(req);
@@ -137,4 +158,4 @@ Bun.serve({
     return res;
   },
 });
-console.log(`Serving ${DIST_DIR} on port ${PORT}`);
+console.log(`Serving ${DIST_DIR} on port ${server.port}`);

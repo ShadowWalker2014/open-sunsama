@@ -5,7 +5,7 @@ This guide explains how to configure Railway for automatic GitHub deployments.
 ## Prerequisites
 
 - Railway account linked to GitHub
-- GitHub repository: `ShadowWalker2014/open-sunsama`
+- GitHub repository: `kaijiabo/open-sunsama`
 - Railway project: "Open Sunsama"
 
 ## Service Configuration
@@ -15,7 +15,7 @@ This guide explains how to configure Railway for automatic GitHub deployments.
 Go to Railway Dashboard → Open Sunsama → api service → Settings:
 
 **Source**
-- Connect to GitHub repo: `ShadowWalker2014/open-sunsama`
+- Connect to GitHub repo: `kaijiabo/open-sunsama`
 - Branch: `main`
 
 **Build**
@@ -49,7 +49,7 @@ AWS_SECRET_ACCESS_KEY=<from-railway-storage>
 Go to Railway Dashboard → Open Sunsama → web service → Settings:
 
 **Source**
-- Connect to GitHub repo: `ShadowWalker2014/open-sunsama`
+- Connect to GitHub repo: `kaijiabo/open-sunsama`
 - Branch: `main`
 
 **Build**

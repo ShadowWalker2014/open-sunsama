@@ -65,4 +65,10 @@ test("keeps one set of SEO tags after loading a pre-rendered blog post", async (
     "https://opensunsama.com/"
   );
   await expect(page.locator('head meta[property^="article:"]')).toHaveCount(0);
+  await expect(page.locator('head meta[name="twitter:card"]')).toHaveCount(1);
+  await expect(page.locator('head meta[name="twitter:card"]')).toHaveAttribute(
+    "content",
+    "summary_large_image"
+  );
+  await expect(page.locator('head meta[property="og:image:alt"]')).toHaveCount(1);
 });

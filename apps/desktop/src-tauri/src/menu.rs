@@ -172,7 +172,7 @@ pub fn create_menu(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
             }
             "report_issue" => {
                 let _ = tauri::async_runtime::spawn(async {
-                    let _ = open::that("https://github.com/ShadowWalker2014/open-sunsama/issues");
+                    let _ = open::that("https://github.com/kaijiabo/open-sunsama/issues");
                 });
             }
             _ => {}
