@@ -140,7 +140,7 @@ export function GiveUpSection({ section, items, rival }: { section: SectionCopy;
         <p className="mt-5 text-center text-[13.5px] text-muted-foreground">
           Need one of these?{" "}
           <SmartLink
-            href="https://github.com/ShadowWalker2014/open-sunsama/issues"
+            href="https://github.com/kaijiabo/open-sunsama/issues"
             className="rounded-sm font-medium text-foreground underline decoration-border underline-offset-4 hover:text-primary hover:decoration-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           >
             Ask for it on GitHub

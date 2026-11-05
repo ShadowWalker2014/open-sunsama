@@ -64,7 +64,7 @@ export const snippets: CodeSnippet[] = [
     label: "Docker",
     file: "Terminal",
     code: [
-      "git clone https://github.com/ShadowWalker2014/open-sunsama.git",
+      "git clone https://github.com/kaijiabo/open-sunsama.git",
       "cd open-sunsama",
       "docker compose up -d --build",
       "",
@@ -263,7 +263,7 @@ export default defineMarketingPage({
           icon: "github",
           title: "Code you can read",
           body: "A TypeScript monorepo on GitHub: Hono API, React web app, Tauri desktop. Point your agent at it and add what you need.",
-          href: "https://github.com/ShadowWalker2014/open-sunsama",
+          href: "https://github.com/kaijiabo/open-sunsama",
         },
         {
           icon: "server",
@@ -372,7 +372,7 @@ export default defineMarketingPage({
 
   faqs: {
     heading: "Questions developers ask about Open Sunsama",
-    lead: "Something missing? Read the [docs](/docs) or open an issue on [GitHub](https://github.com/ShadowWalker2014/open-sunsama/issues).",
+    lead: "Something missing? Read the [docs](/docs) or open an issue on [GitHub](https://github.com/kaijiabo/open-sunsama/issues).",
     items: [
       {
         question: "What is the best task manager for developers?",
@@ -408,7 +408,7 @@ export default defineMarketingPage({
         question: "Is Open Sunsama open source?",
         answer:
           "The code is public on GitHub. It uses a non-commercial license: you can read it, run it and self-host it for personal use. Companies need a commercial license.",
-        link: { label: "See the code", href: "https://github.com/ShadowWalker2014/open-sunsama" },
+        link: { label: "See the code", href: "https://github.com/kaijiabo/open-sunsama" },
       },
       {
         question: "Does Open Sunsama integrate with GitHub, Linear or Jira?",

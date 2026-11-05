@@ -12,11 +12,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ShadowWalker2014/open-sunsama.git"
+    "url": "https://github.com/kaijiabo/open-sunsama.git"
   },
   "homepage": "https://opensunsama.com",
   "bugs": {
-    "url": "https://github.com/ShadowWalker2014/open-sunsama/issues"
+    "url": "https://github.com/kaijiabo/open-sunsama/issues"
   },
   "keywords": [
     "task-management",

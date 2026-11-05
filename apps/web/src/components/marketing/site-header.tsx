@@ -13,12 +13,12 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
-export const GITHUB_URL = "https://github.com/ShadowWalker2014/open-sunsama";
+export const GITHUB_URL = "https://github.com/kaijiabo/open-sunsama";
 
 // One request per page load, shared by every component that shows the count
 let starsRequest: Promise<number | null> | null = null;
 function fetchStars(): Promise<number | null> {
-  starsRequest ??= fetch("https://api.github.com/repos/ShadowWalker2014/open-sunsama")
+  starsRequest ??= fetch("https://api.github.com/repos/kaijiabo/open-sunsama")
     .then((res) => (res.ok ? res.json() : null))
     .then((repo: { stargazers_count?: number } | null) =>
       typeof repo?.stargazers_count === "number" ? repo.stargazers_count : null

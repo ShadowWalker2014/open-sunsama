@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please search [existing requests](https://github.com/ShadowWalker2014/open-sunsama/issues?q=label%3Aenhancement) first. If one exists, add a 👍 and a comment with your use case instead of opening a new issue.
+        Please search [existing requests](https://github.com/kaijiabo/open-sunsama/issues?q=label%3Aenhancement) first. If one exists, add a 👍 and a comment with your use case instead of opening a new issue.
   - type: textarea
     id: problem
     attributes:

@@ -69,4 +69,4 @@ run("git pull --quiet --ff-only origin main");
 run(`git tag -a v${next} ${mergeSha} -m "Release v${next}"`);
 run(`git push --quiet origin v${next}`);
 
-console.log(`\n✓ Released v${next}. Build: https://github.com/ShadowWalker2014/open-sunsama/actions/workflows/desktop-release.yml`);
+console.log(`\n✓ Released v${next}. Build: https://github.com/kaijiabo/open-sunsama/actions/workflows/desktop-release.yml`);

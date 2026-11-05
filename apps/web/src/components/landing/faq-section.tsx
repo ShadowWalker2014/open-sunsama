@@ -11,7 +11,7 @@ export const FAQS: MarketingFaq[] = [
     question: "Is Open Sunsama open source?",
     answer:
       "Yes. The code is public on GitHub. It uses a non-commercial license: you can read it, run it and self-host it for personal use. Companies need a commercial license.",
-    link: { label: "See the code on GitHub", href: "https://github.com/ShadowWalker2014/open-sunsama" },
+    link: { label: "See the code on GitHub", href: "https://github.com/kaijiabo/open-sunsama" },
   },
   {
     question: "Does it work with Claude and ChatGPT?",
@@ -47,7 +47,7 @@ export function FaqSection() {
   return (
     <KitFaqSection
       heading="Questions people ask."
-      lead="Something missing? Read the [docs](/docs) or ask on [GitHub](https://github.com/ShadowWalker2014/open-sunsama/issues)."
+      lead="Something missing? Read the [docs](/docs) or ask on [GitHub](https://github.com/kaijiabo/open-sunsama/issues)."
       items={FAQS}
       className="py-24"
     />

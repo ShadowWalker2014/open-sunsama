@@ -153,7 +153,7 @@ function renderSection(section: MarketingSection): string {
       return `<section id="${section.id}"><ul>${section.items
         .map((item) =>
           "live" in item
-            ? `<li><a href="https://github.com/ShadowWalker2014/open-sunsama">Source code on GitHub</a></li>`
+            ? `<li><a href="https://github.com/kaijiabo/open-sunsama">Source code on GitHub</a></li>`
             : `<li>${esc(item.value)} ${esc(item.label)}</li>`
         )
         .join("")}</ul></section>`;

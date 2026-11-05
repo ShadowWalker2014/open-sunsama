@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { BenefitGrid, type BenefitItem } from "@/components/marketing/benefit-grid";
 import { CountUp, Reveal } from "./motion";
 
-const GITHUB_URL = "https://github.com/ShadowWalker2014/open-sunsama";
+const GITHUB_URL = "https://github.com/kaijiabo/open-sunsama";
 
 // Header and footer live in components/marketing so every public page shares them.
 export { SiteHeader } from "@/components/marketing/site-header";
@@ -110,7 +110,7 @@ const SNIPPETS = [
     id: "self-host",
     label: "Self-host",
     lines: [
-      "$ git clone github.com/ShadowWalker2014/open-sunsama",
+      "$ git clone github.com/kaijiabo/open-sunsama",
       "$ docker compose up -d --build",
       "✓ Web app on :3000, API and MCP connector on :3001",
     ],
