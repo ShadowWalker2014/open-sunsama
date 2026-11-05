@@ -48,6 +48,12 @@ import {
 } from "@/components/ui";
 import { TimeBlock } from "@/components/calendar/time-block";
 import { ExternalEvent } from "@/components/calendar/external-event";
+import {
+  WorkSessionBlock,
+  sessionsOnDay,
+  sessionLayoutItem,
+} from "@/components/calendar/work-session-block";
+import { useWorkSessions } from "@/hooks/useWorkSessions";
 import { CalendarEventDetailSheet } from "@/components/calendar/calendar-event-detail-sheet";
 import {
   layoutOverlappingItems,
@@ -189,6 +195,7 @@ export function MobileCalendarView({
 
   // External calendar events
   const { data: calendarEvents = [] } = useCalendarEvents(fromDate, toDate);
+  const { data: workSessions = [] } = useWorkSessions(fromDate, toDate);
 
   // Per-calendar editability + provider maps for the detail sheet
   // (read-only gate + recurring-event disclosure copy).
@@ -266,6 +273,11 @@ export function MobileCalendarView({
     );
   }, [timeBlocks, selectedDate]);
 
+  const daySessions = React.useMemo(
+    () => sessionsOnDay(workSessions, selectedDate),
+    [workSessions, selectedDate]
+  );
+
   // Side-by-side overlap layout shared with the desktop views.
   const itemLayouts = React.useMemo(() => {
     const items = [
@@ -287,9 +299,10 @@ export function MobileCalendarView({
           end: en > dayEnd ? dayEnd : en,
         };
       }),
+      ...daySessions.map((session) => sessionLayoutItem(session, selectedDate)),
     ];
     return layoutOverlappingItems(items);
-  }, [timedEvents, dayBlocks, dayStart, dayEnd]);
+  }, [timedEvents, dayBlocks, daySessions, selectedDate, dayStart, dayEnd]);
 
   // Filter tasks that don't have a time block on this day
   const unscheduledTasks = React.useMemo(() => {
@@ -670,6 +683,22 @@ export function MobileCalendarView({
                       }
                       onClick={() => onBlockClick?.(block)}
                       onViewTask={onViewTask}
+                    />
+                  ))}
+
+                {/* Actual time worked, next to the planned blocks */}
+                {!isLoading &&
+                  daySessions.map((session) => (
+                    <WorkSessionBlock
+                      key={session.id}
+                      session={session}
+                      displayDate={selectedDate}
+                      blocks={timeBlocks}
+                      layout={
+                        itemLayouts.get(`session:${session.id}`) ??
+                        DEFAULT_LAYOUT
+                      }
+                      onClick={() => onViewTask?.(session.taskId)}
                     />
                   ))}
               </div>

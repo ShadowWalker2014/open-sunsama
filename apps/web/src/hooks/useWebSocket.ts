@@ -11,6 +11,7 @@ import {
   taskKeys,
   timerKeys,
   timeBlockKeys,
+  workSessionKeys,
   subtaskKeys,
   calendarKeys,
   integrationKeys,
@@ -163,6 +164,7 @@ function handleWebSocketEvent(
         event.type === "task:completed"
       ) {
         batcher.schedule(timeBlockKeys.lists());
+        batcher.schedule(workSessionKeys.all);
       }
       break;
 
@@ -200,6 +202,7 @@ function handleWebSocketEvent(
       }
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() });
       queryClient.invalidateQueries({ queryKey: taskKeys.rangeAll() });
+      queryClient.invalidateQueries({ queryKey: workSessionKeys.all });
       break;
 
     case "idea-board:created":

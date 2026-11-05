@@ -222,3 +222,27 @@ export interface TimeBlockValidation {
   /** List of conflicting time blocks (if any) */
   conflicts: TimeBlockConflict[];
 }
+
+/**
+ * A stretch of time a task's timer ran, shown on the calendar as actual
+ * time next to the planned time blocks.
+ */
+export interface WorkSession {
+  /** Session ID, or `running:<taskId>` for a timer that is still running */
+  id: string;
+
+  /** The task that was worked on */
+  taskId: string;
+
+  /** The task's title */
+  taskTitle: string;
+
+  /** When the timer started */
+  startedAt: Date;
+
+  /** When the timer stopped, or now for a running timer */
+  endedAt: Date;
+
+  /** Whether the timer is still running */
+  isRunning: boolean;
+}

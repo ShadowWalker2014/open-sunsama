@@ -35,6 +35,12 @@ import {
 } from "@/hooks/useCalendars";
 import { TimeBlock, TimeBlockPreview } from "@/components/calendar/time-block";
 import { ExternalEvent } from "@/components/calendar/external-event";
+import {
+  WorkSessionBlock,
+  sessionsOnDay,
+  sessionLayoutItem,
+} from "@/components/calendar/work-session-block";
+import { useWorkSessions } from "@/hooks/useWorkSessions";
 import { CalendarEventDetailSheet } from "@/components/calendar/calendar-event-detail-sheet";
 import {
   layoutOverlappingItems,
@@ -102,6 +108,7 @@ export function KanbanCalendarPanel({
   const fromDate = dayStart.toISOString();
   const toDate = dayEnd.toISOString();
   const { data: calendarEvents = [] } = useCalendarEvents(fromDate, toDate);
+  const { data: workSessions = [] } = useWorkSessions(fromDate, toDate);
 
   // For the read-only-calendar gating + recurring-event disclosure in
   // the detail sheet.
@@ -375,9 +382,12 @@ export function KanbanCalendarPanel({
           end: en > dayEnd ? dayEnd : en,
         };
       }),
+      ...sessionsOnDay(workSessions, date).map((session) =>
+        sessionLayoutItem(session, date)
+      ),
     ];
     return layoutOverlappingItems(items);
-  }, [timedEvents, dayBlocks, dayStart, dayEnd]);
+  }, [timedEvents, dayBlocks, workSessions, date, dayStart, dayEnd]);
 
   // Auto-scroll to current time on mount and date change
   React.useEffect(() => {
@@ -714,6 +724,18 @@ export function KanbanCalendarPanel({
                 }
                 onViewTask={onViewTask}
                 isDragging={dragState?.blockId === block.id}
+              />
+            ))}
+
+            {/* Actual time worked, next to the planned blocks */}
+            {sessionsOnDay(workSessions, date).map((session) => (
+              <WorkSessionBlock
+                key={session.id}
+                session={session}
+                displayDate={date}
+                blocks={timeBlocks}
+                layout={itemLayouts.get(`session:${session.id}`) ?? DEFAULT_LAYOUT}
+                onClick={() => onViewTask?.(session.taskId)}
               />
             ))}
 

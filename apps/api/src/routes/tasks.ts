@@ -37,6 +37,7 @@ import {
   withTimerTransition,
   stopTaskTimer,
   stopSubtaskTimers,
+  logWorkSession,
 } from "../lib/timer-service.js";
 import { moveBlocksWithTasks } from "../services/task-blocks.js";
 import { format, subDays } from "date-fns";
@@ -414,6 +415,7 @@ tasksRouter.patch(
       // Publish realtime event (fire and forget)
       // Use 'task:completed' if completedAt changed to a truthy value, otherwise 'task:updated'
       if (updatedTask && timerStopped !== null) {
+        await logWorkSession(db, existing);
         publishEvent(userId, "timer:stopped", {
           taskId: updatedTask.id,
           actualMins: timerStopped,
@@ -554,6 +556,10 @@ tasksRouter.post(
         .set(updateData)
         .where(and(eq(tasks.id, id), eq(tasks.userId, userId)))
         .returning();
+
+      if (updatedTask && existing.timerStartedAt) {
+        await logWorkSession(db, existing);
+      }
 
       // Publish realtime event (fire and forget)
       if (updatedTask) {

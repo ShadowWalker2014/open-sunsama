@@ -59,6 +59,12 @@ export const timeBlockKeys = {
   detail: (id: string) => [...timeBlockKeys.details(), id] as const,
 };
 
+export const workSessionKeys = {
+  all: ["workSessions"] as const,
+  range: (from: string, to: string) =>
+    [...workSessionKeys.all, from, to] as const,
+};
+
 export const subtaskKeys = {
   all: ["subtasks"] as const,
   lists: () => [...subtaskKeys.all, "list"] as const,

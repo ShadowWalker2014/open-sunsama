@@ -40,6 +40,7 @@ import {
   useCalendarAccounts,
   useUpdateCalendarEvent,
 } from "@/hooks/useCalendars";
+import { useWorkSessions } from "@/hooks/useWorkSessions";
 import { useCalendarDnd } from "@/hooks/useCalendarDnd";
 import { Timeline } from "./timeline";
 import { MultiDayView, BLOCK_DRAG_PREFIX } from "./multi-day-view";
@@ -275,6 +276,7 @@ export function CalendarView({
   const fromDate = range.start.toISOString();
   const toDate = range.end.toISOString();
   const { data: calendarEvents = [] } = useCalendarEvents(fromDate, toDate);
+  const { data: workSessions = [] } = useWorkSessions(fromDate, toDate);
 
   // Per-calendar capability map — used by the detail sheet to gate the
   // edit / delete affordances. A calendar is editable if (a) the
@@ -752,6 +754,7 @@ export function CalendarView({
               date={selectedDate}
               timeBlocks={timeBlocks}
               calendarEvents={calendarEvents}
+              workSessions={workSessions}
               isLoading={isLoading}
               dragState={dragState}
               dropPreview={dropPreview}
@@ -793,6 +796,7 @@ export function CalendarView({
               days={range.days}
               calendarEvents={calendarEvents}
               timeBlocks={timeBlocks}
+              workSessions={workSessions}
               isLoading={isLoading}
               drag={multiDayDrag}
               blocksEditable

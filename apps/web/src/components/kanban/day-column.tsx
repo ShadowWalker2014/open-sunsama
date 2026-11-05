@@ -20,6 +20,8 @@ import { useTasks } from "@/hooks/useTasks";
 import { useTimeBlocks } from "@/hooks/useTimeBlocks";
 import { useCalendarEvents } from "@/hooks/useCalendars";
 import { useAuth } from "@/hooks/useAuth";
+import { useWorkloadCounter } from "@/hooks/useWorkloadCounter";
+import { actualMinutes } from "@/lib/workload";
 import { projectTaskStarts } from "@/lib/task-projection";
 import { cn, formatDuration } from "@/lib/utils";
 import { ScrollArea, Skeleton } from "@/components/ui";
@@ -189,6 +191,23 @@ export function DayColumn({
     [pendingTasks, completedTasks]
   );
 
+  // Actual time on the same tasks, ticking each minute while a timer runs.
+  const { counter, toggleCounter } = useWorkloadCounter();
+  const dayTasks = [...pendingTasks, ...completedTasks];
+  const timerRunning = dayTasks.some((t) => t.timerStartedAt);
+  const [now, setNow] = React.useState(Date.now);
+  React.useEffect(() => {
+    if (!timerRunning) return;
+    setNow(Date.now());
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, [timerRunning]);
+  const totalActualMins = dayTasks.reduce(
+    (sum, t) => sum + actualMinutes(t, now),
+    0
+  );
+  const showActual = counter === "actual";
+
   // Calculate progress for today column
   // Open tasks without a block get Sunsama-style projected start times:
   // laid end to end from the workday start around blocks and meetings.
@@ -308,13 +327,22 @@ export function DayColumn({
 
         <div className="mt-2.5 flex h-8 items-center rounded-md bg-surface pr-1.5 shadow-card">
           <AddTaskInline scheduledDate={dateString} variant="bar" showLabel={today} />
-          {totalEstimatedMins > 0 && (
-            <span
-              className="shrink-0 rounded bg-black/[0.06] px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-muted-foreground dark:bg-black/30"
-              title="Planned time"
+          {/* Sunsama's workload counter: click to switch views. */}
+          {(totalEstimatedMins > 0 || (showActual && totalActualMins > 0)) && (
+            <button
+              type="button"
+              onClick={toggleCounter}
+              className="shrink-0 rounded bg-black/[0.06] px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-muted-foreground transition-colors hover:text-foreground dark:bg-black/30"
+              title={
+                showActual
+                  ? "Actual vs planned time. Click for planned time."
+                  : "Planned time. Click for actual vs planned."
+              }
             >
-              {formatDuration(totalEstimatedMins)}
-            </span>
+              {showActual
+                ? `${formatDuration(totalActualMins)} / ${formatDuration(totalEstimatedMins)}`
+                : formatDuration(totalEstimatedMins)}
+            </button>
           )}
         </div>
       </div>

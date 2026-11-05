@@ -18,6 +18,7 @@ import {
   isNotNull,
   tasks,
   subtasks,
+  workSessions,
   sql,
 } from "@open-sunsama/database";
 import { ValidationError } from "@open-sunsama/utils";
@@ -25,7 +26,7 @@ import { publishEvent } from "./websocket/index.js";
 import { stopTimerFields, timerSeconds } from "./timer.js";
 
 type Database = ReturnType<typeof getDb>;
-export type TimerDb = Pick<Database, "select" | "update" | "execute" | "delete">;
+export type TimerDb = Pick<Database, "select" | "update" | "execute" | "delete" | "insert">;
 type Db = TimerDb;
 type Task = typeof tasks.$inferSelect;
 type Subtask = typeof subtasks.$inferSelect;
@@ -58,6 +59,28 @@ export async function stopSubtaskTimers(
   }
 }
 
+/** Runs shorter than this are taps on start/stop, not work worth showing. */
+const MIN_WORK_SESSION_MS = 60_000;
+
+/**
+ * Saves the run that is ending as a work session, so the calendar can show
+ * when the task was actually worked on.
+ */
+export async function logWorkSession(
+  db: Pick<Database, "insert">,
+  task: Pick<Task, "id" | "userId" | "timerStartedAt">,
+  endedAt: Date = new Date()
+): Promise<void> {
+  const startedAt = task.timerStartedAt;
+  if (!startedAt || endedAt.getTime() - startedAt.getTime() < MIN_WORK_SESSION_MS) return;
+  await db.insert(workSessions).values({
+    userId: task.userId,
+    taskId: task.id,
+    startedAt,
+    endedAt,
+  });
+}
+
 /** Stops a task's timer (and its subtask's), logging the time. */
 async function stopTaskTimerUnlocked(
   db: Db,
@@ -77,6 +100,7 @@ async function stopTaskTimerUnlocked(
     )
     .returning();
   if (!updated) return (await reloadTask(db, userId, task.id)) ?? task;
+  await logWorkSession(db, task);
 
   emit(userId, "timer:stopped", {
     taskId: task.id,

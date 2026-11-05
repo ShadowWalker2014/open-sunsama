@@ -304,6 +304,13 @@ export class ApiClient {
     });
   }
 
+  /** When tasks were worked on during one day, from their timers. */
+  async listWorkSessions(params: { date: string }) {
+    return this.request<WorkSession[], { timezone: string }>("GET", "/work-sessions", undefined, {
+      date: params.date,
+    });
+  }
+
   // User
   async getMe() {
     return this.request<User>("GET", "/auth/me");
@@ -517,6 +524,18 @@ export interface CalendarEvent {
   /** Video call join URL (Google Meet, Teams, Zoom). */
   conferenceUrl?: string | null;
   calendar: { id: string; name: string; color: string | null } | null;
+}
+
+/** One stretch of a task's timer, or a timer still running (ending now). */
+export interface WorkSession {
+  id: string;
+  taskId: string;
+  taskTitle: string;
+  /** ISO instant. */
+  startedAt: string;
+  /** ISO instant; now for a running timer. */
+  endedAt: string;
+  isRunning: boolean;
 }
 
 export interface CalendarEventsMeta {

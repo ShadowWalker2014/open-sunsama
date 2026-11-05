@@ -137,9 +137,10 @@ function CalendarDisplayCard() {
 
   const showDeclinedEvents = user?.preferences?.showDeclinedEvents ?? true;
   const showProjectedTasks = user?.preferences?.showProjectedTasks ?? true;
+  const showActualTime = user?.preferences?.showActualTime ?? true;
 
   const savePreference = async (
-    key: "showDeclinedEvents" | "showProjectedTasks",
+    key: "showDeclinedEvents" | "showProjectedTasks" | "showActualTime",
     checked: boolean,
     toastTitle: string
   ) => {
@@ -195,6 +196,26 @@ function CalendarDisplayCard() {
                 "showProjectedTasks",
                 checked,
                 checked ? "Projected tasks shown" : "Projected tasks hidden"
+              )
+            }
+            disabled={isSaving}
+          />
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-0.5">
+            <Label htmlFor="show-actual-time">Show actual time on calendar</Label>
+            <p className="text-sm text-muted-foreground">
+              Show when you worked on tasks, from their timers, next to your planned time blocks
+            </p>
+          </div>
+          <Switch
+            id="show-actual-time"
+            checked={showActualTime}
+            onCheckedChange={(checked) =>
+              savePreference(
+                "showActualTime",
+                checked,
+                checked ? "Actual time shown" : "Actual time hidden"
               )
             }
             disabled={isSaving}
@@ -285,7 +306,7 @@ export function CalendarSettings() {
   }
 
   return (
-    <>
+    <div className="space-y-4">
       <WorkingHoursCard />
       <CalendarDisplayCard />
       <Card>
@@ -383,6 +404,6 @@ export function CalendarSettings() {
         onConfirm={handleRemoveAccount}
         isLoading={disconnectMutation.isPending}
       />
-    </>
+    </div>
   );
 }

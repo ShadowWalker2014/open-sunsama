@@ -213,6 +213,8 @@ const OAUTH_ROUTE_SCOPES: Array<{ path: RegExp; read: string; write: string | nu
   { path: /^\/auth\/me$/, read: 'user:read', write: 'user:write' },
   // Synced calendar events are read-only over MCP: no write scope exists.
   { path: /^\/calendar-events\/?$/, read: 'calendar:read', write: null },
+  // Timer history, read by get_schedule_for_day.
+  { path: /^\/work-sessions\/?$/, read: 'tasks:read', write: null },
 ];
 
 function assertOAuthRouteAllowed(method: string, path: string, scopes: string[]): void {

@@ -74,6 +74,7 @@ opensunsama/
 | `/tasks/:id/subtasks/*` | Yes   | Subtask CRUD                     |
 | `/time-blocks/*`        | Yes   | Time block CRUD + cascade resize |
 | `/calendar-events`      | Yes   | Synced events (`date` or `from`/`to`; `calendar:read`) |
+| `/work-sessions`        | Yes   | Timer runs (`date` or `from`/`to`; `tasks:read`) |
 | `/api-keys/*`           | JWT   | API key management               |
 | `/mcp`                  | OAuth/API key | Remote MCP server (Streamable HTTP) |
 | `/oauth/*`, `/.well-known/*` | Mixed | OAuth 2.1 for MCP clients     |

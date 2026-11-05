@@ -58,6 +58,8 @@ export const userPreferencesSchema = z.object({
   showProjectedTasks: z.boolean().optional(),
   showDeclinedEvents: z.boolean().optional(),
   timezoneManuallySet: z.boolean().optional(),
+  showActualTime: z.boolean().optional(),
+  workloadCounter: z.enum(["planned", "actual"]).optional(),
 });
 
 /**

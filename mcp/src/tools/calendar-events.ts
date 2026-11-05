@@ -33,7 +33,7 @@ function localDate(instant: Date, timeZone: string): string {
   }).format(instant);
 }
 
-function localTime(instant: Date, timeZone: string): string {
+export function localTime(instant: Date, timeZone: string): string {
   return new Intl.DateTimeFormat("en-GB", {
     timeZone,
     hour: "2-digit",

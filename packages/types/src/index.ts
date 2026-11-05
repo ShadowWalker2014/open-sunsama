@@ -87,6 +87,7 @@ export type {
   TimeBlockSummary,
   TimeBlockConflict,
   TimeBlockValidation,
+  WorkSession,
 } from "./time-block.js";
 
 // API key types

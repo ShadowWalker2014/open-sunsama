@@ -16,6 +16,7 @@ import { authRouter } from "./routes/auth.js";
 import { tasksRouter } from "./routes/tasks.js";
 import { subtasksRouter } from "./routes/subtasks.js";
 import { timeBlocksRouter } from "./routes/time-blocks.js";
+import { workSessionsRouter } from "./routes/work-sessions.js";
 import { apiKeysRouter } from "./routes/api-keys.js";
 import { notificationsRouter } from "./routes/notifications.js";
 import { uploadsRouter } from "./routes/uploads.js";
@@ -182,6 +183,7 @@ app.route("/auth", authRouter);
 app.route("/tasks", tasksRouter);
 app.route("/tasks", subtasksRouter); // Subtask routes under /tasks/:taskId/subtasks
 app.route("/time-blocks", timeBlocksRouter);
+app.route("/work-sessions", workSessionsRouter);
 app.route("/api-keys", apiKeysRouter);
 app.route("/notifications", notificationsRouter);
 app.route("/uploads", uploadsRouter);

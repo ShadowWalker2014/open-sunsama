@@ -17,6 +17,18 @@ import {
 } from "@/hooks/calendar-dnd-utils";
 import { useCalendarEvents } from "@/hooks/useCalendars";
 import { useTimeBlocksForDateRange } from "@/hooks/useTimeBlocks";
+import { useWorkSessions } from "@/hooks/useWorkSessions";
+import {
+  WorkSessionBlock,
+  sessionsOnDay,
+} from "@/components/calendar/work-session-block";
+import type { LayoutResult } from "@/components/calendar/event-layout";
+
+/**
+ * Chips here aren't packed into lanes, so actual time always takes the right
+ * half of the column and the planned block under it stays readable.
+ */
+const ACTUAL_TIME_LANE: LayoutResult = { lane: 1, columnCount: 2 };
 
 interface MobileMultiDayViewProps {
   /** Days to show side by side (3 for the 3-day view, 7 for the week). */
@@ -81,6 +93,10 @@ export function MobileMultiDayView({
   const { data: blocks = [] } = useTimeBlocksForDateRange(
     startOfDay(rangeStart),
     endOfDay(rangeEnd)
+  );
+  const { data: sessions = [] } = useWorkSessions(
+    startOfDay(rangeStart).toISOString(),
+    endOfDay(rangeEnd).toISOString()
   );
 
   // Scroll to the working day (08:00) on mount, like the day view does.
@@ -206,6 +222,16 @@ export function MobileMultiDayView({
                     </button>
                   );
                 })}
+
+                {sessionsOnDay(sessions, day).map((session) => (
+                  <WorkSessionBlock
+                    key={session.id}
+                    session={session}
+                    displayDate={day}
+                    blocks={blocks}
+                    layout={ACTUAL_TIME_LANE}
+                  />
+                ))}
 
                 {nowTop !== null && (
                   <div

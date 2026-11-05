@@ -8,12 +8,21 @@ import {
   startOfDay,
   endOfDay,
 } from "date-fns";
-import type { TimeBlock as TimeBlockType, CalendarEvent } from "@open-sunsama/types";
+import type {
+  TimeBlock as TimeBlockType,
+  CalendarEvent,
+  WorkSession,
+} from "@open-sunsama/types";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui";
 import { TimeBlock, TimeBlockPreview } from "./time-block";
 import { useDragToCreate } from "@/hooks/useDragToCreate";
 import { ExternalEvent, AllDayEvent } from "./external-event";
+import {
+  WorkSessionBlock,
+  sessionsOnDay,
+  sessionLayoutItem,
+} from "./work-session-block";
 import { layoutOverlappingItems, type LayoutResult } from "./event-layout";
 
 const DEFAULT_LAYOUT: LayoutResult = { lane: 0, columnCount: 1 };
@@ -33,6 +42,8 @@ interface TimelineProps {
   date: Date;
   timeBlocks: TimeBlockType[];
   calendarEvents?: CalendarEvent[];
+  /** Actual time worked, shown next to the planned blocks */
+  workSessions?: WorkSession[];
   isLoading?: boolean;
   dragState: DragState | null;
   dropPreview: DropPreview | null;
@@ -82,6 +93,7 @@ export function Timeline({
   date,
   timeBlocks,
   calendarEvents = [],
+  workSessions = [],
   isLoading = false,
   dragState,
   dropPreview,
@@ -192,6 +204,11 @@ export function Timeline({
     return { timedEvents: timed, allDayEvents: allDay };
   }, [calendarEvents, date]);
 
+  const daySessions = React.useMemo(
+    () => sessionsOnDay(workSessions, date),
+    [workSessions, date]
+  );
+
   // Side-by-side overlap layout. Timed events and time blocks compete
   // for column real estate, so we lane-pack them together — matches
   // Google Calendar's "split the column when N items overlap" behavior.
@@ -217,9 +234,10 @@ export function Timeline({
           end: en > dayEnd ? dayEnd : en,
         };
       }),
+      ...daySessions.map((session) => sessionLayoutItem(session, date)),
     ];
     return layoutOverlappingItems(items);
-  }, [timedEvents, dayBlocks, date]);
+  }, [timedEvents, dayBlocks, daySessions, date]);
 
   // Press and drag on empty space to sweep out a new block.
   const createDrag = useDragToCreate(
@@ -425,6 +443,19 @@ export function Timeline({
                   onResizeStart={(e, edge) => onBlockResizeStart?.(block, edge, e)}
                   onViewTask={onViewTask}
                   isDragging={dragState?.blockId === block.id}
+                />
+              ))}
+
+            {/* Actual time worked, next to the planned blocks */}
+            {!isLoading &&
+              daySessions.map((session) => (
+                <WorkSessionBlock
+                  key={session.id}
+                  session={session}
+                  displayDate={date}
+                  blocks={dayBlocks}
+                  layout={itemLayouts.get(`session:${session.id}`) ?? DEFAULT_LAYOUT}
+                  onClick={() => onViewTask?.(session.taskId)}
                 />
               ))}
 

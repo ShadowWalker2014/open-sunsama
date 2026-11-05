@@ -53,6 +53,9 @@ export {
 } from "./time-blocks";
 export type { TimeBlock, NewTimeBlock, UpdateTimeBlock } from "./time-blocks";
 
+export { workSessions, workSessionsRelations } from "./work-sessions";
+export type { WorkSession, NewWorkSession } from "./work-sessions";
+
 export {
   apiKeys,
   apiKeysRelations,

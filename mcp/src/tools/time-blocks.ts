@@ -7,9 +7,9 @@
 
 import type { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
-import type { ApiClient, TimeBlock } from "../lib/api-client.js";
+import type { ApiClient, TimeBlock, WorkSession } from "../lib/api-client.js";
 import { defineTool } from "../lib/define-tool.js";
-import { fetchCalendarEvents, formatEventsForDay } from "./calendar-events.js";
+import { fetchCalendarEvents, formatEventsForDay, localTime } from "./calendar-events.js";
 
 /**
  * Format a time block for display with human-readable information
@@ -41,6 +41,31 @@ function formatTimeBlock(block: TimeBlock): string {
   lines.push(`Updated: ${block.updatedAt}`);
 
   return lines.join("\n");
+}
+
+/**
+ * Format a day's timer runs as a schedule section, with the total worked.
+ */
+function formatWorkSessionSection(sessions: WorkSession[], timeZone: string): string[] {
+  if (sessions.length === 0) {
+    return ["No time tracked."];
+  }
+
+  const sorted = [...sessions].sort((a, b) => a.startedAt.localeCompare(b.startedAt));
+  const lines = sorted.map((session) => {
+    const start = localTime(new Date(session.startedAt), timeZone);
+    const end = session.isRunning ? "now (timer running)" : localTime(new Date(session.endedAt), timeZone);
+    return `${start} - ${end}: ${session.taskTitle}`;
+  });
+
+  const totalMins = Math.round(
+    sorted.reduce(
+      (sum, s) => sum + (new Date(s.endedAt).getTime() - new Date(s.startedAt).getTime()) / 60000,
+      0
+    )
+  );
+  lines.push(`Total worked: ${Math.floor(totalMins / 60)}h ${totalMins % 60}m`);
+  return lines;
 }
 
 /**
@@ -570,10 +595,10 @@ To unlink a task, pass null as the taskId.`,
   // Get schedule for a specific day (convenience tool)
   defineTool(server,
     "get_schedule_for_day",
-    `Get the user's whole day in one call: calendar events (meetings from their connected Google, Outlook and iCloud calendars) and time blocks planned in Open Sunsama, each in its own section.
+    `Get the user's whole day in one call: calendar events (meetings from their connected Google, Outlook and iCloud calendars), time blocks planned in Open Sunsama, and the time actually worked on tasks (from their timers), each in its own section.
 
 This is a convenience tool that:
-- Fetches the day's calendar events and time blocks together
+- Fetches the day's calendar events, time blocks and timer runs together
 - Sorts each section chronologically
 - Shows total time-blocked time
 
@@ -581,6 +606,7 @@ Use this tool to:
 - See your schedule for today or any other day
 - Plan or time-block a day around existing meetings
 - Check for gaps in your schedule
+- Compare what was planned with when tasks were actually worked on
 
 Calendar events are busy time and read-only here; time blocks can be changed
 with the time block tools. Times are in the user's timezone.`,
@@ -600,12 +626,13 @@ with the time block tools. Times are in the user's timezone.`,
           );
         }
 
-        const [response, events] = await Promise.all([
+        const [response, events, sessions] = await Promise.all([
           apiClient.listTimeBlocks({
             date: input.date,
             limit: 100, // Get all blocks for the day
           }),
           fetchCalendarEvents(apiClient, { date: input.date }),
+          apiClient.listWorkSessions({ date: input.date }),
         ]);
 
         if (!response.success) {
@@ -629,6 +656,15 @@ with the time block tools. Times are in the user's timezone.`,
         }
         lines.push("", "TIME BLOCKS (planned in Open Sunsama)");
         lines.push(...formatTimeBlockSection(blocks));
+
+        lines.push("", "ACTUAL TIME WORKED (from task timers)");
+        if (sessions.success) {
+          const tz = sessions.meta?.timezone ?? "UTC";
+          lines.push(...formatWorkSessionSection(sessions.data ?? [], tz));
+        } else {
+          // Older servers have no /work-sessions; the rest of the day still shows.
+          lines.push(`Not included: ${sessions.error?.message || "Failed to load time tracked"}`);
+        }
 
         return successResponse(lines.join("\n"));
       } catch (error) {
