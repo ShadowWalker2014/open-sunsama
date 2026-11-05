@@ -12,8 +12,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Label,
   Switch,
+  Label,
 } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
@@ -135,18 +135,24 @@ function CalendarDisplayCard() {
   const { user, updateUser } = useAuth();
   const [isSaving, setIsSaving] = React.useState(false);
 
+  const showDeclinedEvents = user?.preferences?.showDeclinedEvents ?? true;
+  const showProjectedTasks = user?.preferences?.showProjectedTasks ?? true;
   const showActualTime = user?.preferences?.showActualTime ?? true;
 
-  const handleShowActualTimeChange = async (checked: boolean) => {
+  const savePreference = async (
+    key: "showDeclinedEvents" | "showProjectedTasks" | "showActualTime",
+    checked: boolean,
+    toastTitle: string
+  ) => {
     setIsSaving(true);
     await updateUser({
       preferences: {
         ...(user?.preferences ?? { themeMode: "system" as const, colorTheme: "default", fontFamily: "geist" }),
-        showActualTime: checked,
+        [key]: checked,
       },
     });
     setIsSaving(false);
-    toast({ title: checked ? "Actual time shown" : "Actual time hidden" });
+    toast({ title: toastTitle });
   };
 
   return (
@@ -154,7 +160,47 @@ function CalendarDisplayCard() {
       <CardHeader>
         <CardTitle>Calendar Display</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-0.5">
+            <Label htmlFor="show-declined-events">Show declined events</Label>
+            <p className="text-sm text-muted-foreground">
+              Keep meetings you declined on your calendar, faded and struck through
+            </p>
+          </div>
+          <Switch
+            id="show-declined-events"
+            checked={showDeclinedEvents}
+            onCheckedChange={(checked) =>
+              savePreference(
+                "showDeclinedEvents",
+                checked,
+                checked ? "Declined events shown" : "Declined events hidden"
+              )
+            }
+            disabled={isSaving}
+          />
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-0.5">
+            <Label htmlFor="show-projected-tasks">Show projected tasks</Label>
+            <p className="text-sm text-muted-foreground">
+              Draw dotted blocks on the board's calendar for tasks with no time block yet
+            </p>
+          </div>
+          <Switch
+            id="show-projected-tasks"
+            checked={showProjectedTasks}
+            onCheckedChange={(checked) =>
+              savePreference(
+                "showProjectedTasks",
+                checked,
+                checked ? "Projected tasks shown" : "Projected tasks hidden"
+              )
+            }
+            disabled={isSaving}
+          />
+        </div>
         <div className="flex items-center justify-between gap-4">
           <div className="space-y-0.5">
             <Label htmlFor="show-actual-time">Show actual time on calendar</Label>
@@ -165,7 +211,13 @@ function CalendarDisplayCard() {
           <Switch
             id="show-actual-time"
             checked={showActualTime}
-            onCheckedChange={handleShowActualTimeChange}
+            onCheckedChange={(checked) =>
+              savePreference(
+                "showActualTime",
+                checked,
+                checked ? "Actual time shown" : "Actual time hidden"
+              )
+            }
             disabled={isSaving}
           />
         </div>

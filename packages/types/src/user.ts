@@ -62,6 +62,21 @@ export interface UserPreferences {
   addTaskPosition?: "top" | "bottom";
 
   /**
+   * Whether the calendar beside the board draws dotted "projected" blocks
+   * for open tasks that have no time block yet. Defaults to true.
+   */
+  showProjectedTasks?: boolean;
+
+  /**
+   * Whether meetings the user declined stay on the calendar (faded and
+   * struck through) or are hidden. Defaults to true.
+   */
+  showDeclinedEvents?: boolean;
+
+  /** Whether the timezone was explicitly selected by the user */
+  timezoneManuallySet?: boolean;
+
+  /**
    * Whether the calendar shows when tasks were actually worked on (from
    * their timers) next to the planned time blocks. Defaults to true.
    */
@@ -157,6 +172,9 @@ export interface UpdateUserInput {
 
   /** Updated timezone preference */
   timezone?: string;
+
+  /** Identifies an automatic device sync versus an explicit profile choice */
+  timezoneManuallySet?: boolean;
 
   /** Update user preferences */
   preferences?: UserPreferences;

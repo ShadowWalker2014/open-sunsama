@@ -1,7 +1,7 @@
 {
   "name": "open-sunsama",
   "description": "Open-source, AI agent friendly Sunsama alternative with direct API access",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
   "overrides": {
@@ -12,11 +12,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ShadowWalker2014/open-sunsama.git"
+    "url": "https://github.com/kaijiabo/open-sunsama.git"
   },
   "homepage": "https://opensunsama.com",
   "bugs": {
-    "url": "https://github.com/ShadowWalker2014/open-sunsama/issues"
+    "url": "https://github.com/kaijiabo/open-sunsama/issues"
   },
   "keywords": [
     "task-management",

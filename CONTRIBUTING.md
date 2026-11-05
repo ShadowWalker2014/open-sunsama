@@ -23,8 +23,8 @@ This project and everyone participating in it is governed by our [Code of Conduc
 
 There are many ways to contribute:
 
-- **Bug Reports**: Found a bug? [Open a bug report](https://github.com/ShadowWalker2014/open-sunsama/issues/new?template=bug.yml) with reproduction steps
-- **Feature Requests**: Have an idea? [Open a feature request](https://github.com/ShadowWalker2014/open-sunsama/issues/new?template=feature.yml). Issues are our single place for feedback; Discussions are for questions
+- **Bug Reports**: Found a bug? [Open a bug report](https://github.com/kaijiabo/open-sunsama/issues/new?template=bug.yml) with reproduction steps
+- **Feature Requests**: Have an idea? [Open a feature request](https://github.com/kaijiabo/open-sunsama/issues/new?template=feature.yml). Issues are our single place for feedback; Discussions are for questions
 - **Code Contributions**: Fix bugs, add features, improve performance
 - **Documentation**: Improve README, add tutorials, fix typos
 - **Testing**: Write tests, improve coverage, report edge cases
@@ -35,9 +35,9 @@ There are many ways to contribute:
 
 Looking for a place to start? Check out issues labeled:
 
-- [`good first issue`](https://github.com/ShadowWalker2014/open-sunsama/labels/good%20first%20issue) - Great for newcomers
-- [`help wanted`](https://github.com/ShadowWalker2014/open-sunsama/labels/help%20wanted) - Extra attention needed
-- [`documentation`](https://github.com/ShadowWalker2014/open-sunsama/labels/documentation) - Docs improvements
+- [`good first issue`](https://github.com/kaijiabo/open-sunsama/labels/good%20first%20issue) - Great for newcomers
+- [`help wanted`](https://github.com/kaijiabo/open-sunsama/labels/help%20wanted) - Extra attention needed
+- [`documentation`](https://github.com/kaijiabo/open-sunsama/labels/documentation) - Docs improvements
 
 ## Development Setup
 
@@ -57,7 +57,7 @@ git clone https://github.com/YOUR_USERNAME/open-sunsama.git
 cd open-sunsama
 
 # 3. Add upstream remote
-git remote add upstream https://github.com/ShadowWalker2014/open-sunsama.git
+git remote add upstream https://github.com/kaijiabo/open-sunsama.git
 
 # 4. Install the pinned Bun version
 mise install
@@ -131,7 +131,7 @@ Use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.md).
 Feature requests are welcome! Please:
 
 1. Check if the feature already exists or is planned
-2. Open a discussion in [GitHub Discussions](https://github.com/ShadowWalker2014/open-sunsama/discussions/categories/ideas)
+2. Open a discussion in [GitHub Discussions](https://github.com/kaijiabo/open-sunsama/discussions/categories/ideas)
 3. Describe the problem you're trying to solve
 4. Explain your proposed solution
 5. Consider alternatives you've thought about

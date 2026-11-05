@@ -77,12 +77,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const deviceTimezone = getDeviceTimezone();
     
     // Only update if different from server
-    if (deviceTimezone && deviceTimezone !== user.timezone) {
+    if (user.preferences?.timezoneManuallySet) {
+      timezoneSyncAttempted.current = true;
+    } else if (deviceTimezone && deviceTimezone !== user.timezone) {
       timezoneSyncAttempted.current = true;
       console.log(`[Timezone Sync] Updating timezone from ${user.timezone} to ${deviceTimezone}`);
       
       const api = getApi();
-      api.auth.updateMe({ timezone: deviceTimezone })
+      api.auth.updateMe({ timezone: deviceTimezone, timezoneManuallySet: false })
         .then((updatedUser) => {
           queryClient.setQueryData(['auth', 'me'], updatedUser);
         })

@@ -1,11 +1,11 @@
 {
   "name": "@open-sunsama/web",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && bun run scripts/generate-sitemap.ts && bun run scripts/prerender-blog-meta.ts && bun run scripts/prerender-marketing.ts",
+    "build": "tsc && vite build && bun run scripts/generate-sitemap.ts && bun run scripts/prerender-blog-meta.ts && bun run scripts/prerender-marketing.ts && bun run scripts/prerender-docs.ts && bun run scripts/prerender-public.ts && bun run scripts/check-seo.ts && bun run scripts/check-http-seo.ts",
     "start": "bun run server.ts",
     "preview": "vite preview",
     "lint": "eslint .",
@@ -39,6 +39,7 @@
     "@radix-ui/react-tabs": "^1.1.21",
     "@radix-ui/react-toast": "^1.2.23",
     "@radix-ui/react-tooltip": "^1.2.16",
+    "@simplewebauthn/browser": "^14.0.0",
     "@tanstack/query-sync-storage-persister": "^5.103.2",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-query-persist-client": "^5.103.2",

@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@open-sunsama/types": "workspace:*",
+    "@simplewebauthn/browser": "^14.0.0",
     "ky": "^1.14.3"
   },
   "devDependencies": {

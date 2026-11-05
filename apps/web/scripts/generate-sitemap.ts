@@ -8,7 +8,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import matter from "gray-matter";
+import { readDocs } from "./docs-content";
 import { lastUpdated, readBlogPosts } from "./blog-content";
 import { loadMarketingPages } from "./prerender-marketing";
 
@@ -117,81 +117,13 @@ const STATIC_PAGES: SitemapEntry[] = [
 ];
 
 /**
- * Get all MDX files from a directory recursively
- */
-function getMdxFiles(dir: string): string[] {
-  const files: string[] = [];
-
-  if (!fs.existsSync(dir)) {
-    return files;
-  }
-
-  const items = fs.readdirSync(dir, { withFileTypes: true });
-
-  for (const item of items) {
-    const fullPath = path.join(dir, item.name);
-    if (item.isDirectory()) {
-      files.push(...getMdxFiles(fullPath));
-    } else if (item.name.endsWith(".mdx")) {
-      files.push(fullPath);
-    }
-  }
-
-  return files;
-}
-
-/**
- * Extract slug from file path
- */
-function extractSlug(filePath: string): string {
-  const contentDir = "content/docs";
-  const relativePath = filePath.split(contentDir)[1] || "";
-
-  let slug = relativePath.replace(/^\//, "").replace(/\.mdx$/, "");
-
-  if (slug.endsWith("/index")) {
-    slug = slug.replace(/\/index$/, "");
-  }
-
-  return slug;
-}
-
-/**
- * Get file modification date from frontmatter or file system
- */
-function getFileModDate(filePath: string): string {
-  try {
-    const content = fs.readFileSync(filePath, "utf-8");
-    const { data } = matter(content);
-
-    if (data.date) {
-      const date = new Date(data.date);
-      return date.toISOString().split("T")[0] ?? "";
-    }
-
-    if (data.lastModified) {
-      const date = new Date(data.lastModified);
-      return date.toISOString().split("T")[0] ?? "";
-    }
-  } catch {
-    // Fallback to file system date
-  }
-
-  const stats = fs.statSync(filePath);
-  return stats.mtime.toISOString().split("T")[0] ?? "";
-}
-
-/**
  * Generate sitemap XML content
  */
 function generateSitemapXml(entries: SitemapEntry[]): string {
-  const today = new Date().toISOString().split("T")[0];
-
   const urls = entries.map((entry) => {
-    const lastmod = entry.lastmod || today;
     return `  <url>
     <loc>${SITE_URL}${entry.loc}</loc>
-    <lastmod>${lastmod}</lastmod>
+    ${entry.lastmod ? `<lastmod>${entry.lastmod}</lastmod>` : ""}
     <changefreq>${entry.changefreq}</changefreq>
     <priority>${entry.priority}</priority>
   </url>`;
@@ -208,7 +140,6 @@ ${urls.join("\n")}
  * Main function to generate sitemap
  */
 async function main() {
-  const srcDir = path.join(ROOT_DIR, "src");
   const distDir = path.join(ROOT_DIR, "dist");
 
   // Ensure dist directory exists
@@ -229,16 +160,11 @@ async function main() {
   }
 
   // Add docs pages (priority 0.6)
-  const docsDir = path.join(srcDir, "content/docs");
-  const docFiles = getMdxFiles(docsDir);
-
-  for (const filePath of docFiles) {
-    const slug = extractSlug(filePath);
-    const lastmod = getFileModDate(filePath);
-
+  const docPages = readDocs();
+  for (const { slug, meta } of docPages) {
     entries.push({
       loc: `/docs/${slug}`,
-      lastmod,
+      lastmod: meta.updated ?? "",
       changefreq: "weekly",
       priority: 0.6,
     });
@@ -283,7 +209,7 @@ async function main() {
   console.log(`Generated sitemap.xml with ${entries.length} URLs`);
   console.log(`  - Static pages: ${STATIC_PAGES.length}`);
   console.log(`  - Marketing pages with content modules: ${marketingPages.length}`);
-  console.log(`  - Docs: ${docFiles.length}`);
+  console.log(`  - Docs: ${docPages.length}`);
   console.log(`  - Blog posts: ${blogPosts.length}`);
   console.log(`\nSitemap written to: ${sitemapPath}`);
 }

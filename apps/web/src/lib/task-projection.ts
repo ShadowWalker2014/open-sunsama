@@ -72,3 +72,64 @@ export function projectTaskStarts({
   }
   return starts;
 }
+
+export interface ProjectedBlock<T extends ProjectionTask> {
+  task: T;
+  start: Date;
+  end: Date;
+}
+
+/**
+ * The dotted blocks drawn for a day's open tasks that have no time block:
+ * each task at its projected start, as long as its estimate. Empty when the
+ * user has turned projected tasks off.
+ */
+export function projectedBlocks<
+  T extends ProjectionTask & { position: number; completedAt?: Date | string | null },
+>({
+  enabled,
+  tasks,
+  blocks,
+  events,
+  day,
+  workStartHour,
+  now,
+}: {
+  enabled: boolean;
+  tasks: T[];
+  blocks: { taskId?: string | null; startTime: Date | string; endTime: Date | string }[];
+  events: {
+    isAllDay?: boolean;
+    responseStatus?: string | null;
+    startTime: Date | string;
+    endTime: Date | string;
+  }[];
+  day: Date;
+  workStartHour: number;
+  now?: Date;
+}): ProjectedBlock<T>[] {
+  if (!enabled) return [];
+  const open = tasks
+    .filter((t) => !t.completedAt)
+    .sort((a, b) => a.position - b.position);
+  const busy = [
+    ...blocks,
+    ...events.filter((e) => !e.isAllDay && e.responseStatus !== "declined"),
+  ].map((b) => ({ start: new Date(b.startTime), end: new Date(b.endTime) }));
+  const starts = projectTaskStarts({
+    day,
+    tasks: open,
+    blockedTaskIds: new Set(
+      blocks.map((b) => b.taskId).filter((id): id is string => !!id)
+    ),
+    busy,
+    workStartHour,
+    now,
+  });
+  return open.flatMap((task) => {
+    const start = starts.get(task.id);
+    if (!start) return [];
+    const mins = task.estimatedMins || DEFAULT_PLANNED_MINS;
+    return [{ task, start, end: addMinutes(start, mins) }];
+  });
+}

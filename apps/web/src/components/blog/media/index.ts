@@ -14,4 +14,4 @@ function Table(props: ComponentProps<"table">) {
 }
 
 /** Components every blog post can use without an import line. */
-export const blogMdxComponents = { Shot, Clip, DemoVideo, OssApp, OssTable, table: Table };
+export const blogMdxComponents = { Shot, Clip, DemoVideo, OssApp, OssTable, table: Table, h1: () => null };

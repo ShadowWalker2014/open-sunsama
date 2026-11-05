@@ -148,7 +148,7 @@ export function CountUp({ value, duration = 1200 }: { value: string; duration?: 
     return () => cancelAnimationFrame(frame);
   }, [inView, target, duration]);
 
-  return <span ref={ref}>{match ? `${match[1]}${current}${match[3]}` : value}</span>;
+  return <span ref={ref}>{!match || typeof window === "undefined" ? value : `${match[1]}${current}${match[3]}`}</span>;
 }
 
 /** Staggered intro: an item transitions from its "before" state once `ready`. */

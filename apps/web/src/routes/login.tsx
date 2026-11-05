@@ -1,13 +1,16 @@
 import * as React from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
-import { Loader2 } from "lucide-react";
+import { Loader2, KeyRound } from "lucide-react";
+import { startAuthentication, browserSupportsWebAuthnAutofill, WebAuthnAbortService } from "@simplewebauthn/browser";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthLayout, AuthHeader, AuthFooter } from "@/components/layout/auth-layout";
 import { Button, Input, Label } from "@/components/ui";
 import { toast } from "@/hooks/use-toast";
 import { useSEO, SEO_CONFIGS } from "@/hooks/useSEO";
 import { getSafeRedirect } from "@/lib/auth-redirect";
+import { getApi } from "@/lib/api";
+import { supportsPasskeys, passkeyError } from "@/lib/passkeys";
 
 interface LoginForm {
   email: string;
@@ -22,8 +25,49 @@ export default function LoginPage() {
     if (redirect) void navigate({ href: redirect, replace: true });
     else void navigate({ to: "/app" });
   }, [navigate, redirect]);
-  const { login, isAuthenticated } = useAuth();
+  const { login, completePasskeyLogin, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isPasskeyLoading, setIsPasskeyLoading] = React.useState(false);
+  const [passkeysSupported] = React.useState(supportsPasskeys);
+  const ceremonyVersion = React.useRef(0);
+
+  React.useEffect(() => {
+    if (!passkeysSupported || isAuthenticated) return;
+    let active = true;
+    const version = ++ceremonyVersion.current;
+    const isCurrent = () => active && version === ceremonyVersion.current;
+    // Conditional mediation waits quietly for a passkey selected in autofill.
+    void (async () => {
+      if (!await browserSupportsWebAuthnAutofill() || !isCurrent()) return;
+      const { options, challengeId } = await getApi().auth.passkeyLoginOptions();
+      if (!isCurrent()) return;
+      const response = await startAuthentication({ optionsJSON: options, useBrowserAutofill: true });
+      if (!isCurrent()) return;
+      const data = await getApi().auth.verifyPasskeyLogin({ challengeId, response });
+      if (isCurrent()) completePasskeyLogin(data);
+    })().catch(() => {
+      // Autofill is optional; explicit passkey and password sign-in remain usable.
+    });
+    return () => {
+      active = false;
+      WebAuthnAbortService.cancelCeremony();
+    };
+  }, [passkeysSupported, isAuthenticated, completePasskeyLogin]);
+
+  const signInWithPasskey = async () => {
+    ++ceremonyVersion.current;
+    WebAuthnAbortService.cancelCeremony();
+    setIsPasskeyLoading(true);
+    try {
+      const { options, challengeId } = await getApi().auth.passkeyLoginOptions();
+      const response = await startAuthentication({ optionsJSON: options });
+      completePasskeyLogin(await getApi().auth.verifyPasskeyLogin({ challengeId, response }));
+    } catch (error) {
+      toast({ variant: "destructive", title: "Passkey sign-in failed", description: passkeyError(error) });
+    } finally {
+      setIsPasskeyLoading(false);
+    }
+  };
   
   const {
     register,
@@ -39,6 +83,8 @@ export default function LoginPage() {
   }, [isAuthenticated, goNext]);
 
   const onSubmit = async (data: LoginForm) => {
+    ++ceremonyVersion.current;
+    WebAuthnAbortService.cancelCeremony();
     setIsLoading(true);
     try {
       await login(data);
@@ -59,10 +105,10 @@ export default function LoginPage() {
     <AuthLayout>
       <AuthHeader
         title="Sign in"
-        description="Enter your email and password"
+        description={passkeysSupported ? "Use your password or a passkey to continue" : "Enter your email and password"}
       />
 
-      <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+      <form id="login-form" autoComplete="on" onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
         <div className="grid gap-2">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -70,9 +116,9 @@ export default function LoginPage() {
             type="email"
             placeholder="name@example.com"
             autoCapitalize="none"
-            autoComplete="email"
+            autoComplete="username webauthn"
             autoCorrect="off"
-            disabled={isLoading}
+            readOnly={isLoading || isPasskeyLoading}
             {...register("email", {
               required: "Email is required",
               pattern: {
@@ -101,7 +147,7 @@ export default function LoginPage() {
             type="password"
             placeholder="Enter your password"
             autoComplete="current-password"
-            disabled={isLoading}
+            readOnly={isLoading || isPasskeyLoading}
             {...register("password", {
               required: "Password is required",
               minLength: {
@@ -115,11 +161,18 @@ export default function LoginPage() {
           )}
         </div>
 
-        <Button type="submit" disabled={isLoading} className="w-full mt-2 h-9 text-[13px]">
+        <Button type="submit" disabled={isLoading || isPasskeyLoading} className="w-full mt-2 h-9 text-[13px]">
           {isLoading && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
           Sign in
         </Button>
       </form>
+
+      {passkeysSupported && (
+        <Button type="button" variant="outline" disabled={isLoading || isPasskeyLoading} onClick={signInWithPasskey} className="mt-3 w-full">
+          {isPasskeyLoading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <KeyRound className="mr-1.5 h-3.5 w-3.5" />}
+          Sign in with a passkey
+        </Button>
+      )}
 
       <AuthFooter>
         Don&apos;t have an account?{" "}

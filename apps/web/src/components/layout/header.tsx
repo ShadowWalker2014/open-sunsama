@@ -228,7 +228,7 @@ export function Header({ className }: HeaderProps) {
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="text-[13px] py-1.5">
                 <a
-                  href="https://github.com/ShadowWalker2014/open-sunsama/issues/new/choose"
+                  href="https://github.com/kaijiabo/open-sunsama/issues/new/choose"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full cursor-pointer"

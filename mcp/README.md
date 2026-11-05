@@ -50,7 +50,7 @@ No installation required. Use `npx` to run it directly:
 
 ```bash
 # Clone the repository (the mcp package is a workspace of the monorepo)
-git clone https://github.com/ShadowWalker2014/open-sunsama.git
+git clone https://github.com/kaijiabo/open-sunsama.git
 cd open-sunsama
 bun install
 
@@ -408,5 +408,5 @@ This MCP server is part of the Open Sunsama project and follows the same license
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/ShadowWalker2014/open-sunsama/issues)
-- **Documentation**: [Open Sunsama Docs](https://github.com/ShadowWalker2014/open-sunsama)
+- **Issues**: [GitHub Issues](https://github.com/kaijiabo/open-sunsama/issues)
+- **Documentation**: [Open Sunsama Docs](https://github.com/kaijiabo/open-sunsama)

@@ -72,14 +72,21 @@ export function useSEO(config: SEOConfig) {
     setMeta("og:description", description, true);
     setMeta("og:url", canonicalUrl, true);
     setMeta("og:type", ogType, true);
-    setMeta("og:image", ogImage || DEFAULT_OG_IMAGE, true);
+    const imageUrl = ogImage ? new URL(ogImage, BASE_URL).href : DEFAULT_OG_IMAGE;
+    setMeta("og:image", imageUrl, true);
+    setMeta("og:image:width", "1200", true);
+    setMeta("og:image:height", "630", true);
+    setMeta("og:image:alt", fullTitle, true);
     setMeta("og:site_name", SITE_NAME, true);
+    setMeta("og:locale", "en_US", true);
     
     // Twitter Card
+    setMeta("twitter:card", "summary_large_image");
     setMeta("twitter:title", fullTitle);
     setMeta("twitter:description", description);
     setMeta("twitter:url", canonicalUrl);
-    setMeta("twitter:image", ogImage || DEFAULT_OG_IMAGE);
+    setMeta("twitter:image", imageUrl);
+    setMeta("twitter:image:alt", fullTitle);
     
     // Cleanup function to restore defaults on unmount
     return () => {
@@ -91,8 +98,8 @@ export function useSEO(config: SEOConfig) {
 // Pre-defined SEO configs for common pages
 export const SEO_CONFIGS = {
   landing: {
-    title: "Open Sunsama",
-    description: "Daily planning, done right. The open-source daily planner for time-blocking, focused work, and AI integration. Control it from any agent: Claude, ChatGPT, Cursor, or any MCP client.",
+    title: "Daily Planner & Time Blocking App",
+    description: "Plan tasks, block time around meetings, and focus on one thing. Open Sunsama is a daily planner with public code, self-hosting, and access for any AI agent.",
     canonical: "/",
   },
   alternative: {

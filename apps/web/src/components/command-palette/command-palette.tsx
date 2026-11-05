@@ -30,9 +30,10 @@ interface CommandPaletteProps {
   onOpenChange: (open: boolean) => void;
   onSelectTask: (task: Task) => void;
   onAddTask: () => void;
+  onImportTask: () => void;
 }
 
-export function CommandPalette({ open, onOpenChange, onSelectTask, onAddTask }: CommandPaletteProps) {
+export function CommandPalette({ open, onOpenChange, onSelectTask, onAddTask, onImportTask }: CommandPaletteProps) {
   const [query, setQuery] = React.useState("");
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const [debouncedQuery, setDebouncedQuery] = React.useState("");
@@ -44,6 +45,7 @@ export function CommandPalette({ open, onOpenChange, onSelectTask, onAddTask }: 
   const navigate = useNavigate();
   const commandContext = useCommandContext({ 
     onAddTask, 
+    onImportTask,
     closeSearch: () => onOpenChange(false) 
   });
 

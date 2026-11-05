@@ -286,7 +286,7 @@ export default defineMarketingPage({
 
   faqs: {
     heading: "Questions about the kanban board",
-    lead: "Something missing? Read the [docs](/docs) or ask on [GitHub](https://github.com/ShadowWalker2014/open-sunsama/issues).",
+    lead: "Something missing? Read the [docs](/docs) or ask on [GitHub](https://github.com/kaijiabo/open-sunsama/issues).",
     items: [
       {
         question: "What is the best kanban board for daily planning?",
@@ -325,7 +325,7 @@ export default defineMarketingPage({
         question: "Is Open Sunsama open source?",
         answer:
           "The code is public on GitHub. It uses a non-commercial license: you can read it, run it and self-host it for personal use. Companies need a commercial license.",
-        link: { label: "See the code", href: "https://github.com/ShadowWalker2014/open-sunsama" },
+        link: { label: "See the code", href: "https://github.com/kaijiabo/open-sunsama" },
       },
     ],
   },
